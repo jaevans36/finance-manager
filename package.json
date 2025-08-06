@@ -1,0 +1,17 @@
+{
+  "name": "finance-manager",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=server\" \"npm run dev --workspace=client\"",
+    "test": "concurrently \"npm run test --workspace=server\" \"npm run test --workspace=client\"",
+    "start": "npm run start --workspace=server",
+    "build": "npm run build --workspace=client"
+  },
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
