@@ -56,6 +56,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build shared packages
+        run: pnpm --filter @finance-manager/schema build
+
       - name: Run backend tests
         working-directory: apps/api
         env:
@@ -105,6 +108,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Build shared packages
+        run: pnpm --filter @finance-manager/schema build
 
       - name: Run frontend tests
         working-directory: apps/web
@@ -165,6 +171,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Build shared packages
+        run: pnpm --filter @finance-manager/schema build
 
       - name: Install Playwright browsers
         working-directory: apps/web
@@ -230,6 +239,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build shared packages
+        run: pnpm --filter @finance-manager/schema build
+
       - name: Run linting (API)
         working-directory: apps/api
         run: pnpm lint
@@ -266,6 +278,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Build shared packages
+        run: pnpm --filter @finance-manager/schema build
 
       - name: Build API
         working-directory: apps/api
