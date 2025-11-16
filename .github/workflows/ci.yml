@@ -67,7 +67,7 @@ jobs:
 
       - name: Upload backend test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: backend-test-results
           path: apps/api/coverage/
@@ -112,7 +112,7 @@ jobs:
 
       - name: Upload frontend test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: frontend-test-results
           path: apps/web/coverage/
@@ -195,7 +195,7 @@ jobs:
 
       - name: Upload E2E test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: e2e-test-results
           path: |
@@ -204,7 +204,7 @@ jobs:
 
       - name: Upload E2E screenshots on failure
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: e2e-screenshots
           path: apps/web/test-results/**/*.png
@@ -276,7 +276,7 @@ jobs:
         run: pnpm build
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-output
           path: |

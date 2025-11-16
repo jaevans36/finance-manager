@@ -157,7 +157,7 @@ export const LoginForm: React.FC = () => {
       </form>
 
       <p style={{ marginTop: '20px', textAlign: 'center' }}>
-        Don't have an account? <Link to="/register">Create one</Link>
+        Don&apos;t have an account? <Link to="/register">Create one</Link>
       </p>
     </div>
   );
