@@ -102,6 +102,12 @@ pnpm db:studio
 
 **Database Management:**
 ```powershell
+# Reset development database (WARNING: deletes all data)
+.\reset-db.ps1
+
+# Reset test database (safe to run anytime)
+.\reset-test-db.ps1
+
 # Stop database
 docker-compose down
 
@@ -138,17 +144,30 @@ pnpm dev:web    # Web app on http://localhost:5173
 
 ### Testing
 
+**Test Runner Scripts:**
 ```powershell
-# Run all tests (119 tests across all layers)
-pnpm test
+# Run all tests (119 tests) - recommended
+.\run-tests.ps1
 
 # Run specific test suites
-pnpm test:api        # Backend tests (44 tests)
-pnpm test:web        # Frontend tests (71 tests)
-pnpm test:e2e        # E2E tests (4 tests)
+.\run-tests.ps1 -Backend    # Backend tests only
+.\run-tests.ps1 -Frontend   # Frontend tests only
+.\run-tests.ps1 -E2E        # E2E tests only (requires services running)
 
-# Run tests in watch mode
-pnpm test:watch
+# Watch mode for TDD
+.\run-tests.ps1 -Backend -Watch
+.\run-tests.ps1 -Frontend -Watch
+
+# Coverage reports
+.\run-tests.ps1 -Coverage
+```
+
+**Direct pnpm Commands:**
+```powershell
+pnpm test              # All tests
+pnpm test:api          # Backend (44 tests)
+pnpm test:web          # Frontend (71 tests)
+pnpm test:e2e          # E2E (4 tests)
 ```
 
 **Test Coverage:**
