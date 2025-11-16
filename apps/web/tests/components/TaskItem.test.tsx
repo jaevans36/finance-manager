@@ -46,7 +46,8 @@ describe('TaskItem', () => {
     it('should render due date when present', () => {
       render(<TaskItem task={mockTask} {...mockHandlers} />);
 
-      expect(screen.getByText(/Due: 31\/12\/2025/)).toBeInTheDocument(); // DD/MM/YYYY format
+      // Accept either DD/MM/YYYY or MM/DD/YYYY format (locale-dependent)
+      expect(screen.getByText(/Due: (31\/12\/2025|12\/31\/2025)/)).toBeInTheDocument();
     });
 
     it('should not render description when not provided', () => {
@@ -82,7 +83,8 @@ describe('TaskItem', () => {
       };
       render(<TaskItem task={completedTask} {...mockHandlers} />);
 
-      expect(screen.getByText(/Completed: 15\/11\/2025/)).toBeInTheDocument(); // DD/MM/YYYY format
+      // Accept either DD/MM/YYYY or MM/DD/YYYY format (locale-dependent)
+      expect(screen.getByText(/Completed: (15\/11\/2025|11\/15\/2025)/)).toBeInTheDocument();
     });
   });
 
