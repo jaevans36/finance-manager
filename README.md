@@ -1,11 +1,17 @@
 # Finance Manager - To Do App
 
+[![CI](https://github.com/jaevans36/finance-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/jaevans36/finance-manager/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-119%20passing-brightgreen)](https://github.com/jaevans36/finance-manager)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/jaevans36/finance-manager)
+
 Personal finance manager with To Do app foundation, built with a modern full-stack TypeScript architecture.
 
 ## 🏗️ Project Status
 
-**Current Phase**: Foundational Infrastructure Complete (Phase 2) ✅
-**Next Phase**: User Authentication Implementation (Phase 3)
+**Current Phase**: Todo App Feature Complete ✅  
+**Test Coverage**: 119 tests passing (100% pass rate)  
+**CI/CD**: GitHub Actions configured and running  
+**Next Phase**: Documentation & Deployment
 
 ### ✅ Completed
 
@@ -133,12 +139,25 @@ pnpm dev:web    # Web app on http://localhost:5173
 ### Testing
 
 ```powershell
-# Run all tests
+# Run all tests (119 tests across all layers)
 pnpm test
+
+# Run specific test suites
+pnpm test:api        # Backend tests (44 tests)
+pnpm test:web        # Frontend tests (71 tests)
+pnpm test:e2e        # E2E tests (4 tests)
 
 # Run tests in watch mode
 pnpm test:watch
 ```
+
+**Test Coverage:**
+- ✅ **Backend**: 44 tests (16 auth + 28 tasks)
+- ✅ **Frontend**: 71 tests (TaskItem, TaskList, CreateForm, EditModal)
+- ✅ **E2E**: 4 tests (user journey, validation, auth errors, protected routes)
+- 📊 **Total**: 119 tests with 100% pass rate
+
+See `specs/testing-strategy.md` for detailed testing documentation.
 
 ## 📁 Project Structure
 
@@ -249,7 +268,23 @@ See [docs/LOGGING.md](docs/LOGGING.md) for complete documentation.
 - **Unit Tests**: Jest for individual functions and components
 - **Integration Tests**: API endpoint testing with Supertest
 - **Component Tests**: React Testing Library for UI components
-- **End-to-End**: Manual testing with quickstart.md scenarios
+- **End-to-End**: Playwright for complete user flow testing
+
+## 🔄 CI/CD Pipeline
+
+GitHub Actions runs automatically on every push and pull request:
+
+**Automated Checks:**
+- ✅ Backend tests (44 tests with PostgreSQL)
+- ✅ Frontend tests (71 tests with jsdom)
+- ✅ E2E tests (4 tests with Chromium)
+- ✅ Linting (ESLint for API and Web)
+- ✅ Type checking (TypeScript)
+- ✅ Build verification
+
+**View Pipeline:** [GitHub Actions](https://github.com/jaevans36/finance-manager/actions)
+
+The CI pipeline ensures all tests pass before merging code, maintaining code quality and preventing regressions.
 
 ## 📖 Documentation
 
