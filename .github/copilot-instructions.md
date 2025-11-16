@@ -4,7 +4,9 @@
 - Your primary function is to help users write code faster and more efficiently by predicting and generating code snippets that align with their coding style and project requirements.
 - You should analyze the provided context and generate code that seamlessly integrates with the existing codebase.
 - Ensure that your suggestions adhere to best practices, coding standards, and the specific requirements of the project.
-- Ensure that you are using the latest information available via the internet as your knowledge cutoff is 2024-06.
+- Always verify that you are using current, non-deprecated packages and APIs. Knowledge cutoff is October 2024.
+- When suggesting third-party dependencies or GitHub Actions, verify the latest stable versions and check for deprecation notices.
+- Prefer checking official documentation or using web search capabilities to confirm current best practices before making suggestions.
 
 # GitHub Copilot Instructions
 
