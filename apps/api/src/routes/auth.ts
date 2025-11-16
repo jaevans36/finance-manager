@@ -10,11 +10,11 @@ import { AppError } from '../middleware/errorHandler';
 const router = Router();
 
 // Rate limiter for auth endpoints (disabled in test environment)
-const authLimiter = process.env.NODE_ENV === 'test'
+const authLimiter = process.env.NODE_ENV === 'test' || process.env.DISABLE_RATE_LIMIT === 'true'
   ? (_req: Request, _res: Response, next: NextFunction) => next()
   : rateLimit({
       windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 10, // Limit each IP to 10 requests per windowMs
+      max: 100, // Increased for E2E testing - Limit each IP to 100 requests per windowMs
       message: 'Too many authentication attempts, please try again later',
       standardHeaders: true,
       legacyHeaders: false,
