@@ -27,9 +27,12 @@ app.use('/api/v1/tasks', taskRoutes);
 // Error handling
 app.use(errorHandler);
 
-// Start server
-app.listen(config.port, () => {
-  logger.info(`Server running on port ${config.port} in ${config.nodeEnv} mode`);
-});
-
+// Export app for testing
 export default app;
+
+// Start server (only when not in test mode)
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(config.port, () => {
+    logger.info(`Server running on port ${config.port} in ${config.nodeEnv} mode`);
+  });
+}

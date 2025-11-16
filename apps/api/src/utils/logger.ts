@@ -27,6 +27,8 @@ winston.addColors(colors);
 const level = () => {
   const env = process.env.NODE_ENV || 'development';
   const isDevelopment = env === 'development';
+  const isTest = env === 'test';
+  if (isTest) return 'error'; // Only log errors in test
   return isDevelopment ? 'debug' : 'warn';
 };
 
@@ -67,44 +69,49 @@ const consoleFormat = winston.format.combine(
 const logsDir = path.join(process.cwd(), 'logs');
 
 // Define transports
-const transports: winston.transport[] = [
-  // Console transport for all logs
-  new winston.transports.Console({
-    format: consoleFormat,
-  }),
+const transports: winston.transport[] = [];
 
-  // Daily rotating file for all logs
-  new DailyRotateFile({
-    filename: path.join(logsDir, 'application-%DATE%.log'),
-    datePattern: 'YYYY-MM-DD',
-    zippedArchive: true,
-    maxSize: '20m',
-    maxFiles: '14d', // Keep logs for 14 days
-    format: logFormat,
-  }),
+// Only add transports if not in test environment
+if (process.env.NODE_ENV !== 'test') {
+  transports.push(
+    // Console transport for all logs
+    new winston.transports.Console({
+      format: consoleFormat,
+    }),
 
-  // Separate file for errors only
-  new DailyRotateFile({
-    level: 'error',
-    filename: path.join(logsDir, 'error-%DATE%.log'),
-    datePattern: 'YYYY-MM-DD',
-    zippedArchive: true,
-    maxSize: '20m',
-    maxFiles: '30d', // Keep error logs for 30 days
-    format: logFormat,
-  }),
+    // Daily rotating file for all logs
+    new DailyRotateFile({
+      filename: path.join(logsDir, 'application-%DATE%.log'),
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '14d', // Keep logs for 14 days
+      format: logFormat,
+    }),
 
-  // HTTP logs (for request/response logging)
-  new DailyRotateFile({
-    level: 'http',
-    filename: path.join(logsDir, 'http-%DATE%.log'),
-    datePattern: 'YYYY-MM-DD',
-    zippedArchive: true,
-    maxSize: '20m',
-    maxFiles: '7d', // Keep HTTP logs for 7 days
-    format: logFormat,
-  }),
-];
+    // Separate file for errors only
+    new DailyRotateFile({
+      level: 'error',
+      filename: path.join(logsDir, 'error-%DATE%.log'),
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '30d', // Keep error logs for 30 days
+      format: logFormat,
+    }),
+
+    // HTTP logs (for request/response logging)
+    new DailyRotateFile({
+      level: 'http',
+      filename: path.join(logsDir, 'http-%DATE%.log'),
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '7d', // Keep HTTP logs for 7 days
+      format: logFormat,
+    })
+  );
+}
 
 // Create the logger
 const logger = winston.createLogger({
@@ -112,6 +119,7 @@ const logger = winston.createLogger({
   levels,
   transports,
   exitOnError: false,
+  silent: process.env.NODE_ENV === 'test', // Completely silence logger in test mode
 });
 
 // Export logger and helper functions

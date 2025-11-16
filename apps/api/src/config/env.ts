@@ -1,6 +1,12 @@
 import dotenv from 'dotenv';
+import path from 'path';
 
-dotenv.config();
+// Load the appropriate .env file based on NODE_ENV
+if (process.env.NODE_ENV === 'test') {
+  dotenv.config({ path: path.resolve(__dirname, '../../.env.test') });
+} else {
+  dotenv.config();
+}
 
 export const config = {
   port: parseInt(process.env.PORT || '3000', 10),

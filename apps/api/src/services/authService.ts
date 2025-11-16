@@ -38,12 +38,9 @@ export class AuthService {
     // Generate tokens
     const tokens = this.generateTokens(user);
 
-    // Update last login
-    await userService.updateLastLogin(user.id);
-
-    // Return user without password hash
+    // Return user without password hash (no need to update lastLoginAt on registration)
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { passwordHash, ...userWithoutPassword } = user;
+    const { passwordHash, ...userWithoutPassword} = user;
 
     return {
       user: userWithoutPassword,

@@ -9,14 +9,16 @@ import { AppError } from '../middleware/errorHandler';
 
 const router = Router();
 
-// Rate limiter for auth endpoints
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 10 requests per windowMs
-  message: 'Too many authentication attempts, please try again later',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// Rate limiter for auth endpoints (disabled in test environment)
+const authLimiter = process.env.NODE_ENV === 'test'
+  ? (_req: Request, _res: Response, next: NextFunction) => next()
+  : rateLimit({
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 10, // Limit each IP to 10 requests per windowMs
+      message: 'Too many authentication attempts, please try again later',
+      standardHeaders: true,
+      legacyHeaders: false,
+    });
 
 // POST /api/v1/auth/register
 router.post(
