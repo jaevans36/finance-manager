@@ -59,6 +59,12 @@ jobs:
       - name: Build shared packages
         run: pnpm --filter @finance-manager/schema build
 
+      - name: Run database migrations
+        working-directory: apps/api
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/finance_manager_test
+        run: pnpm prisma migrate deploy
+
       - name: Run backend tests
         working-directory: apps/api
         env:
