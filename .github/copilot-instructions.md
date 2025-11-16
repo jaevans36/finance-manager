@@ -28,6 +28,8 @@ The application should be well designed with a focus on security, simlicity, and
 
 Commits and Pull Requests should follow the Conventional Commits specification for consistency and clarity in versioning, they should be no longer than 500 lines of code to facilitate easier reviews.
 
+No secrets or sensitive information should be hardcoded in the codebase; instead, use environment variables or secure vaults to manage such data.
+
 ## Quickstart Guide
 
 This quickstart guide provides example API requests and expected responses for the To Do application. It covers user registration, authentication, and basic task management operations.

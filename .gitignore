@@ -53,3 +53,7 @@ prisma/migrations/
 .cache
 .temp
 *.tsbuildinfo
+
+# Test artifacts
+test-db.js
+test-output.txt
