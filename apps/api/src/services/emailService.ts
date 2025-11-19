@@ -16,14 +16,19 @@ class EmailService {
   private transporter: Transporter | null = null;
   private readonly fromAddress: string;
   private readonly appUrl: string;
+  private initPromise: Promise<void>;
 
   constructor() {
     this.fromAddress = process.env.EMAIL_FROM || 'noreply@financemanager.com';
     this.appUrl = process.env.APP_URL || 'http://localhost:5173';
-    this.initializeTransporter();
+    this.initPromise = this.initializeTransporter();
   }
 
-  private initializeTransporter(): void {
+  private async ensureInitialized(): Promise<void> {
+    await this.initPromise;
+  }
+
+  private async initializeTransporter(): Promise<void> {
     // Check if email is disabled (e.g., in development)
     if (process.env.DISABLE_EMAIL === 'true') {
       logger.info('Email service is disabled');
@@ -31,20 +36,49 @@ class EmailService {
     }
 
     try {
-      const config: EmailConfig = {
-        host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.EMAIL_PORT || '587', 10),
-        secure: process.env.EMAIL_SECURE === 'true',
-        auth: {
-          user: process.env.EMAIL_USER || '',
-          pass: process.env.EMAIL_PASSWORD || '',
-        },
-      };
+      const hasCredentials = process.env.EMAIL_USER && process.env.EMAIL_PASSWORD;
 
-      // Only create transporter if credentials are provided
-      if (config.auth.user && config.auth.pass) {
+      if (hasCredentials) {
+        // Use provided SMTP credentials (Production/Custom)
+        const config: EmailConfig = {
+          host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+          port: parseInt(process.env.EMAIL_PORT || '587', 10),
+          secure: process.env.EMAIL_SECURE === 'true',
+          auth: {
+            user: process.env.EMAIL_USER!,
+            pass: process.env.EMAIL_PASSWORD!,
+          },
+        };
+
         this.transporter = nodemailer.createTransport(config);
-        logger.info('Email service initialized successfully');
+        logger.info('Email service initialized with provided credentials');
+      } else if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+        // Use Ethereal test account in development
+        logger.info('Creating Ethereal test email account...');
+        const testAccount = await nodemailer.createTestAccount();
+        
+        this.transporter = nodemailer.createTransport({
+          host: testAccount.smtp.host,
+          port: testAccount.smtp.port,
+          secure: testAccount.smtp.secure,
+          auth: {
+            user: testAccount.user,
+            pass: testAccount.pass,
+          },
+        });
+
+        logger.info(`
+┌─────────────────────────────────────────────────────────────┐
+│ Email Test Account Created (Ethereal)                       │
+├─────────────────────────────────────────────────────────────┤
+│ View emails at: https://ethereal.email/messages             │
+│ Username: ${testAccount.user}                               │
+│ Password: ${testAccount.pass}                               │
+│                                                              │
+│ All emails sent during development will be captured here.   │
+│ Real emails will NOT be sent.                               │
+└─────────────────────────────────────────────────────────────┘
+        `);
       } else {
         logger.warn('Email credentials not provided. Email service is disabled.');
       }
@@ -168,6 +202,8 @@ class EmailService {
   }
 
   private async sendEmail(to: string, subject: string, html: string): Promise<boolean> {
+    await this.ensureInitialized();
+
     if (!this.transporter) {
       logger.warn(`Email not sent (service disabled): ${subject} to ${to}`);
       // In development without email, log the email content
@@ -186,6 +222,13 @@ class EmailService {
       });
 
       logger.info(`Email sent successfully: ${subject} to ${to}`, { messageId: info.messageId });
+      
+      // If using Ethereal, log the preview URL
+      const previewUrl = nodemailer.getTestMessageUrl(info);
+      if (previewUrl) {
+        logger.info(`📧 Preview email at: ${previewUrl}`);
+      }
+
       return true;
     } catch (error) {
       logger.error(`Failed to send email: ${subject} to ${to}`, error);
