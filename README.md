@@ -8,10 +8,10 @@ Personal finance manager with To Do app foundation, built with a modern full-sta
 
 ## 🏗️ Project Status
 
-**Current Phase**: Todo App Feature Complete ✅  
+**Current Phase**: Todo App v2.0 - Phase 1 Backend Complete ✅  
 **Test Coverage**: 119 tests passing (100% pass rate)  
 **CI/CD**: GitHub Actions configured and running  
-**Next Phase**: Documentation & Deployment
+**Next Phase**: Phase 1 Testing & Frontend
 
 ### ✅ Completed
 
@@ -29,14 +29,26 @@ Personal finance manager with To Do app foundation, built with a modern full-sta
   - JWT utilities and bcrypt password hashing
   - Protected routes and auth context
 
+- **Phase v2.0.1: Security & Foundation (Backend)** ✨ NEW
+  - Password reset flow with email tokens
+  - Email verification system
+  - Multi-device session management
+  - Comprehensive activity logging (17 event types)
+  - Password strength validation
+  - Account lockout after 5 failed attempts
+  - Email notifications (nodemailer)
+  - 13 new API endpoints
+  - Updated auth routes with session tracking
+
 ### 📋 Next Steps
 
-See `specs/001-todo-app/tasks.md` for the full 130-task implementation plan.
+See `specs/001-todo-app/spec-v2-enhancements.md` for v2.0 enhancements.
 
-**Immediate Next Steps (Phase 3 - User Authentication)**:
-- T033-T041: Build authentication API endpoints (register, login, logout, refresh)
-- T042-T050: Create authentication UI (register/login forms)
-- T051-T053: Write authentication tests
+**Immediate Next Steps**:
+- Write tests for Phase 1 security features
+- Build frontend components (password reset, email verification, session management)
+- Update existing tests for new features
+- Continue to Phase 2: Organization & Productivity
 
 ## 🛠️ Tech Stack
 
@@ -240,22 +252,44 @@ NODE_ENV="development"
 CORS_ORIGIN="http://localhost:5173"
 ```
 
-## 📝 API Endpoints (Planned)
+## 📝 API Endpoints
 
 ### Authentication
-- `POST /api/v1/auth/register` - User registration
-- `POST /api/v1/auth/login` - User login
-- `POST /api/v1/auth/logout` - User logout
-- `POST /api/v1/auth/refresh` - Refresh access token
-- `GET /api/v1/auth/me` - Get current user
+- `POST /api/v1/auth/register` - User registration ✅
+- `POST /api/v1/auth/login` - User login ✅
+- `POST /api/v1/auth/logout` - User logout ✅
+- `POST /api/v1/auth/refresh` - Refresh access token ✅
+- `GET /api/v1/auth/me` - Get current user ✅
+
+### Password Reset ✨ NEW
+- `POST /api/v1/password-reset/request` - Request reset email
+- `POST /api/v1/password-reset/reset` - Reset password with token
+- `GET /api/v1/password-reset/verify/:token` - Validate reset token
+
+### Email Verification ✨ NEW
+- `GET /api/v1/email-verification/verify/:token` - Verify email
+- `POST /api/v1/email-verification/resend` - Resend verification
+- `GET /api/v1/email-verification/status` - Check status
+
+### Session Management ✨ NEW
+- `GET /api/v1/sessions` - List all user sessions
+- `DELETE /api/v1/sessions/:sessionId` - Logout from device
+- `POST /api/v1/sessions/terminate-others` - Logout all other devices
+
+### Activity Logs ✨ NEW
+- `GET /api/v1/activity-logs` - Get paginated logs
+- `GET /api/v1/activity-logs/summary` - Get activity summary
+- `GET /api/v1/activity-logs/security` - Get security events
 
 ### Tasks
-- `GET /api/v1/tasks` - List user's tasks
-- `POST /api/v1/tasks` - Create task
-- `GET /api/v1/tasks/:id` - Get task by ID
-- `PUT /api/v1/tasks/:id` - Update task
-- `PATCH /api/v1/tasks/:id/complete` - Toggle completion
-- `DELETE /api/v1/tasks/:id` - Delete task
+- `GET /api/v1/tasks` - List user's tasks ✅
+- `POST /api/v1/tasks` - Create task ✅
+- `GET /api/v1/tasks/:id` - Get task by ID ✅
+- `PUT /api/v1/tasks/:id` - Update task ✅
+- `PATCH /api/v1/tasks/:id/complete` - Toggle completion ✅
+- `DELETE /api/v1/tasks/:id` - Delete task ✅
+
+See [docs/api-phase1-routes.md](docs/api-phase1-routes.md) for complete API documentation.
 
 ## 📝 Logging & Monitoring
 
@@ -307,12 +341,21 @@ The CI pipeline ensures all tests pass before merging code, maintaining code qua
 
 ## 📖 Documentation
 
+### Original Todo App
 - **Feature Specification**: `specs/001-todo-app/spec.md`
 - **Implementation Plan**: `specs/001-todo-app/plan.md`
 - **Task Breakdown**: `specs/001-todo-app/tasks.md`
 - **Data Model**: `specs/001-todo-app/data-model.md`
 - **API Contracts**: `specs/001-todo-app/contracts/api-spec.yaml`
 - **Quick Start Guide**: `specs/001-todo-app/quickstart.md`
+
+### v2.0 Enhancements ✨
+- **v2.0 Specification**: `specs/001-todo-app/spec-v2-enhancements.md`
+- **Phase 1 API Routes**: `docs/api-phase1-routes.md`
+- **Phase 1 Completion Summary**: `docs/phase1-complete.md`
+- **Phase 1 Testing Guide**: `docs/phase1-testing-guide.md`
+- **Session Management**: `docs/phase1-session-management.md`
+- **Implementation Progress**: `docs/v2-implementation-summary.md`
 
 ## 🎯 Implementation Strategy
 
@@ -334,6 +377,7 @@ Private project - All rights reserved
 
 ---
 
-**Last Updated**: November 14, 2025
-**Branch**: `001-todo-app`
-**Phase**: 2 of 8 Complete
+**Last Updated**: November 19, 2025  
+**Branch**: `001-todo-app`  
+**Phase**: Todo App v2.0 - Phase 1 Backend Complete ✅  
+**Commits**: 5 (latest: 5595ad0)
