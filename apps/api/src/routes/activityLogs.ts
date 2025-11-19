@@ -1,0 +1,88 @@
+import { Router, Response } from 'express';
+import { z } from 'zod';
+import { ActivityLogService } from '../services/activityLogService';
+import { authenticate, AuthRequest } from '../middleware/auth';
+import logger from '../utils/logger';
+
+const router = Router();
+const activityLogService = new ActivityLogService();
+
+// Get activity logs (requires authentication)
+const getLogsSchema = z.object({
+  page: z.coerce.number().int().positive().optional().default(1),
+  limit: z.coerce.number().int().positive().max(100).optional().default(20),
+  action: z.string().optional(),
+  startDate: z.coerce.date().optional(),
+  endDate: z.coerce.date().optional(),
+});
+
+router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.userId;
+    const filters = getLogsSchema.parse(req.query);
+
+    const result = await activityLogService.getUserActivityLog(userId, filters);
+
+    res.json(result);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        error: 'Invalid query parameters',
+        details: error.errors,
+      });
+    }
+
+    logger.error('Failed to get activity logs', { error });
+    res.status(500).json({ error: 'Failed to retrieve activity logs' });
+  }
+});
+
+// Get activity summary (requires authentication)
+router.get('/summary', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.userId;
+    const days = req.query.days ? parseInt(req.query.days as string) : 30;
+
+    if (days < 1 || days > 365) {
+      return res.status(400).json({
+        error: 'Days parameter must be between 1 and 365',
+      });
+    }
+
+    const summary = await activityLogService.getRecentActivitySummary(userId, days);
+
+    res.json(summary);
+  } catch (error) {
+    logger.error('Failed to get activity summary', { error });
+    res.status(500).json({ error: 'Failed to retrieve activity summary' });
+  }
+});
+
+// Get recent security events (requires authentication)
+router.get('/security', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.userId;
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+
+    if (limit < 1 || limit > 50) {
+      return res.status(400).json({
+        error: 'Limit parameter must be between 1 and 50',
+      });
+    }
+
+    // Get all logs and filter security events
+    const result = await activityLogService.getUserActivityLog(userId, { limit });
+    const securityActions = ['LOGIN', 'LOGOUT', 'PASSWORD_CHANGE', 'PASSWORD_RESET_REQUEST', 'PASSWORD_RESET_COMPLETE', 'EMAIL_VERIFIED', 'SESSION_TERMINATED', 'ACCOUNT_LOCKED', 'ACCOUNT_UNLOCKED'];
+    const events = result.logs.filter(log => securityActions.includes(log.action)).slice(0, limit);
+
+    res.json({
+      events,
+      count: events.length,
+    });
+  } catch (error) {
+    logger.error('Failed to get security events', { error });
+    res.status(500).json({ error: 'Failed to retrieve security events' });
+  }
+});
+
+export default router;

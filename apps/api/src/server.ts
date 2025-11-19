@@ -5,6 +5,10 @@ import { errorHandler } from './middleware/errorHandler';
 import { httpLogger } from './middleware/httpLogger';
 import authRoutes from './routes/auth';
 import taskRoutes from './routes/tasks';
+import passwordResetRoutes from './routes/passwordReset';
+import emailVerificationRoutes from './routes/emailVerification';
+import sessionsRoutes from './routes/sessions';
+import activityLogsRoutes from './routes/activityLogs';
 import logger from './utils/logger';
 
 const app = express();
@@ -23,6 +27,10 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/tasks', taskRoutes);
+app.use('/api/v1/password-reset', passwordResetRoutes);
+app.use('/api/v1/email-verification', emailVerificationRoutes);
+app.use('/api/v1/sessions', sessionsRoutes);
+app.use('/api/v1/activity-logs', activityLogsRoutes);
 
 // Error handling
 app.use(errorHandler);

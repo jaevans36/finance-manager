@@ -50,9 +50,9 @@ export class TokenService {
   }
 
   /**
-   * Verify a token and return the associated user ID
+   * Verify a token and return the email token object
    */
-  async verifyToken(token: string, type: TokenType): Promise<string | null> {
+  async verifyToken(token: string, type: TokenType) {
     const emailToken = await prisma.emailToken.findFirst({
       where: {
         token,
@@ -74,7 +74,25 @@ export class TokenService {
       data: { usedAt: new Date() },
     });
 
-    return emailToken.userId;
+    return emailToken;
+  }
+
+  /**
+   * Verify a token without marking it as used (for validation only)
+   */
+  async verifyTokenWithoutUsing(token: string, type: TokenType) {
+    const emailToken = await prisma.emailToken.findFirst({
+      where: {
+        token,
+        type,
+        usedAt: null,
+        expiresAt: {
+          gt: new Date(), // Token has not expired
+        },
+      },
+    });
+
+    return emailToken;
   }
 
   /**
