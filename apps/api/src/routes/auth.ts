@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
+import prisma from '../config/database';
 import { authService } from '../services/authService';
 import { registerSchema, loginSchema } from '@finance-manager/schema';
 import { validate } from '../middleware/validate';
@@ -88,7 +89,7 @@ router.post(
         const minutesRemaining = Math.ceil((user.accountLockedUntil.getTime() - Date.now()) / (1000 * 60));
         throw new AppError(
           `Account is locked due to too many failed login attempts. Try again in ${minutesRemaining} minutes.`,
-          423
+          403
         );
       }
 
@@ -177,14 +178,20 @@ router.post(
 router.post('/logout', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId;
-    const sessionToken = req.headers.authorization?.replace('Bearer ', '');
 
-    // Terminate current session
-    if (sessionToken) {
-      const session = await sessionService.getSessionByToken(sessionToken);
-      if (session) {
-        await sessionService.terminateSession(session.sessionId, userId);
-      }
+    // Terminate the most recent session for this user (the one they're using)
+    // Since JWT doesn't contain session info, we'll terminate the most recent active session
+    const sessions = await prisma.session.findMany({
+      where: {
+        userId,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { lastActiveAt: 'desc' },
+      take: 1,
+    });
+
+    if (sessions.length > 0) {
+      await sessionService.terminateSession(sessions[0].id, userId);
     }
 
     // Log logout activity

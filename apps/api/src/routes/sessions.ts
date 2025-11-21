@@ -16,12 +16,18 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
     const sessions = await sessionService.getUserSessions(userId);
 
     res.json({
-      sessions,
-      count: sessions.length,
+      success: true,
+      data: {
+        sessions,
+        count: sessions.length,
+      },
     });
   } catch (error) {
     logger.error('Failed to get user sessions', { error });
-    res.status(500).json({ error: 'Failed to retrieve sessions' });
+    res.status(500).json({
+      success: false,
+      error: { message: 'Failed to retrieve sessions' },
+    });
   }
 });
 
@@ -36,7 +42,8 @@ router.delete('/:sessionId', authenticate, async (req: AuthRequest, res: Respons
 
     if (!success) {
       return res.status(404).json({
-        error: 'Session not found or already terminated',
+        success: false,
+        error: { message: 'Session not found or already terminated' },
       });
     }
 
@@ -46,11 +53,17 @@ router.delete('/:sessionId', authenticate, async (req: AuthRequest, res: Respons
     logger.info('Session terminated', { userId, sessionId });
 
     res.json({
-      message: 'Session terminated successfully',
+      success: true,
+      data: {
+        message: 'Session terminated successfully',
+      },
     });
   } catch (error) {
     logger.error('Failed to terminate session', { error });
-    res.status(500).json({ error: 'Failed to terminate session' });
+    res.status(500).json({
+      success: false,
+      error: { message: 'Failed to terminate session' },
+    });
   }
 });
 
@@ -61,7 +74,10 @@ router.post('/terminate-others', authenticate, async (req: AuthRequest, res: Res
     const currentSessionToken = req.headers.authorization?.replace('Bearer ', '');
 
     if (!currentSessionToken) {
-      return res.status(400).json({ error: 'No session token provided' });
+      return res.status(400).json({
+        success: false,
+        error: { message: 'No session token provided' },
+      });
     }
 
     // Terminate all other sessions
@@ -80,12 +96,18 @@ router.post('/terminate-others', authenticate, async (req: AuthRequest, res: Res
     logger.info('All other sessions terminated', { userId, count });
 
     res.json({
-      message: `Successfully terminated ${count} other session(s)`,
-      count,
+      success: true,
+      data: {
+        message: `${count} other sessions terminated`,
+        terminatedCount: count,
+      },
     });
   } catch (error) {
     logger.error('Failed to terminate other sessions', { error });
-    res.status(500).json({ error: 'Failed to terminate sessions' });
+    res.status(500).json({
+      success: false,
+      error: { message: 'Failed to terminate sessions' },
+    });
   }
 });
 

@@ -2,6 +2,10 @@ import request from 'supertest';
 import app from '../../src/server';
 import prisma from '../../src/config/database';
 import { createTestUser, cleanupTestUser } from '../helpers/auth.helper';
+import crypto from 'crypto';
+
+// Helper to generate unique token
+const generateUniqueToken = () => crypto.randomBytes(48).toString('hex');
 
 describe('Email Verification API', () => {
   const testEmail = `email-verify-${Date.now()}@example.com`;
@@ -82,7 +86,7 @@ describe('Email Verification API', () => {
       const expiredToken = await prisma.emailToken.create({
         data: {
           userId,
-          token: 'b'.repeat(96),
+          token: generateUniqueToken(),
           type: 'EMAIL_VERIFICATION',
           expiresAt: new Date(Date.now() - 1000),
         },
@@ -100,7 +104,7 @@ describe('Email Verification API', () => {
       const newToken = await prisma.emailToken.create({
         data: {
           userId,
-          token: 'c'.repeat(96),
+          token: generateUniqueToken(),
           type: 'EMAIL_VERIFICATION',
           expiresAt: new Date(Date.now() + 86400000),
           usedAt: new Date(),
@@ -125,7 +129,7 @@ describe('Email Verification API', () => {
       const newToken = await prisma.emailToken.create({
         data: {
           userId,
-          token: 'd'.repeat(96),
+          token: generateUniqueToken(),
           type: 'EMAIL_VERIFICATION',
           expiresAt: new Date(Date.now() + 86400000),
         },

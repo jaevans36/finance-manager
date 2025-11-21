@@ -30,7 +30,10 @@ router.post('/request', async (req: Request, res: Response) => {
     if (!user) {
       logger.info('Password reset requested for non-existent email', { email });
       return res.json({
-        message: 'If an account exists with this email, a password reset link has been sent.',
+        success: true,
+        data: {
+          message: 'If your email is registered, you will receive a password reset link shortly.',
+        },
       });
     }
 
@@ -46,18 +49,27 @@ router.post('/request', async (req: Request, res: Response) => {
     logger.info('Password reset email sent', { userId: user.id, email: user.email });
 
     res.json({
-      message: 'If an account exists with this email, a password reset link has been sent.',
+      success: true,
+      data: {
+        message: 'If your email is registered, you will receive a password reset link shortly.',
+      },
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
-        error: 'Invalid request',
-        details: error.errors,
+        success: false,
+        error: {
+          message: 'Invalid request',
+          details: error.errors,
+        },
       });
     }
 
     logger.error('Password reset request failed', { error });
-    res.status(500).json({ error: 'Failed to process password reset request' });
+    res.status(500).json({
+      success: false,
+      error: { message: 'Failed to process password reset request' },
+    });
   }
 });
 
@@ -73,11 +85,16 @@ router.post('/reset', async (req: Request, res: Response) => {
 
     // Validate password strength
     const passwordValidation = validatePasswordStrength(newPassword);
-    if (passwordValidation.score < 3) {
+    if (!passwordValidation.isValid || passwordValidation.score < 3) {
       return res.status(400).json({
-        error: 'Password is too weak',
-        feedback: passwordValidation.feedback,
-        score: passwordValidation.score,
+        success: false,
+        error: {
+          message: passwordValidation.feedback.length > 0
+            ? passwordValidation.feedback.join('. ')
+            : 'Password is too weak',
+          feedback: passwordValidation.feedback,
+          score: passwordValidation.score,
+        },
       });
     }
 
@@ -85,7 +102,8 @@ router.post('/reset', async (req: Request, res: Response) => {
     const emailToken = await tokenService.verifyToken(token, 'PASSWORD_RESET');
     if (!emailToken) {
       return res.status(400).json({
-        error: 'Invalid or expired reset token',
+        success: false,
+        error: { message: 'Invalid or expired reset token' },
       });
     }
 
@@ -95,7 +113,10 @@ router.post('/reset', async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({
+        success: false,
+        error: { message: 'User not found' },
+      });
     }
 
     // Hash new password
@@ -120,18 +141,27 @@ router.post('/reset', async (req: Request, res: Response) => {
     logger.info('Password reset successful', { userId: user.id });
 
     res.json({
-      message: 'Password has been reset successfully',
+      success: true,
+      data: {
+        message: 'Password has been successfully reset',
+      },
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
-        error: 'Invalid request',
-        details: error.errors,
+        success: false,
+        error: {
+          message: 'Invalid request',
+          details: error.errors,
+        },
       });
     }
 
     logger.error('Password reset failed', { error });
-    res.status(500).json({ error: 'Failed to reset password' });
+    res.status(500).json({
+      success: false,
+      error: { message: 'Failed to reset password' },
+    });
   }
 });
 
@@ -144,18 +174,34 @@ router.get('/verify/:token', async (req: Request, res: Response) => {
 
     if (!emailToken) {
       return res.status(400).json({
-        valid: false,
-        error: 'Invalid or expired reset token',
+        success: false,
+        data: {
+          valid: false,
+        },
+        error: { message: 'Invalid or expired reset token' },
       });
     }
 
+    // Get user email
+    const user = await prisma.user.findUnique({
+      where: { id: emailToken.userId },
+      select: { email: true },
+    });
+
     res.json({
-      valid: true,
-      expiresAt: emailToken.expiresAt,
+      success: true,
+      data: {
+        valid: true,
+        email: user?.email,
+        expiresAt: emailToken.expiresAt,
+      },
     });
   } catch (error) {
     logger.error('Token verification failed', { error });
-    res.status(500).json({ error: 'Failed to verify token' });
+    res.status(500).json({
+      success: false,
+      error: { message: 'Failed to verify token' },
+    });
   }
 });
 

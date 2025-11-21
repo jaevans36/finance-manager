@@ -2,6 +2,10 @@ import request from 'supertest';
 import app from '../../src/server';
 import prisma from '../../src/config/database';
 import { createTestUser, cleanupTestUser } from '../helpers/auth.helper';
+import crypto from 'crypto';
+
+// Helper to generate unique token
+const generateUniqueToken = () => crypto.randomBytes(48).toString('hex');
 
 describe('Password Reset API', () => {
   const testEmail = `password-reset-${Date.now()}@example.com`;
@@ -120,7 +124,7 @@ describe('Password Reset API', () => {
       const expiredToken = await prisma.emailToken.create({
         data: {
           userId,
-          token: 'b'.repeat(96),
+          token: generateUniqueToken(),
           type: 'PASSWORD_RESET',
           expiresAt: new Date(Date.now() - 1000), // Expired 1 second ago
         },
@@ -184,7 +188,7 @@ describe('Password Reset API', () => {
       const newToken = await prisma.emailToken.create({
         data: {
           userId,
-          token: 'c'.repeat(96),
+          token: generateUniqueToken(),
           type: 'PASSWORD_RESET',
           expiresAt: new Date(Date.now() + 3600000),
         },
@@ -203,7 +207,7 @@ describe('Password Reset API', () => {
       const newToken = await prisma.emailToken.create({
         data: {
           userId,
-          token: 'd'.repeat(96),
+          token: generateUniqueToken(),
           type: 'PASSWORD_RESET',
           expiresAt: new Date(Date.now() + 3600000),
         },
@@ -221,7 +225,7 @@ describe('Password Reset API', () => {
       const newToken = await prisma.emailToken.create({
         data: {
           userId,
-          token: 'e'.repeat(96),
+          token: generateUniqueToken(),
           type: 'PASSWORD_RESET',
           expiresAt: new Date(Date.now() + 3600000),
         },
@@ -239,7 +243,7 @@ describe('Password Reset API', () => {
       const newToken = await prisma.emailToken.create({
         data: {
           userId,
-          token: 'f'.repeat(96),
+          token: generateUniqueToken(),
           type: 'PASSWORD_RESET',
           expiresAt: new Date(Date.now() + 3600000),
         },
@@ -267,7 +271,7 @@ describe('Password Reset API', () => {
       const expiredToken = await prisma.emailToken.create({
         data: {
           userId,
-          token: 'g'.repeat(96),
+          token: generateUniqueToken(),
           type: 'PASSWORD_RESET',
           expiresAt: new Date(Date.now() - 1000),
         },
@@ -294,7 +298,7 @@ describe('Password Reset API', () => {
       const newToken = await prisma.emailToken.create({
         data: {
           userId,
-          token: 'h'.repeat(96),
+          token: generateUniqueToken(),
           type: 'PASSWORD_RESET',
           expiresAt: new Date(Date.now() + 3600000),
         },
