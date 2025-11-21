@@ -83,22 +83,29 @@ export class ActivityLogService {
     options: {
       limit?: number;
       offset?: number;
+      page?: number;
       actionType?: ActivityType;
+      actionTypes?: string[];
       startDate?: Date;
       endDate?: Date;
     } = {}
   ): Promise<{ logs: ActivityLogEntry[]; total: number }> {
     const {
       limit = 50,
-      offset = 0,
+      page = 1,
       actionType,
+      actionTypes,
       startDate,
       endDate,
     } = options;
+    
+    const offset = options.offset !== undefined ? options.offset : (page - 1) * limit;
 
     const where: any = { userId };
 
-    if (actionType) {
+    if (actionTypes && actionTypes.length > 0) {
+      where.action = { in: actionTypes };
+    } else if (actionType) {
       where.action = actionType;
     }
 

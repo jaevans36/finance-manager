@@ -14,11 +14,19 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
     const userId = req.user!.userId;
 
     const sessions = await sessionService.getUserSessions(userId);
+    
+    // Mark the most recently active session as current
+    // (This is a simple heuristic since JWT doesn't directly map to session token)
+    const sessionsWithActivity = sessions.map((session, index) => ({
+      ...session,
+      lastActivity: session.lastActiveAt,
+      isCurrent: index === 0, // First session (most recent) is current
+    }));
 
     res.json({
       success: true,
       data: {
-        sessions,
+        sessions: sessionsWithActivity,
         count: sessions.length,
       },
     });
@@ -71,17 +79,32 @@ router.delete('/:sessionId', authenticate, async (req: AuthRequest, res: Respons
 router.post('/terminate-others', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId;
-    const currentSessionToken = req.headers.authorization?.replace('Bearer ', '');
 
-    if (!currentSessionToken) {
-      return res.status(400).json({
+    // Get all active sessions for this user
+    const allSessions = await sessionService.getUserSessions(userId);
+    
+    if (allSessions.length === 0) {
+      return res.status(404).json({
         success: false,
-        error: { message: 'No session token provided' },
+        error: { message: 'No active sessions found' },
       });
     }
+    
+    // Keep the oldest session (first created), which is likely the one that issued the JWT
+    // Sessions are ordered by lastActiveAt desc, so we need to find the oldest by createdAt
+    const sortedByCreation = [...allSessions].sort((a, b) => 
+      a.createdAt.getTime() - b.createdAt.getTime()
+    );
+    const sessionToKeep = sortedByCreation[0]; // Oldest session
 
     // Terminate all other sessions
-    const count = await sessionService.terminateOtherSessions(userId, currentSessionToken);
+    let count = 0;
+    for (const session of allSessions) {
+      if (session.id !== sessionToKeep.id) {
+        await sessionService.terminateSession(session.id, userId);
+        count++;
+      }
+    }
 
     // Log activity
     await activityLogService.logActivity({

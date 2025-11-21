@@ -81,7 +81,15 @@ const resetPasswordSchema = z.object({
 
 router.post('/reset', async (req: Request, res: Response) => {
   try {
-    const { token, newPassword } = resetPasswordSchema.parse(req.body);
+    // Validate password strength BEFORE schema validation to avoid 'Invalid request' message
+    const { token, newPassword } = req.body;
+    
+    if (!token || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        error: { message: 'Token and new password are required' },
+      });
+    }
 
     // Validate password strength
     const passwordValidation = validatePasswordStrength(newPassword);
@@ -97,6 +105,9 @@ router.post('/reset', async (req: Request, res: Response) => {
         },
       });
     }
+    
+    // Now validate with schema
+    resetPasswordSchema.parse(req.body);
 
     // Verify token
     const emailToken = await tokenService.verifyToken(token, 'PASSWORD_RESET');
