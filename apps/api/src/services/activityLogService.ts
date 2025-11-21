@@ -1,7 +1,8 @@
 import prisma from '../config/database';
 import type { Request } from 'express';
+import type { Prisma } from '@prisma/client';
 
-type ActivityType =
+export type ActivityType =
   | 'LOGIN'
   | 'LOGOUT'
   | 'PASSWORD_CHANGE'
@@ -25,7 +26,7 @@ interface ActivityData {
   description?: string;
   ipAddress?: string;
   userAgent?: string;
-  metadata?: Record<string, any>;
+  metadata?: Prisma.JsonValue;
 }
 
 interface ActivityLogEntry {
@@ -34,7 +35,7 @@ interface ActivityLogEntry {
   description: string | null;
   ipAddress: string | null;
   userAgent: string | null;
-  metadata: any;
+  metadata: Prisma.JsonValue;
   createdAt: Date;
 }
 
@@ -63,7 +64,7 @@ export class ActivityLogService {
     userId: string,
     action: ActivityType,
     description?: string,
-    metadata?: Record<string, any>
+    metadata?: Prisma.JsonValue
   ): Promise<void> {
     await this.logActivity({
       userId,
@@ -85,7 +86,7 @@ export class ActivityLogService {
       offset?: number;
       page?: number;
       actionType?: ActivityType;
-      actionTypes?: string[];
+      actionTypes?: ActivityType[];
       startDate?: Date;
       endDate?: Date;
     } = {}
@@ -101,7 +102,7 @@ export class ActivityLogService {
     
     const offset = options.offset !== undefined ? options.offset : (page - 1) * limit;
 
-    const where: any = { userId };
+    const where: Prisma.ActivityLogWhereInput = { userId };
 
     if (actionTypes && actionTypes.length > 0) {
       where.action = { in: actionTypes };
@@ -212,7 +213,7 @@ export class ActivityLogService {
   /**
    * Helper: Log user login
    */
-  async logLogin(req: Request, userId: string, metadata?: Record<string, any>): Promise<void> {
+  async logLogin(req: Request, userId: string, metadata?: Prisma.JsonValue): Promise<void> {
     await this.logActivityFromRequest(req, userId, 'LOGIN', 'User logged in', metadata);
   }
 

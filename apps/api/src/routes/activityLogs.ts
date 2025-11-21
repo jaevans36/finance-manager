@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
-import { ActivityLogService } from '../services/activityLogService';
+import { ActivityLogService, type ActivityType } from '../services/activityLogService';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import logger from '../utils/logger';
 
@@ -24,9 +24,9 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
     // Cap limit at 100
     const limit = Math.min(filters.limit || 20, 100);
     
-    // Convert action to array if it's a string
+    // Convert action to array if it's a string and cast to ActivityType[]
     const actionTypes = filters.action 
-      ? (Array.isArray(filters.action) ? filters.action : [filters.action])
+      ? (Array.isArray(filters.action) ? filters.action : [filters.action]) as ActivityType[]
       : undefined;
 
     const result = await activityLogService.getUserActivityLog(userId, {
