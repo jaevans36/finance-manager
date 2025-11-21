@@ -1,4 +1,4 @@
-import prisma from '../config/database.js';
+import prisma from '../config/database';
 import crypto from 'crypto';
 
 type TokenType = 'PASSWORD_RESET' | 'EMAIL_VERIFICATION';

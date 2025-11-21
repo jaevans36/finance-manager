@@ -22,8 +22,25 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
     const filters = getLogsSchema.parse(req.query);
 
     const result = await activityLogService.getUserActivityLog(userId, filters);
+    
+    // Map createdAt to timestamp for API response
+    const logsWithTimestamp = result.logs.map(log => ({
+      ...log,
+      timestamp: log.createdAt,
+    }));
 
-    res.json(result);
+    res.json({
+      success: true,
+      data: {
+        logs: logsWithTimestamp,
+        pagination: {
+          page: filters.page,
+          limit: filters.limit,
+          total: result.total,
+          totalPages: Math.ceil(result.total / filters.limit),
+        },
+      },
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
@@ -50,8 +67,20 @@ router.get('/summary', authenticate, async (req: AuthRequest, res: Response) => 
     }
 
     const summary = await activityLogService.getRecentActivitySummary(userId, days);
+    
+    // Convert summary to array format
+    const summaryArray = Object.entries(summary).map(([action, count]) => ({
+      action,
+      count,
+    }));
 
-    res.json(summary);
+    res.json({
+      success: true,
+      data: {
+        summary: summaryArray,
+        days,
+      },
+    });
   } catch (error) {
     logger.error('Failed to get activity summary', { error });
     res.status(500).json({ error: 'Failed to retrieve activity summary' });
@@ -70,14 +99,22 @@ router.get('/security', authenticate, async (req: AuthRequest, res: Response) =>
       });
     }
 
-    // Get all logs and filter security events
-    const result = await activityLogService.getUserActivityLog(userId, { limit });
+    // Get more logs to ensure we have enough security events
+    const result = await activityLogService.getUserActivityLog(userId, { limit: limit * 2 });
     const securityActions = ['LOGIN', 'LOGOUT', 'PASSWORD_CHANGE', 'PASSWORD_RESET_REQUEST', 'PASSWORD_RESET_COMPLETE', 'EMAIL_VERIFIED', 'SESSION_TERMINATED', 'ACCOUNT_LOCKED', 'ACCOUNT_UNLOCKED'];
     const events = result.logs.filter(log => securityActions.includes(log.action)).slice(0, limit);
+    
+    // Map createdAt to timestamp
+    const eventsWithTimestamp = events.map(log => ({
+      ...log,
+      timestamp: log.createdAt,
+    }));
 
     res.json({
-      events,
-      count: events.length,
+      success: true,
+      data: {
+        logs: eventsWithTimestamp,
+      },
     });
   } catch (error) {
     logger.error('Failed to get security events', { error });

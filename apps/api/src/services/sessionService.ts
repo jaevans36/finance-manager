@@ -1,4 +1,4 @@
-import prisma from '../config/database.js';
+import prisma from '../config/database';
 import crypto from 'crypto';
 import type { Request } from 'express';
 

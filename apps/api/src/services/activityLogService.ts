@@ -1,4 +1,4 @@
-import prisma from '../config/database.js';
+import prisma from '../config/database';
 import type { Request } from 'express';
 
 type ActivityType =

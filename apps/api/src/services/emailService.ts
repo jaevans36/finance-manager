@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
-import logger from '../utils/logger.js';
+import logger from '../utils/logger';
 
 interface EmailConfig {
   host: string;

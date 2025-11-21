@@ -156,11 +156,12 @@ router.post(
           });
 
           if (shouldLock) {
+            const unlockTime = new Date(Date.now() + 30 * 60 * 1000);
             // Send account locked email
-            await emailService.sendAccountLockedEmail(user.email, new Date(Date.now() + 30 * 60 * 1000));
+            await emailService.sendAccountLockoutEmail(user.email, unlockTime);
             
             // Log account lockout
-            await activityLogService.logAccountLocked(req, user.id);
+            await activityLogService.logAccountLocked(req, user.id, unlockTime);
           }
         }
 
