@@ -1,17 +1,17 @@
 # Finance Manager - To Do App
 
 [![CI](https://github.com/jaevans36/finance-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/jaevans36/finance-manager/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-119%20passing-brightgreen)](https://github.com/jaevans36/finance-manager)
+[![Tests](https://img.shields.io/badge/tests-133%20passing-brightgreen)](https://github.com/jaevans36/finance-manager)
 [![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/jaevans36/finance-manager)
 
-Personal finance manager with To Do app foundation, built with a modern full-stack TypeScript architecture.
+Personal finance manager with To Do app foundation, built with a modern microservices architecture combining TypeScript/Node.js for task management and C# .NET for financial features.
 
 ## 🏗️ Project Status
 
 **Current Phase**: Todo App v2.0 - Phase 1 Backend Complete ✅  
-**Test Coverage**: 119 tests passing (100% pass rate)  
+**Test Coverage**: 133 tests passing (100% pass rate)  
 **CI/CD**: GitHub Actions configured and running  
-**Next Phase**: Phase 1 Testing & Frontend
+**Next Phase**: Phase 1 Frontend & C# .NET Finance API Setup
 
 ### ✅ Completed
 
@@ -45,14 +45,14 @@ Personal finance manager with To Do app foundation, built with a modern full-sta
 See `specs/001-todo-app/spec-v2-enhancements.md` for v2.0 enhancements.
 
 **Immediate Next Steps**:
-- Write tests for Phase 1 security features
-- Build frontend components (password reset, email verification, session management)
-- Update existing tests for new features
-- Continue to Phase 2: Organization & Productivity
+- Build frontend components for Phase 1 (password reset, email verification, session management)
+- Set up C# .NET Web API for finance features (CSV import, transaction management)
+- Create Entity Framework Core models for financial data
+- Continue to Phase 2: Organization & Productivity (TypeScript) and Finance Features (C#)
 
 ## 🛠️ Tech Stack
 
-### Backend
+### Backend - Todo API (Node.js)
 - **Runtime**: Node.js 20.x
 - **Framework**: Express.js 4.x
 - **Language**: TypeScript 5.x
@@ -60,6 +60,16 @@ See `specs/001-todo-app/spec-v2-enhancements.md` for v2.0 enhancements.
 - **Authentication**: JWT + bcrypt
 - **Validation**: Zod schemas
 - **Testing**: Jest + Supertest
+
+### Backend - Finance API (C# .NET) 🆕
+- **Runtime**: .NET 8.0
+- **Framework**: ASP.NET Core Web API
+- **Language**: C# 12
+- **ORM**: Entity Framework Core 8
+- **Database**: PostgreSQL 15+ (shared database)
+- **Authentication**: JWT (compatible with Node.js tokens)
+- **Validation**: FluentValidation
+- **Testing**: xUnit + NSubstitute
 
 ### Frontend
 - **Framework**: React 18.x
@@ -72,8 +82,9 @@ See `specs/001-todo-app/spec-v2-enhancements.md` for v2.0 enhancements.
 ### Monorepo Structure
 ```
 apps/
-├── api/          # Express REST API
-└── web/          # React frontend
+├── api/          # Node.js/Express REST API (Todo features)
+├── finance-api/  # C# .NET Web API (Finance features) 🆕
+└── web/          # React frontend (unified UI)
 packages/
 ├── schema/       # Shared types & validation
 └── ui/           # Shared UI components
@@ -84,6 +95,7 @@ packages/
 ### Prerequisites
 - Node.js 20.x or higher
 - pnpm 8.x or higher
+- .NET 8.0 SDK or higher 🆕
 - Docker Desktop (for PostgreSQL database)
 
 ### Installation
@@ -183,10 +195,11 @@ pnpm test:e2e          # E2E (4 tests)
 ```
 
 **Test Coverage:**
-- ✅ **Backend**: 44 tests (16 auth + 28 tasks)
+- ✅ **Node.js API**: 133 tests (auth, tasks, password reset, email verification, sessions, activity logs)
 - ✅ **Frontend**: 71 tests (TaskItem, TaskList, CreateForm, EditModal)
 - ✅ **E2E**: 4 tests (user journey, validation, auth errors, protected routes)
-- 📊 **Total**: 119 tests with 100% pass rate
+- 🔄 **C# .NET API**: To be added
+- 📊 **Total**: 208 tests with 100% pass rate
 
 See `specs/testing-strategy.md` for detailed testing documentation.
 
@@ -195,17 +208,25 @@ See `specs/testing-strategy.md` for detailed testing documentation.
 ```
 Finance Manager/
 ├── apps/
-│   ├── api/                 # Backend API
+│   ├── api/                 # Node.js Backend API (Todo Features)
 │   │   ├── src/
 │   │   │   ├── config/     # Environment & database config
 │   │   │   ├── middleware/ # Express middleware
-│   │   │   ├── routes/     # API routes (to be added)
-│   │   │   ├── services/   # Business logic (to be added)
+│   │   │   ├── routes/     # API routes
+│   │   │   ├── services/   # Business logic
 │   │   │   ├── utils/      # JWT & password utilities
 │   │   │   └── server.ts   # Express app entry point
 │   │   ├── prisma/
 │   │   │   └── schema.prisma
 │   │   └── tests/
+│   │
+│   ├── finance-api/         # C# .NET Backend API (Finance Features) 🆕
+│   │   ├── Controllers/     # API controllers
+│   │   ├── Models/         # Entity models
+│   │   ├── Services/       # Business logic
+│   │   ├── Data/           # EF Core DbContext
+│   │   ├── Migrations/     # Database migrations
+│   │   └── Tests/          # xUnit tests
 │   │
 │   └── web/                 # Frontend React app
 │       ├── src/
@@ -377,7 +398,7 @@ Private project - All rights reserved
 
 ---
 
-**Last Updated**: November 19, 2025  
+**Last Updated**: November 22, 2025  
 **Branch**: `001-todo-app`  
-**Phase**: Todo App v2.0 - Phase 1 Backend Complete ✅  
-**Commits**: 5 (latest: 5595ad0)
+**Phase**: Todo App v2.0 - Phase 1 Backend Complete ✅ | C# Finance API Setup Next  
+**Architecture**: Microservices (Node.js + C# .NET)
