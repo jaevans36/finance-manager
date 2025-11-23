@@ -228,6 +228,12 @@ export const RegisterForm: React.FC = () => {
         </button>
       </form>
 
+      <div style={{ marginTop: '15px', padding: '10px', backgroundColor: '#f0f8ff', borderRadius: '4px', fontSize: '13px' }}>
+        <p style={{ margin: 0, color: '#555' }}>
+          📧 A verification email will be sent to your email address after registration.
+        </p>
+      </div>
+
       <p style={{ marginTop: '20px', textAlign: 'center' }}>
         Already have an account? <Link to="/login">Sign in</Link>
       </p>

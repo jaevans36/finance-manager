@@ -55,4 +55,36 @@ export const authService = {
     const response = await apiClient.get<ApiResponse<User>>('/auth/me');
     return response.data.data!;
   },
+
+  async requestPasswordReset(email: string): Promise<void> {
+    await apiClient.post<ApiResponse<void>>('/auth/password-reset/request', {
+      email,
+    });
+  },
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    await apiClient.post<ApiResponse<void>>('/auth/password-reset/reset', {
+      token,
+      newPassword,
+    });
+  },
+
+  async verifyResetToken(token: string): Promise<{ valid: boolean; email?: string }> {
+    const response = await apiClient.get<ApiResponse<{ valid: boolean; email?: string }>>(
+      `/auth/password-reset/verify/${token}`
+    );
+    return response.data.data!;
+  },
+
+  async verifyEmail(token: string): Promise<void> {
+    await apiClient.post<ApiResponse<void>>('/auth/email-verification/verify', {
+      token,
+    });
+  },
+
+  async resendVerificationEmail(email: string): Promise<void> {
+    await apiClient.post<ApiResponse<void>>('/auth/email-verification/resend', {
+      email,
+    });
+  },
 };

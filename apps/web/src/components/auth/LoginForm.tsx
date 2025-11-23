@@ -156,6 +156,12 @@ export const LoginForm: React.FC = () => {
         </button>
       </form>
 
+      <div style={{ marginTop: '15px', textAlign: 'center' }}>
+        <Link to="/forgot-password" style={{ fontSize: '14px', color: '#007bff' }}>
+          Forgot your password?
+        </Link>
+      </div>
+
       <p style={{ marginTop: '20px', textAlign: 'center' }}>
         Don&apos;t have an account? <Link to="/register">Create one</Link>
       </p>
