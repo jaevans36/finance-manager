@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { authService } from '../services/authService';
+import { getErrorMessage } from '../utils/errorHelpers';
 
 export const ResetPasswordPage: React.FC = () => {
   const { token } = useParams<{ token: string }>();
@@ -30,7 +31,7 @@ export const ResetPasswordPage: React.FC = () => {
         if (!result.valid) {
           setError('This reset link is invalid or has expired');
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError('Failed to verify reset link');
         setTokenValid(false);
       } finally {
@@ -62,8 +63,8 @@ export const ResetPasswordPage: React.FC = () => {
       navigate('/login', { 
         state: { message: 'Password reset successfully. Please log in with your new password.' } 
       });
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Failed to reset password');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Failed to reset password'));
     } finally {
       setIsSubmitting(false);
     }

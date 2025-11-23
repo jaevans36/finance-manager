@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
+import { getErrorMessage } from '../utils/errorHelpers';
 
 export const VerifyEmailPage: React.FC = () => {
   const { token } = useParams<{ token: string }>();
@@ -20,8 +21,8 @@ export const VerifyEmailPage: React.FC = () => {
       try {
         await authService.verifyEmail(token);
         setVerified(true);
-      } catch (err: any) {
-        setError(err.response?.data?.error?.message || 'Failed to verify email. The link may be invalid or expired.');
+      } catch (err: unknown) {
+        setError(getErrorMessage(err, 'Failed to verify email. The link may be invalid or expired.'));
       } finally {
         setIsVerifying(false);
       }

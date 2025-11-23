@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { authService } from '../services/authService';
+import { getErrorMessage } from '../utils/errorHelpers';
 
 export const ResendVerificationPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -16,8 +17,8 @@ export const ResendVerificationPage: React.FC = () => {
     try {
       await authService.resendVerificationEmail(email);
       setSuccess(true);
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Failed to resend verification email');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Failed to resend verification email'));
     } finally {
       setIsSubmitting(false);
     }
@@ -32,7 +33,7 @@ export const ResendVerificationPage: React.FC = () => {
               Check your email
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
-              We've sent a new verification email to <strong>{email}</strong>
+              We&apos;ve sent a new verification email to <strong>{email}</strong>
             </p>
           </div>
           <div className="rounded-md bg-green-50 p-4">
@@ -65,7 +66,7 @@ export const ResendVerificationPage: React.FC = () => {
             Resend Verification Email
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Enter your email address and we'll send you a new verification link.
+            Enter your email address and we&apos;ll send you a new verification link.
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>

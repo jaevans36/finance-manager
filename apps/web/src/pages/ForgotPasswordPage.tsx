@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { authService } from '../services/authService';
+import { getErrorMessage } from '../utils/errorHelpers';
 
 export const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -17,18 +18,7 @@ export const ForgotPasswordPage: React.FC = () => {
       await authService.requestPasswordReset(email);
       setSuccess(true);
     } catch (err: unknown) {
-      interface ErrorResponse {
-        data?: {
-          error?: {
-            message?: string;
-          };
-        };
-      }
-      
-      const errorMessage = err && typeof err === 'object' && 'response' in err
-        ? (err.response as ErrorResponse)?.data?.error?.message
-        : 'Failed to send reset email';
-      setError(errorMessage || 'Failed to send reset email');
+      setError(getErrorMessage(err, 'Failed to send reset email'));
     } finally {
       setIsSubmitting(false);
     }
@@ -77,7 +67,7 @@ export const ForgotPasswordPage: React.FC = () => {
             Reset your password
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Enter your email address and we'll send you a link to reset your password.
+            Enter your email address and we&apos;ll send you a link to reset your password.
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
