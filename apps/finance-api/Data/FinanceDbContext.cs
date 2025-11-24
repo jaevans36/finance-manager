@@ -1,5 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using FinanceApi.Models;
+using FinanceApi.Features.Auth.Models;
+using FinanceApi.Features.Tasks.Models;
+using FinanceApi.Features.Finance.Models;
+using FinanceApi.Features.Common.Sessions.Models;
+using FinanceApi.Features.Common.ActivityLogs.Models;
+using FinanceApi.Features.Common.EmailVerification.Models;
 
 namespace FinanceApi.Data;
 
@@ -17,7 +22,7 @@ public class FinanceDbContext : DbContext
     
     // Todo/Auth domain
     public DbSet<User> Users { get; set; }
-    public DbSet<Models.Task> Tasks { get; set; }
+    public DbSet<FinanceApi.Features.Tasks.Models.Task> Tasks { get; set; }
     public DbSet<Session> Sessions { get; set; }
     public DbSet<EmailToken> EmailTokens { get; set; }
     public DbSet<ActivityLog> ActivityLogs { get; set; }
@@ -139,7 +144,7 @@ public class FinanceDbContext : DbContext
         });
 
         // Task configuration
-        modelBuilder.Entity<Models.Task>(entity =>
+        modelBuilder.Entity<FinanceApi.Features.Tasks.Models.Task>(entity =>
         {
             entity.ToTable("tasks");
             entity.HasKey(e => e.Id);

@@ -3,7 +3,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using FinanceApi.Data;
-using FinanceApi.Services;
+using FinanceApi.Features.Auth.Services;
+using FinanceApi.Features.Tasks.Services;
+using FinanceApi.Features.Common.Sessions.Services;
+using FinanceApi.Features.Common.ActivityLogs.Services;
+using FinanceApi.Features.Common.PasswordReset.Services;
+using FinanceApi.Features.Common.EmailVerification.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
