@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "mRlH5xL3zio=",
+  "dgSpecHash": "qlOn4ckNeYA=",
   "success": true,
   "projectFilePath": "C:\\Projects\\Finance Manager\\apps\\finance-api\\FinanceApi.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Jay\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\Jay\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\Jay\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.11\\microsoft.aspnetcore.authentication.jwtbearer.8.0.11.nupkg.sha512",
     "C:\\Users\\Jay\\.nuget\\packages\\microsoft.aspnetcore.openapi\\8.0.21\\microsoft.aspnetcore.openapi.8.0.21.nupkg.sha512",

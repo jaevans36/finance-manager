@@ -9,10 +9,18 @@ public class FinanceDbContext : DbContext
     {
     }
 
+    // Finance domain
     public DbSet<Account> Accounts { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Budget> Budgets { get; set; }
+    
+    // Todo/Auth domain
+    public DbSet<User> Users { get; set; }
+    public DbSet<Models.Task> Tasks { get; set; }
+    public DbSet<Session> Sessions { get; set; }
+    public DbSet<EmailToken> EmailTokens { get; set; }
+    public DbSet<ActivityLog> ActivityLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -120,6 +128,78 @@ public class FinanceDbContext : DbContext
 
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.CategoryId);
+        });
+
+        // User configuration
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.ToTable("users");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Email).IsUnique();
+        });
+
+        // Task configuration
+        modelBuilder.Entity<Models.Task>(entity =>
+        {
+            entity.ToTable("tasks");
+            entity.HasKey(e => e.Id);
+            
+            entity.HasOne(t => t.User)
+                  .WithMany(u => u.Tasks)
+                  .HasForeignKey(t => t.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => new { e.UserId, e.DueDate });
+            entity.HasIndex(e => new { e.UserId, e.Priority });
+            entity.HasIndex(e => new { e.UserId, e.Completed, e.CreatedAt });
+        });
+
+        // EmailToken configuration
+        modelBuilder.Entity<EmailToken>(entity =>
+        {
+            entity.ToTable("email_tokens");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Token).IsUnique();
+            
+            entity.HasOne(et => et.User)
+                  .WithMany(u => u.EmailTokens)
+                  .HasForeignKey(et => et.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.ExpiresAt);
+        });
+
+        // Session configuration
+        modelBuilder.Entity<Session>(entity =>
+        {
+            entity.ToTable("sessions");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Token).IsUnique();
+            
+            entity.HasOne(s => s.User)
+                  .WithMany(u => u.Sessions)
+                  .HasForeignKey(s => s.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.ExpiresAt);
+        });
+
+        // ActivityLog configuration
+        modelBuilder.Entity<ActivityLog>(entity =>
+        {
+            entity.ToTable("activity_logs");
+            entity.HasKey(e => e.Id);
+            
+            entity.HasOne(al => al.User)
+                  .WithMany(u => u.ActivityLogs)
+                  .HasForeignKey(al => al.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.CreatedAt);
         });
     }
 }

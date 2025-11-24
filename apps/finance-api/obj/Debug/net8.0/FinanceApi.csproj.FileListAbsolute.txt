@@ -120,3 +120,4 @@ C:\Projects\Finance Manager\apps\finance-api\obj\Debug\net8.0\refint\FinanceApi.
 C:\Projects\Finance Manager\apps\finance-api\obj\Debug\net8.0\FinanceApi.pdb
 C:\Projects\Finance Manager\apps\finance-api\obj\Debug\net8.0\FinanceApi.genruntimeconfig.cache
 C:\Projects\Finance Manager\apps\finance-api\obj\Debug\net8.0\ref\FinanceApi.dll
+C:\Projects\Finance Manager\apps\finance-api\bin\Debug\net8.0\BCrypt.Net-Next.dll
