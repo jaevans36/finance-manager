@@ -76,7 +76,7 @@ export const RegisterForm: React.FC = () => {
 
     try {
       const response = await authService.register(email, password);
-      login(response.accessToken, response.refreshToken, response.user);
+      login(response.token, response.user);
       navigate('/dashboard');
     } catch (error: unknown) {
       if (error instanceof Error) {

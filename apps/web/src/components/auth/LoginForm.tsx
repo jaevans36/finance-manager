@@ -54,7 +54,7 @@ export const LoginForm: React.FC = () => {
 
     try {
       const response = await authService.login(email, password);
-      login(response.accessToken, response.refreshToken, response.user);
+      login(response.token, response.user);
       navigate('/dashboard');
     } catch (error: unknown) {
       if (error instanceof Error) {
