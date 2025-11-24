@@ -29,8 +29,8 @@ export const Dashboard: React.FC = () => {
   const loadTasks = async () => {
     try {
       setLoading(true);
-      const response = await taskService.getTasks();
-      setTasks(response.tasks);
+      const tasks = await taskService.getTasks();
+      setTasks(tasks);
       setError('');
     } catch (err) {
       setError('Failed to load tasks');
@@ -77,7 +77,10 @@ export const Dashboard: React.FC = () => {
 
   const handleToggleComplete = async (id: string) => {
     try {
-      const updatedTask = await taskService.toggleComplete(id);
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+      
+      const updatedTask = await taskService.updateTask(id, { completed: !task.completed });
       setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
     } catch (err) {
       console.error('Failed to toggle task completion:', err);

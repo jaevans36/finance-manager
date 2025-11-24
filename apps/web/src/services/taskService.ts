@@ -28,71 +28,30 @@ interface UpdateTaskInput {
   completed?: boolean;
 }
 
-interface TaskListResponse {
-  tasks: Task[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
 
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-  error?: {
-    message: string;
-    code?: string;
-  };
-}
 
 export const taskService = {
-  async getTasks(params?: {
-    page?: number;
-    limit?: number;
-    priority?: 'HIGH' | 'MEDIUM' | 'LOW';
-    completed?: boolean;
-  }): Promise<TaskListResponse> {
-    const response = await apiClient.get<ApiResponse<Task[]>>('/tasks', { params });
-    return {
-      tasks: response.data.data || [],
-      pagination: response.data.pagination!,
-    };
+  async getTasks(): Promise<Task[]> {
+    const response = await apiClient.get<Task[]>('/tasks');
+    return response.data;
   },
 
   async getTask(id: string): Promise<Task> {
-    const response = await apiClient.get<ApiResponse<Task>>(`/tasks/${id}`);
-    return response.data.data!;
+    const response = await apiClient.get<Task>(`/tasks/${id}`);
+    return response.data;
   },
 
   async createTask(input: CreateTaskInput): Promise<Task> {
-    const response = await apiClient.post<ApiResponse<Task>>('/tasks', input);
-    return response.data.data!;
+    const response = await apiClient.post<Task>('/tasks', input);
+    return response.data;
   },
 
   async updateTask(id: string, input: UpdateTaskInput): Promise<Task> {
-    const response = await apiClient.put<ApiResponse<Task>>(`/tasks/${id}`, input);
-    return response.data.data!;
-  },
-
-  async toggleComplete(id: string): Promise<Task> {
-    const response = await apiClient.patch<ApiResponse<Task>>(`/tasks/${id}/complete`);
-    return response.data.data!;
+    const response = await apiClient.put<Task>(`/tasks/${id}`, input);
+    return response.data;
   },
 
   async deleteTask(id: string): Promise<void> {
     await apiClient.delete(`/tasks/${id}`);
-  },
-
-  async getOverdueTasks(): Promise<Task[]> {
-    const response = await apiClient.get<ApiResponse<Task[]>>('/tasks/overdue');
-    return response.data.data || [];
   },
 };

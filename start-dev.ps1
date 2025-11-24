@@ -37,57 +37,35 @@ try {
         exit 1
     }
 
-    # Step 3: Check if migrations are needed
+    # Step 3: Check C# .NET API migrations
     Write-Host ""
-    Write-Host "Step 3: Checking database migrations..." -ForegroundColor Yellow
-    Set-Location "apps/api"
-    $migrationStatus = pnpm prisma migrate status 2>&1
-    if ($migrationStatus -like "*Database schema is up to date*") {
-        Write-Host "[OK] Database migrations are up to date" -ForegroundColor Green
-    }
-    else {
-        Write-Host "Running database migrations..." -ForegroundColor Yellow
-        pnpm db:migrate --name auto-migration
-    }
-
-    # Step 4: Generate Prisma Client
-    Write-Host ""
-    Write-Host "Step 4: Generating Prisma Client..." -ForegroundColor Yellow
-    pnpm db:generate
-    Write-Host "[OK] Prisma Client generated" -ForegroundColor Green
-
-    Set-Location "C:\Projects\Finance Manager"
-
-    # Step 5: Check C# .NET Finance API migrations
-    Write-Host ""
-    Write-Host "Step 5: Checking C# Finance API migrations..." -ForegroundColor Yellow
+    Write-Host "Step 3: Checking .NET API migrations..." -ForegroundColor Yellow
     Set-Location "apps/finance-api"
     $efMigrations = dotnet ef migrations list 2>&1
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "[OK] EF Core migrations checked" -ForegroundColor Green
+        Write-Host "[OK] EF Core migrations ready" -ForegroundColor Green
     }
     else {
-        Write-Host "[!] No migrations found for Finance API (expected for first run)" -ForegroundColor Yellow
-        Write-Host "    Run 'dotnet ef migrations add InitialCreate' in apps/finance-api" -ForegroundColor Gray
+        Write-Host "[!] No migrations found" -ForegroundColor Yellow
+        Write-Host "    Run 'dotnet ef migrations add InitialMigration' in apps/finance-api" -ForegroundColor Gray
     }
 
     Set-Location "C:\Projects\Finance Manager"
 
-    # Step 6: Start development servers
+    # Step 4: Start development servers
     Write-Host ""
-    Write-Host "Step 6: Starting development servers..." -ForegroundColor Yellow
+    Write-Host "Step 4: Starting development servers..." -ForegroundColor Yellow
     Write-Host ""
     Write-Host "====================================================" -ForegroundColor Cyan
     Write-Host "Development environment is starting!" -ForegroundColor Green
     Write-Host ""
     Write-Host "Services:" -ForegroundColor Cyan
-    Write-Host "   Todo API (Node.js):     http://localhost:3000" -ForegroundColor White
-    Write-Host "   Finance API (C# .NET):  http://localhost:5000" -ForegroundColor White
+    Write-Host "   API (C# .NET):          http://localhost:5000" -ForegroundColor White
     Write-Host "   Web (React):            http://localhost:5173" -ForegroundColor White
     Write-Host "   Database (PostgreSQL):  localhost:5432" -ForegroundColor White
     Write-Host ""
-    Write-Host "Swagger Documentation:" -ForegroundColor Cyan
-    Write-Host "   Finance API Swagger:    http://localhost:5000/swagger" -ForegroundColor White
+    Write-Host "Documentation:" -ForegroundColor Cyan
+    Write-Host "   Swagger UI:             http://localhost:5000/swagger" -ForegroundColor White
     Write-Host ""
     Write-Host "Press Ctrl+C to stop all services" -ForegroundColor Yellow
     Write-Host "====================================================" -ForegroundColor Cyan
@@ -96,13 +74,7 @@ try {
     # Start all development servers in parallel
     $jobs = @()
 
-    # Start Node.js API
-    $jobs += Start-Job -ScriptBlock {
-        Set-Location "C:\Projects\Finance Manager\apps\api"
-        pnpm dev
-    }
-
-    # Start C# Finance API
+    # Start C# .NET API
     $jobs += Start-Job -ScriptBlock {
         Set-Location "C:\Projects\Finance Manager\apps\finance-api"
         dotnet watch run

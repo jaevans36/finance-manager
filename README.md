@@ -1,10 +1,10 @@
 # Finance Manager - To Do App
 
 [![CI](https://github.com/jaevans36/finance-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/jaevans36/finance-manager/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-133%20passing-brightgreen)](https://github.com/jaevans36/finance-manager)
+[![Build](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/jaevans36/finance-manager)
 [![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/jaevans36/finance-manager)
 
-Personal finance manager with To Do app foundation, built with a modern microservices architecture combining TypeScript/Node.js for task management and C# .NET for financial features.
+Personal finance manager with To Do app, built with C# .NET Web API backend and React TypeScript frontend.
 
 ## 🏗️ Project Status
 
@@ -52,24 +52,15 @@ See `specs/001-todo-app/spec-v2-enhancements.md` for v2.0 enhancements.
 
 ## 🛠️ Tech Stack
 
-### Backend - Todo API (Node.js)
-- **Runtime**: Node.js 20.x
-- **Framework**: Express.js 4.x
-- **Language**: TypeScript 5.x
-- **Database**: PostgreSQL 15+ with Prisma ORM
-- **Authentication**: JWT + bcrypt
-- **Validation**: Zod schemas
-- **Testing**: Jest + Supertest
-
-### Backend - Finance API (C# .NET) 🆕
+### Backend - .NET API
 - **Runtime**: .NET 8.0
 - **Framework**: ASP.NET Core Web API
 - **Language**: C# 12
-- **ORM**: Entity Framework Core 8
-- **Database**: PostgreSQL 15+ (shared database)
-- **Authentication**: JWT (compatible with Node.js tokens)
-- **Validation**: FluentValidation
-- **Testing**: xUnit + NSubstitute
+- **ORM**: Entity Framework Core 8.0.11
+- **Database**: PostgreSQL 15+
+- **Authentication**: JWT + BCrypt.Net
+- **Testing**: xUnit (planned)
+- **Ports**: 5000 (HTTP), 5001 (HTTPS)
 
 ### Frontend
 - **Framework**: React 18.x
