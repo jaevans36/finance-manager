@@ -57,3 +57,42 @@ prisma/migrations/
 # Test artifacts
 test-db.js
 test-output.txt
+
+# .NET build artifacts
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.deps.json
+*.runtimeconfig.json
+*.AssemblyInfo.cs
+*.AssemblyInfoInputs.cache
+*.GeneratedMSBuildEditorConfig.editorconfig
+*.assets.cache
+*.FileListAbsolute.txt
+*.sourcelink.json
+apphost.exe
+*.dswa.cache.json
+
+# .NET user-specific files
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# .NET test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# .NET package restore
+project.lock.json
+project.fragment.lock.json
+artifacts/
+*.nuget.props
+*.nuget.targets
+*.nuget.dgspec.json
+*.nuget.cache

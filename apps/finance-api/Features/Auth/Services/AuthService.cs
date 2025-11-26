@@ -41,7 +41,7 @@ public class AuthService : IAuthService
         // Check if user already exists
         if (await _context.Users.AnyAsync(u => u.Email == request.Email))
         {
-            throw new InvalidOperationException("User with this email already exists");
+            throw new InvalidOperationException("Email already registered");
         }
 
         // Create user
@@ -115,7 +115,7 @@ public class AuthService : IAuthService
                 await _context.SaveChangesAsync();
             }
 
-            throw new UnauthorizedAccessException("Invalid email or password");
+            throw new UnauthorizedAccessException("Invalid credentials");
         }
 
         // Check if account is locked
