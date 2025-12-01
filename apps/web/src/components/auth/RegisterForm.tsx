@@ -15,7 +15,7 @@ const Label = styled.label`
   margin-bottom: 5px;
 `;
 
-export const RegisterForm: React.FC = () => {
+export const RegisterForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

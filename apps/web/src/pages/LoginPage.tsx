@@ -1,7 +1,7 @@
 import React from 'react';
 import { LoginForm } from '../components/auth/LoginForm';
 
-export const LoginPage: React.FC = () => {
+export const LoginPage = () => {
   return (
     <div style={{ 
       minHeight: '100vh', 

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { getErrorMessage } from '../utils/errorHelpers';
 
-export const ResendVerificationPage: React.FC = () => {
+export const ResendVerificationPage = () => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');

@@ -1,7 +1,7 @@
 import React from 'react';
 import { RegisterForm } from '../components/auth/RegisterForm';
 
-export const RegisterPage: React.FC = () => {
+export const RegisterPage = () => {
   return (
     <div style={{ 
       minHeight: '100vh', 

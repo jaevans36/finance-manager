@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { getErrorMessage } from '../utils/errorHelpers';
 
-export const VerifyEmailPage: React.FC = () => {
+export const VerifyEmailPage = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [isVerifying, setIsVerifying] = useState(true);

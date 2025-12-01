@@ -15,7 +15,7 @@ const Label = styled.label`
   margin-bottom: 5px;
 `;
 
-export const LoginForm: React.FC = () => {
+export const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});

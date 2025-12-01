@@ -39,7 +39,7 @@ interface EditTaskModalProps {
   onCancel: () => void;
 }
 
-export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, onSubmit, onCancel }) => {
+export const EditTaskModal = ({ task, onSubmit, onCancel }: EditTaskModalProps) => {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || '');
   const [priority, setPriority] = useState<'HIGH' | 'MEDIUM' | 'LOW'>(task.priority);

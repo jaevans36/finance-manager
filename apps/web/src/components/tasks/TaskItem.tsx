@@ -8,12 +8,12 @@ interface TaskItemProps {
   onDelete: (id: string) => void;
 }
 
-export const TaskItem: React.FC<TaskItemProps> = ({
+export const TaskItem = ({
   task,
   onToggleComplete,
   onEdit,
   onDelete,
-}) => {
+}: TaskItemProps) => {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'HIGH':

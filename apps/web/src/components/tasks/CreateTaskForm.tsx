@@ -22,7 +22,7 @@ interface CreateTaskFormProps {
   onCancel: () => void;
 }
 
-export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onSubmit, onCancel }) => {
+export const CreateTaskForm = ({ onSubmit, onCancel }: CreateTaskFormProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'HIGH' | 'MEDIUM' | 'LOW'>('MEDIUM');

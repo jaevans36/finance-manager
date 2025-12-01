@@ -10,13 +10,13 @@ interface TaskListProps {
   onDelete: (id: string) => void;
 }
 
-export const TaskList: React.FC<TaskListProps> = ({
+export const TaskList = ({
   tasks,
   isLoading,
   onToggleComplete,
   onEdit,
   onDelete,
-}) => {
+}: TaskListProps) => {
   if (isLoading) {
     return (
       <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>

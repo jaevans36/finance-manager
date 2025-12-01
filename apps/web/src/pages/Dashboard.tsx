@@ -18,7 +18,7 @@ interface Task {
   updatedAt: string;
 }
 
-export const Dashboard: React.FC = () => {
+export const Dashboard = () => {
   const { user, logout } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
