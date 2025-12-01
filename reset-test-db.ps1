@@ -18,13 +18,25 @@ if (-not $containerStatus) {
 
 Write-Host "[OK] Database is running" -ForegroundColor Green
 
-# Reset the test database
+# Reset the test database using EF Core
 Write-Host ""
 Write-Host "Resetting test database schema..." -ForegroundColor Yellow
-Set-Location "apps/api"
+Set-Location "apps/finance-api"
 
-$env:DATABASE_URL = "postgresql://postgres:password@localhost:5432/finance_manager_test"
-pnpm prisma migrate reset --force --skip-seed
+# Set connection string for test database
+$env:ConnectionStrings__DefaultConnection = "Host=localhost;Port=5432;Database=finance_manager_test;Username=postgres;Password=password"
+
+# Drop test database
+dotnet ef database drop --force
+
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "[OK] Test database dropped" -ForegroundColor Green
+} else {
+    Write-Host "[!] Test database drop warning (may not exist yet)" -ForegroundColor Yellow
+}
+
+# Create test database with migrations
+dotnet ef database update
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "[OK] Test database reset complete" -ForegroundColor Green

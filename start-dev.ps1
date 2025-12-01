@@ -18,7 +18,17 @@ try {
         Start-Sleep -Seconds 30
     } else {
         Write-Host "[OK] Docker is running" -ForegroundColor Green
-    }\
+    }
+
+    # Step 2: Start PostgreSQL container
+    Write-Host ""
+    Write-Host "Step 2: Starting PostgreSQL database..." -ForegroundColor Yellow
+    docker-compose up -d
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "[X] Failed to start database" -ForegroundColor Red
+        exit 1
+    }
+    
     Write-Host "Waiting for database to be ready..." -ForegroundColor Yellow
     $maxAttempts = 30
     $attempt = 0
@@ -104,3 +114,9 @@ try {
         $jobs | Stop-Job
         $jobs | Remove-Job
     }
+}
+catch {
+    Write-Host ""
+    Write-Host "[X] Error: $($_.Exception.Message)" -ForegroundColor Red
+    exit 1
+}

@@ -17,7 +17,7 @@ param(
     [switch]$Today
 )
 
-$logsDir = "C:\Projects\Finance Manager\apps\api\logs"
+$logsDir = "C:\Projects\Finance Manager\apps\finance-api\logs"
 $today = Get-Date -Format "yyyy-MM-dd"
 
 # Determine which log file to view

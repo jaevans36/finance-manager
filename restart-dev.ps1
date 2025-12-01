@@ -10,19 +10,13 @@ Get-Process -Name "dotnet" -ErrorAction SilentlyContinue | Where-Object { $_.Com
 
 Write-Host ""
 Write-Host "Services will be available at:" -ForegroundColor Yellow
-Write-Host "   Todo API (Node.js):     http://localhost:3000" -ForegroundColor White
-Write-Host "   Finance API (C# .NET):  http://localhost:5000" -ForegroundColor White
+Write-Host "   API (C# .NET):          http://localhost:5000" -ForegroundColor White
+Write-Host "   Swagger UI:             http://localhost:5000/swagger" -ForegroundColor White
 Write-Host "   Web (React):            http://localhost:5173" -ForegroundColor White
-Write-Host "   Finance API Swagger:    http://localhost:5000/swagger" -ForegroundColor White
 Write-Host ""
 
 # Start all servers in parallel
 $jobs = @()
-
-$jobs += Start-Job -ScriptBlock {
-    Set-Location "C:\Projects\Finance Manager\apps\api"
-    pnpm dev
-}
 
 $jobs += Start-Job -ScriptBlock {
     Set-Location "C:\Projects\Finance Manager\apps\finance-api"

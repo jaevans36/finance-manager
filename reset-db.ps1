@@ -34,31 +34,31 @@ if (-not $containerStatus) {
 
 Write-Host "[OK] Database is running" -ForegroundColor Green
 
-# Step 1: Reset the database using Prisma
+# Step 1: Drop and recreate database using EF Core
 Write-Host ""
-Write-Host "Step 1: Resetting database schema..." -ForegroundColor Yellow
-Set-Location "apps/api"
+Write-Host "Step 1: Dropping database..." -ForegroundColor Yellow
+Set-Location "apps/finance-api"
 
-# Reset the database (drops all tables and recreates them)
-pnpm prisma migrate reset --force --skip-seed
+# Drop the database
+dotnet ef database drop --force
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "[OK] Database schema reset complete" -ForegroundColor Green
-} else {
-    Write-Host "[X] Database reset failed" -ForegroundColor Red
-    Set-Location "C:\Projects\Finance Manager"
-    exit 1
+    Write-Host "[OK] Database dropped" -ForegroundColor Green
+}
+else {
+    Write-Host "[!] Database drop warning (may not exist yet)" -ForegroundColor Yellow
 }
 
-# Step 2: Generate Prisma Client (in case it needs updating)
+# Step 2: Apply migrations to recreate schema
 Write-Host ""
-Write-Host "Step 2: Regenerating Prisma Client..." -ForegroundColor Yellow
-pnpm db:generate
+Write-Host "Step 2: Applying migrations..." -ForegroundColor Yellow
+dotnet ef database update
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "[OK] Prisma Client regenerated" -ForegroundColor Green
-} else {
-    Write-Host "[X] Prisma Client generation failed" -ForegroundColor Red
+    Write-Host "[OK] Database schema created" -ForegroundColor Green
+}
+else {
+    Write-Host "[X] Database migration failed" -ForegroundColor Red
     Set-Location "C:\Projects\Finance Manager"
     exit 1
 }
@@ -73,6 +73,7 @@ Write-Host "Your development database is now empty and ready to use." -Foregroun
 Write-Host "================================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Cyan
-Write-Host "  - Create a new user via API: POST http://localhost:3000/api/v1/auth/register" -ForegroundColor White
+Write-Host "  - Create a new user via API: POST http://localhost:5000/api/auth/register" -ForegroundColor White
+Write-Host "  - Test with Swagger UI: http://localhost:5000/swagger" -ForegroundColor White
 Write-Host "  - Or use the web interface: http://localhost:5173/register" -ForegroundColor White
 Write-Host ""
