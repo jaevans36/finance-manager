@@ -4,17 +4,55 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 interface ApiErrorResponse {
   message?: string;
-  error?: string;
+  error?: string | { message?: string };
   title?: string;
   errors?: Record<string, string | string[]>;
 }
 
-const getDefaultErrorMessage = (status?: number): string => {
+const extractApiErrorForLogging = (apiError: unknown): string => {
+  // Extract technical error message from API for logging purposes
+  if (typeof apiError === 'string') {
+    return apiError;
+  }
+
+  if (typeof apiError === 'object' && apiError !== null) {
+    const errorObj = apiError as ApiErrorResponse;
+
+    // Handle nested error object: {error: {message: "..."}}
+    if (errorObj.error && typeof errorObj.error === 'object' && 'message' in errorObj.error) {
+      return errorObj.error.message || 'Unknown error';
+    }
+
+    // Handle direct message fields
+    if (typeof errorObj.message === 'string') {
+      return errorObj.message;
+    }
+
+    if (typeof errorObj.error === 'string') {
+      return errorObj.error;
+    }
+
+    if (typeof errorObj.title === 'string') {
+      return errorObj.title;
+    }
+
+    // Handle validation errors object
+    if (errorObj.errors && typeof errorObj.errors === 'object') {
+      const firstError = Object.values(errorObj.errors)[0];
+      return Array.isArray(firstError) ? firstError[0] : String(firstError);
+    }
+  }
+
+  return 'Unknown error';
+};
+
+const getUserFriendlyErrorMessage = (status?: number): string => {
+  // Frontend-controlled user-facing messages
   switch (status) {
     case 400:
       return 'Invalid request. Please check your input.';
     case 401:
-      return 'Invalid email or password.';
+      return 'Invalid email or password. Please try again.';
     case 403:
       return 'You do not have permission to perform this action.';
     case 404:
@@ -64,11 +102,15 @@ const createApiClient = (): AxiosInstance => {
   client.interceptors.response.use(
     (response) => response,
     (error: AxiosError<ApiErrorResponse>) => {
-      // Log detailed error information
+      const status = error.response?.status;
+      const apiErrorMessage = extractApiErrorForLogging(error.response?.data);
+      
+      // Log technical details for debugging (backend message preserved)
       console.error('API Error:', {
         message: error.message,
-        status: error.response?.status,
+        status: status,
         statusText: error.response?.statusText,
+        apiError: apiErrorMessage, // Technical message from backend
         data: error.response?.data,
         url: error.config?.url,
         method: error.config?.method,
@@ -77,7 +119,7 @@ const createApiClient = (): AxiosInstance => {
       const currentPath = window.location.pathname;
       const isAuthPage = currentPath === '/login' || currentPath === '/register';
 
-      if (error.response?.status === 401) {
+      if (status === 401) {
         // Clear tokens and redirect to login only if not already on login/register pages
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
@@ -85,44 +127,15 @@ const createApiClient = (): AxiosInstance => {
         if (!isAuthPage) {
           window.location.href = '/login';
         } else {
-          // On auth pages, provide user-friendly error message
-          const errorMessage = error.response?.data?.message || 
-                              error.response?.data?.error ||
-                              'Invalid email or password';
-          const friendlyError = new Error(errorMessage);
-          return Promise.reject(friendlyError);
+          // On auth pages, show user-friendly message (frontend-controlled)
+          const userMessage = getUserFriendlyErrorMessage(401);
+          return Promise.reject(new Error(userMessage));
         }
       }
 
-      // Extract user-friendly error message from API response
-      if (error.response?.data) {
-        const apiError = error.response.data;
-        let errorMessage: string;
-
-        // Handle different API error response formats
-        if (typeof apiError === 'string') {
-          errorMessage = apiError;
-        } else if (apiError.message && typeof apiError.message === 'string') {
-          errorMessage = apiError.message;
-        } else if (apiError.error && typeof apiError.error === 'string') {
-          errorMessage = apiError.error;
-        } else if (apiError.title && typeof apiError.title === 'string') {
-          errorMessage = apiError.title;
-        } else if (apiError.errors && typeof apiError.errors === 'object') {
-          // Handle validation errors object
-          const firstError = Object.values(apiError.errors)[0];
-          errorMessage = Array.isArray(firstError) ? firstError[0] : String(firstError);
-        } else {
-          errorMessage = getDefaultErrorMessage(error.response.status);
-        }
-
-        const friendlyError = new Error(errorMessage);
-        return Promise.reject(friendlyError);
-      }
-
-      // Fallback to default error message
-      const defaultError = new Error(getDefaultErrorMessage(error.response?.status));
-      return Promise.reject(defaultError);
+      // Return user-friendly error message (frontend-controlled)
+      const userMessage = getUserFriendlyErrorMessage(status);
+      return Promise.reject(new Error(userMessage));
     }
   );
 
