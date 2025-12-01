@@ -32,6 +32,10 @@ Commits and Pull Requests should follow the Conventional Commits specification f
 
 No secrets or sensitive information should be hardcoded in the codebase; instead, use environment variables or secure vaults to manage such data.
 
+When making code changes or suggestions, please make sure you're using the most up-to-date standards, libraries and frameworks, avoiding any deprecated packages or APIs. Avoid any outdated coding practices that may compromise security or performance for both the front-end and back-end codebases.
+
+Avoid the use of 'any' type in TypeScript to ensure type safety and maintainability throughout the codebase.
+
 ## Quickstart Guide
 
 This quickstart guide provides example API requests and expected responses for the To Do application. It covers user registration, authentication, and basic task management operations.
