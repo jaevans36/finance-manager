@@ -1,25 +1,31 @@
 import React from 'react';
+import styled from 'styled-components';
 import { LoginForm } from '../components/auth/LoginForm';
+
+const PageContainer = styled.div`
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: ${({ theme }) => theme.colors.background};
+`;
+
+const FormCard = styled.div`
+  background-color: ${({ theme }) => theme.colors.cardBackground};
+  padding: 40px;
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  box-shadow: 0 2px 10px ${({ theme }) => theme.colors.shadow};
+  width: 100%;
+  max-width: 500px;
+`;
 
 export const LoginPage = () => {
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      backgroundColor: '#f5f5f5'
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        padding: '40px',
-        borderRadius: '8px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        width: '100%',
-        maxWidth: '500px'
-      }}>
+    <PageContainer>
+      <FormCard>
         <LoginForm />
-      </div>
-    </div>
+      </FormCard>
+    </PageContainer>
   );
 };

@@ -99,7 +99,7 @@ export const Dashboard = () => {
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ padding: '20px', maxWidth: '1200px', width: '80%', margin: '0 auto' }}>
       <div
         style={{
           display: 'flex',

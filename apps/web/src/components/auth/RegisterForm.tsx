@@ -4,15 +4,124 @@ import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
 import styled from 'styled-components';
 
+const FormContainer = styled.div`
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+`;
+
 const Heading = styled.h2`
-  color: #222;
+  color: ${({ theme }) => theme.colors.text};
   margin-bottom: 20px;
 `;
 
+const ErrorAlert = styled.div`
+  padding: 10px;
+  margin-bottom: 15px;
+  background-color: ${({ theme }) => theme.colors.errorBackground};
+  color: ${({ theme }) => theme.colors.error};
+  border-radius: 4px;
+  border: 1px solid ${({ theme }) => theme.colors.error};
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: 15px;
+`;
+
 const Label = styled.label`
-  color: #333;
+  color: ${({ theme }) => theme.colors.text};
   display: block;
   margin-bottom: 5px;
+  font-weight: 500;
+`;
+
+const Input = styled.input<{ hasError?: boolean }>`
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid ${({ theme, hasError }) => hasError ? theme.colors.error : theme.colors.inputBorder};
+  border-radius: 4px;
+  background-color: ${({ theme }) => theme.colors.inputBackground};
+  color: ${({ theme }) => theme.colors.text};
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme, hasError }) => hasError ? theme.colors.error : theme.colors.inputBorderFocus};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: ${({ theme }) => theme.colors.backgroundSecondary};
+  }
+`;
+
+const ErrorText = styled.span`
+  color: ${({ theme }) => theme.colors.error};
+  font-size: 12px;
+  display: block;
+  margin-top: 4px;
+`;
+
+const PasswordStrengthText = styled.div`
+  font-size: 12px;
+  margin-top: 5px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const StrengthIndicator = styled.strong<{ strength: string }>`
+  color: ${({ strength, theme }) => {
+    if (strength === 'Strong') return theme.colors.success;
+    if (strength === 'Medium') return theme.colors.warning;
+    return theme.colors.error;
+  }};
+`;
+
+const SubmitButton = styled.button<{ isLoading?: boolean }>`
+  width: 100%;
+  padding: 10px;
+  background-color: ${({ theme, isLoading }) => isLoading ? theme.colors.primaryDisabled : theme.colors.primary};
+  color: ${({ theme }) => theme.colors.buttonText};
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: ${({ isLoading }) => isLoading ? 'not-allowed' : 'pointer'};
+  transition: background-color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background-color: ${({ theme }) => theme.colors.primaryHover};
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
+  }
+`;
+
+const InfoBox = styled.div`
+  margin-top: 15px;
+  padding: 10px;
+  background-color: ${({ theme }) => theme.colors.infoBackground};
+  border-radius: 4px;
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  border: 1px solid ${({ theme }) => theme.colors.info};
+`;
+
+const StyledLink = styled(Link)`
+  color: ${({ theme }) => theme.colors.primary};
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.primaryHover};
+  }
+`;
+
+const SigninText = styled.p`
+  margin-top: 20px;
+  text-align: center;
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 export const RegisterForm = () => {
@@ -107,27 +216,15 @@ export const RegisterForm = () => {
   const passwordStrength = getPasswordStrength();
 
   return (
-    <div style={{ maxWidth: '400px', margin: '0 auto', padding: '20px' }}>
+    <FormContainer>
       <Heading>Create Account</Heading>
       
-      {apiError && (
-        <div style={{ 
-          padding: '10px', 
-          marginBottom: '15px', 
-          backgroundColor: '#fee', 
-          color: '#c00',
-          borderRadius: '4px'
-        }}>
-          {apiError}
-        </div>
-      )}
+      {apiError && <ErrorAlert>{apiError}</ErrorAlert>}
 
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
-          <Label htmlFor="email">
-            Email
-          </Label>
-          <input
+        <FormGroup>
+          <Label htmlFor="email">Email</Label>
+          <Input
             id="email"
             type="email"
             value={email}
@@ -135,25 +232,15 @@ export const RegisterForm = () => {
               setEmail(e.target.value);
               setErrors({ ...errors, email: '' });
             }}
-            style={{
-              width: '100%',
-              padding: '8px',
-              fontSize: '14px',
-              border: errors.email ? '1px solid #c00' : '1px solid #ccc',
-              borderRadius: '4px',
-            }}
+            hasError={!!errors.email}
             disabled={isLoading}
           />
-          {errors.email && (
-            <span style={{ color: '#c00', fontSize: '12px' }}>{errors.email}</span>
-          )}
-        </div>
+          {errors.email && <ErrorText>{errors.email}</ErrorText>}
+        </FormGroup>
 
-        <div style={{ marginBottom: '15px' }}>
-          <Label htmlFor="password">
-            Password
-          </Label>
-          <input
+        <FormGroup>
+          <Label htmlFor="password">Password</Label>
+          <Input
             id="password"
             type="password"
             value={password}
@@ -161,34 +248,22 @@ export const RegisterForm = () => {
               setPassword(e.target.value);
               setErrors({ ...errors, password: '' });
             }}
-            style={{
-              width: '100%',
-              padding: '8px',
-              fontSize: '14px',
-              border: errors.password ? '1px solid #c00' : '1px solid #ccc',
-              borderRadius: '4px',
-            }}
+            hasError={!!errors.password}
             disabled={isLoading}
           />
           {password && (
-            <div style={{ fontSize: '12px', marginTop: '5px' }}>
-              Password strength: <strong style={{ 
-                color: passwordStrength === 'Strong' ? 'green' : passwordStrength === 'Medium' ? 'orange' : 'red' 
-              }}>
+            <PasswordStrengthText>
+              Password strength: <StrengthIndicator strength={passwordStrength}>
                 {passwordStrength}
-              </strong>
-            </div>
+              </StrengthIndicator>
+            </PasswordStrengthText>
           )}
-          {errors.password && (
-            <span style={{ color: '#c00', fontSize: '12px', display: 'block' }}>{errors.password}</span>
-          )}
-        </div>
+          {errors.password && <ErrorText>{errors.password}</ErrorText>}
+        </FormGroup>
 
-        <div style={{ marginBottom: '20px' }}>
-          <Label htmlFor="confirmPassword">
-            Confirm Password
-          </Label>
-          <input
+        <FormGroup>
+          <Label htmlFor="confirmPassword">Confirm Password</Label>
+          <Input
             id="confirmPassword"
             type="password"
             value={confirmPassword}
@@ -196,47 +271,24 @@ export const RegisterForm = () => {
               setConfirmPassword(e.target.value);
               setErrors({ ...errors, confirmPassword: '' });
             }}
-            style={{
-              width: '100%',
-              padding: '8px',
-              fontSize: '14px',
-              border: errors.confirmPassword ? '1px solid #c00' : '1px solid #ccc',
-              borderRadius: '4px',
-            }}
+            hasError={!!errors.confirmPassword}
             disabled={isLoading}
           />
-          {errors.confirmPassword && (
-            <span style={{ color: '#c00', fontSize: '12px' }}>{errors.confirmPassword}</span>
-          )}
-        </div>
+          {errors.confirmPassword && <ErrorText>{errors.confirmPassword}</ErrorText>}
+        </FormGroup>
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          style={{
-            width: '100%',
-            padding: '10px',
-            backgroundColor: isLoading ? '#ccc' : '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            fontSize: '16px',
-            cursor: isLoading ? 'not-allowed' : 'pointer',
-          }}
-        >
+        <SubmitButton type="submit" disabled={isLoading} isLoading={isLoading}>
           {isLoading ? 'Creating account...' : 'Register'}
-        </button>
+        </SubmitButton>
       </form>
 
-      <div style={{ marginTop: '15px', padding: '10px', backgroundColor: '#f0f8ff', borderRadius: '4px', fontSize: '13px' }}>
-        <p style={{ margin: 0, color: '#555' }}>
-          📧 A verification email will be sent to your email address after registration.
-        </p>
-      </div>
+      <InfoBox>
+        📧 A verification email will be sent to your email address after registration.
+      </InfoBox>
 
-      <p style={{ marginTop: '20px', textAlign: 'center' }}>
-        Already have an account? <Link to="/login">Sign in</Link>
-      </p>
-    </div>
+      <SigninText>
+        Already have an account? <StyledLink to="/login">Sign in</StyledLink>
+      </SigninText>
+    </FormContainer>
   );
 };

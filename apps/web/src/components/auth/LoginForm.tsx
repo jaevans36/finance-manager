@@ -4,15 +4,106 @@ import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
 import styled from 'styled-components';
 
+const FormContainer = styled.div`
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+`;
+
 const Heading = styled.h2`
-  color: #222;
+  color: ${({ theme }) => theme.colors.text};
   margin-bottom: 20px;
 `;
 
+const ErrorAlert = styled.div`
+  padding: 10px;
+  margin-bottom: 15px;
+  background-color: ${({ theme }) => theme.colors.errorBackground};
+  color: ${({ theme }) => theme.colors.error};
+  border-radius: 4px;
+  border: 1px solid ${({ theme }) => theme.colors.error};
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: 15px;
+`;
+
 const Label = styled.label`
-  color: #333;
+  color: ${({ theme }) => theme.colors.text};
   display: block;
   margin-bottom: 5px;
+  font-weight: 500;
+`;
+
+const Input = styled.input<{ hasError?: boolean }>`
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid ${({ theme, hasError }) => hasError ? theme.colors.error : theme.colors.inputBorder};
+  border-radius: 4px;
+  background-color: ${({ theme }) => theme.colors.inputBackground};
+  color: ${({ theme }) => theme.colors.text};
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme, hasError }) => hasError ? theme.colors.error : theme.colors.inputBorderFocus};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: ${({ theme }) => theme.colors.backgroundSecondary};
+  }
+`;
+
+const ErrorText = styled.span`
+  color: ${({ theme }) => theme.colors.error};
+  font-size: 12px;
+  display: block;
+  margin-top: 4px;
+`;
+
+const SubmitButton = styled.button<{ isLoading?: boolean }>`
+  width: 100%;
+  padding: 10px;
+  background-color: ${({ theme, isLoading }) => isLoading ? theme.colors.primaryDisabled : theme.colors.primary};
+  color: ${({ theme }) => theme.colors.buttonText};
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: ${({ isLoading }) => isLoading ? 'not-allowed' : 'pointer'};
+  transition: background-color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background-color: ${({ theme }) => theme.colors.primaryHover};
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
+  }
+`;
+
+const LinkContainer = styled.div`
+  margin-top: 15px;
+  text-align: center;
+`;
+
+const StyledLink = styled(Link)`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.primary};
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.primaryHover};
+  }
+`;
+
+const SignupText = styled.p`
+  margin-top: 20px;
+  text-align: center;
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 export const LoginForm = () => {
@@ -68,27 +159,15 @@ export const LoginForm = () => {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '0 auto', padding: '20px' }}>
+    <FormContainer>
       <Heading>Sign In</Heading>
       
-      {apiError && (
-        <div style={{ 
-          padding: '10px', 
-          marginBottom: '15px', 
-          backgroundColor: '#fee', 
-          color: '#c00',
-          borderRadius: '4px'
-        }}>
-          {apiError}
-        </div>
-      )}
+      {apiError && <ErrorAlert>{apiError}</ErrorAlert>}
 
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
-          <Label htmlFor="email">
-            Email
-          </Label>
-          <input
+        <FormGroup>
+          <Label htmlFor="email">Email</Label>
+          <Input
             id="email"
             type="email"
             value={email}
@@ -97,25 +176,15 @@ export const LoginForm = () => {
               setErrors({ ...errors, email: '' });
             }}
             autoComplete="email"
-            style={{
-              width: '100%',
-              padding: '8px',
-              fontSize: '14px',
-              border: errors.email ? '1px solid #c00' : '1px solid #ccc',
-              borderRadius: '4px',
-            }}
+            hasError={!!errors.email}
             disabled={isLoading}
           />
-          {errors.email && (
-            <span style={{ color: '#c00', fontSize: '12px' }}>{errors.email}</span>
-          )}
-        </div>
+          {errors.email && <ErrorText>{errors.email}</ErrorText>}
+        </FormGroup>
 
-        <div style={{ marginBottom: '20px' }}>
-          <Label htmlFor="password">
-            Password
-          </Label>
-          <input
+        <FormGroup>
+          <Label htmlFor="password">Password</Label>
+          <Input
             id="password"
             type="password"
             value={password}
@@ -124,47 +193,24 @@ export const LoginForm = () => {
               setErrors({ ...errors, password: '' });
             }}
             autoComplete="current-password"
-            style={{
-              width: '100%',
-              padding: '8px',
-              fontSize: '14px',
-              border: errors.password ? '1px solid #c00' : '1px solid #ccc',
-              borderRadius: '4px',
-            }}
+            hasError={!!errors.password}
             disabled={isLoading}
           />
-          {errors.password && (
-            <span style={{ color: '#c00', fontSize: '12px' }}>{errors.password}</span>
-          )}
-        </div>
+          {errors.password && <ErrorText>{errors.password}</ErrorText>}
+        </FormGroup>
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          style={{
-            width: '100%',
-            padding: '10px',
-            backgroundColor: isLoading ? '#ccc' : '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            fontSize: '16px',
-            cursor: isLoading ? 'not-allowed' : 'pointer',
-          }}
-        >
+        <SubmitButton type="submit" disabled={isLoading} isLoading={isLoading}>
           {isLoading ? 'Signing in...' : 'Sign In'}
-        </button>
+        </SubmitButton>
       </form>
 
-      <div style={{ marginTop: '15px', textAlign: 'center' }}>
-        <Link to="/forgot-password" style={{ fontSize: '14px', color: '#007bff' }}>
-          Forgot your password?
-        </Link>
-      </div>
+      <LinkContainer>
+        <StyledLink to="/forgot-password">Forgot your password?</StyledLink>
+      </LinkContainer>
 
-      <p style={{ marginTop: '20px', textAlign: 'center' }}>
-        Don&apos;t have an account? <Link to="/register">Create one</Link>
-      </p>
-    </div>
+      <SignupText>
+        Don&apos;t have an account? <StyledLink to="/register">Create one</StyledLink>
+      </SignupText>
+    </FormContainer>
   );
 };
