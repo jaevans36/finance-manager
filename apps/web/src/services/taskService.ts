@@ -5,7 +5,7 @@ export interface Task {
   userId: string;
   title: string;
   description: string | null;
-  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  priority: 'Low' | 'Medium' | 'High' | 'Critical';
   dueDate: string | null;
   completed: boolean;
   completedAt: string | null;
@@ -16,14 +16,14 @@ export interface Task {
 interface CreateTaskInput {
   title: string;
   description?: string;
-  priority?: 'HIGH' | 'MEDIUM' | 'LOW';
+  priority?: 'Low' | 'Medium' | 'High' | 'Critical';
   dueDate?: string;
 }
 
 interface UpdateTaskInput {
   title?: string;
   description?: string;
-  priority?: 'HIGH' | 'MEDIUM' | 'LOW';
+  priority?: 'Low' | 'Medium' | 'High' | 'Critical';
   dueDate?: string;
   completed?: boolean;
 }

@@ -16,7 +16,7 @@ interface Task {
   id: string;
   title: string;
   description: string | null;
-  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  priority: 'Low' | 'Medium' | 'High' | 'Critical';
   dueDate: string | null;
   completed: boolean;
   completedAt: string | null;
@@ -32,7 +32,7 @@ interface EditTaskModalProps {
     data: {
       title: string;
       description?: string;
-      priority?: 'HIGH' | 'MEDIUM' | 'LOW';
+      priority?: 'Low' | 'Medium' | 'High' | 'Critical';
       dueDate?: string;
     }
   ) => Promise<void>;
@@ -42,7 +42,7 @@ interface EditTaskModalProps {
 export const EditTaskModal = ({ task, onSubmit, onCancel }: EditTaskModalProps) => {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || '');
-  const [priority, setPriority] = useState<'HIGH' | 'MEDIUM' | 'LOW'>(task.priority);
+  const [priority, setPriority] = useState<'Low' | 'Medium' | 'High' | 'Critical'>(task.priority);
   const [dueDate, setDueDate] = useState(
     task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : ''
   );
@@ -191,7 +191,7 @@ export const EditTaskModal = ({ task, onSubmit, onCancel }: EditTaskModalProps) 
               <select
                 id="priority"
                 value={priority}
-                onChange={(e) => setPriority(e.target.value as 'HIGH' | 'MEDIUM' | 'LOW')}
+                onChange={(e) => setPriority(e.target.value as 'Low' | 'Medium' | 'High' | 'Critical')}
                 style={{
                   width: '100%',
                   padding: '8px',
@@ -201,9 +201,10 @@ export const EditTaskModal = ({ task, onSubmit, onCancel }: EditTaskModalProps) 
                 }}
                 disabled={isSubmitting}
               >
-                <option value="HIGH">High</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="LOW">Low</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+                <option value="Critical">Critical</option>
               </select>
             </div>
 

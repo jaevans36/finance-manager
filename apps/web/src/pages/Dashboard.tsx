@@ -9,7 +9,7 @@ interface Task {
   id: string;
   title: string;
   description: string | null;
-  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  priority: 'Low' | 'Medium' | 'High' | 'Critical';
   dueDate: string | null;
   completed: boolean;
   completedAt: string | null;
@@ -47,7 +47,7 @@ export const Dashboard = () => {
   const handleCreateTask = async (data: {
     title: string;
     description?: string;
-    priority?: 'HIGH' | 'MEDIUM' | 'LOW';
+    priority?: 'Low' | 'Medium' | 'High' | 'Critical';
     dueDate?: string;
   }) => {
     try {
@@ -66,7 +66,7 @@ export const Dashboard = () => {
     data: {
       title: string;
       description?: string;
-      priority?: 'HIGH' | 'MEDIUM' | 'LOW';
+      priority?: 'Low' | 'Medium' | 'High' | 'Critical';
       dueDate?: string;
     }
   ) => {

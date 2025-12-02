@@ -16,7 +16,7 @@ interface CreateTaskFormProps {
   onSubmit: (data: {
     title: string;
     description?: string;
-    priority?: 'HIGH' | 'MEDIUM' | 'LOW';
+    priority?: 'Low' | 'Medium' | 'High' | 'Critical';
     dueDate?: string;
   }) => Promise<void>;
   onCancel: () => void;
@@ -25,7 +25,7 @@ interface CreateTaskFormProps {
 export const CreateTaskForm = ({ onSubmit, onCancel }: CreateTaskFormProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState<'HIGH' | 'MEDIUM' | 'LOW'>('MEDIUM');
+  const [priority, setPriority] = useState<'Low' | 'Medium' | 'High' | 'Critical'>('Medium');
   const [dueDate, setDueDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -51,7 +51,7 @@ export const CreateTaskForm = ({ onSubmit, onCancel }: CreateTaskFormProps) => {
       // Reset form
       setTitle('');
       setDescription('');
-      setPriority('MEDIUM');
+      setPriority('Medium');
       setDueDate('');
     } catch (err) {
       console.error('Task creation error:', err);
@@ -150,7 +150,7 @@ export const CreateTaskForm = ({ onSubmit, onCancel }: CreateTaskFormProps) => {
             <select
               id="priority"
               value={priority}
-              onChange={(e) => setPriority(e.target.value as 'HIGH' | 'MEDIUM' | 'LOW')}
+              onChange={(e) => setPriority(e.target.value as 'Low' | 'Medium' | 'High' | 'Critical')}
               style={{
                 width: '100%',
                 padding: '8px',
@@ -160,9 +160,10 @@ export const CreateTaskForm = ({ onSubmit, onCancel }: CreateTaskFormProps) => {
               }}
               disabled={isSubmitting}
             >
-              <option value="HIGH">High</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="LOW">Low</option>
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+              <option value="Critical">Critical</option>
             </select>
           </div>
 

@@ -16,11 +16,13 @@ export const TaskItem = ({
 }: TaskItemProps) => {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'HIGH':
+      case 'Critical':
+        return '#8b0000';
+      case 'High':
         return '#dc3545';
-      case 'MEDIUM':
+      case 'Medium':
         return '#ffc107';
-      case 'LOW':
+      case 'Low':
         return '#28a745';
       default:
         return '#6c757d';
