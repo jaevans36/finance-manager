@@ -1,0 +1,438 @@
+import styled, { css } from 'styled-components';
+
+// ============================================================================
+// BUTTON COMPONENTS
+// ============================================================================
+
+interface ButtonProps {
+  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'outline';
+  size?: 'small' | 'medium' | 'large';
+  fullWidth?: boolean;
+  isLoading?: boolean;
+}
+
+const buttonSizeStyles = {
+  small: css`
+    padding: 6px 12px;
+    font-size: 14px;
+  `,
+  medium: css`
+    padding: 10px 16px;
+    font-size: 16px;
+  `,
+  large: css`
+    padding: 14px 20px;
+    font-size: 18px;
+  `,
+};
+
+const buttonVariantStyles = {
+  primary: css`
+    background-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.buttonText};
+    border: none;
+
+    &:hover:not(:disabled) {
+      background-color: ${({ theme }) => theme.colors.primaryHover};
+    }
+
+    &:disabled {
+      background-color: ${({ theme }) => theme.colors.primaryDisabled};
+    }
+  `,
+  secondary: css`
+    background-color: ${({ theme }) => theme.colors.backgroundSecondary};
+    color: ${({ theme }) => theme.colors.text};
+    border: 1px solid ${({ theme }) => theme.colors.border};
+
+    &:hover:not(:disabled) {
+      background-color: ${({ theme }) => theme.colors.backgroundTertiary};
+      border-color: ${({ theme }) => theme.colors.borderHover};
+    }
+  `,
+  danger: css`
+    background-color: ${({ theme }) => theme.colors.error};
+    color: ${({ theme }) => theme.colors.buttonText};
+    border: none;
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+  `,
+  success: css`
+    background-color: ${({ theme }) => theme.colors.success};
+    color: ${({ theme }) => theme.colors.buttonText};
+    border: none;
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+  `,
+  outline: css`
+    background-color: transparent;
+    color: ${({ theme }) => theme.colors.primary};
+    border: 1px solid ${({ theme }) => theme.colors.primary};
+
+    &:hover:not(:disabled) {
+      background-color: ${({ theme }) => theme.colors.primary};
+      color: ${({ theme }) => theme.colors.buttonText};
+    }
+  `,
+};
+
+export const Button = styled.button<ButtonProps>`
+  ${({ size = 'medium' }) => buttonSizeStyles[size]}
+  ${({ variant = 'primary' }) => buttonVariantStyles[variant]}
+  
+  width: ${({ fullWidth }) => (fullWidth ? '100%' : 'auto')};
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: ${({ isLoading }) => (isLoading ? 'wait' : 'pointer')};
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+// ============================================================================
+// INPUT COMPONENTS
+// ============================================================================
+
+interface InputProps {
+  hasError?: boolean;
+}
+
+export const Input = styled.input<InputProps>`
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid ${({ theme, hasError }) => (hasError ? theme.colors.error : theme.colors.inputBorder)};
+  border-radius: 4px;
+  background-color: ${({ theme }) => theme.colors.inputBackground};
+  color: ${({ theme }) => theme.colors.text};
+  transition: border-color 0.2s ease;
+  font-family: inherit;
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.textSecondary};
+  }
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme, hasError }) => (hasError ? theme.colors.error : theme.colors.inputBorderFocus)};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: ${({ theme }) => theme.colors.backgroundSecondary};
+  }
+`;
+
+export const TextArea = styled.textarea<InputProps>`
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid ${({ theme, hasError }) => (hasError ? theme.colors.error : theme.colors.inputBorder)};
+  border-radius: 4px;
+  background-color: ${({ theme }) => theme.colors.inputBackground};
+  color: ${({ theme }) => theme.colors.text};
+  transition: border-color 0.2s ease;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.textSecondary};
+  }
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme, hasError }) => (hasError ? theme.colors.error : theme.colors.inputBorderFocus)};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: ${({ theme }) => theme.colors.backgroundSecondary};
+  }
+`;
+
+// ============================================================================
+// FORM COMPONENTS
+// ============================================================================
+
+export const FormGroup = styled.div`
+  margin-bottom: 16px;
+`;
+
+export const Label = styled.label`
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+export const ErrorText = styled.span`
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.error};
+`;
+
+export const HelperText = styled.span`
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+// ============================================================================
+// CARD COMPONENTS
+// ============================================================================
+
+export const Card = styled.div`
+  background-color: ${({ theme }) => theme.colors.cardBackground};
+  border: 1px solid ${({ theme }) => theme.colors.cardBorder};
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px ${({ theme }) => theme.colors.shadow};
+`;
+
+export const CardHeader = styled.div`
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+export const CardTitle = styled.h3`
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+export const CardBody = styled.div`
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+// ============================================================================
+// ALERT COMPONENTS
+// ============================================================================
+
+interface AlertProps {
+  variant?: 'success' | 'error' | 'warning' | 'info';
+}
+
+const alertVariantStyles = {
+  success: css`
+    background-color: ${({ theme }) => theme.colors.successBackground};
+    color: ${({ theme }) => theme.colors.success};
+    border-color: ${({ theme }) => theme.colors.success};
+  `,
+  error: css`
+    background-color: ${({ theme }) => theme.colors.errorBackground};
+    color: ${({ theme }) => theme.colors.error};
+    border-color: ${({ theme }) => theme.colors.error};
+  `,
+  warning: css`
+    background-color: ${({ theme }) => theme.colors.warningBackground};
+    color: ${({ theme }) => theme.colors.warning};
+    border-color: ${({ theme }) => theme.colors.warning};
+  `,
+  info: css`
+    background-color: ${({ theme }) => theme.colors.infoBackground};
+    color: ${({ theme }) => theme.colors.info};
+    border-color: ${({ theme }) => theme.colors.info};
+  `,
+};
+
+export const Alert = styled.div<AlertProps>`
+  ${({ variant = 'info' }) => alertVariantStyles[variant]}
+  padding: 12px 16px;
+  border-radius: 4px;
+  border: 1px solid;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+
+  svg {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+  }
+`;
+
+// ============================================================================
+// TYPOGRAPHY COMPONENTS
+// ============================================================================
+
+export const Heading1 = styled.h1`
+  font-size: 32px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.text};
+  margin: 0 0 16px 0;
+`;
+
+export const Heading2 = styled.h2`
+  font-size: 24px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  margin: 0 0 12px 0;
+`;
+
+export const Heading3 = styled.h3`
+  font-size: 20px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  margin: 0 0 8px 0;
+`;
+
+export const Text = styled.p`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.text};
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+`;
+
+export const TextSecondary = styled.span`
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+export const TextSmall = styled.span`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+// ============================================================================
+// CONTAINER COMPONENTS
+// ============================================================================
+
+export const Container = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+`;
+
+export const PageContainer = styled.div`
+  min-height: 100vh;
+  background-color: ${({ theme }) => theme.colors.background};
+`;
+
+export const CenteredContainer = styled.div`
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: ${({ theme }) => theme.colors.background};
+`;
+
+export const FormCard = styled(Card)`
+  width: 100%;
+  max-width: 500px;
+  padding: 40px;
+`;
+
+// ============================================================================
+// LAYOUT COMPONENTS
+// ============================================================================
+
+export const Flex = styled.div<{
+  direction?: 'row' | 'column';
+  align?: 'flex-start' | 'center' | 'flex-end' | 'stretch';
+  justify?: 'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around';
+  gap?: number;
+  wrap?: boolean;
+}>`
+  display: flex;
+  flex-direction: ${({ direction = 'row' }) => direction};
+  align-items: ${({ align = 'stretch' }) => align};
+  justify-content: ${({ justify = 'flex-start' }) => justify};
+  gap: ${({ gap = 0 }) => gap}px;
+  flex-wrap: ${({ wrap }) => (wrap ? 'wrap' : 'nowrap')};
+`;
+
+export const Grid = styled.div<{
+  columns?: number;
+  gap?: number;
+}>`
+  display: grid;
+  grid-template-columns: repeat(${({ columns = 1 }) => columns}, 1fr);
+  gap: ${({ gap = 16 }) => gap}px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+// ============================================================================
+// DIVIDER COMPONENT
+// ============================================================================
+
+export const Divider = styled.hr`
+  border: none;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  margin: 16px 0;
+`;
+
+// ============================================================================
+// BADGE COMPONENT
+// ============================================================================
+
+interface BadgeProps {
+  variant?: 'primary' | 'success' | 'error' | 'warning' | 'info';
+}
+
+const badgeVariantStyles = {
+  primary: css`
+    background-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.buttonText};
+  `,
+  success: css`
+    background-color: ${({ theme }) => theme.colors.success};
+    color: ${({ theme }) => theme.colors.buttonText};
+  `,
+  error: css`
+    background-color: ${({ theme }) => theme.colors.error};
+    color: ${({ theme }) => theme.colors.buttonText};
+  `,
+  warning: css`
+    background-color: ${({ theme }) => theme.colors.warning};
+    color: ${({ theme }) => theme.colors.buttonText};
+  `,
+  info: css`
+    background-color: ${({ theme }) => theme.colors.info};
+    color: ${({ theme }) => theme.colors.buttonText};
+  `,
+};
+
+export const Badge = styled.span<BadgeProps>`
+  ${({ variant = 'primary' }) => badgeVariantStyles[variant]}
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 12px;
+  line-height: 1;
+`;

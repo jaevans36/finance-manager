@@ -1,89 +1,25 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { XCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
+import { 
+  FormGroup, 
+  Label, 
+  Input, 
+  ErrorText, 
+  Button, 
+  Alert,
+  Heading2,
+  Flex,
+  TextSecondary
+} from '../ui';
 import styled from 'styled-components';
 
 const FormContainer = styled.div`
   max-width: 400px;
   margin: 0 auto;
   padding: 20px;
-`;
-
-const Heading = styled.h2`
-  color: ${({ theme }) => theme.colors.text};
-  margin-bottom: 20px;
-`;
-
-const ErrorAlert = styled.div`
-  padding: 10px;
-  margin-bottom: 15px;
-  background-color: ${({ theme }) => theme.colors.errorBackground};
-  color: ${({ theme }) => theme.colors.error};
-  border-radius: 4px;
-  border: 1px solid ${({ theme }) => theme.colors.error};
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 15px;
-`;
-
-const Label = styled.label`
-  color: ${({ theme }) => theme.colors.text};
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 500;
-`;
-
-const Input = styled.input<{ hasError?: boolean }>`
-  width: 100%;
-  padding: 8px;
-  font-size: 14px;
-  border: 1px solid ${({ theme, hasError }) => hasError ? theme.colors.error : theme.colors.inputBorder};
-  border-radius: 4px;
-  background-color: ${({ theme }) => theme.colors.inputBackground};
-  color: ${({ theme }) => theme.colors.text};
-  transition: border-color 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme, hasError }) => hasError ? theme.colors.error : theme.colors.inputBorderFocus};
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    background-color: ${({ theme }) => theme.colors.backgroundSecondary};
-  }
-`;
-
-const ErrorText = styled.span`
-  color: ${({ theme }) => theme.colors.error};
-  font-size: 12px;
-  display: block;
-  margin-top: 4px;
-`;
-
-const SubmitButton = styled.button<{ isLoading?: boolean }>`
-  width: 100%;
-  padding: 10px;
-  background-color: ${({ theme, isLoading }) => isLoading ? theme.colors.primaryDisabled : theme.colors.primary};
-  color: ${({ theme }) => theme.colors.buttonText};
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: ${({ isLoading }) => isLoading ? 'not-allowed' : 'pointer'};
-  transition: background-color 0.2s ease;
-
-  &:hover:not(:disabled) {
-    background-color: ${({ theme }) => theme.colors.primaryHover};
-  }
-
-  &:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.colors.primary};
-    outline-offset: 2px;
-  }
 `;
 
 const LinkContainer = styled.div`
@@ -160,9 +96,14 @@ export const LoginForm = () => {
 
   return (
     <FormContainer>
-      <Heading>Sign In</Heading>
+      <Heading2>Sign In</Heading2>
       
-      {apiError && <ErrorAlert>{apiError}</ErrorAlert>}
+      {apiError && (
+        <Alert variant="error">
+          <XCircle />
+          <span>{apiError}</span>
+        </Alert>
+      )}
 
       <form onSubmit={handleSubmit}>
         <FormGroup>
@@ -178,6 +119,7 @@ export const LoginForm = () => {
             autoComplete="email"
             hasError={!!errors.email}
             disabled={isLoading}
+            placeholder="Enter your email"
           />
           {errors.email && <ErrorText>{errors.email}</ErrorText>}
         </FormGroup>
@@ -195,13 +137,19 @@ export const LoginForm = () => {
             autoComplete="current-password"
             hasError={!!errors.password}
             disabled={isLoading}
+            placeholder="Enter your password"
           />
           {errors.password && <ErrorText>{errors.password}</ErrorText>}
         </FormGroup>
 
-        <SubmitButton type="submit" disabled={isLoading} isLoading={isLoading}>
+        <Button 
+          type="submit" 
+          disabled={isLoading} 
+          isLoading={isLoading}
+          fullWidth
+        >
           {isLoading ? 'Signing in...' : 'Sign In'}
-        </SubmitButton>
+        </Button>
       </form>
 
       <LinkContainer>
