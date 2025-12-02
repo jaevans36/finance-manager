@@ -1,5 +1,5 @@
 import React from 'react';
-import styled, { useTheme } from 'styled-components';
+import styled from 'styled-components';
 import { Task } from '../../services/taskService';
 import { Card, Button, Text, TextSmall, Badge, Flex } from '../ui';
 
@@ -57,7 +57,6 @@ export const TaskItem = ({
   onEdit,
   onDelete,
 }: TaskItemProps) => {
-  const theme = useTheme();
   const isOverdue = task.dueDate && !task.completed && new Date(task.dueDate) < new Date();
 
   return (
@@ -69,7 +68,7 @@ export const TaskItem = ({
       />
 
       <div style={{ flex: 1 }}>
-        <Flex align="center" gap="10px" style={{ marginBottom: '5px' }}>
+        <Flex align="center" gap={10} style={{ marginBottom: '5px' }}>
           <TaskTitle $completed={task.completed}>{task.title}</TaskTitle>
           <Badge variant={getPriorityVariant(task.priority)}>{task.priority}</Badge>
           {isOverdue && <Badge variant="error">OVERDUE</Badge>}
@@ -88,10 +87,18 @@ export const TaskItem = ({
               Completed: {new Date(task.completedAt).toLocaleDateString()}
             </span>
           )}
+          <span style={{ marginLeft: task.dueDate || task.completedAt ? '15px' : '0' }}>
+            Created: {new Date(task.createdAt).toLocaleDateString()}
+          </span>
+          {task.updatedAt !== task.createdAt && (
+            <span style={{ marginLeft: '15px' }}>
+              Modified: {new Date(task.updatedAt).toLocaleDateString()}
+            </span>
+          )}
         </TextSmall>
       </div>
 
-      <Flex gap="5px">
+      <Flex gap={5}>
         <Button variant="primary" size="small" onClick={() => onEdit(task)}>
           Edit
         </Button>

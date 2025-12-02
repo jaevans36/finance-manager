@@ -143,7 +143,7 @@ export const CreateTaskForm = ({ onSubmit, onCancel }: CreateTaskFormProps) => {
           </FormGroup>
         </div>
 
-        <Flex gap="10px">
+        <Flex gap={10}>
           <Button type="submit" variant="success" isLoading={isSubmitting}>
             {isSubmitting ? 'Creating...' : 'Create Task'}
           </Button>

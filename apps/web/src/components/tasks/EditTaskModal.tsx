@@ -187,7 +187,7 @@ export const EditTaskModal = ({ task, onSubmit, onCancel }: EditTaskModalProps) 
             </FormGroup>
           </div>
 
-          <Flex gap="10px">
+          <Flex gap={10}>
             <Button type="submit" variant="primary" isLoading={isSubmitting}>
               {isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>
