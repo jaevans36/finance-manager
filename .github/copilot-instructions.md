@@ -36,6 +36,8 @@ When making code changes or suggestions, please make sure you're using the most 
 
 Avoid the use of 'any' type in TypeScript to ensure type safety and maintainability throughout the codebase.
 
+Any written content should be in British English, not American English. If there are any non British English terms, please convert them accordingly.
+
 ## Quickstart Guide
 
 This quickstart guide provides example API requests and expected responses for the To Do application. It covers user registration, authentication, and basic task management operations.
