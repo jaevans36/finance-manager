@@ -4,11 +4,11 @@
     "documentationRules": {
       "companyName": "Finance Manager",
       "copyrightText": "Copyright (c) {companyName}. All rights reserved.",
-      "documentExposedElements": true,
+      "documentExposedElements": false,
       "documentInternalElements": false,
       "documentPrivateElements": false,
       "documentPrivateFields": false,
-      "documentInterfaces": true,
+      "documentInterfaces": false,
       "xmlHeader": false
     },
     "namingRules": {

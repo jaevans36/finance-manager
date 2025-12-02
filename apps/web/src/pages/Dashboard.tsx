@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
 import { taskService } from '../services/taskService';
 import { CreateTaskForm } from '../components/tasks/CreateTaskForm';
 import { EditTaskModal } from '../components/tasks/EditTaskModal';
 import { TaskList } from '../components/tasks/TaskList';
+import { Button, Alert, Heading1, TextSecondary, Container, Flex } from '../components/ui';
+import { XCircle } from 'lucide-react';
+
+const DashboardHeader = styled(Flex)`
+  margin-bottom: 30px;
+`;
 
 interface Task {
   id: string;
@@ -99,66 +106,34 @@ export const Dashboard = () => {
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', width: '80%', margin: '0 auto' }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '30px',
-        }}
-      >
+    <Container style={{ padding: '20px', maxWidth: '1200px', width: '80%' }}>
+      <DashboardHeader justify="space-between" align="center">
         <div>
-          <h1 style={{ margin: 0 }}>Dashboard</h1>
-          <p style={{ color: '#666', margin: '5px 0 0' }}>Welcome back, {user?.email}</p>
+          <Heading1 style={{ margin: 0 }}>Dashboard</Heading1>
+          <TextSecondary style={{ margin: '5px 0 0' }}>Welcome back, {user?.email}</TextSecondary>
         </div>
-        <button
-          onClick={logout}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#dc3545',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-        >
+        <Button variant="danger" onClick={logout}>
           Logout
-        </button>
-      </div>
+        </Button>
+      </DashboardHeader>
 
       {error && (
-        <div
-          style={{
-            padding: '15px',
-            marginBottom: '20px',
-            backgroundColor: '#fee',
-            color: '#c00',
-            borderRadius: '4px',
-          }}
-        >
-          {error}
-        </div>
+        <Alert variant="error" style={{ marginBottom: '20px' }}>
+          <XCircle size={16} />
+          <span>{error}</span>
+        </Alert>
       )}
 
       {showCreateForm ? (
         <CreateTaskForm onSubmit={handleCreateTask} onCancel={() => setShowCreateForm(false)} />
       ) : (
-        <button
+        <Button 
+          variant="success" 
           onClick={() => setShowCreateForm(true)}
-          style={{
-            padding: '12px 24px',
-            backgroundColor: '#28a745',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '16px',
-            marginBottom: '20px',
-          }}
+          style={{ marginBottom: '20px', fontSize: '16px' }}
         >
           + New Task
-        </button>
+        </Button>
       )}
 
       <TaskList
@@ -172,6 +147,6 @@ export const Dashboard = () => {
       {editingTask && (
         <EditTaskModal task={editingTask} onSubmit={handleUpdateTask} onCancel={() => setEditingTask(null)} />
       )}
-    </div>
+    </Container>
   );
 };

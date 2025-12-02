@@ -1,6 +1,8 @@
 import React from 'react';
+import styled from 'styled-components';
 import { Task } from '../../services/taskService';
 import { TaskItem } from './TaskItem';
+import { Card, Text, TextSecondary } from '../ui';
 
 interface TaskListProps {
   tasks: Task[];
@@ -10,6 +12,18 @@ interface TaskListProps {
   onDelete: (id: string) => void;
 }
 
+const EmptyState = styled(Card)`
+  text-align: center;
+  padding: 60px 20px;
+  background-color: ${({ theme }) => theme.colors.backgroundSecondary};
+`;
+
+const LoadingState = styled.div`
+  text-align: center;
+  padding: 40px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
 export const TaskList = ({
   tasks,
   isLoading,
@@ -18,26 +32,15 @@ export const TaskList = ({
   onDelete,
 }: TaskListProps) => {
   if (isLoading) {
-    return (
-      <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-        Loading tasks...
-      </div>
-    );
+    return <LoadingState>Loading tasks...</LoadingState>;
   }
 
   if (tasks.length === 0) {
     return (
-      <div
-        style={{
-          textAlign: 'center',
-          padding: '60px 20px',
-          backgroundColor: '#f8f9fa',
-          borderRadius: '8px',
-        }}
-      >
-        <h3 style={{ marginBottom: '10px', color: '#666' }}>No tasks yet</h3>
-        <p style={{ color: '#999' }}>Create your first task to get started!</p>
-      </div>
+      <EmptyState>
+        <Text style={{ marginBottom: '10px' }}>No tasks yet</Text>
+        <TextSecondary>Create your first task to get started!</TextSecondary>
+      </EmptyState>
     );
   }
 

@@ -39,7 +39,7 @@ public class TaskService : ITaskService
             Title = request.Title,
             Description = request.Description,
             Priority = priority,
-            DueDate = request.DueDate,
+            DueDate = request.DueDate.HasValue ? DateTime.SpecifyKind(request.DueDate.Value, DateTimeKind.Utc) : null,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -68,8 +68,8 @@ public class TaskService : ITaskService
         {
             task.Priority = priority;
         }
-        if (request.DueDate.HasValue) task.DueDate = request.DueDate;
-        
+        if (request.DueDate.HasValue) task.DueDate = DateTime.SpecifyKind(request.DueDate.Value, DateTimeKind.Utc);
+
         if (request.Completed.HasValue)
         {
             task.Completed = request.Completed.Value;

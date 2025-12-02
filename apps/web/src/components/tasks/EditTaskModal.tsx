@@ -1,15 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { 
+  Card, 
+  Button, 
+  Input, 
+  TextArea, 
+  FormGroup, 
+  Label, 
+  ErrorText, 
+  Alert,
+  Flex
+} from '../ui';
+import { XCircle } from 'lucide-react';
 
 const Subheading = styled.h2`
-  color: #222;
-  margin-bottom: 20px;
+  color: ${({ theme }) => theme.colors.text};
+  margin: 0 0 20px 0;
 `;
 
-const Label = styled.label`
-  color: #333;
-  display: block;
-  margin-bottom: 5px;
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled(Card)`
+  padding: 20px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
 `;
 
 interface Task {
@@ -91,180 +118,85 @@ export const EditTaskModal = ({ task, onSubmit, onCancel }: EditTaskModalProps) 
   };
 
   return (
-    <div
-      onClick={onCancel}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
-    >
-      <div
-        onClick={handleModalClick}
-        style={{
-          backgroundColor: 'white',
-          borderRadius: '8px',
-          padding: '20px',
-          maxWidth: '500px',
-          width: '90%',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-        }}
-      >
+    <ModalOverlay onClick={onCancel}>
+      <ModalContent onClick={handleModalClick}>
         <Subheading>Edit Task</Subheading>
 
         {error && (
-          <div
-            style={{
-              padding: '10px',
-              marginBottom: '15px',
-              backgroundColor: '#fee',
-              color: '#c00',
-              borderRadius: '4px',
-              fontSize: '14px',
-            }}
-          >
-            {error}
-          </div>
+          <Alert variant="error" style={{ marginBottom: '15px' }}>
+            <XCircle size={16} />
+            <span>{error}</span>
+          </Alert>
         )}
 
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '15px' }}>
-            <Label htmlFor="title">
-              Title *
-            </Label>
-            <input
+          <FormGroup>
+            <Label htmlFor="title">Title *</Label>
+            <Input
               id="title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter task title"
               maxLength={200}
-              style={{
-                width: '100%',
-                padding: '8px',
-                fontSize: '14px',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-              }}
               disabled={isSubmitting}
             />
-            <small style={{ color: '#666' }}>{title.length}/200</small>
-          </div>
+            <ErrorText>{title.length}/200</ErrorText>
+          </FormGroup>
 
-          <div style={{ marginBottom: '15px' }}>
-            <Label htmlFor="description">
-              Description
-            </Label>
-            <textarea
+          <FormGroup>
+            <Label htmlFor="description">Description</Label>
+            <TextArea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter task description"
               maxLength={2000}
               rows={3}
-              style={{
-                width: '100%',
-                padding: '8px',
-                fontSize: '14px',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                fontFamily: 'inherit',
-                resize: 'vertical',
-              }}
               disabled={isSubmitting}
             />
-          </div>
+          </FormGroup>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-            <div>
-              <Label htmlFor="priority">
-                Priority
-              </Label>
-              <select
+            <FormGroup>
+              <Label htmlFor="priority">Priority</Label>
+              <Input
+                as="select"
                 id="priority"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as 'Low' | 'Medium' | 'High' | 'Critical')}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  fontSize: '14px',
-                  border: '1px solid #ccc',
-                  borderRadius: '4px',
-                }}
                 disabled={isSubmitting}
               >
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
                 <option value="High">High</option>
                 <option value="Critical">Critical</option>
-              </select>
-            </div>
+              </Input>
+            </FormGroup>
 
-            <div>
-              <Label htmlFor="dueDate">
-                Due Date
-              </Label>
-              <input
+            <FormGroup>
+              <Label htmlFor="dueDate">Due Date</Label>
+              <Input
                 id="dueDate"
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  fontSize: '14px',
-                  border: '1px solid #ccc',
-                  borderRadius: '4px',
-                }}
                 disabled={isSubmitting}
               />
-            </div>
+            </FormGroup>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              style={{
-                padding: '10px 20px',
-                backgroundColor: isSubmitting ? '#ccc' : '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                fontSize: '14px',
-              }}
-            >
+          <Flex gap="10px">
+            <Button type="submit" variant="primary" isLoading={isSubmitting}>
               {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </button>
-            <button
-              type="button"
-              onClick={onCancel}
-              disabled={isSubmitting}
-              style={{
-                padding: '10px 20px',
-                backgroundColor: '#6c757d',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                fontSize: '14px',
-              }}
-            >
+            </Button>
+            <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
               Cancel
-            </button>
-          </div>
+            </Button>
+          </Flex>
         </form>
-      </div>
-    </div>
+      </ModalContent>
+    </ModalOverlay>
   );
 };
