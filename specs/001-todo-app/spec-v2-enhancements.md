@@ -158,11 +158,13 @@ Users can organize tasks using custom categories and multiple tags, enabling fle
 
 ### User Story 2.2 - Task Lists & Projects (Priority: P1)
 
-Users can create named lists or projects to group related tasks together, providing hierarchical organization for complex workflows and multi-step projects.
+**NOTE**: Basic task grouping functionality has been promoted to the main specification (spec.md - User Story 6) and will be implemented in the initial release. This user story now focuses on advanced project features beyond basic grouping.
 
-**Why this priority**: Projects are essential for managing related tasks that work toward a common goal. This enables better task context and workflow management.
+Users can create named lists or projects with advanced features such as project templates, milestones, dependencies between tasks, and progress tracking, providing hierarchical organization for complex workflows and multi-step projects.
 
-**Independent Test**: Can be fully tested by creating multiple projects, adding tasks to projects, moving tasks between projects, and viewing project-specific task lists.
+**Why this priority**: Advanced project features build upon basic task grouping to enable complex project management with dependencies, milestones, and templates for repeatable workflows.
+
+**Independent Test**: Can be fully tested by creating project templates, setting up task dependencies, defining milestones, and tracking project progress through completion.
 
 **Acceptance Scenarios**:
 

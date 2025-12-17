@@ -256,25 +256,75 @@ description: "Task list for To Do App implementation"
 
 ---
 
-## Phase 8: Polish & Cross-Cutting Concerns
+## Phase 8: User Story 6 - Task Groups (Priority: P3)
+
+**Purpose**: Enable users to organise tasks into named groups (e.g., "House Renovation", "Work", "Personal")
+
+**Dependencies**: Requires Phase 2 (Foundational) and Phase 4 (Basic Task Management) complete
+
+### Backend: TaskGroup Model & API
+
+- [ ] T116 [US6] Add TaskGroup model to apps/api/prisma/schema.prisma (id, userId, name, description, colour, icon, isDefault, timestamps)
+- [ ] T117 [US6] Update Task model to add optional groupId foreign key relationship
+- [ ] T118 [US6] Create database migration for task_groups table and Task.groupId column
+- [ ] T119 [US6] Generate Prisma Client with new models
+- [ ] T120 [US6] Create apps/api/src/features/task-groups/types.ts with TaskGroup DTOs
+- [ ] T121 [US6] Implement apps/api/src/features/task-groups/service.ts (CRUD operations, default group creation)
+- [ ] T122 [US6] Implement apps/api/src/features/task-groups/controller.ts (GET, POST, PUT, DELETE endpoints)
+- [ ] T123 [US6] Add task group routes to apps/api/src/routes/index.ts
+- [ ] T124 [US6] Add validation middleware for group names (unique per user, 1-100 chars)
+- [ ] T125 [US6] Implement automatic default "Uncategorised" group creation on user registration
+- [ ] T126 [US6] Add business logic to prevent deletion of default group
+- [ ] T127 [US6] Implement group deletion with task reassignment to default group
+
+### Frontend: TaskGroup UI Components
+
+- [ ] T128 [P] [US6] Create apps/web/src/types/taskGroup.ts with TaskGroup interfaces
+- [ ] T129 [P] [US6] Create apps/web/src/services/taskGroupService.ts (API client functions)
+- [ ] T130 [US6] Create apps/web/src/components/task-groups/TaskGroupList.tsx (display all groups with task counts)
+- [ ] T131 [US6] Create apps/web/src/components/task-groups/TaskGroupItem.tsx (individual group with colour indicator)
+- [ ] T132 [US6] Create apps/web/src/components/task-groups/CreateTaskGroupForm.tsx (name, description, colour picker)
+- [ ] T133 [US6] Create apps/web/src/components/task-groups/EditTaskGroupModal.tsx (update group properties)
+- [ ] T134 [US6] Update apps/web/src/components/tasks/CreateTaskForm.tsx to add group selector dropdown
+- [ ] T135 [US6] Update apps/web/src/components/tasks/EditTaskModal.tsx to add group selector dropdown
+- [ ] T136 [US6] Update apps/web/src/components/tasks/TaskItem.tsx to display group name with colour indicator
+- [ ] T137 [US6] Update apps/web/src/pages/Dashboard.tsx to add TaskGroupList sidebar
+- [ ] T138 [US6] Implement group filtering on Dashboard (click group to filter tasks)
+- [ ] T139 [US6] Add "All Tasks" option to show tasks from all groups
+
+### Testing & Integration
+
+- [ ] T140 [P] [US6] Add task group tests to apps/api/tests/task-groups.test.ts (CRUD, validation, default group)
+- [ ] T141 [P] [US6] Add task group UI tests in apps/web/tests/task-groups/
+- [ ] T142 [US6] Test group creation, editing, and deletion workflows
+- [ ] T143 [US6] Test task assignment to groups during creation and editing
+- [ ] T144 [US6] Test group filtering and task display by group
+- [ ] T145 [US6] Test default group behaviour (auto-creation, cannot delete, auto-assignment)
+- [ ] T146 [US6] Test group deletion with task reassignment to default group
+
+**Checkpoint**: Users can create groups, assign tasks to groups, and filter tasks by group
+
+---
+
+## Phase 9: Polish & Cross-Cutting Concerns
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T116 [P] Add responsive design for mobile devices (breakpoints, touch targets)
-- [ ] T117 [P] Implement loading skeletons for better perceived performance
-- [ ] T118 [P] Add toast notifications for user actions (success/error messages)
-- [ ] T119 [P] Create user profile page in apps/web/src/pages/ProfilePage.tsx
-- [ ] T120 [P] Add keyboard shortcuts for common actions (N=new task, /=search)
-- [ ] T121 Implement task search functionality (search by title/description)
-- [ ] T122 Add task statistics dashboard (total, completed, overdue counts)
-- [ ] T123 Implement dark mode theme toggle
-- [ ] T124 Add accessibility improvements (ARIA labels, keyboard navigation)
-- [ ] T125 Performance optimization (code splitting, lazy loading)
-- [ ] T126 Add API request caching strategy
-- [ ] T127 Create API documentation with Swagger UI from OpenAPI spec
-- [ ] T128 Add comprehensive error logging and monitoring
-- [ ] T129 Run security audit (dependency check, vulnerability scan)
-- [ ] T130 Validate against quickstart.md test scenarios
+- [ ] T147 [P] Add responsive design for mobile devices (breakpoints, touch targets)
+- [ ] T148 [P] Implement loading skeletons for better perceived performance
+- [ ] T149 [P] Add toast notifications for user actions (success/error messages)
+- [ ] T150 [P] Create user profile page in apps/web/src/pages/ProfilePage.tsx
+- [ ] T151 [P] Add keyboard shortcuts for common actions (N=new task, /=search)
+- [ ] T152 Implement task search functionality (search by title/description)
+- [ ] T153 Add task statistics dashboard (total, completed, overdue counts)
+- [ ] T154 Implement dark mode theme toggle (already complete - verify)
+- [ ] T155 Add accessibility improvements (ARIA labels, keyboard navigation)
+- [ ] T156 Performance optimization (code splitting, lazy loading)
+- [ ] T157 Add API request caching strategy
+- [ ] T158 Create API documentation with Swagger UI from OpenAPI spec
+- [ ] T159 Add comprehensive error logging and monitoring
+- [ ] T160 Run security audit (dependency check, vulnerability scan)
+- [ ] T161 Validate against quickstart.md test scenarios
 
 ---
 
@@ -284,10 +334,11 @@ description: "Task list for To Do App implementation"
 
 - **Setup (Phase 1)**: No dependencies - can start immediately
 - **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
-- **User Stories (Phase 3-7)**: All depend on Foundational phase completion
-  - User stories can then proceed in parallel (if staffed)
-  - Or sequentially in priority order (P1 → P2 → P3 → P4 → P5)
-- **Polish (Phase 8)**: Depends on all desired user stories being complete
+- **User Stories (Phase 3-8)**: All depend on Foundational phase completion
+  - Phase 8 (Task Groups) specifically requires Phase 4 (Basic Task Management) to be complete
+  - User stories can proceed in parallel (if staffed)
+  - Or sequentially in priority order (P1 → P2 → P3 → P3 → P4 → P5)
+- **Polish (Phase 9)**: Depends on all desired user stories being complete
 
 ### User Story Dependencies
 
@@ -312,7 +363,8 @@ description: "Task list for To Do App implementation"
   - T018-T020 (Middleware) can run in parallel after T017
   - T027-T032 (Frontend Infrastructure) can run in parallel after T026
 - Within User Stories: All tasks marked [P] can run in parallel
-- Phase 8 Polish: All tasks marked [P] can run in parallel
+- Within Phase 8 (Task Groups): T128-T129 can run in parallel, T140-T141 can run in parallel
+- Phase 9 Polish: All tasks marked [P] can run in parallel
 
 ---
 
@@ -335,7 +387,8 @@ description: "Task list for To Do App implementation"
 4. Add US3 (Prioritization) → Test independently → Deploy/Demo (T076-T088)
 5. Add US4 (Due Dates) → Test independently → Deploy/Demo (T089-T104)
 6. Add US5 (Deletion) → Test independently → Deploy/Demo (T105-T115)
-7. Add Polish (Phase 8) → Final release (T116-T130)
+7. Add US6 (Task Groups) → Test independently → Deploy/Demo (T116-T146)
+8. Add Polish (Phase 9) → Final release (T147-T161)
 
 ### Parallel Team Strategy
 
@@ -344,6 +397,7 @@ With multiple developers after Foundation phase completes:
 - **Developer A**: Focus on US1 (Authentication) - T033-T053
 - **Developer B**: Focus on US2 (Task Management) - T054-T075
 - **Developer C**: Setup US3-US5 after US2 completes
+- **Developer D**: Focus on US6 (Task Groups) after US2 completes - T116-T146
 
 ---
 

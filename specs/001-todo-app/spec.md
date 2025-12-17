@@ -86,6 +86,29 @@ Users can permanently delete tasks they no longer need, keeping their task list 
 2. **Given** a user confirms task deletion, **When** the deletion is processed, **Then** the task is permanently removed from their task list
 3. **Given** a deleted task, **When** the user refreshes or revisits their task list, **Then** the deleted task does not appear
 
+---
+
+### User Story 6 - Task Groups (Priority: P3)
+
+Users can create named groups (such as "House Renovation", "Work", "Personal") to organise related tasks together, enabling better task management across different areas of life or projects.
+
+**Why this priority**: As users accumulate tasks for different contexts (work, personal projects, household tasks), grouping becomes essential for maintaining focus and reducing cognitive load. This feature enables users to view and manage tasks in isolation by context.
+
+**Independent Test**: Can be fully tested by creating multiple groups, assigning tasks to different groups, viewing tasks filtered by group, and managing tasks within each group independently.
+
+**Acceptance Scenarios**:
+
+1. **Given** an authenticated user, **When** they create a new group with a name (e.g., "House Renovation"), **Then** the group is available for assigning tasks
+2. **Given** a user creating or editing a task, **When** they select a group from the available groups, **Then** the task is associated with that group
+3. **Given** a user with tasks in multiple groups, **When** they view their dashboard, **Then** they can see all groups with task counts and filter to view tasks from a specific group
+4. **Given** a user viewing tasks in a specific group, **When** they perform actions (create, edit, complete, delete), **Then** those actions only affect tasks within the currently selected group
+5. **Given** a user creates a task without selecting a group, **When** the task is saved, **Then** it is assigned to a default "Uncategorised" group
+6. **Given** a user wants to reorganise, **When** they move a task from one group to another, **Then** the task's group association updates and it appears in the new group
+7. **Given** a user has created groups, **When** they view the group list, **Then** they can edit group names, change group colours, or delete empty groups
+8. **Given** a user tries to delete a group with tasks, **When** they confirm deletion, **Then** they must choose to either move tasks to another group or delete all tasks in the group
+
+---
+
 ### Edge Cases
 
 - What happens when a user tries to register with an already existing email address?
@@ -115,6 +138,11 @@ Users can permanently delete tasks they no longer need, keeping their task list 
 - **FR-013**: System MUST persist all task and user data securely
 - **FR-014**: System MUST provide responsive design for desktop and mobile access
 - **FR-015**: System MUST handle errors gracefully with user-friendly messages
+- **FR-016**: Users MUST be able to create custom groups to organise tasks
+- **FR-017**: Users MUST be able to assign tasks to groups
+- **FR-018**: Users MUST be able to view and filter tasks by group
+- **FR-019**: System MUST provide a default "Uncategorised" group for tasks without explicit group assignment
+- **FR-020**: Users MUST be able to rename, customise, and delete groups with appropriate warnings for non-empty groups
 
 ### Non-Functional Requirements
 
@@ -127,7 +155,8 @@ Users can permanently delete tasks they no longer need, keeping their task list 
 ### Key Entities
 
 - **User**: Represents an application user with email, hashed password, registration date, and last login timestamp
-- **Task**: Represents a user's task with title, description, priority level (High/Medium/Low), due date, completion status, creation timestamp, and last modified timestamp. Each task belongs to exactly one user
+- **Task**: Represents a user's task with title, description, priority level (High/Medium/Low), due date, completion status, creation timestamp, and last modified timestamp. Each task belongs to exactly one user and optionally one task group
+- **TaskGroup**: Represents a named collection of related tasks (e.g., "House Renovation", "Work", "Personal") with customisable properties such as colour and icon. Each group belongs to one user
 
 ## Success Criteria *(mandatory)*
 
@@ -141,3 +170,28 @@ Users can permanently delete tasks they no longer need, keeping their task list 
 - **SC-006**: Zero data loss during normal operations and graceful degradation during failures
 - **SC-007**: All user data remains secure with no unauthorized access between user accounts
 - **SC-008**: Users can successfully manage (CRUD operations) at least 100 tasks without performance degradation
+
+## Change Log
+
+### 2025-12-16 - Task Groups Feature Added
+
+**Added**:
+
+- **User Story 6**: Task Groups (Priority P3) - Enables users to create named groups (e.g., "House Renovation", "Work", "Personal") to organise related tasks
+- **FR-016 to FR-020**: Functional requirements for task group creation, assignment, viewing, filtering, and management
+- **TaskGroup Entity**: New entity in Key Entities section with customisable properties (name, description, colour, icon)
+- Default "Uncategorised" group for tasks without explicit group assignment
+
+**Rationale**:
+
+- User requirement to separate tasks by context (house renovation, work tasks, personal tasks)
+- Enables better focus and cognitive load management across different life areas
+- Expandable system to support unlimited groups per user
+- Provides foundation for more advanced project management features in v2
+
+**Impact**:
+
+- Database schema updated with new `task_groups` table
+- Task entity gains optional `group_id` foreign key
+- New API endpoints required for group CRUD operations
+- UI updates needed for group management and task filtering by group
