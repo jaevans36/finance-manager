@@ -18,21 +18,27 @@ const Subheading = styled.h2`
   margin: 0 0 20px 0;
 `;
 
+import { TaskGroup } from '../../types/taskGroup';
+
 interface CreateTaskFormProps {
   onSubmit: (data: {
     title: string;
     description?: string;
     priority?: 'Low' | 'Medium' | 'High' | 'Critical';
     dueDate?: string;
+    groupId?: string;
   }) => Promise<void>;
   onCancel: () => void;
+  groups?: TaskGroup[];
+  selectedGroupId?: string | null;
 }
 
-export const CreateTaskForm = ({ onSubmit, onCancel }: CreateTaskFormProps) => {
+export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupId }: CreateTaskFormProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'Low' | 'Medium' | 'High' | 'Critical'>('Medium');
   const [dueDate, setDueDate] = useState('');
+  const [groupId, setGroupId] = useState<string>(selectedGroupId || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -53,12 +59,14 @@ export const CreateTaskForm = ({ onSubmit, onCancel }: CreateTaskFormProps) => {
         description: description.trim() || undefined,
         priority,
         dueDate: dueDate || undefined,
+        groupId: groupId || undefined,
       });
       // Reset form
       setTitle('');
       setDescription('');
       setPriority('Medium');
       setDueDate('');
+      setGroupId(selectedGroupId || '');
     } catch (err) {
       console.error('Task creation error:', err);
       if (err instanceof Error) {
@@ -111,6 +119,24 @@ export const CreateTaskForm = ({ onSubmit, onCancel }: CreateTaskFormProps) => {
             rows={3}
             disabled={isSubmitting}
           />
+        <FormGroup>
+          <Label htmlFor="group">Group</Label>
+          <Input
+            as="select"
+            id="group"
+            value={groupId}
+            onChange={(e) => setGroupId(e.target.value)}
+            disabled={isSubmitting}
+          >
+            <option value="">Select a group...</option>
+            {groups.map((group) => (
+              <option key={group.id} value={group.id}>
+                {group.name}
+              </option>
+            ))}
+          </Input>
+        </FormGroup>
+
         </FormGroup>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>

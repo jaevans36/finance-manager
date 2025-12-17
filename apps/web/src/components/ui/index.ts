@@ -291,6 +291,7 @@ export const Heading1 = styled.h1`
   font-size: 32px;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.text};
+  text-align: left;
   margin: 0 0 16px 0;
 `;
 
@@ -400,7 +401,7 @@ export const Divider = styled.hr`
 // ============================================================================
 
 interface BadgeProps {
-  variant?: 'primary' | 'success' | 'error' | 'warning' | 'info';
+  variant?: 'primary' | 'success' | 'error' | 'warning' | 'info' | 'outline';
 }
 
 const badgeVariantStyles = {
@@ -423,6 +424,11 @@ const badgeVariantStyles = {
   info: css`
     background-color: ${({ theme }) => theme.colors.info};
     color: ${({ theme }) => theme.colors.buttonText};
+  `,
+  outline: css`
+    background-color: transparent;
+    color: ${({ theme }) => theme.colors.text};
+    border: 1px solid ${({ theme }) => theme.colors.border};
   `,
 };
 

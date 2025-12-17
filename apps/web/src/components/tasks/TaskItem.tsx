@@ -58,6 +58,19 @@ export const TaskItem = ({
   onDelete,
 }: TaskItemProps) => {
   const isOverdue = task.dueDate && !task.completed && new Date(task.dueDate) < new Date();
+  
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-GB', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+  
+  const wasModified = new Date(task.updatedAt).getTime() > new Date(task.createdAt).getTime() + 1000;
 
   return (
     <TaskCard $completed={task.completed}>
@@ -70,6 +83,17 @@ export const TaskItem = ({
       <div style={{ flex: 1 }}>
         <Flex align="center" gap={10} style={{ marginBottom: '5px' }}>
           <TaskTitle $completed={task.completed}>{task.title}</TaskTitle>
+          {task.groupName && (
+            <Badge 
+              variant="outline" 
+              style={{ 
+                borderColor: task.groupColour || '#6B7280',
+                color: task.groupColour || '#6B7280'
+              }}
+            >
+              {task.groupName}
+            </Badge>
+          )}
           <Badge variant={getPriorityVariant(task.priority)}>{task.priority}</Badge>
           {isOverdue && <Badge variant="error">OVERDUE</Badge>}
         </Flex>
@@ -88,11 +112,11 @@ export const TaskItem = ({
             </span>
           )}
           <span style={{ marginLeft: task.dueDate || task.completedAt ? '15px' : '0' }}>
-            Created: {new Date(task.createdAt).toLocaleDateString()}
+            Created: {formatDateTime(task.createdAt)}
           </span>
-          {task.updatedAt !== task.createdAt && (
+          {wasModified && (
             <span style={{ marginLeft: '15px' }}>
-              Modified: {new Date(task.updatedAt).toLocaleDateString()}
+              Modified: {formatDateTime(task.updatedAt)}
             </span>
           )}
         </TextSmall>
