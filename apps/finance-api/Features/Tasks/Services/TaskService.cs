@@ -20,11 +20,13 @@ public class TaskService : ITaskService
 {
     private readonly FinanceDbContext _context;
     private readonly IActivityLogService _activityLogService;
+    private readonly TaskGroupService _taskGroupService;
 
-    public TaskService(FinanceDbContext context, IActivityLogService activityLogService)
+    public TaskService(FinanceDbContext context, IActivityLogService activityLogService, TaskGroupService taskGroupService)
     {
         _context = context;
         _activityLogService = activityLogService;
+        _taskGroupService = taskGroupService;
     }
 
     public async System.Threading.Tasks.Task<TaskDto> CreateTaskAsync(Guid userId, CreateTaskRequest request)
@@ -33,9 +35,18 @@ public class TaskService : ITaskService
             ? parsedPriority 
             : Models.Priority.Medium;
 
+        // If no group specified, use default group
+        Guid? groupId = request.GroupId;
+        if (!groupId.HasValue)
+        {
+            var defaultGroup = await _taskGroupService.GetOrCreateDefaultGroupAsync(userId);
+            groupId = defaultGroup.Id;
+        }
+
         var task = new Models.Task
         {
             UserId = userId,
+            GroupId = groupId,
             Title = request.Title,
             Description = request.Description,
             Priority = priority,
@@ -49,7 +60,7 @@ public class TaskService : ITaskService
 
         await _activityLogService.LogAsync(userId, ActivityType.TaskCreated, $"Created task: {task.Title}", null, null);
 
-        return MapToTaskDto(task);
+        return await MapToTaskDtoAsync(task);
     }
 
     public async System.Threading.Tasks.Task<TaskDto> UpdateTaskAsync(Guid userId, Guid taskId, UpdateTaskRequest request)
@@ -70,6 +81,8 @@ public class TaskService : ITaskService
         }
         if (request.DueDate.HasValue) task.DueDate = DateTime.SpecifyKind(request.DueDate.Value, DateTimeKind.Utc);
 
+        if (request.GroupId.HasValue) task.GroupId = request.GroupId;
+
         if (request.Completed.HasValue)
         {
             task.Completed = request.Completed.Value;
@@ -89,7 +102,7 @@ public class TaskService : ITaskService
 
         await _activityLogService.LogAsync(userId, ActivityType.TaskUpdated, $"Updated task: {task.Title}", null, null);
 
-        return MapToTaskDto(task);
+        return await MapToTaskDtoAsync(task);
     }
 
     public async System.Threading.Tasks.Task DeleteTaskAsync(Guid userId, Guid taskId)
@@ -111,22 +124,29 @@ public class TaskService : ITaskService
     public async System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid userId, Guid taskId)
     {
         var task = await _context.Tasks
+            .Include(t => t.Group)
             .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
 
-        return task == null ? null : MapToTaskDto(task);
+        return task == null ? null : await MapToTaskDtoAsync(task);
     }
 
     public async System.Threading.Tasks.Task<List<TaskDto>> GetTasksAsync(Guid userId)
     {
         var tasks = await _context.Tasks
+            .Include(t => t.Group)
             .Where(t => t.UserId == userId)
             .OrderByDescending(t => t.CreatedAt)
             .ToListAsync();
 
-        return tasks.Select(MapToTaskDto).ToList();
+        var taskDtos = new List<TaskDto>();
+        foreach (var task in tasks)
+        {
+            taskDtos.Add(await MapToTaskDtoAsync(task));
+        }
+        return taskDtos;
     }
 
-    private static TaskDto MapToTaskDto(Models.Task task)
+    private async System.Threading.Tasks.Task<TaskDto> MapToTaskDtoAsync(Models.Task task)
     {
         return new TaskDto
         {
@@ -137,6 +157,9 @@ public class TaskService : ITaskService
             DueDate = task.DueDate,
             Completed = task.Completed,
             CompletedAt = task.CompletedAt,
+            GroupId = task.GroupId,
+            GroupName = task.Group?.Name,
+            GroupColour = task.Group?.Colour,
             CreatedAt = task.CreatedAt,
             UpdatedAt = task.UpdatedAt
         };
