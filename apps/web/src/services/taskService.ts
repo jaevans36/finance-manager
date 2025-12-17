@@ -9,6 +9,9 @@ export interface Task {
   dueDate: string | null;
   completed: boolean;
   completedAt: string | null;
+  groupId: string | null;
+  groupName: string | null;
+  groupColour: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -18,6 +21,7 @@ interface CreateTaskInput {
   description?: string;
   priority?: 'Low' | 'Medium' | 'High' | 'Critical';
   dueDate?: string;
+  groupId?: string;
 }
 
 interface UpdateTaskInput {
@@ -26,6 +30,7 @@ interface UpdateTaskInput {
   priority?: 'Low' | 'Medium' | 'High' | 'Critical';
   dueDate?: string;
   completed?: boolean;
+  groupId?: string;
 }
 
 
