@@ -23,6 +23,7 @@ public class FinanceDbContext : DbContext
     // Todo/Auth domain
     public DbSet<User> Users { get; set; }
     public DbSet<FinanceApi.Features.Tasks.Models.Task> Tasks { get; set; }
+    public DbSet<TaskGroup> TaskGroups { get; set; }
     public DbSet<Session> Sessions { get; set; }
     public DbSet<EmailToken> EmailTokens { get; set; }
     public DbSet<ActivityLog> ActivityLogs { get; set; }
@@ -143,6 +144,21 @@ public class FinanceDbContext : DbContext
             entity.HasIndex(e => e.Email).IsUnique();
         });
 
+        // TaskGroup configuration
+        modelBuilder.Entity<TaskGroup>(entity =>
+        {
+            entity.ToTable("task_groups");
+            entity.HasKey(e => e.Id);
+
+            entity.HasOne(tg => tg.User)
+                  .WithMany(u => u.TaskGroups)
+                  .HasForeignKey(tg => tg.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => new { e.UserId, e.Name }).IsUnique();
+        });
+
         // Task configuration
         modelBuilder.Entity<FinanceApi.Features.Tasks.Models.Task>(entity =>
         {
@@ -154,7 +170,14 @@ public class FinanceDbContext : DbContext
                   .HasForeignKey(t => t.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
 
+            entity.HasOne(t => t.Group)
+                  .WithMany(tg => tg.Tasks)
+                  .HasForeignKey(t => t.GroupId)
+                  .OnDelete(DeleteBehavior.SetNull);
+
             entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.GroupId);
+            entity.HasIndex(e => new { e.UserId, e.GroupId, e.Completed });
             entity.HasIndex(e => new { e.UserId, e.DueDate });
             entity.HasIndex(e => new { e.UserId, e.Priority });
             entity.HasIndex(e => new { e.UserId, e.Completed, e.CreatedAt });

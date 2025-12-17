@@ -4,8 +4,8 @@ using FinanceApi.Features.Auth.Models;
 
 namespace FinanceApi.Features.Tasks.Models;
 
-[Table("tasks")]
-public class Task
+[Table("task_groups")]
+public class TaskGroup
 {
     [Key]
     [Column("id")]
@@ -15,29 +15,25 @@ public class Task
     [Column("user_id")]
     public Guid UserId { get; set; }
 
-    [Column("group_id")]
-    public Guid? GroupId { get; set; }
-
     [Required]
-    [Column("title")]
-    [MaxLength(500)]
-    public string Title { get; set; } = string.Empty;
+    [Column("name")]
+    [MaxLength(100)]
+    public string Name { get; set; } = string.Empty;
 
     [Column("description")]
+    [MaxLength(500)]
     public string? Description { get; set; }
 
-    [Required]
-    [Column("priority")]
-    public Priority Priority { get; set; } = Priority.Medium;
+    [Column("colour")]
+    [MaxLength(7)]
+    public string Colour { get; set; } = "#3B82F6";
 
-    [Column("due_date")]
-    public DateTime? DueDate { get; set; }
+    [Column("icon")]
+    [MaxLength(50)]
+    public string? Icon { get; set; }
 
-    [Column("completed")]
-    public bool Completed { get; set; } = false;
-
-    [Column("completed_at")]
-    public DateTime? CompletedAt { get; set; }
+    [Column("is_default")]
+    public bool IsDefault { get; set; } = false;
 
     [Column("created_at")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -49,14 +45,5 @@ public class Task
     [ForeignKey(nameof(UserId))]
     public User User { get; set; } = null!;
 
-    [ForeignKey(nameof(GroupId))]
-    public TaskGroup? Group { get; set; }
-}
-
-public enum Priority
-{
-    Low,
-    Medium,
-    High,
-    Critical
+    public ICollection<Task> Tasks { get; set; } = new List<Task>();
 }

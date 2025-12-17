@@ -43,6 +43,7 @@ public class User
 
     // Navigation properties
     public ICollection<FinanceApi.Features.Tasks.Models.Task> Tasks { get; set; } = new List<FinanceApi.Features.Tasks.Models.Task>();
+    public ICollection<FinanceApi.Features.Tasks.Models.TaskGroup> TaskGroups { get; set; } = new List<FinanceApi.Features.Tasks.Models.TaskGroup>();
     public ICollection<Session> Sessions { get; set; } = new List<Session>();
     public ICollection<EmailToken> EmailTokens { get; set; } = new List<EmailToken>();
     public ICollection<ActivityLog> ActivityLogs { get; set; } = new List<ActivityLog>();
