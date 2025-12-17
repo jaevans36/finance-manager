@@ -15,6 +15,8 @@ public class CreateTaskRequest
     public string? Priority { get; set; }
 
     public DateTime? DueDate { get; set; }
+
+    public Guid? GroupId { get; set; }
 }
 
 public class UpdateTaskRequest
@@ -31,6 +33,8 @@ public class UpdateTaskRequest
     public DateTime? DueDate { get; set; }
 
     public bool? Completed { get; set; }
+
+    public Guid? GroupId { get; set; }
 }
 
 public class TaskDto
@@ -42,6 +46,9 @@ public class TaskDto
     public DateTime? DueDate { get; set; }
     public bool Completed { get; set; }
     public DateTime? CompletedAt { get; set; }
+    public Guid? GroupId { get; set; }
+    public string? GroupName { get; set; }
+    public string? GroupColour { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
