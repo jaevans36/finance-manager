@@ -311,12 +311,12 @@ description: "Task list for To Do App implementation"
 **Purpose**: Improvements that affect multiple user stories
 
 - [ ] T147 [P] Add responsive design for mobile devices (breakpoints, touch targets)
-- [ ] T148 [P] Implement loading skeletons for better perceived performance
-- [ ] T149 [P] Add toast notifications for user actions (success/error messages)
+- [x] T148 [P] Implement loading skeletons for better perceived performance
+- [x] T149 [P] Add toast notifications for user actions (success/error messages)
 - [ ] T150 [P] Create user profile page in apps/web/src/pages/ProfilePage.tsx
-- [ ] T151 [P] Add keyboard shortcuts for common actions (N=new task, /=search)
-- [ ] T152 Implement task search functionality (search by title/description)
-- [ ] T153 Add task statistics dashboard (total, completed, overdue counts)
+- [x] T151 [P] Add keyboard shortcuts for common actions (N=new task, /=search, Esc=close/unfocus)
+- [x] T152 Implement task search functionality (search by title/description)
+- [x] T153 Add task statistics dashboard (total, completed, overdue counts)
 - [ ] T154 Implement dark mode theme toggle (already complete - verify)
 - [ ] T155 Add accessibility improvements (ARIA labels, keyboard navigation)
 - [ ] T156 Performance optimization (code splitting, lazy loading)
