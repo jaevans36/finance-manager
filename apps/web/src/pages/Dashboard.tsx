@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { taskService } from '../services/taskService';
 import { taskGroupService } from '../services/taskGroupService';
 import { CreateTaskForm } from '../components/tasks/CreateTaskForm';
@@ -54,6 +55,29 @@ export const Dashboard = () => {
   const [error, setError] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Keyboard shortcuts: N = new task, / = search, Esc = close modals/unfocus search
+  useKeyboardShortcuts({
+    'n': () => {
+      if (!showCreateForm && !editingTask) {
+        setShowCreateForm(true);
+      }
+    },
+    '/': (event) => {
+      event.preventDefault();
+      searchInputRef.current?.focus();
+    },
+    'Escape': () => {
+      if (showCreateForm) {
+        setShowCreateForm(false);
+      } else if (editingTask) {
+        setEditingTask(null);
+      } else if (document.activeElement === searchInputRef.current) {
+        searchInputRef.current?.blur();
+      }
+    }
+  }, [showCreateForm, editingTask]);
 
   const loadTasks = async () => {
     try {
@@ -220,7 +244,7 @@ export const Dashboard = () => {
         <div>
           <TaskStatistics tasks={tasks} totalGroups={groups.length} />
 
-          <TaskSearch value={searchQuery} onChange={setSearchQuery} />
+          <TaskSearch ref={searchInputRef} value={searchQuery} onChange={setSearchQuery} />
 
           {showCreateForm ? (
             <CreateTaskForm 

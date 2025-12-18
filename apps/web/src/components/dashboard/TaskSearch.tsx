@@ -63,15 +63,19 @@ interface TaskSearchProps {
   placeholder?: string;
 }
 
-export const TaskSearch: React.FC<TaskSearchProps> = ({
-  value,
-  onChange,
-  placeholder = 'Search tasks by title or description...'
-}) => {
+export const TaskSearch = React.forwardRef<HTMLInputElement, TaskSearchProps>((
+  {
+    value,
+    onChange,
+    placeholder = 'Search tasks by title or description...'
+  },
+  ref
+) => {
   return (
     <SearchContainer>
       <SearchIcon size={18} />
       <SearchInput
+        ref={ref}
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -84,4 +88,6 @@ export const TaskSearch: React.FC<TaskSearchProps> = ({
       )}
     </SearchContainer>
   );
-};
+});
+
+TaskSearch.displayName = 'TaskSearch';
