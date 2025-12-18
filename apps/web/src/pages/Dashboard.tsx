@@ -10,6 +10,7 @@ import { TaskList } from '../components/tasks/TaskList';
 import { TaskGroupList } from '../components/task-groups/TaskGroupList';
 import { TaskStatistics } from '../components/dashboard/TaskStatistics';
 import { TaskSkeleton } from '../components/dashboard/TaskSkeleton';
+import { TaskSearch } from '../components/dashboard/TaskSearch';
 import { Button, Alert, Heading1, TextSecondary, Container, Flex } from '../components/ui';
 import { XCircle } from 'lucide-react';
 import { TaskGroup } from '../types/taskGroup';
@@ -47,6 +48,7 @@ export const Dashboard = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [groups, setGroups] = useState<TaskGroup[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [groupsLoading, setGroupsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -86,9 +88,23 @@ export const Dashboard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const filteredTasks = selectedGroupId
-    ? tasks.filter((task) => task.groupId === selectedGroupId)
-    : tasks;
+  const filteredTasks = tasks
+    .filter((task) => {
+      // Filter by group
+      if (selectedGroupId && task.groupId !== selectedGroupId) {
+        return false;
+      }
+      
+      // Filter by search query
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesTitle = task.title.toLowerCase().includes(query);
+        const matchesDescription = task.description?.toLowerCase().includes(query) ?? false;
+        return matchesTitle || matchesDescription;
+      }
+      
+      return true;
+    });
 
   const handleSelectGroup = (groupId: string | null) => {
     // Toggle off if clicking the same group
@@ -203,6 +219,8 @@ export const Dashboard = () => {
 
         <div>
           <TaskStatistics tasks={tasks} totalGroups={groups.length} />
+
+          <TaskSearch value={searchQuery} onChange={setSearchQuery} />
 
           {showCreateForm ? (
             <CreateTaskForm 
