@@ -9,6 +9,7 @@ import { EditTaskModal } from '../components/tasks/EditTaskModal';
 import { TaskList } from '../components/tasks/TaskList';
 import { TaskGroupList } from '../components/task-groups/TaskGroupList';
 import { TaskStatistics } from '../components/dashboard/TaskStatistics';
+import { TaskSkeleton } from '../components/dashboard/TaskSkeleton';
 import { Button, Alert, Heading1, TextSecondary, Container, Flex } from '../components/ui';
 import { XCircle } from 'lucide-react';
 import { TaskGroup } from '../types/taskGroup';
@@ -220,13 +221,17 @@ export const Dashboard = () => {
             </Button>
           )}
 
-          <TaskList
-            tasks={filteredTasks}
-            isLoading={loading}
-            onToggleComplete={handleToggleComplete}
-            onEdit={setEditingTask}
-            onDelete={handleDeleteTask}
-          />
+          {loading ? (
+            <TaskSkeleton count={5} />
+          ) : (
+            <TaskList
+              tasks={filteredTasks}
+              isLoading={false}
+              onToggleComplete={handleToggleComplete}
+              onEdit={setEditingTask}
+              onDelete={handleDeleteTask}
+            />
+          )}
         </div>
       </DashboardLayout>
 

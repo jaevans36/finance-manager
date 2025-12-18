@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { TaskGroup } from '../../types/taskGroup';
 import { TaskGroupItem } from './TaskGroupItem';
-import { Button, Text, TextSecondary, Flex } from '../ui';
+import { GroupSkeleton } from './GroupSkeleton';
+import { Button, Text, Flex } from '../ui';
 import { PlusIcon } from 'lucide-react';
 import { CreateTaskGroupModal } from './CreateTaskGroupModal';
 
@@ -59,7 +60,10 @@ export const TaskGroupList: React.FC<TaskGroupListProps> = ({
   if (loading) {
     return (
       <GroupListContainer>
-        <TextSecondary>Loading groups...</TextSecondary>
+        <GroupListHeader>
+          <Text style={{ fontWeight: 600 }}>Task Groups</Text>
+        </GroupListHeader>
+        <GroupSkeleton count={4} />
       </GroupListContainer>
     );
   }
