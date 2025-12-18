@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useToast } from '../../contexts/ToastContext';
 import { taskGroupService } from '../../services/taskGroupService';
 import { Button, Input, TextArea, FormGroup, Label, Alert, Flex } from '../ui';
 import { XCircleIcon } from 'lucide-react';
@@ -75,6 +76,7 @@ export const CreateTaskGroupModal: React.FC<CreateTaskGroupModalProps> = ({
   onClose,
   onSuccess
 }) => {
+  const toast = useToast();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [colour, setColour] = useState(COLOUR_OPTIONS[0]);
@@ -98,10 +100,13 @@ export const CreateTaskGroupModal: React.FC<CreateTaskGroupModalProps> = ({
         description: description.trim() || undefined,
         colour,
       });
+      toast.success('Task group created successfully');
       onSuccess();
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message || 'Failed to create task group');
+      const errorMessage = error.response?.data?.message || 'Failed to create task group';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

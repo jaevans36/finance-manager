@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import { taskService } from '../services/taskService';
 import { taskGroupService } from '../services/taskGroupService';
 import { CreateTaskForm } from '../components/tasks/CreateTaskForm';
 import { EditTaskModal } from '../components/tasks/EditTaskModal';
 import { TaskList } from '../components/tasks/TaskList';
 import { TaskGroupList } from '../components/task-groups/TaskGroupList';
+import { TaskStatistics } from '../components/dashboard/TaskStatistics';
 import { Button, Alert, Heading1, TextSecondary, Container, Flex } from '../components/ui';
 import { XCircle } from 'lucide-react';
 import { TaskGroup } from '../types/taskGroup';
@@ -40,6 +42,7 @@ interface Task {
 
 export const Dashboard = () => {
   const { user, logout } = useAuth();
+  const toast = useToast();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [groups, setGroups] = useState<TaskGroup[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
@@ -56,6 +59,7 @@ export const Dashboard = () => {
       setTasks(tasks);
       setError('');
     } catch (err) {
+      toast.error('Failed to load tasks');
       setError('Failed to load tasks');
       console.error(err);
     } finally {
@@ -78,6 +82,7 @@ export const Dashboard = () => {
   useEffect(() => {
     loadTasks();
     loadGroups();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredTasks = selectedGroupId
@@ -100,10 +105,12 @@ export const Dashboard = () => {
       const task = await taskService.createTask(data);
       setTasks((prev) => [task, ...prev]);
       setShowCreateForm(false);
+      toast.success('Task created successfully');
       // Reload groups to update task counts
       loadGroups();
     } catch (err) {
       console.error('Failed to create task:', err);
+      toast.error('Failed to create task');
       // Re-throw so the form can display the error
       throw err;
     }
@@ -118,11 +125,18 @@ export const Dashboard = () => {
       dueDate?: string;
     }
   ) => {
-    const updatedTask = await taskService.updateTask(id, data);
-    setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
-    setEditingTask(null);
-    // Reload groups to update task counts
-    loadGroups();
+    try {
+      const updatedTask = await taskService.updateTask(id, data);
+      setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
+      setEditingTask(null);
+      toast.success('Task updated successfully');
+      // Reload groups to update task counts
+      loadGroups();
+    } catch (err) {
+      console.error('Failed to update task:', err);
+      toast.error('Failed to update task');
+      throw err;
+    }
   };
 
   const handleToggleComplete = async (id: string) => {
@@ -132,8 +146,10 @@ export const Dashboard = () => {
       
       const updatedTask = await taskService.updateTask(id, { completed: !task.completed });
       setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
+      toast.success(updatedTask.completed ? 'Task completed!' : 'Task marked as incomplete');
     } catch (err) {
       console.error('Failed to toggle task completion:', err);
+      toast.error('Failed to update task');
     }
   };
 
@@ -142,10 +158,12 @@ export const Dashboard = () => {
       try {
         await taskService.deleteTask(id);
         setTasks((prev) => prev.filter((task) => task.id !== id));
+        toast.success('Task deleted successfully');
         // Reload groups to update task counts
         loadGroups();
       } catch (err) {
         console.error('Failed to delete task:', err);
+        toast.error('Failed to delete task');
       }
     }
   };
@@ -183,6 +201,8 @@ export const Dashboard = () => {
         />
 
         <div>
+          <TaskStatistics tasks={tasks} totalGroups={groups.length} />
+
           {showCreateForm ? (
             <CreateTaskForm 
               onSubmit={handleCreateTask} 

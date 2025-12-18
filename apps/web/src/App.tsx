@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
+import { ToastProvider } from './contexts/ToastContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ThemeToggle } from './components/ThemeToggle';
@@ -17,8 +18,9 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <AuthProvider>
-          <BrowserRouter>
+        <ToastProvider>
+          <AuthProvider>
+            <BrowserRouter>
             <ThemeToggle />
             <Routes>
               <Route path="/login" element={<LoginPage />} />
@@ -39,7 +41,8 @@ function App() {
             </Routes>
           </BrowserRouter>
         </AuthProvider>
-      </ThemeProvider>
+      </ToastProvider>
+    </ThemeProvider>
     </ErrorBoundary>
   );
 }
