@@ -37,6 +37,12 @@ const ModalContent = styled(Card)`
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
+
+  @media (max-width: 768px) {
+    width: 95%;
+    padding: 16px;
+    max-height: 95vh;
+  }
 `;
 
 interface Task {
@@ -188,7 +194,7 @@ export const EditTaskModal = ({ task, onSubmit, onCancel }: EditTaskModalProps) 
           </div>
 
           <Flex gap={10}>
-            <Button type="submit" variant="primary" isLoading={isSubmitting}>
+            <Button type="submit" variant="primary" $isLoading={isSubmitting}>
               {isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>
             <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>

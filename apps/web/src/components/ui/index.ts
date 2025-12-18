@@ -8,21 +8,37 @@ interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'outline';
   size?: 'small' | 'medium' | 'large';
   fullWidth?: boolean;
-  isLoading?: boolean;
+  $isLoading?: boolean;
 }
 
 const buttonSizeStyles = {
   small: css`
     padding: 6px 12px;
     font-size: 14px;
+
+    @media (max-width: 768px) {
+      padding: 10px 14px;
+      font-size: 14px;
+      min-height: 44px;
+    }
   `,
   medium: css`
     padding: 10px 16px;
     font-size: 16px;
+
+    @media (max-width: 768px) {
+      padding: 12px 18px;
+      min-height: 48px;
+    }
   `,
   large: css`
     padding: 14px 20px;
     font-size: 18px;
+
+    @media (max-width: 768px) {
+      padding: 16px 22px;
+      min-height: 52px;
+    }
   `,
 };
 
@@ -87,7 +103,7 @@ export const Button = styled.button<ButtonProps>`
   width: ${({ fullWidth }) => (fullWidth ? '100%' : 'auto')};
   border-radius: 4px;
   font-weight: 500;
-  cursor: ${({ isLoading }) => (isLoading ? 'wait' : 'pointer')};
+  cursor: ${({ $isLoading }) => ($isLoading ? 'wait' : 'pointer')};
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
@@ -130,6 +146,12 @@ export const Input = styled.input<InputProps>`
   transition: border-color 0.2s ease;
   font-family: inherit;
 
+  @media (max-width: 768px) {
+    padding: 12px 14px;
+    font-size: 16px;
+    min-height: 44px;
+  }
+
   &::placeholder {
     color: ${({ theme }) => theme.colors.textSecondary};
   }
@@ -158,6 +180,12 @@ export const TextArea = styled.textarea<InputProps>`
   font-family: inherit;
   resize: vertical;
   min-height: 80px;
+
+  @media (max-width: 768px) {
+    padding: 12px 14px;
+    font-size: 16px;
+    min-height: 100px;
+  }
 
   &::placeholder {
     color: ${({ theme }) => theme.colors.textSecondary};

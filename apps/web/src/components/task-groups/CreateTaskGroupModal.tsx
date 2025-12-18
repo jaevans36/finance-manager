@@ -25,6 +25,14 @@ const ModalContent = styled.div`
   max-width: 500px;
   width: 90%;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  max-height: 90vh;
+  overflow-y: auto;
+
+  @media (max-width: 768px) {
+    width: 95%;
+    padding: 16px;
+    max-height: 95vh;
+  }
 `;
 
 const ModalHeader = styled.h2`
@@ -53,6 +61,11 @@ const ColourOption = styled.button<{ $colour: string; $selected: boolean }>`
 
   &:hover {
     transform: scale(1.1);
+  }
+
+  @media (max-width: 768px) {
+    width: 48px;
+    height: 48px;
   }
 `;
 

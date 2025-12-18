@@ -15,6 +15,10 @@ const GroupListContainer = styled.div`
   background-color: ${({ theme }) => theme.colors.background};
   border-radius: 8px;
   border: 1px solid ${({ theme }) => theme.colors.border};
+
+  @media (max-width: 768px) {
+    padding: 12px;
+  }
 `;
 
 const GroupListHeader = styled(Flex)`
@@ -37,6 +41,11 @@ const AllTasksButton = styled.div<{ $isActive: boolean }>`
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.backgroundSecondary};
+  }
+
+  @media (max-width: 768px) {
+    padding: 14px;
+    min-height: 48px;
   }
 `;
 

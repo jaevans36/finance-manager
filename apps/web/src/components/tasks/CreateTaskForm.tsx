@@ -170,7 +170,7 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
         </div>
 
         <Flex gap={10}>
-          <Button type="submit" variant="success" isLoading={isSubmitting}>
+          <Button type="submit" variant="success" $isLoading={isSubmitting}>
             {isSubmitting ? 'Creating...' : 'Create Task'}
           </Button>
           <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>

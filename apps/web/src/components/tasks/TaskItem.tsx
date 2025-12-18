@@ -17,12 +17,25 @@ const TaskCard = styled(Card)<{ $completed: boolean }>`
   align-items: center;
   gap: 15px;
   opacity: ${({ $completed }) => ($completed ? 0.6 : 1)};
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+  }
 `;
 
 const Checkbox = styled.input`
   width: 18px;
   height: 18px;
   cursor: pointer;
+
+  @media (max-width: 768px) {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
 `;
 
 const TaskTitle = styled.h3<{ $completed: boolean }>`

@@ -25,6 +25,11 @@ const DashboardLayout = styled.div`
   grid-template-columns: 280px 1fr;
   gap: 24px;
   align-items: start;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 `;
 
 interface Task {
