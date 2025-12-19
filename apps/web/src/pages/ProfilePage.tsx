@@ -208,8 +208,8 @@ export const ProfilePage = () => {
   return (
     <Container style={{ padding: '20px', maxWidth: '1200px', width: '80%' }}>
       <ProfileHeader>
-        <Heading1 style={{ margin: '0 0 8px 0' }}>Profile</Heading1>
-        <TextSecondary>Manage your account information</TextSecondary>
+        <Heading1 style={{ margin: 0 }}>Profile</Heading1>
+        <TextSecondary style={{ margin: '5px 0 0' }}>Manage your account information</TextSecondary>
       </ProfileHeader>
 
       <ProfileCard>
