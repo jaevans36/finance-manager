@@ -109,9 +109,32 @@ Users can create named groups (such as "House Renovation", "Work", "Personal") t
 
 ---
 
+### User Story 7 - Username System (Priority: P2)
+
+Users can create unique usernames during registration that serve as their primary identity in the application, improving user experience and security by hiding internal UUIDs and providing friendlier identification than email addresses.
+
+**Why this priority**: Username improves both security (by hiding UUIDs from frontend) and UX (friendlier than email). It's important for personalization but not critical for core task functionality, making it P2.
+
+**Independent Test**: Can be fully tested by registering with a username, checking username availability in real-time, attempting duplicate usernames, logging in with username, and verifying username displays throughout the UI.
+
+**Acceptance Scenarios**:
+
+1. **Given** a new user completing registration, **When** they enter a desired username, **Then** the system checks availability in real-time and shows "Available" or "Already taken" feedback before submission
+2. **Given** a user enters a username, **When** it contains invalid characters or is too short/long, **Then** they receive immediate validation feedback (3-20 characters, alphanumeric plus _ and - only)
+3. **Given** a user tries to register with an already-taken username, **When** they submit the form, **Then** registration fails with a clear message prompting them to choose a different username
+4. **Given** a registered user with username "johndoe", **When** they log in to the dashboard, **Then** the welcome message displays "Welcome back, @johndoe" instead of their email address
+5. **Given** an authenticated user, **When** they view their profile page, **Then** their username is displayed prominently with email shown as secondary contact information
+6. **Given** a user logging in, **When** they enter their username in the login field, **Then** the system authenticates them (supporting both username and email login)
+7. **Given** reserved usernames exist (admin, support, system, root, etc.), **When** a user tries to register with one, **Then** registration is prevented with message "This username is reserved"
+8. **Given** usernames are case-insensitive for uniqueness, **When** user registers as "JohnDoe" and another tries "johndoe", **Then** the second registration is rejected as duplicate
+9. **Given** existing users without usernames (from before this feature), **When** they log in, **Then** they are prompted to create a username before accessing the dashboard
+10. **Given** a user profile displays a username, **When** the user internal UUID exists, **Then** it remains hidden from the UI and is not exposed in any frontend views
+
+---
+
 ### Edge Cases
 
-- What happens when a user tries to register with an already existing email address?
+- What happens when a user tries to register with an already existing email address or username?
 - How does the system handle very long task titles or descriptions (>1000 characters)?
 - What happens when a user loses internet connection while creating or editing a task?
 - How does the system handle tasks with due dates set far in the past or future?
@@ -143,6 +166,13 @@ Users can create named groups (such as "House Renovation", "Work", "Personal") t
 - **FR-018**: Users MUST be able to view and filter tasks by group
 - **FR-019**: System MUST provide a default "Uncategorised" group for tasks without explicit group assignment
 - **FR-020**: Users MUST be able to rename, customise, and delete groups with appropriate warnings for non-empty groups
+- **FR-021**: System MUST allow users to create unique usernames during registration (3-20 characters, alphanumeric plus _ and -)
+- **FR-022**: System MUST check username availability in real-time during registration
+- **FR-023**: System MUST enforce case-insensitive username uniqueness (stored lowercase, displayed as entered)
+- **FR-024**: System MUST support authentication with either username or email address
+- **FR-025**: System MUST display username instead of email in dashboard welcome messages and profile pages
+- **FR-026**: System MUST block reserved usernames (admin, support, system, root, etc.) from registration
+- **FR-027**: System MUST prompt existing users (without usernames) to create one on their next login
 
 ### Non-Functional Requirements
 
@@ -172,6 +202,41 @@ Users can create named groups (such as "House Renovation", "Work", "Personal") t
 - **SC-008**: Users can successfully manage (CRUD operations) at least 100 tasks without performance degradation
 
 ## Change Log
+
+### 2025-12-19 - Username System Added
+
+**Added**:
+
+- **User Story 7**: Username System (Priority P2) - Enables users to create unique usernames for better identity display and improved security
+- **FR-021 to FR-027**: Functional requirements for username creation, validation, uniqueness checking, and display
+- **Username Entity Field**: New `username` field in User entity with unique constraint and validation rules
+- Real-time username availability checking during registration
+
+**Rationale**:
+
+- **Security**: Hides internal UUID from frontend display, reducing attack surface
+- **User Experience**: Friendlier identification than email addresses (e.g., "Welcome back, @johndoe" vs "Welcome back, john.doe@example.com")
+- **Privacy**: Users can choose pseudonyms instead of exposing real names via email
+- **Future Features**: Enables username-based features like @mentions, user search, and social collaboration in v2
+
+**Impact**:
+
+- Database schema updated with `username` column on Users table (unique, required, indexed)
+- Registration flow updated to include username field with real-time validation
+- Dashboard and Profile pages display username instead of email
+- New API endpoint `POST /api/auth/check-username` for availability checking
+- Login supports both email and username authentication
+- Migration strategy for existing users (prompt for username on first login)
+
+**Requirements**:
+
+- Username must be 3-20 characters
+- Allowed characters: alphanumeric (a-z, A-Z, 0-9), underscore (_), hyphen (-)
+- Case-insensitive uniqueness (stored lowercase, displayed as entered)
+- No whitespace, no special characters except _ and -
+- Reserved usernames blocked (admin, support, system, etc.)
+
+---
 
 ### 2025-12-16 - Task Groups Feature Added
 

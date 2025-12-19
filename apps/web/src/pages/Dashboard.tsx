@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
@@ -13,7 +14,7 @@ import { TaskStatistics } from '../components/dashboard/TaskStatistics';
 import { TaskSkeleton } from '../components/dashboard/TaskSkeleton';
 import { TaskSearch } from '../components/dashboard/TaskSearch';
 import { Button, Alert, Heading1, TextSecondary, Container, Flex } from '../components/ui';
-import { XCircle } from 'lucide-react';
+import { XCircle, UserIcon } from 'lucide-react';
 import { TaskGroup } from '../types/taskGroup';
 
 const DashboardHeader = styled(Flex)`
@@ -50,6 +51,7 @@ interface Task {
 
 export const Dashboard = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const toast = useToast();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [groups, setGroups] = useState<TaskGroup[]>([]);
@@ -225,9 +227,15 @@ export const Dashboard = () => {
           <Heading1 style={{ margin: 0 }}>Dashboard</Heading1>
           <TextSecondary style={{ margin: '5px 0 0' }}>Welcome back, {user?.email}</TextSecondary>
         </div>
-        <Button variant="danger" onClick={logout}>
-          Logout
-        </Button>
+        <Flex gap={12}>
+          <Button variant="outline" onClick={() => navigate('/profile')}>
+            <UserIcon size={18} />
+            Profile
+          </Button>
+          <Button variant="danger" onClick={logout}>
+            Logout
+          </Button>
+        </Flex>
       </DashboardHeader>
 
       {error && (
