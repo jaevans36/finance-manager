@@ -48,6 +48,29 @@ This project uses PowerShell scripts in the `scripts/` directory for all develop
 
 When testing builds or starting services, use `.\scripts\start-dev.ps1` or `.\scripts\restart-dev.ps1` instead of direct npm/dotnet commands. This ensures consistent environment setup and proper service orchestration.
 
+## Code Integration Guidelines
+
+Before creating new files or components, always check existing patterns in the codebase:
+
+### Backend (C# .NET API)
+- **Never create multiple controllers with the same `[Route]` attribute** - ASP.NET Core requires unique route bases per controller
+- Before adding a new controller, check if related functionality already exists in an existing controller
+- For auth-related endpoints, add them to the existing `AuthController` rather than creating separate controllers
+- Pattern: Search for existing controllers in the same feature folder (e.g., `Features/Auth/Controllers/`)
+- After adding new endpoints, immediately test using `.\scripts\restart-dev.ps1` to verify routing works
+
+### Frontend (React/TypeScript)
+- Check for existing contexts, services, or components before creating new ones
+- Follow the established folder structure: `components/`, `contexts/`, `services/`, `pages/`
+- Reuse existing styled components and UI library components from `components/ui/`
+- Check `authService.ts` or similar service files before adding new API methods
+
+### General Rules
+1. **Search first, create second** - Use `grep_search` or `file_search` to find existing patterns
+2. **Follow established conventions** - Match the style, structure, and organization of existing code
+3. **Test immediately** - After any backend changes, restart dev environment and verify in browser
+4. **One feature, one location** - Don't split related functionality across multiple files unnecessarily
+
 Avoid the use of 'any' type in TypeScript to ensure type safety and maintainability throughout the codebase.
 
 Any written content should be in British English, not American English. If there are any non British English terms, please convert them accordingly.
