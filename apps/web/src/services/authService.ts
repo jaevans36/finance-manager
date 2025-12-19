@@ -3,6 +3,7 @@ import { apiClient } from './api-client';
 interface User {
   id: string;
   email: string;
+  username: string;
   emailVerified: boolean;
   createdAt: string;
 }
@@ -12,19 +13,32 @@ interface AuthResponse {
   user: User;
 }
 
+interface CheckUsernameResponse {
+  available: boolean;
+  message: string;
+}
+
 export const authService = {
-  async register(email: string, password: string): Promise<AuthResponse> {
+  async register(email: string, username: string, password: string): Promise<AuthResponse> {
     const response = await apiClient.post<AuthResponse>('/auth/register', {
       email,
+      username,
       password,
     });
     return response.data;
   },
 
-  async login(email: string, password: string): Promise<AuthResponse> {
+  async login(emailOrUsername: string, password: string): Promise<AuthResponse> {
     const response = await apiClient.post<AuthResponse>('/auth/login', {
-      email,
+      emailOrUsername,
       password,
+    });
+    return response.data;
+  },
+
+  async checkUsername(username: string): Promise<CheckUsernameResponse> {
+    const response = await apiClient.post<CheckUsernameResponse>('/auth/check-username', {
+      username,
     });
     return response.data;
   },

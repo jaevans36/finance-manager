@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
+import { CheckIcon, XCircleIcon } from 'lucide-react';
 import styled from 'styled-components';
 
 const FormContainer = styled.div`
@@ -124,16 +125,81 @@ const SigninText = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
+const UsernameInputContainer = styled.div`
+  position: relative;
+`;
+
+const UsernameIcon = styled.div<{ available: boolean }>`
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: ${({ available, theme }) => available ? theme.colors.success : theme.colors.error};
+  display: flex;
+  align-items: center;
+`;
+
+const UsernameHint = styled.div<{ available: boolean }>`
+  font-size: 12px;
+  margin-top: 4px;
+  color: ${({ available, theme }) => available ? theme.colors.success : theme.colors.textSecondary};
+`;
+
 export const RegisterForm = () => {
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState('');
+  const [usernameChecking, setUsernameChecking] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [usernameMessage, setUsernameMessage] = useState('');
 
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Debounced username check
+  const checkUsernameAvailability = useCallback(async (usernameToCheck: string) => {
+    if (usernameToCheck.length < 3 || usernameToCheck.length > 20) {
+      setUsernameAvailable(false);
+      setUsernameMessage('Username must be 3-20 characters');
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_-]+$/.test(usernameToCheck)) {
+      setUsernameAvailable(false);
+      setUsernameMessage('Only letters, numbers, _ and - allowed');
+      return;
+    }
+
+    try {
+      setUsernameChecking(true);
+      const result = await authService.checkUsername(usernameToCheck);
+      setUsernameAvailable(result.available);
+      setUsernameMessage(result.message);
+    } catch (error) {
+      setUsernameAvailable(false);
+      setUsernameMessage('Error checking username');
+    } finally {
+      setUsernameChecking(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!username) {
+      setUsernameAvailable(null);
+      setUsernameMessage('');
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      checkUsernameAvailability(username);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [username, checkUsernameAvailability]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -143,6 +209,15 @@ export const RegisterForm = () => {
       newErrors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       newErrors.email = 'Invalid email address';
+    }
+
+    // Username validation
+    if (!username) {
+      newErrors.username = 'Username is required';
+    } else if (usernameAvailable === false) {
+      newErrors.username = usernameMessage || 'Username is not available';
+    } else if (usernameAvailable === null) {
+      newErrors.username = 'Please wait for username validation';
     }
 
     // Password validation
@@ -184,7 +259,7 @@ export const RegisterForm = () => {
     setIsLoading(true);
 
     try {
-      const response = await authService.register(email, password);
+      const response = await authService.register(email, username, password);
       login(response.token, response.user);
       navigate('/dashboard');
     } catch (error: unknown) {
@@ -236,6 +311,35 @@ export const RegisterForm = () => {
             disabled={isLoading}
           />
           {errors.email && <ErrorText>{errors.email}</ErrorText>}
+        </FormGroup>
+
+        <FormGroup>
+          <Label htmlFor="username">Username</Label>
+          <UsernameInputContainer>
+            <Input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                setErrors({ ...errors, username: '' });
+              }}
+              hasError={!!errors.username}
+              disabled={isLoading}
+              placeholder="Choose a unique username"
+            />
+            {username && !usernameChecking && usernameAvailable !== null && (
+              <UsernameIcon available={usernameAvailable}>
+                {usernameAvailable ? <CheckIcon size={18} /> : <XCircleIcon size={18} />}
+              </UsernameIcon>
+            )}
+          </UsernameInputContainer>
+          {username && usernameMessage && (
+            <UsernameHint available={usernameAvailable === true}>
+              {usernameMessage}
+            </UsernameHint>
+          )}
+          {errors.username && <ErrorText>{errors.username}</ErrorText>}
         </FormGroup>
 
         <FormGroup>

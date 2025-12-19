@@ -43,7 +43,7 @@ const SignupText = styled.p`
 `;
 
 export const LoginForm = () => {
-  const [email, setEmail] = useState('');
+  const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -55,10 +55,8 @@ export const LoginForm = () => {
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!email) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Invalid email address';
+    if (!emailOrUsername) {
+      newErrors.emailOrUsername = 'Email or username is required';
     }
 
     if (!password) {
@@ -80,7 +78,7 @@ export const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      const response = await authService.login(email, password);
+      const response = await authService.login(emailOrUsername, password);
       login(response.token, response.user);
       navigate('/dashboard');
     } catch (error: unknown) {
@@ -107,21 +105,21 @@ export const LoginForm = () => {
 
       <form onSubmit={handleSubmit}>
         <FormGroup>
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="emailOrUsername">Email or Username</Label>
           <Input
-            id="email"
-            type="email"
-            value={email}
+            id="emailOrUsername"
+            type="text"
+            value={emailOrUsername}
             onChange={(e) => {
-              setEmail(e.target.value);
-              setErrors({ ...errors, email: '' });
+              setEmailOrUsername(e.target.value);
+              setErrors({ ...errors, emailOrUsername: '' });
             }}
-            autoComplete="email"
-            hasError={!!errors.email}
+            autoComplete="username"
+            hasError={!!errors.emailOrUsername}
             disabled={isLoading}
-            placeholder="Enter your email"
+            placeholder="Enter your email or username"
           />
-          {errors.email && <ErrorText>{errors.email}</ErrorText>}
+          {errors.emailOrUsername && <ErrorText>{errors.emailOrUsername}</ErrorText>}
         </FormGroup>
 
         <FormGroup>
@@ -145,7 +143,7 @@ export const LoginForm = () => {
         <Button 
           type="submit" 
           disabled={isLoading} 
-          isLoading={isLoading}
+          $isLoading={isLoading}
           fullWidth
         >
           {isLoading ? 'Signing in...' : 'Sign In'}

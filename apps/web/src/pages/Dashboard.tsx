@@ -225,7 +225,7 @@ export const Dashboard = () => {
       <DashboardHeader justify="space-between" align="center">
         <div>
           <Heading1 style={{ margin: 0 }}>Dashboard</Heading1>
-          <TextSecondary style={{ margin: '5px 0 0' }}>Welcome back, {user?.email}</TextSecondary>
+          <TextSecondary style={{ margin: '5px 0 0' }}>Welcome back, @{user?.username}</TextSecondary>
         </div>
         <Flex gap={12}>
           <Button variant="outline" onClick={() => navigate('/profile')}>
