@@ -34,6 +34,20 @@ No secrets or sensitive information should be hardcoded in the codebase; instead
 
 When making code changes or suggestions, please make sure you're using the most up-to-date standards, libraries and frameworks, avoiding any deprecated packages or APIs. Avoid any outdated coding practices that may compromise security or performance for both the front-end and back-end codebases.
 
+## Development Scripts
+
+This project uses PowerShell scripts in the `scripts/` directory for all development operations. Always use these scripts instead of running commands directly:
+
+- **start-dev.ps1** - Start the complete development environment (Docker, API, frontend)
+- **stop-dev.ps1** - Stop all development services
+- **restart-dev.ps1** - Quick restart of development servers
+- **reset-db.ps1** - Reset development database and apply migrations
+- **reset-test-db.ps1** - Reset test database
+- **run-tests.ps1** - Run all test suites
+- **view-logs.ps1** - View and search application logs
+
+When testing builds or starting services, use `.\scripts\start-dev.ps1` or `.\scripts\restart-dev.ps1` instead of direct npm/dotnet commands. This ensures consistent environment setup and proper service orchestration.
+
 Avoid the use of 'any' type in TypeScript to ensure type safety and maintainability throughout the codebase.
 
 Any written content should be in British English, not American English. If there are any non British English terms, please convert them accordingly.

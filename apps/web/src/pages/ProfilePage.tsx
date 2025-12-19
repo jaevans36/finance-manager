@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Container, Card, Heading1, Text, TextSecondary, Button, Flex } from '../components/ui';
-import { UserIcon, MailIcon, CalendarIcon, LogOutIcon, ArrowLeftIcon } from 'lucide-react';
+import { useToast } from '../contexts/ToastContext';
+import { authService } from '../services/authService';
+import { Container, Card, Heading1, Text, TextSecondary, Button, Flex, Input } from '../components/ui';
+import { UserIcon, MailIcon, CalendarIcon, LogOutIcon, ArrowLeftIcon, EditIcon, CheckIcon, XIcon } from 'lucide-react';
 
 const ProfileHeader = styled.div`
   margin-bottom: 30px;
@@ -36,6 +38,52 @@ const ProfileValue = styled(Text)`
   padding-left: 28px;
 `;
 
+const UsernameContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 28px;
+`;
+
+const UsernameEditButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: ${({ theme }) => theme.colors.backgroundSecondary};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: 13px;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.backgroundTertiary};
+    border-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.primary};
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
+const UsernameInputContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  padding-left: 28px;
+  align-items: center;
+`;
+
+const UsernameHint = styled.div<{ available: boolean }>`
+  font-size: 12px;
+  margin-top: 4px;
+  margin-left: 28px;
+  color: ${({ available, theme }) => available ? theme.colors.success : theme.colors.error};
+`;
+
 const ActionButtons = styled(Flex)`
   gap: 12px;
   margin-top: 30px;
@@ -61,8 +109,87 @@ const formatDate = (dateString?: string | null) => {
 };
 
 export const ProfilePage = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, login } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
+  const [editingUsername, setEditingUsername] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
+  const [usernameChecking, setUsernameChecking] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [usernameMessage, setUsernameMessage] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const isTemporaryUsername = user?.username.startsWith('user_');
+
+  useEffect(() => {
+    if (!newUsername || newUsername === user?.username) {
+      setUsernameAvailable(null);
+      setUsernameMessage('');
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      if (newUsername.length < 3 || newUsername.length > 20) {
+        setUsernameAvailable(false);
+        setUsernameMessage('Username must be 3-20 characters');
+        return;
+      }
+
+      if (!/^[a-zA-Z0-9_-]+$/.test(newUsername)) {
+        setUsernameAvailable(false);
+        setUsernameMessage('Only letters, numbers, _ and - allowed');
+        return;
+      }
+
+      try {
+        setUsernameChecking(true);
+        const result = await authService.checkUsername(newUsername);
+        setUsernameAvailable(result.available);
+        setUsernameMessage(result.message);
+      } catch (error) {
+        setUsernameAvailable(false);
+        setUsernameMessage('Error checking username');
+      } finally {
+        setUsernameChecking(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [newUsername, user?.username]);
+
+  const handleEditUsername = () => {
+    setNewUsername(user?.username || '');
+    setEditingUsername(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUsername(false);
+    setNewUsername('');
+    setUsernameAvailable(null);
+    setUsernameMessage('');
+  };
+
+  const handleSaveUsername = async () => {
+    if (!user || !usernameAvailable) return;
+
+    try {
+      setSaving(true);
+      await authService.updateUsername(newUsername);
+      
+      // Update local user data
+      const updatedUser = { ...user, username: newUsername.toLowerCase() };
+      const token = localStorage.getItem('accessToken') || '';
+      login(token, updatedUser);
+      
+      toast.success('Username updated successfully!');
+      setEditingUsername(false);
+      setNewUsername('');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update username');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -88,9 +215,54 @@ export const ProfilePage = () => {
         <ProfileSection>
           <ProfileLabel>
             <UserIcon size={20} />
-            Username
+            Username {isTemporaryUsername && <span style={{ color: 'orange' }}>(Temporary)</span>}
           </ProfileLabel>
-          <ProfileValue>@{user.username}</ProfileValue>
+          {editingUsername ? (
+            <>
+              <UsernameInputContainer>
+                <Input
+                  type="text"
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                  placeholder="Enter new username"
+                  disabled={saving}
+                  style={{ width: '250px' }}
+                />
+                <Button
+                  variant="success"
+                  onClick={handleSaveUsername}
+                  disabled={saving || !usernameAvailable || usernameChecking}
+                  $isLoading={saving}
+                  size="small"
+                >
+                  <CheckIcon size={16} />
+                  Save
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleCancelEdit}
+                  disabled={saving}
+                  size="small"
+                >
+                  <XIcon size={16} />
+                  Cancel
+                </Button>
+              </UsernameInputContainer>
+              {newUsername && usernameMessage && (
+                <UsernameHint available={usernameAvailable === true}>
+                  {usernameMessage}
+                </UsernameHint>
+              )}
+            </>
+          ) : (
+            <UsernameContainer>
+              <ProfileValue style={{ padding: 0 }}>@{user.username}</ProfileValue>
+              <UsernameEditButton onClick={handleEditUsername}>
+                <EditIcon />
+                {isTemporaryUsername ? 'Set Username' : 'Edit'}
+              </UsernameEditButton>
+            </UsernameContainer>
+          )}
         </ProfileSection>
 
         <ProfileSection>

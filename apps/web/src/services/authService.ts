@@ -43,6 +43,13 @@ export const authService = {
     return response.data;
   },
 
+  async updateUsername(username: string): Promise<{ username: string; message: string }> {
+    const response = await apiClient.patch<{ username: string; message: string }>('/auth/me/username', {
+      username,
+    });
+    return response.data;
+  },
+
   async logout(): Promise<void> {
     await apiClient.post('/auth/logout');
   },
