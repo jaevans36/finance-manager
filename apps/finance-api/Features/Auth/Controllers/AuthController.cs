@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using FinanceApi.Data;
 using FinanceApi.Features.Auth.DTOs;
 using FinanceApi.Features.Auth.Services;
 using System.Security.Claims;
@@ -11,10 +13,17 @@ namespace FinanceApi.Features.Auth.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly FinanceDbContext _context;
+    private static readonly HashSet<string> ReservedUsernames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "admin", "administrator", "support", "system", "root", "moderator",
+        "help", "service", "official", "staff", "team", "bot", "null", "undefined"
+    };
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, FinanceDbContext context)
     {
         _authService = authService;
+        _context = context;
     }
 
     [HttpPost("register")]
@@ -84,9 +93,104 @@ public class AuthController : ControllerBase
         });
     }
 
+    [HttpPost("check-username")]
+    public async Task<IActionResult> CheckUsername([FromBody] CheckUsernameRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.username))
+        {
+            return BadRequest(new { available = false, message = "Username is required." });
+        }
+
+        // Validate length
+        if (request.username.Length < 3 || request.username.Length > 20)
+        {
+            return BadRequest(new { available = false, message = "Username must be between 3 and 20 characters." });
+        }
+
+        // Validate format (alphanumeric, underscore, hyphen only)
+        if (!System.Text.RegularExpressions.Regex.IsMatch(request.username, @"^[a-zA-Z0-9_-]+$"))
+        {
+            return BadRequest(new { available = false, message = "Username can only contain letters, numbers, underscores, and hyphens." });
+        }
+
+        // Check reserved usernames
+        if (ReservedUsernames.Contains(request.username))
+        {
+            return Ok(new { available = false, message = "This username is reserved and cannot be used." });
+        }
+
+        // Check if username exists (case-insensitive)
+        var usernameLower = request.username.ToLower();
+        var exists = await _context.Users
+            .AnyAsync(u => u.Username.ToLower() == usernameLower);
+
+        if (exists)
+        {
+            return Ok(new { available = false, message = "This username is already taken." });
+        }
+
+        return Ok(new { available = true, message = "Username is available." });
+    }
+
+    [Authorize]
+    [HttpPatch("me/username")]
+    public async Task<IActionResult> UpdateUsername([FromBody] UpdateUsernameRequest request)
+    {
+        var userId = GetUserId();
+        var user = await _context.Users.FindAsync(userId);
+
+        if (user == null)
+        {
+            return NotFound(new { error = new { message = "User not found." } });
+        }
+
+        if (string.IsNullOrWhiteSpace(request.username))
+        {
+            return BadRequest(new { error = new { message = "Username is required." } });
+        }
+
+        // Validate length
+        if (request.username.Length < 3 || request.username.Length > 20)
+        {
+            return BadRequest(new { error = new { message = "Username must be between 3 and 20 characters." } });
+        }
+
+        // Validate format
+        if (!System.Text.RegularExpressions.Regex.IsMatch(request.username, @"^[a-zA-Z0-9_-]+$"))
+        {
+            return BadRequest(new { error = new { message = "Username can only contain letters, numbers, underscores, and hyphens." } });
+        }
+
+        // Check reserved usernames
+        if (ReservedUsernames.Contains(request.username))
+        {
+            return BadRequest(new { error = new { message = "This username is reserved and cannot be used." } });
+        }
+
+        // Check if username exists (case-insensitive) and it's not the current user
+        var usernameLower = request.username.ToLower();
+        var existingUser = await _context.Users
+            .FirstOrDefaultAsync(u => u.Username.ToLower() == usernameLower && u.Id != userId);
+
+        if (existingUser != null)
+        {
+            return BadRequest(new { error = new { message = "This username is already taken." } });
+        }
+
+        // Update username
+        user.Username = usernameLower;
+        user.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return Ok(new { username = user.Username, message = "Username updated successfully." });
+    }
+
     private Guid GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
         return Guid.Parse(userIdClaim!);
     }
 }
+
+public record CheckUsernameRequest(string username);
+public record UpdateUsernameRequest(string username);
