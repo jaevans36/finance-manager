@@ -38,16 +38,24 @@ public class AuthService : IAuthService
 
     public async System.Threading.Tasks.Task<AuthResponse> RegisterAsync(RegisterRequest request, string? ipAddress, string? userAgent)
     {
-        // Check if user already exists
+        // Check if email already exists
         if (await _context.Users.AnyAsync(u => u.Email == request.Email))
         {
             throw new InvalidOperationException("Email already registered");
+        }
+
+        // Check if username already exists (case-insensitive)
+        var usernameLower = request.Username.ToLower();
+        if (await _context.Users.AnyAsync(u => u.Username.ToLower() == usernameLower))
+        {
+            throw new InvalidOperationException("Username already taken");
         }
 
         // Create user
         var user = new User
         {
             Email = request.Email,
+            Username = usernameLower, // Store username in lowercase
             PasswordHash = _passwordHasher.HashPassword(request.Password),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -99,7 +107,13 @@ public class AuthService : IAuthService
 
     public async System.Threading.Tasks.Task<AuthResponse> LoginAsync(LoginRequest request, string? ipAddress, string? userAgent)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+        // Check if input is email or username
+        var isEmail = request.EmailOrUsername.Contains('@');
+        var usernameLower = request.EmailOrUsername.ToLower();
+        
+        var user = isEmail 
+            ? await _context.Users.FirstOrDefaultAsync(u => u.Email == request.EmailOrUsername)
+            : await _context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == usernameLower);
 
         if (user == null || !_passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
         {
@@ -183,6 +197,7 @@ public class AuthService : IAuthService
         {
             Id = user.Id,
             Email = user.Email,
+            Username = user.Username,
             EmailVerified = user.EmailVerified,
             CreatedAt = user.CreatedAt
         };

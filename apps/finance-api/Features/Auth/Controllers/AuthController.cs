@@ -78,6 +78,7 @@ public class AuthController : ControllerBase
         {
             Id = user.Id,
             Email = user.Email,
+            Username = user.Username,
             EmailVerified = user.EmailVerified,
             CreatedAt = user.CreatedAt
         });
