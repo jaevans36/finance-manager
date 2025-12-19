@@ -77,11 +77,11 @@ const UsernameInputContainer = styled.div`
   align-items: center;
 `;
 
-const UsernameHint = styled.div<{ available: boolean }>`
+const UsernameHint = styled.div<{ $available: boolean }>`
   font-size: 12px;
   margin-top: 4px;
   margin-left: 28px;
-  color: ${({ available, theme }) => available ? theme.colors.success : theme.colors.error};
+  color: ${({ $available, theme }) => $available ? theme.colors.success : theme.colors.error};
 `;
 
 const ActionButtons = styled(Flex)`
@@ -250,7 +250,7 @@ export const ProfilePage = () => {
                 </Button>
               </UsernameInputContainer>
               {newUsername && usernameMessage && (
-                <UsernameHint available={usernameAvailable === true}>
+                <UsernameHint $available={usernameAvailable === true}>
                   {usernameMessage}
                 </UsernameHint>
               )}
