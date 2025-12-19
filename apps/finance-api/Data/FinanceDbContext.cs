@@ -142,6 +142,7 @@ public class FinanceDbContext : DbContext
             entity.ToTable("users");
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.Email).IsUnique();
+            entity.HasIndex(e => e.Username).IsUnique();
         });
 
         // TaskGroup configuration
