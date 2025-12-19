@@ -7,7 +7,7 @@ using System.Security.Claims;
 namespace FinanceApi.Features.Auth.Controllers;
 
 [ApiController]
-[Route("api/auth")]
+[Route("api/v1/auth")]
 [Authorize]
 public class UpdateUsernameController : ControllerBase
 {

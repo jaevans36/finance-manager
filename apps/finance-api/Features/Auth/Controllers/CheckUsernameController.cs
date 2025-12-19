@@ -5,7 +5,7 @@ using FinanceApi.Data;
 namespace FinanceApi.Features.Auth.Controllers;
 
 [ApiController]
-[Route("api/auth")]
+[Route("api/v1/auth")]
 public class CheckUsernameController : ControllerBase
 {
     private readonly FinanceDbContext _context;
