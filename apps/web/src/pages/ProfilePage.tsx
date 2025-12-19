@@ -184,8 +184,9 @@ export const ProfilePage = () => {
       toast.success('Username updated successfully!');
       setEditingUsername(false);
       setNewUsername('');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update username');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to update username';
+      toast.error(message);
     } finally {
       setSaving(false);
     }

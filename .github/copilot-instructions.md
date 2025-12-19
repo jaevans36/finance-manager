@@ -71,6 +71,35 @@ Before creating new files or components, always check existing patterns in the c
 3. **Test immediately** - After any backend changes, restart dev environment and verify in browser
 4. **One feature, one location** - Don't split related functionality across multiple files unnecessarily
 
+## TypeScript Standards
+
+**NEVER use the `any` type in TypeScript code.** This is a critical requirement for type safety and maintainability.
+
+### Error Handling Pattern
+Always use `unknown` for catch blocks and perform proper type checking:
+
+```typescript
+try {
+  // code
+} catch (error: unknown) {
+  const message = error instanceof Error ? error.message : 'Default message';
+  // use message
+}
+```
+
+**Never write:**
+```typescript
+catch (error: any) {  // ❌ WRONG
+  error.message
+}
+```
+
+### When You Need Dynamic Types
+- Use `unknown` and type guards
+- Use generic types (`<T>`)
+- Use union types (`string | number`)
+- Use proper interface definitions
+
 Avoid the use of 'any' type in TypeScript to ensure type safety and maintainability throughout the codebase.
 
 Any written content should be in British English, not American English. If there are any non British English terms, please convert them accordingly.
