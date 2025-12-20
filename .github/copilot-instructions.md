@@ -71,6 +71,23 @@ Before creating new files or components, always check existing patterns in the c
 3. **Test immediately** - After any backend changes, restart dev environment and verify in browser
 4. **One feature, one location** - Don't split related functionality across multiple files unnecessarily
 
+## Task Management
+
+When completing work that corresponds to tasks in `specs/001-todo-app/tasks.md`:
+
+1. **Automatically check off completed tasks** - Immediately after implementing a feature or completing work described in tasks.md, update the task list to mark items as complete with `[x]`
+2. **Commit task updates** - Include task.md updates in the same commit or create a separate documentation commit
+3. **Keep tasks synchronized** - The tasks.md file should always reflect the current state of the project
+4. **Add new phases** - If implementing features not in the original spec, add new phase sections with appropriate task IDs
+
+Example workflow:
+- User requests to implement username system
+- Implement the feature across backend and frontend
+- Update tasks.md to mark all related tasks as `[x]` complete
+- Commit both code changes and documentation updates
+
+This ensures the task list remains an accurate reflection of project progress and prevents confusion about what has been completed.
+
 ## TypeScript Standards
 
 **NEVER use the `any` type in TypeScript code.** This is a critical requirement for type safety and maintainability.
