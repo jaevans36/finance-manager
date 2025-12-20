@@ -310,7 +310,7 @@ description: "Task list for To Do App implementation"
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T147 [P] Add responsive design for mobile devices (breakpoints, touch targets)
+- [x] T147 [P] Add responsive design for mobile devices (breakpoints, touch targets)
 - [x] T148 [P] Implement loading skeletons for better perceived performance
 - [x] T149 [P] Add toast notifications for user actions (success/error messages)
 - [x] T150 [P] Create user profile page in apps/web/src/pages/ProfilePage.tsx
