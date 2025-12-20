@@ -313,11 +313,11 @@ description: "Task list for To Do App implementation"
 - [ ] T147 [P] Add responsive design for mobile devices (breakpoints, touch targets)
 - [x] T148 [P] Implement loading skeletons for better perceived performance
 - [x] T149 [P] Add toast notifications for user actions (success/error messages)
-- [ ] T150 [P] Create user profile page in apps/web/src/pages/ProfilePage.tsx
+- [x] T150 [P] Create user profile page in apps/web/src/pages/ProfilePage.tsx
 - [x] T151 [P] Add keyboard shortcuts for common actions (N=new task, /=search, Esc=close/unfocus)
 - [x] T152 Implement task search functionality (search by title/description)
 - [x] T153 Add task statistics dashboard (total, completed, overdue counts)
-- [ ] T154 Implement dark mode theme toggle (already complete - verify)
+- [x] T154 Implement dark mode theme toggle
 - [ ] T155 Add accessibility improvements (ARIA labels, keyboard navigation)
 - [ ] T156 Performance optimization (code splitting, lazy loading)
 - [ ] T157 Add API request caching strategy
@@ -325,6 +325,39 @@ description: "Task list for To Do App implementation"
 - [ ] T159 Add comprehensive error logging and monitoring
 - [ ] T160 Run security audit (dependency check, vulnerability scan)
 - [ ] T161 Validate against quickstart.md test scenarios
+
+---
+
+## Phase 10: User Story 7 - Username System (Priority: P3)
+
+**Purpose**: Enable users to have unique usernames for authentication and display
+
+### Backend API for User Story 7
+
+- [x] T162 [US7] Add username column to User model in schema (varchar 20, unique, lowercase)
+- [x] T163 [US7] Create database migration for username field with backwards compatibility
+- [x] T164 [US7] Update auth service to support username/email login
+- [x] T165 [US7] Implement POST /api/v1/auth/check-username endpoint for availability checking
+- [x] T166 [US7] Implement PATCH /api/v1/auth/me/username endpoint for username updates
+- [x] T167 [US7] Add username validation (3-20 chars, alphanumeric + underscore/hyphen)
+- [x] T168 [US7] Add reserved username list (admin, support, system, etc.)
+
+### Frontend for User Story 7
+
+- [x] T169 [US7] Update RegisterForm to include username field
+- [x] T170 [US7] Update LoginForm to accept username or email
+- [x] T171 [US7] Add real-time username availability checking with debounce
+- [x] T172 [US7] Update ProfilePage with username editor and temporary username detection
+- [x] T173 [US7] Update Dashboard to display username instead of email
+- [x] T174 [US7] Add username service methods (checkUsername, updateUsername)
+
+### Testing for User Story 7
+
+- [x] T175 [US7] Test username registration and login flows
+- [x] T176 [US7] Test username availability checking
+- [x] T177 [US7] Test username update functionality
+
+**Checkpoint**: Users can register with usernames, log in with username/email, and update usernames
 
 ---
 
