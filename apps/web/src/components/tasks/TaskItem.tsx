@@ -86,11 +86,12 @@ export const TaskItem = ({
   const wasModified = new Date(task.updatedAt).getTime() > new Date(task.createdAt).getTime() + 1000;
 
   return (
-    <TaskCard $completed={task.completed}>
+    <TaskCard $completed={task.completed} role="article" aria-label={`Task: ${task.title}`}>
       <Checkbox
         type="checkbox"
         checked={task.completed}
         onChange={() => onToggleComplete(task.id)}
+        aria-label={`Mark task "${task.title}" as ${task.completed ? 'incomplete' : 'complete'}`}
       />
 
       <div style={{ flex: 1 }}>
@@ -136,10 +137,20 @@ export const TaskItem = ({
       </div>
 
       <Flex gap={5}>
-        <Button variant="primary" size="small" onClick={() => onEdit(task)}>
+        <Button 
+          variant="primary" 
+          size="small" 
+          onClick={() => onEdit(task)}
+          aria-label={`Edit task "${task.title}"`}
+        >
           Edit
         </Button>
-        <Button variant="danger" size="small" onClick={() => onDelete(task.id)}>
+        <Button 
+          variant="danger" 
+          size="small" 
+          onClick={() => onDelete(task.id)}
+          aria-label={`Delete task "${task.title}"`}
+        >
           Delete
         </Button>
       </Flex>

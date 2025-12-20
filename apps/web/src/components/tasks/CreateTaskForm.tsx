@@ -83,9 +83,9 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginBottom: '30px' }}>
+    <form onSubmit={handleSubmit} style={{ marginBottom: '30px' }} aria-label="Create new task form">
       <Card style={{ padding: '20px' }}>
-        <Subheading>Create New Task</Subheading>
+        <Subheading id="create-task-heading">Create New Task</Subheading>
 
         {error && (
           <Alert variant="error" style={{ marginBottom: '15px' }}>
@@ -98,6 +98,8 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
           <Label htmlFor="title">Title *</Label>
           <Input
             id="title"
+            aria-required="true"
+            aria-invalid={!!error && !title.trim()}
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}

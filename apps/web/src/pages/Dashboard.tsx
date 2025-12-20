@@ -239,17 +239,17 @@ export const Dashboard = () => {
 
   return (
     <Container style={{ padding: '20px', maxWidth: '1200px', width: '80%' }}>
-      <DashboardHeader justify="space-between" align="center">
+      <DashboardHeader justify="space-between" align="center" as="header" role="banner">
         <div>
           <Heading1 style={{ margin: 0 }}>Dashboard</Heading1>
           <TextSecondary style={{ margin: '5px 0 0' }}>Welcome back, @{user?.username}</TextSecondary>
         </div>
-        <Flex gap={12}>
-          <Button variant="outline" onClick={() => navigate('/profile')}>
-            <UserIcon size={18} />
+        <Flex gap={12} as="nav" aria-label="User navigation">
+          <Button variant="outline" onClick={() => navigate('/profile')} aria-label="Go to profile page">
+            <UserIcon size={18} aria-hidden="true" />
             Profile
           </Button>
-          <Button variant="danger" onClick={logout}>
+          <Button variant="danger" onClick={logout} aria-label="Logout from account">
             Logout
           </Button>
         </Flex>
@@ -271,7 +271,7 @@ export const Dashboard = () => {
           loading={groupsLoading}
         />
 
-        <div>
+        <main role="main" aria-label="Task management">
           <TaskStatistics tasks={tasks} totalGroups={groups.length} />
 
           <TaskSearch ref={searchInputRef} value={searchQuery} onChange={setSearchQuery} />
@@ -288,13 +288,16 @@ export const Dashboard = () => {
               variant="success" 
               onClick={() => setShowCreateForm(true)}
               style={{ marginBottom: '20px', fontSize: '16px' }}
+              aria-label="Create new task"
             >
               + New Task
             </Button>
           )}
 
           {loading ? (
-            <TaskSkeleton count={5} />
+            <div role="status" aria-label="Loading tasks">
+              <TaskSkeleton count={5} />
+            </div>
           ) : (
             <TaskList
               tasks={filteredTasks}
@@ -304,7 +307,7 @@ export const Dashboard = () => {
               onDelete={handleDeleteTask}
             />
           )}
-        </div>
+        </main>
       </DashboardLayout>
 
       {editingTask && (

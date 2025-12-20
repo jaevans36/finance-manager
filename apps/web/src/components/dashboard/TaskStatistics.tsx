@@ -46,6 +46,10 @@ const StatIcon = styled.div<{ $color: string }>`
   color: ${({ $color }) => $color};
   flex-shrink: 0;
 
+  svg {
+    pointer-events: none;
+  }
+
   @media (max-width: 768px) {
     width: 40px;
     height: 40px;
@@ -104,9 +108,9 @@ export const TaskStatistics: React.FC<TaskStatisticsProps> = ({ tasks, totalGrou
     : 0;
 
   return (
-    <StatsGrid>
-      <StatCard $color="#3B82F6">
-        <StatIcon $color="#3B82F6">
+    <StatsGrid role="region" aria-label="Task statistics">
+      <StatCard $color="#3B82F6" aria-label={`Total tasks: ${totalTasks}`}>
+        <StatIcon $color="#3B82F6" aria-hidden="true">
           <CircleIcon size={24} />
         </StatIcon>
         <StatContent>
@@ -115,8 +119,8 @@ export const TaskStatistics: React.FC<TaskStatisticsProps> = ({ tasks, totalGrou
         </StatContent>
       </StatCard>
 
-      <StatCard $color="#10B981">
-        <StatIcon $color="#10B981">
+      <StatCard $color="#10B981" aria-label={`Completed tasks: ${completedTasks} of ${totalTasks}, ${completionRate}%`}>
+        <StatIcon $color="#10B981" aria-hidden="true">
           <CheckCircleIcon size={24} />
         </StatIcon>
         <StatContent>
@@ -130,8 +134,8 @@ export const TaskStatistics: React.FC<TaskStatisticsProps> = ({ tasks, totalGrou
         </StatContent>
       </StatCard>
 
-      <StatCard $color="#F59E0B">
-        <StatIcon $color="#F59E0B">
+      <StatCard $color="#F59E0B" aria-label={`Overdue tasks: ${overdueTasks}`}>
+        <StatIcon $color="#F59E0B" aria-hidden="true">
           <AlertCircleIcon size={24} />
         </StatIcon>
         <StatContent>
@@ -140,8 +144,8 @@ export const TaskStatistics: React.FC<TaskStatisticsProps> = ({ tasks, totalGrou
         </StatContent>
       </StatCard>
 
-      <StatCard $color="#8B5CF6">
-        <StatIcon $color="#8B5CF6">
+      <StatCard $color="#8B5CF6" aria-label={`Task groups: ${totalGroups}`}>
+        <StatIcon $color="#8B5CF6" aria-hidden="true">
           <FolderIcon size={24} />
         </StatIcon>
         <StatContent>

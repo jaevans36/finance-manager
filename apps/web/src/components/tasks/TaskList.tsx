@@ -32,12 +32,12 @@ export const TaskList = ({
   onDelete,
 }: TaskListProps) => {
   if (isLoading) {
-    return <LoadingState>Loading tasks...</LoadingState>;
+    return <LoadingState role="status" aria-live="polite">Loading tasks...</LoadingState>;
   }
 
   if (tasks.length === 0) {
     return (
-      <EmptyState>
+      <EmptyState role="status">
         <Text style={{ marginBottom: '10px' }}>No tasks yet</Text>
         <TextSecondary>Create your first task to get started!</TextSecondary>
       </EmptyState>
@@ -45,7 +45,7 @@ export const TaskList = ({
   }
 
   return (
-    <div>
+    <div role="list" aria-label={`${tasks.length} task${tasks.length !== 1 ? 's' : ''}`}>
       {tasks.map((task) => (
         <TaskItem
           key={task.id}

@@ -103,7 +103,7 @@ export const LoginForm = () => {
         </Alert>
       )}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} aria-label="Login form">
         <FormGroup>
           <Label htmlFor="emailOrUsername">Email or Username</Label>
           <Input
@@ -118,6 +118,9 @@ export const LoginForm = () => {
             hasError={!!errors.emailOrUsername}
             disabled={isLoading}
             placeholder="Enter your email or username"
+            aria-required="true"
+            aria-invalid={!!errors.emailOrUsername}
+            aria-describedby={errors.emailOrUsername ? 'email-error' : undefined}
           />
           {errors.emailOrUsername && <ErrorText>{errors.emailOrUsername}</ErrorText>}
         </FormGroup>

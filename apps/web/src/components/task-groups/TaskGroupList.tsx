@@ -79,13 +79,14 @@ export const TaskGroupList: React.FC<TaskGroupListProps> = ({
 
   return (
     <>
-      <GroupListContainer>
+      <GroupListContainer role="navigation" aria-label="Task groups navigation">
         <GroupListHeader>
-          <Text style={{ fontWeight: 600 }}>Task Groups</Text>
+          <Text style={{ fontWeight: 600 }} id="task-groups-heading">Task Groups</Text>
           <Button
             variant="outline"
             size="small"
             onClick={() => setIsCreateModalOpen(true)}
+            aria-label="Create new task group"
           >
             <PlusIcon size={16} />
           </Button>
@@ -94,6 +95,16 @@ export const TaskGroupList: React.FC<TaskGroupListProps> = ({
         <AllTasksButton
           $isActive={selectedGroupId === null}
           onClick={() => onSelectGroup(null)}
+          role="button"
+          tabIndex={0}
+          aria-label="View all tasks"
+          aria-pressed={selectedGroupId === null}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onSelectGroup(null);
+            }
+          }}
         >
           <Text style={{ fontWeight: 500 }}>All Tasks</Text>
         </AllTasksButton>

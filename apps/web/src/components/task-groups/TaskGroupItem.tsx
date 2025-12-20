@@ -48,13 +48,26 @@ interface TaskGroupItemProps {
 
 export const TaskGroupItem: React.FC<TaskGroupItemProps> = ({ group, isActive, onClick }) => {
   return (
-    <GroupItemContainer $isActive={isActive} onClick={onClick}>
-      <ColourIndicator $colour={group.colour} />
-      <FolderIcon size={18} />
+    <GroupItemContainer 
+      $isActive={isActive} 
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      aria-label={`${group.name} group with ${group.taskCount} tasks`}
+      aria-pressed={isActive}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+    >
+      <ColourIndicator $colour={group.colour} aria-hidden="true" />
+      <FolderIcon size={18} aria-hidden="true" />
       <GroupInfo>
         <GroupName>{group.name}</GroupName>
       </GroupInfo>
-      <Badge variant="outline">{group.taskCount}</Badge>
+      <Badge variant="outline" aria-label={`${group.taskCount} tasks`}>{group.taskCount}</Badge>
     </GroupItemContainer>
   );
 };

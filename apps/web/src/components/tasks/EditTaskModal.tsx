@@ -124,9 +124,9 @@ export const EditTaskModal = ({ task, onSubmit, onCancel }: EditTaskModalProps) 
   };
 
   return (
-    <ModalOverlay onClick={onCancel}>
+    <ModalOverlay onClick={onCancel} role="dialog" aria-modal="true" aria-labelledby="edit-task-heading">
       <ModalContent onClick={handleModalClick}>
-        <Subheading>Edit Task</Subheading>
+        <Subheading id="edit-task-heading">Edit Task</Subheading>
 
         {error && (
           <Alert variant="error" style={{ marginBottom: '15px' }}>
@@ -135,7 +135,7 @@ export const EditTaskModal = ({ task, onSubmit, onCancel }: EditTaskModalProps) 
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} aria-label="Edit task form">
           <FormGroup>
             <Label htmlFor="title">Title *</Label>
             <Input
@@ -146,6 +146,8 @@ export const EditTaskModal = ({ task, onSubmit, onCancel }: EditTaskModalProps) 
               placeholder="Enter task title"
               maxLength={200}
               disabled={isSubmitting}
+              aria-required="true"
+              aria-invalid={!title.trim()}
             />
             <ErrorText>{title.length}/200</ErrorText>
           </FormGroup>
@@ -194,10 +196,21 @@ export const EditTaskModal = ({ task, onSubmit, onCancel }: EditTaskModalProps) 
           </div>
 
           <Flex gap={10}>
-            <Button type="submit" variant="primary" $isLoading={isSubmitting}>
+            <Button 
+              type="submit" 
+              variant="primary" 
+              $isLoading={isSubmitting}
+              aria-label="Save task changes"
+            >
               {isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>
-            <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
+            <Button 
+              type="button" 
+              variant="secondary" 
+              onClick={onCancel} 
+              disabled={isSubmitting}
+              aria-label="Cancel editing"
+            >
               Cancel
             </Button>
           </Flex>
