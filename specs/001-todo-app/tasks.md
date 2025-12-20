@@ -4,6 +4,8 @@ description: "Task list for To Do App implementation"
 
 # Tasks: To Do App
 
+> **Note**: This task list was originally written for a Node.js/Express/Prisma stack. The actual implementation uses **.NET Core Web API with C# and Entity Framework Core** for the backend, but all equivalent functionality has been implemented. Task IDs reference the conceptual features rather than specific file paths.
+
 **Input**: Design documents from `/specs/001-todo-app/`
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/
 
