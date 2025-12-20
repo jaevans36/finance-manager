@@ -19,6 +19,23 @@ import { TaskGroup } from '../types/taskGroup';
 
 const DashboardHeader = styled(Flex)`
   margin-bottom: 30px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 16px;
+  }
+
+  > div:last-child {
+    @media (max-width: 768px) {
+      width: 100%;
+      justify-content: stretch;
+
+      button {
+        flex: 1;
+      }
+    }
+  }
 `;
 
 const DashboardLayout = styled.div`

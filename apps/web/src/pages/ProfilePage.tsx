@@ -14,6 +14,10 @@ const ProfileHeader = styled.div`
 const ProfileCard = styled(Card)`
   padding: 30px;
   margin-bottom: 20px;
+
+  @media (max-width: 768px) {
+    padding: 20px 16px;
+  }
 `;
 
 const ProfileSection = styled.div`
@@ -30,12 +34,21 @@ const ProfileLabel = styled(TextSecondary)`
   gap: 8px;
   margin-bottom: 8px;
   font-size: 14px;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+  }
 `;
 
 const ProfileValue = styled(Text)`
   font-size: 16px;
   font-weight: 500;
   padding-left: 28px;
+
+  @media (max-width: 768px) {
+    padding-left: 0;
+    font-size: 15px;
+  }
 `;
 
 const UsernameContainer = styled.div`
@@ -43,6 +56,12 @@ const UsernameContainer = styled.div`
   align-items: center;
   gap: 12px;
   padding-left: 28px;
+
+  @media (max-width: 768px) {
+    flex-wrap: wrap;
+    padding-left: 0;
+    gap: 8px;
+  }
 `;
 
 const UsernameEditButton = styled.button`
@@ -75,6 +94,20 @@ const UsernameInputContainer = styled.div`
   gap: 8px;
   padding-left: 28px;
   align-items: center;
+
+  @media (max-width: 768px) {
+    flex-wrap: wrap;
+    padding-left: 0;
+
+    input {
+      width: 100% !important;
+      max-width: 100%;
+    }
+
+    button {
+      flex: 1;
+    }
+  }
 `;
 
 const UsernameHint = styled.div<{ $available: boolean }>`
@@ -82,6 +115,10 @@ const UsernameHint = styled.div<{ $available: boolean }>`
   margin-top: 4px;
   margin-left: 28px;
   color: ${({ $available, theme }) => $available ? theme.colors.success : theme.colors.error};
+
+  @media (max-width: 768px) {
+    margin-left: 0;
+  }
 `;
 
 const ActionButtons = styled(Flex)`
