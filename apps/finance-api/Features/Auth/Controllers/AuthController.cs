@@ -8,6 +8,9 @@ using System.Security.Claims;
 
 namespace FinanceApi.Features.Auth.Controllers;
 
+/// <summary>
+/// Authentication controller for user registration, login, and account management.
+/// </summary>
 [ApiController]
 [Route("api/v1/auth")]
 public class AuthController : ControllerBase
@@ -26,7 +29,16 @@ public class AuthController : ControllerBase
         _context = context;
     }
 
+    /// <summary>
+    /// Registers a new user account.
+    /// </summary>
+    /// <param name="request">Registration details including email, username, and password.</param>
+    /// <returns>Authentication response with JWT token and user details.</returns>
+    /// <response code="200">Successfully registered and logged in.</response>
+    /// <response code="400">Invalid registration data or email/username already exists.</response>
     [HttpPost("register")]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async System.Threading.Tasks.Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
     {
         try

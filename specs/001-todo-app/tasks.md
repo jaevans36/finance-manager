@@ -326,7 +326,7 @@ description: "Task list for To Do App implementation"
 - [x] T155 Add accessibility improvements (ARIA labels, keyboard navigation)
 - [x] T156 Performance optimization (code splitting, lazy loading)
 - [ ] T157 Add API request caching strategy
-- [ ] T158 Create API documentation with Swagger UI from OpenAPI spec
+- [x] T158 Create API documentation with Swagger UI from OpenAPI spec
 - [ ] T159 Add comprehensive error logging and monitoring
 - [ ] T160 Run security audit (dependency check, vulnerability scan)
 - [ ] T161 Validate against quickstart.md test scenarios
