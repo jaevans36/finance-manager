@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import styled from 'styled-components';
 import { Task } from '../../services/taskService';
 import { Card, Button, Text, TextSmall, Badge, Flex } from '../ui';
