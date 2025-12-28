@@ -14,7 +14,7 @@ import { TaskStatistics } from '../components/dashboard/TaskStatistics';
 import { TaskSkeleton } from '../components/dashboard/TaskSkeleton';
 import { TaskSearch } from '../components/dashboard/TaskSearch';
 import { Button, Alert, Heading1, TextSecondary, Container, Flex } from '../components/ui';
-import { XCircle, UserIcon } from 'lucide-react';
+import { XCircle, UserIcon, BarChart3 } from 'lucide-react';
 import { TaskGroup } from '../types/taskGroup';
 
 const DashboardHeader = styled(Flex)`
@@ -245,6 +245,10 @@ export const Dashboard = () => {
           <TextSecondary style={{ margin: '5px 0 0' }}>Welcome back, @{user?.username}</TextSecondary>
         </div>
         <Flex gap={12} as="nav" aria-label="User navigation">
+          <Button variant="outline" onClick={() => navigate('/weekly-progress')} aria-label="View weekly progress dashboard">
+            <BarChart3 size={18} aria-hidden="true" style={{ marginRight: 4 }} />
+            Weekly Progress
+          </Button>
           <Button variant="outline" onClick={() => navigate('/profile')} aria-label="Go to profile page">
             <UserIcon size={18} aria-hidden="true" />
             Profile

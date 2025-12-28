@@ -17,6 +17,7 @@ const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage'));
 const ResendVerificationPage = lazy(() => import('./pages/ResendVerificationPage'));
+const WeeklyProgressPage = lazy(() => import('./pages/WeeklyProgressPage'));
 
 function App() {
   return (
@@ -47,6 +48,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <ProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/weekly-progress"
+                  element={
+                    <ProtectedRoute>
+                      <WeeklyProgressPage />
                     </ProtectedRoute>
                   }
                 />

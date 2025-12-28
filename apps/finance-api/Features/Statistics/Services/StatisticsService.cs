@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using FinanceApi.Data;
 using FinanceApi.Features.Statistics.DTOs;
-using FinanceApi.Models;
+using FinanceApi.Features.Tasks.Models;
 
 namespace FinanceApi.Features.Statistics.Services;
 
@@ -109,7 +109,7 @@ public class StatisticsService : IStatisticsService
                         t.DueDate != null &&
                         t.DueDate >= DateTime.UtcNow &&
                         t.DueDate <= weekEnd &&
-                        (t.Priority == TaskPriority.Critical || t.Priority == TaskPriority.High))
+                        (t.Priority == Priority.Critical || t.Priority == Priority.High))
             .OrderBy(t => t.DueDate)
             .ThenByDescending(t => t.Priority)
             .Take(10)
@@ -118,7 +118,7 @@ public class StatisticsService : IStatisticsService
                 Id = t.Id,
                 Title = t.Title,
                 Description = t.Description,
-                Priority = t.Priority,
+                Priority = t.Priority.ToString(),
                 DueDate = t.DueDate,
                 DaysUntilDue = t.DueDate != null
                     ? (int)(t.DueDate.Value.Date - DateTime.UtcNow.Date).TotalDays
