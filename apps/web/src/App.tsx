@@ -25,9 +25,9 @@ function App() {
         <ToastProvider>
           <AuthProvider>
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <ThemeToggle />
-            <Suspense fallback={<LoadingSpinner />}>
-              <Routes>
+              <ThemeToggle />
+              <Suspense fallback={<LoadingSpinner />}>
+                <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -51,12 +51,12 @@ function App() {
                   }
                 />
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </AuthProvider>
-      </ToastProvider>
-    </ThemeProvider>
+                </Routes>
+              </Suspense>
+            </BrowserRouter>
+          </AuthProvider>
+        </ToastProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

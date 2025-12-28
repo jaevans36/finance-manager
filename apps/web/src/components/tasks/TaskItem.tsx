@@ -70,8 +70,6 @@ export const TaskItem = memo(({
   onEdit,
   onDelete,
 }: TaskItemProps) => {
-  onDelete,
-}: TaskItemProps) => {
   const isOverdue = task.dueDate && !task.completed && new Date(task.dueDate) < new Date();
   
   const formatDateTime = (dateString: string) => {
