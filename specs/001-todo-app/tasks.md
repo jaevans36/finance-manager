@@ -328,7 +328,7 @@ description: "Task list for To Do App implementation"
 - [ ] T157 Add API request caching strategy
 - [x] T158 Create API documentation with Swagger UI from OpenAPI spec
 - [ ] T159 Add comprehensive error logging and monitoring
-- [ ] T160 Run security audit (dependency check, vulnerability scan)
+- [x] T160 Run security audit (dependency check, vulnerability scan)
 - [ ] T161 Validate against quickstart.md test scenarios
 
 ---
