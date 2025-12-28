@@ -325,7 +325,7 @@ description: "Task list for To Do App implementation"
 - [x] T154 Implement dark mode theme toggle
 - [x] T155 Add accessibility improvements (ARIA labels, keyboard navigation)
 - [x] T156 Performance optimization (code splitting, lazy loading)
-- [ ] T157 Add API request caching strategy
+- [x] T157 Add API request caching strategy
 - [x] T158 Create API documentation with Swagger UI from OpenAPI spec
 - [x] T159 Add comprehensive error logging and monitoring
 - [x] T160 Run security audit (dependency check, vulnerability scan)

@@ -39,7 +39,9 @@ try
 
     // Use Serilog for logging
     builder.Host.UseSerilog();
-
+    // Add memory caching
+    builder.Services.AddMemoryCache();
+    builder.Services.AddResponseCaching();
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -172,6 +174,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
+
+app.UseResponseCaching();
 
 app.UseAuthentication();
 app.UseAuthorization();
