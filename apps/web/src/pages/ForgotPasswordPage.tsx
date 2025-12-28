@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { getErrorMessage } from '../utils/errorHelpers';
 
-export const ForgotPasswordPage = () => {
+const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -123,3 +123,5 @@ export const ForgotPasswordPage = () => {
     </div>
   );
 };
+
+export default ForgotPasswordPage;

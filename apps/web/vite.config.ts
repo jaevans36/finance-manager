@@ -20,5 +20,15 @@ export default defineConfig({
   },
   build: {
     sourcemap: true, // Better debugging in development
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split vendor code for better caching
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['styled-components', 'lucide-react'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000, // Warn for chunks > 1MB
   },
 });

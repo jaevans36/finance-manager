@@ -64,10 +64,12 @@ const getPriorityVariant = (priority: string): 'primary' | 'success' | 'warning'
   }
 };
 
-export const TaskItem = ({
+export const TaskItem = memo(({
   task,
   onToggleComplete,
   onEdit,
+  onDelete,
+}: TaskItemProps) => {
   onDelete,
 }: TaskItemProps) => {
   const isOverdue = task.dueDate && !task.completed && new Date(task.dueDate) < new Date();
@@ -156,4 +158,6 @@ export const TaskItem = ({
       </Flex>
     </TaskCard>
   );
-};
+});
+
+TaskItem.displayName = 'TaskItem';

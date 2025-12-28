@@ -324,7 +324,7 @@ description: "Task list for To Do App implementation"
 - [x] T153 Add task statistics dashboard (total, completed, overdue counts)
 - [x] T154 Implement dark mode theme toggle
 - [x] T155 Add accessibility improvements (ARIA labels, keyboard navigation)
-- [ ] T156 Performance optimization (code splitting, lazy loading)
+- [x] T156 Performance optimization (code splitting, lazy loading)
 - [ ] T157 Add API request caching strategy
 - [ ] T158 Create API documentation with Swagger UI from OpenAPI spec
 - [ ] T159 Add comprehensive error logging and monitoring

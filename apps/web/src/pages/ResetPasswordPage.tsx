@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { getErrorMessage } from '../utils/errorHelpers';
 
-export const ResetPasswordPage = () => {
+const ResetPasswordPage = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
@@ -192,3 +192,5 @@ export const ResetPasswordPage = () => {
     </div>
   );
 };
+
+export default ResetPasswordPage;

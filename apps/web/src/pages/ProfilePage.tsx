@@ -145,7 +145,7 @@ const formatDate = (dateString?: string | null) => {
   }
 };
 
-export const ProfilePage = () => {
+const ProfilePage = () => {
   const { user, logout, login } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
@@ -345,3 +345,5 @@ export const ProfilePage = () => {
     </Container>
   );
 };
+
+export default ProfilePage;

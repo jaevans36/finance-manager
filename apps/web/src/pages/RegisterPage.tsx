@@ -2,7 +2,7 @@ import React from 'react';
 import { RegisterForm } from '../components/auth/RegisterForm';
 import { CenteredContainer, FormCard } from '../components/ui';
 
-export const RegisterPage = () => {
+const RegisterPage = () => {
   return (
     <CenteredContainer>
       <FormCard>
@@ -11,3 +11,5 @@ export const RegisterPage = () => {
     </CenteredContainer>
   );
 };
+
+export default RegisterPage;

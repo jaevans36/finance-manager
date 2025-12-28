@@ -34,6 +34,8 @@ No secrets or sensitive information should be hardcoded in the codebase; instead
 
 When making code changes or suggestions, please make sure you're using the most up-to-date standards, libraries and frameworks, avoiding any deprecated packages or APIs. Avoid any outdated coding practices that may compromise security or performance for both the front-end and back-end codebases.
 
+When I say 'add this to the spec' or something similar, please add the relevant information and features to the specification documents using speckit conventions.
+
 ## Development Scripts
 
 This project uses PowerShell scripts in the `scripts/` directory for all development operations. Always use these scripts instead of running commands directly:
