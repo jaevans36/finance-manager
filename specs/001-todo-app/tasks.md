@@ -329,7 +329,7 @@ description: "Task list for To Do App implementation"
 - [x] T158 Create API documentation with Swagger UI from OpenAPI spec
 - [ ] T159 Add comprehensive error logging and monitoring
 - [x] T160 Run security audit (dependency check, vulnerability scan)
-- [ ] T161 Validate against quickstart.md test scenarios
+- [x] T161 Validate against quickstart.md test scenarios
 
 ---
 
