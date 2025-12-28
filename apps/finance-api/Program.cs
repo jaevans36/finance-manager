@@ -13,6 +13,7 @@ using FinanceApi.Features.Common.Sessions.Services;
 using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Common.PasswordReset.Services;
 using FinanceApi.Features.Common.EmailVerification.Services;
+using FinanceApi.Features.Statistics.Services;
 using FinanceApi.Middleware;
 
 // Configure Serilog
@@ -102,8 +103,7 @@ builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<TaskGroupService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
-builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
-
+builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();    builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 // Configure PostgreSQL with Entity Framework Core
 builder.Services.AddDbContext<FinanceDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));

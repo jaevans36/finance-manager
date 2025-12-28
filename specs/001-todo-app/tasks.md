@@ -374,19 +374,19 @@ description: "Task list for To Do App implementation"
 
 ### Backend: Statistics & Analytics API
 
-- [ ] T178 [US8] Create WeeklyStatisticsDto in apps/finance-api/Features/Statistics/DTOs/ (weekStart, weekEnd, totalTasks, completedTasks, completionPercentage, dailyBreakdown)
-- [ ] T179 [US8] Create DailyStatisticsDto with date, totalTasks, completedTasks, completionRate properties
-- [ ] T180 [US8] Create UrgentTaskDto with task details plus daysUntilDue for sorting
-- [ ] T181 [US8] Implement StatisticsService in Features/Statistics/Services/ with weekly calculation logic
-- [ ] T182 [US8] Implement GET /api/statistics/weekly endpoint in StatisticsController (query params: weekStart date)
-- [ ] T183 [US8] Implement GET /api/statistics/daily endpoint for single day breakdown (query param: date)
-- [ ] T184 [US8] Implement GET /api/tasks/urgent endpoint with week filtering (returns top 10 critical/high priority incomplete tasks)
-- [ ] T185 [US8] Add LINQ queries for date range filtering (WHERE dueDate >= weekStart AND dueDate <= weekEnd)
-- [ ] T186 [US8] Implement urgent task logic (priority Critical/High, incomplete, due within week, ordered by dueDate then priority)
-- [ ] T187 [US8] Add GroupBy date logic for daily breakdowns using `.GroupBy(t => t.DueDate.Date)`
+- [x] T178 [US8] Create WeeklyStatisticsDto in apps/finance-api/Features/Statistics/DTOs/ (weekStart, weekEnd, totalTasks, completedTasks, completionPercentage, dailyBreakdown)
+- [x] T179 [US8] Create DailyStatisticsDto with date, totalTasks, completedTasks, completionRate properties
+- [x] T180 [US8] Create UrgentTaskDto with task details plus daysUntilDue for sorting
+- [x] T181 [US8] Implement StatisticsService in Features/Statistics/Services/ with weekly calculation logic
+- [x] T182 [US8] Implement GET /api/statistics/weekly endpoint in StatisticsController (query params: weekStart date)
+- [x] T183 [US8] Implement GET /api/statistics/daily endpoint for single day breakdown (query param: date)
+- [x] T184 [US8] Implement GET /api/tasks/urgent endpoint with week filtering (returns top 10 critical/high priority incomplete tasks)
+- [x] T185 [US8] Add LINQ queries for date range filtering (WHERE dueDate >= weekStart AND dueDate <= weekEnd)
+- [x] T186 [US8] Implement urgent task logic (priority Critical/High, incomplete, due within week, ordered by dueDate then priority)
+- [x] T187 [US8] Add GroupBy date logic for daily breakdowns using `.GroupBy(t => t.DueDate.Date)`
 - [ ] T188 [US8] Add database indexes on Task table (dueDate, completed, priority) for query performance
 - [ ] T189 [US8] Implement timezone handling using user's local timezone from request headers or user preferences
-- [ ] T190 [US8] Add validation for date range parameters (valid dates, weekStart <= weekEnd)
+- [x] T190 [US8] Add validation for date range parameters (valid dates, weekStart <= weekEnd)
 
 ### Frontend: Chart Library Setup
 
