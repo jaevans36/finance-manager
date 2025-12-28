@@ -132,6 +132,29 @@ Users can create unique usernames during registration that serve as their primar
 
 ---
 
+### User Story 8 - Weekly Progress Dashboard (Priority: P3)
+
+Users can view comprehensive weekly progress analytics showing task completion trends, daily breakdowns, and urgent tasks, enabling better productivity tracking and planning over time.
+
+**Why this priority**: Progress visualization helps users understand their productivity patterns and stay motivated. It builds on core task functionality to provide insights, making it a valuable enhancement but not critical for basic task management.
+
+**Independent Test**: Can be fully tested by creating tasks across different days of the week, completing some tasks, and viewing the weekly dashboard to verify accurate charts, daily breakdowns, and urgent task identification.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user with tasks throughout the current week, **When** they navigate to the weekly progress dashboard, **Then** they see an overview chart showing total tasks vs completed tasks for the week in both bar and pie chart formats
+2. **Given** a user viewing the weekly dashboard, **When** they look at the day-by-day section, **Then** each day displays a pie chart of completion rate and a list of all tasks for that day with completion status
+3. **Given** a user has tasks with varying priorities, **When** they view the weekly dashboard, **Then** a "Top Urgent Tasks" section displays the 5-10 most critical/high priority incomplete tasks for the current week
+4. **Given** a user viewing the weekly dashboard, **When** they navigate to previous or next weeks, **Then** the charts and data update to show historical or future week data
+5. **Given** a user has no tasks for the selected week, **When** they view the weekly dashboard, **Then** an empty state message encourages them to create tasks with a quick-add option
+6. **Given** a user viewing daily task lists in the dashboard, **When** they click on a task, **Then** they can quickly toggle completion status or view task details without leaving the dashboard
+7. **Given** a week has varying completion rates across days, **When** the user views the overview, **Then** completion percentage, total tasks, and completed tasks are clearly displayed with visual indicators
+8. **Given** a user wants to focus on a specific time period, **When** they select a date range, **Then** the dashboard updates to show statistics for the custom period
+9. **Given** a user completes tasks during the week, **When** they refresh or return to the dashboard, **Then** all charts and statistics update in real-time to reflect current completion status
+10. **Given** a user has tasks without due dates, **When** viewing the weekly dashboard, **Then** tasks with no due date appear in a separate "Unscheduled Tasks" section
+
+---
+
 ### Edge Cases
 
 - What happens when a user tries to register with an already existing email address or username?
@@ -141,6 +164,9 @@ Users can create unique usernames during registration that serve as their primar
 - What happens when a user tries to access another user's tasks directly?
 - How does the system behave when a user has no tasks (empty state)?
 - What happens if a user tries to delete a task that has already been deleted by another session?
+- How does the weekly dashboard handle weeks with no tasks or all tasks completed?
+- What happens when a user navigates to a week far in the past or future with no data?
+- How does the system calculate "urgent" tasks when multiple tasks have the same priority and due date?
 
 ## Requirements *(mandatory)*
 
@@ -173,13 +199,21 @@ Users can create unique usernames during registration that serve as their primar
 - **FR-025**: System MUST display username instead of email in dashboard welcome messages and profile pages
 - **FR-026**: System MUST block reserved usernames (admin, support, system, root, etc.) from registration
 - **FR-027**: System MUST prompt existing users (without usernames) to create one on their next login
+- **FR-028**: System MUST provide a weekly progress dashboard showing task completion analytics
+- **FR-029**: System MUST display overall weekly statistics with bar and pie charts
+- **FR-030**: System MUST show day-by-day breakdown with completion rates and task lists
+- **FR-031**: System MUST identify and display top 5-10 urgent/critical tasks for the selected week
+- **FR-032**: System MUST allow users to navigate between weeks (previous/next/date picker)
+- **FR-033**: System MUST calculate completion percentages and statistics in real-time
+- **FR-034**: System MUST handle empty states when no tasks exist for selected time period
 
 ### Non-Functional Requirements
 
 - **NFR-001**: System MUST encrypt user passwords using industry-standard hashing
-- **NFR-002**: System MUST respond to user actions within 2 seconds under normal load
-- **NFR-003**: System MUST be available 99.5% of the time during business hours
-- **NFR-004**: System MUST support at least 100 concurrent users
+- **NFR-002**: System MUST respond to user actions within 2 seconds undeusername, registration date, and last login timestamp
+- **Task**: Represents a user's task with title, description, priority level (Critical/High/Medium/Low), due date, completion status, creation timestamp, and last modified timestamp. Each task belongs to exactly one user and optionally one task group
+- **TaskGroup**: Represents a named collection of related tasks (e.g., "House Renovation", "Work", "Personal") with customisable properties such as colour and icon. Each group belongs to one user
+- **WeeklyStatistics**: Computed analytics showing task completion data aggregated by week and day, including total tasks, completed tasks, completion percentage, and urgent task counts. Not persisted as an entity but calculated on-demand from Task data
 - **NFR-005**: System MUST log all authentication attempts and data modifications for audit trail
 
 ### Key Entities
@@ -202,6 +236,56 @@ Users can create unique usernames during registration that serve as their primar
 - **SC-008**: Users can successfully manage (CRUD operations) at least 100 tasks without performance degradation
 
 ## Change Log
+28 - Weekly Progress Dashboard Added
+
+**Added**:
+
+- **User Story 8**: Weekly Progress Dashboard (Priority P3) - Enables users to view comprehensive weekly analytics with charts, daily breakdowns, and urgent task tracking
+- **FR-028 to FR-034**: Functional requirements for weekly statistics, visualization, navigation, and real-time calculation
+- **WeeklyStatistics**: New computed entity in Key Entities section for aggregated analytics
+- Multiple chart types (bar charts, pie charts) for different data visualizations
+
+**Rationale**:
+
+- **Productivity Insights**: Users can track completion patterns and identify productive/unproductive days
+- **Motivation**: Visual progress indicators encourage continued task completion
+- **Planning**: Historical data helps users understand workload capacity and plan better
+- **Urgent Task Management**: Highlighting critical tasks prevents important deadlines from being missed
+- **Time-Based Analysis**: Weekly view provides actionable insights at an appropriate time scale
+
+**Impact**:
+
+- New API endpoints required for statistics calculation (`GET /api/statistics/weekly`, `GET /api/tasks/urgent`)
+- Backend service layer needs date range filtering and aggregation logic
+- Frontend requires charting library integration (Recharts or Chart.js)
+- New WeeklyProgressPage route and components
+- Navigation updates to include link to weekly progress dashboard
+- Performance considerations for aggregation queries on large task sets
+
+**Features**:
+
+- **Overall Progress Chart**: Weekly summary showing total vs completed tasks (bar + pie charts)
+- **Day-by-Day Breakdown**: Seven days with individual pie charts and task lists showing completion status
+- **Top Urgent Tasks**: 5-10 most critical/high priority incomplete tasks with due dates in current week
+- **Week Navigation**: Previous/next week buttons and date picker for custom date selection
+- **Completion Metrics**: Percentage complete, total tasks, completed count, remaining count
+- **Real-Time Updates**: Statistics recalculate when tasks are toggled complete/incomplete
+- **Empty States**: Helpful messages when no tasks exist for selected period
+- **Responsive Design**: Charts adapt to mobile/tablet/desktop viewports
+- **Task Interaction**: Quick toggle completion or view details directly from dashboard
+
+**Technical Considerations**:
+
+- Week definition: Monday-Sunday (configurable to Sunday-Saturday if needed)
+- Timezone handling: Use user's local timezone for day boundaries
+- Caching strategy: Consider caching weekly statistics with invalidation on task updates
+- Chart library: Recharts recommended (React-native, TypeScript support, responsive)
+- Performance: Index on `dueDate` and `completed` columns for efficient date range queries
+- Urgent task criteria: Priority=Critical/High + due date within current week + not completed
+
+---
+
+### 2025-12-
 
 ### 2025-12-19 - Username System Added
 

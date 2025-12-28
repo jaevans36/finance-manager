@@ -366,6 +366,105 @@ description: "Task list for To Do App implementation"
 
 ---
 
+## Phase 11: User Story 8 - Weekly Progress Dashboard (Priority: P3)
+
+**Purpose**: Provide comprehensive weekly analytics with visualizations for productivity insights and planning
+
+**Dependencies**: Requires Phase 2 (Foundational) and Phase 4 (Basic Task Management) complete. Enhanced by Phase 5 (Due Dates) and Phase 6 (Priority).
+
+### Backend: Statistics & Analytics API
+
+- [ ] T178 [US8] Create WeeklyStatisticsDto in apps/finance-api/Features/Statistics/DTOs/ (weekStart, weekEnd, totalTasks, completedTasks, completionPercentage, dailyBreakdown)
+- [ ] T179 [US8] Create DailyStatisticsDto with date, totalTasks, completedTasks, completionRate properties
+- [ ] T180 [US8] Create UrgentTaskDto with task details plus daysUntilDue for sorting
+- [ ] T181 [US8] Implement StatisticsService in Features/Statistics/Services/ with weekly calculation logic
+- [ ] T182 [US8] Implement GET /api/statistics/weekly endpoint in StatisticsController (query params: weekStart date)
+- [ ] T183 [US8] Implement GET /api/statistics/daily endpoint for single day breakdown (query param: date)
+- [ ] T184 [US8] Implement GET /api/tasks/urgent endpoint with week filtering (returns top 10 critical/high priority incomplete tasks)
+- [ ] T185 [US8] Add LINQ queries for date range filtering (WHERE dueDate >= weekStart AND dueDate <= weekEnd)
+- [ ] T186 [US8] Implement urgent task logic (priority Critical/High, incomplete, due within week, ordered by dueDate then priority)
+- [ ] T187 [US8] Add GroupBy date logic for daily breakdowns using `.GroupBy(t => t.DueDate.Date)`
+- [ ] T188 [US8] Add database indexes on Task table (dueDate, completed, priority) for query performance
+- [ ] T189 [US8] Implement timezone handling using user's local timezone from request headers or user preferences
+- [ ] T190 [US8] Add validation for date range parameters (valid dates, weekStart <= weekEnd)
+
+### Frontend: Chart Library Setup
+
+- [ ] T191 [P] [US8] Install Recharts library with `npm install recharts` (or Chart.js alternative)
+- [ ] T192 [P] [US8] Create chart wrapper components in apps/web/src/components/charts/ (BarChart, PieChart wrappers)
+- [ ] T193 [P] [US8] Create chart color theme constants matching app color scheme
+- [ ] T194 [US8] Create responsive chart container with aspect ratio handling for mobile
+- [ ] T195 [US8] Implement chart loading states and error boundaries
+- [ ] T196 [US8] Add chart accessibility (ARIA labels, keyboard navigation, screen reader support)
+
+### Frontend: Weekly Dashboard UI
+
+- [ ] T197 [P] [US8] Create WeeklyStatistics interface in apps/web/src/types/statistics.ts
+- [ ] T198 [P] [US8] Create statisticsService.ts in services/ with API methods (getWeeklyStats, getDailyStats, getUrgentTasks)
+- [ ] T199 [US8] Create WeeklyProgress page in apps/web/src/pages/WeeklyProgress.tsx
+- [ ] T200 [US8] Create WeeklyOverview component showing total vs completed (bar chart + pie chart side-by-side)
+- [ ] T201 [US8] Create WeeklyStats summary cards (total tasks, completed, percentage, trend indicator)
+- [ ] T202 [US8] Create WeekNavigation component (previous/next buttons, current week display, date picker)
+- [ ] T203 [US8] Implement week calculation utilities (getWeekStart, getWeekEnd, formatWeekRange)
+- [ ] T204 [US8] Create DailyBreakdown component rendering 7 day cards (Mon-Sun)
+- [ ] T205 [US8] Create DayCard component with date, pie chart, completion rate, and task list
+- [ ] T206 [US8] Create DayTaskList component showing tasks with checkboxes (grouped completed/incomplete)
+- [ ] T207 [US8] Implement quick-toggle completion from dashboard with optimistic updates
+- [ ] T208 [US8] Create UrgentTasksPanel component displaying top 5-10 critical tasks
+- [ ] T209 [US8] Create UrgentTaskItem component with priority badge, due date, and days remaining
+- [ ] T210 [US8] Add empty state component for weeks with no tasks ("No tasks this week - Create one now!")
+- [ ] T211 [US8] Implement loading skeletons for all dashboard sections
+- [ ] T212 [US8] Add error handling with retry buttons for failed data loads
+- [ ] T213 [US8] Implement responsive layout (grid → stack on mobile, chart resizing)
+
+### Frontend: Navigation & Integration
+
+- [ ] T214 [US8] Add "Weekly Progress" link to main navigation/sidebar
+- [ ] T215 [US8] Add route configuration in App.tsx for /weekly-progress
+- [ ] T216 [US8] Create navigation icon for weekly progress (chart/analytics icon)
+- [ ] T217 [US8] Add "View Weekly Progress" CTA button on main Dashboard
+- [ ] T218 [US8] Implement real-time refresh when tasks are completed/created (websocket or polling)
+
+### Data Visualization Enhancements
+
+- [ ] T219 [P] [US8] Implement bar chart showing daily task counts (7 bars, color-coded completed vs incomplete)
+- [ ] T220 [P] [US8] Implement pie chart for weekly completion ratio (completed vs incomplete)
+- [ ] T221 [P] [US8] Implement mini pie charts for each day (individual completion ratios)
+- [ ] T222 [US8] Add chart tooltips showing exact numbers on hover
+- [ ] T223 [US8] Add chart legends with clear labeling
+- [ ] T224 [US8] Implement color coding (green=completed, gray=incomplete, red=overdue)
+- [ ] T225 [US8] Add animation transitions when data updates
+- [ ] T226 [US8] Implement chart export functionality (download as PNG/CSV)
+
+### Advanced Features
+
+- [ ] T227 [P] [US8] Implement custom date range selector (beyond single week)
+- [ ] T228 [P] [US8] Add month view option in addition to week view
+- [ ] T229 [US8] Implement productivity trends (comparison with previous week)
+- [ ] T230 [US8] Add streak counter (consecutive days with completed tasks)
+- [ ] T231 [US8] Create completion rate history chart (last 4-8 weeks line graph)
+- [ ] T232 [US8] Implement "Best Day" and "Most Productive Day" badges
+- [ ] T233 [US8] Add group filtering to weekly stats (view progress by specific group)
+- [ ] T234 [US8] Implement task count goals with progress indicators
+- [ ] T235 [US8] Add "Unscheduled Tasks" section for tasks without due dates
+
+### Testing & Optimization
+
+- [ ] T236 [P] [US8] Create StatisticsControllerTests.cs with weekly calculation tests
+- [ ] T237 [P] [US8] Add edge case tests (empty weeks, weeks spanning months/years, timezone boundaries)
+- [ ] T238 [P] [US8] Create chart component tests with Jest/Testing Library
+- [ ] T239 [US8] Test week navigation (previous/next, date picker, edge cases)
+- [ ] T240 [US8] Test urgent task identification logic (priority ordering, date filtering)
+- [ ] T241 [US8] Test responsive chart rendering on different screen sizes
+- [ ] T242 [US8] Performance testing for large task sets (1000+ tasks)
+- [ ] T243 [US8] Implement query caching with cache invalidation on task updates
+- [ ] T244 [US8] Test real-time updates when tasks are completed from dashboard
+- [ ] T245 [US8] End-to-end test: navigate to weekly progress → view charts → toggle task → verify update
+
+**Checkpoint**: Users can view comprehensive weekly analytics with charts, daily breakdowns, and urgent task tracking
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -385,6 +484,9 @@ description: "Task list for To Do App implementation"
 - **US3 (P3)**: Extends US2 task model - recommend completing US2 first
 - **US4 (P4)**: Extends US2 task model - recommend completing US2 first
 - **US5 (P5)**: Operates on US2 tasks - recommend completing US2 first
+- **US6 (P3)**: Extends US2 with grouping - recommend completing US2 first
+- **US7 (P2)**: Extends US1 authentication - can be done after US1
+- **US8 (P3)**: Requires US2 (tasks), enhanced by US3 (priority) and US4 (due dates)
 
 ### Within Each User Story
 
@@ -402,6 +504,7 @@ description: "Task list for To Do App implementation"
   - T027-T032 (Frontend Infrastructure) can run in parallel after T026
 - Within User Stories: All tasks marked [P] can run in parallel
 - Within Phase 8 (Task Groups): T128-T129 can run in parallel, T140-T141 can run in parallel
+- Within Phase 11 (Weekly Progress): T191-T196 (chart setup) can run in parallel, T197-T198 can run in parallel, T219-T226 (visualizations) can run in parallel, T227-T235 (advanced features) can run in parallel after core dashboard complete
 - Phase 9 Polish: All tasks marked [P] can run in parallel
 
 ---
@@ -423,7 +526,9 @@ description: "Task list for To Do App implementation"
 2. Add US1 (Authentication) → Test independently → Deploy/Demo (T033-T053)
 3. Add US2 (Task Management) → Test independently → Deploy/Demo (T054-T075)
 4. Add US3 (Prioritization) → Test independently → Deploy/Demo (T076-T088)
-5. Add US4 (Due Dates) → Test independently → Deploy/Demo (T089-T104)
+5. Add US7 (Username System) → Test independently → Deploy/Demo (T162-T177)
+9. Add Polish (Phase 9) → Improvements release (T147-T161)
+10. Add US8 (Weekly Progress Dashboard) → Analytics release (T178-T245oy/Demo (T089-T104)
 6. Add US5 (Deletion) → Test independently → Deploy/Demo (T105-T115)
 7. Add US6 (Task Groups) → Test independently → Deploy/Demo (T116-T146)
 8. Add Polish (Phase 9) → Final release (T147-T161)
