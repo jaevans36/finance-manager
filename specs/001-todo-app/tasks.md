@@ -390,7 +390,7 @@ description: "Task list for To Do App implementation"
 
 ### Frontend: Chart Library Setup
 
-- [ ] T191 [P] [US8] Install Recharts library with `npm install recharts` (or Chart.js alternative)
+- [x] T191 [P] [US8] Install Recharts library with `npm install recharts` (or Chart.js alternative)
 - [ ] T192 [P] [US8] Create chart wrapper components in apps/web/src/components/charts/ (BarChart, PieChart wrappers)
 - [ ] T193 [P] [US8] Create chart color theme constants matching app color scheme
 - [ ] T194 [US8] Create responsive chart container with aspect ratio handling for mobile
@@ -399,8 +399,8 @@ description: "Task list for To Do App implementation"
 
 ### Frontend: Weekly Dashboard UI
 
-- [ ] T197 [P] [US8] Create WeeklyStatistics interface in apps/web/src/types/statistics.ts
-- [ ] T198 [P] [US8] Create statisticsService.ts in services/ with API methods (getWeeklyStats, getDailyStats, getUrgentTasks)
+- [x] T197 [P] [US8] Create WeeklyStatistics interface in apps/web/src/types/statistics.ts
+- [x] T198 [P] [US8] Create statisticsService.ts in services/ with API methods (getWeeklyStats, getDailyStats, getUrgentTasks)
 - [ ] T199 [US8] Create WeeklyProgress page in apps/web/src/pages/WeeklyProgress.tsx
 - [ ] T200 [US8] Create WeeklyOverview component showing total vs completed (bar chart + pie chart side-by-side)
 - [ ] T201 [US8] Create WeeklyStats summary cards (total tasks, completed, percentage, trend indicator)
