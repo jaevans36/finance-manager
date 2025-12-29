@@ -10,7 +10,7 @@ namespace FinanceApi.Features.Statistics.Controllers;
 /// </summary>
 [Authorize]
 [ApiController]
-[Route("api/statistics")]
+[Route("api/v1/statistics")]
 public class StatisticsController : ControllerBase
 {
     private readonly IStatisticsService _statisticsService;

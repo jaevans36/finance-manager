@@ -1,3 +1,5 @@
+using FinanceApi.Features.Tasks.DTOs;
+
 namespace FinanceApi.Features.Statistics.DTOs;
 
 /// <summary>
@@ -9,4 +11,5 @@ public class DailyStatisticsDto
     public int TotalTasks { get; set; }
     public int CompletedTasks { get; set; }
     public decimal CompletionRate { get; set; }
+    public List<TaskDto> Tasks { get; set; } = new();
 }

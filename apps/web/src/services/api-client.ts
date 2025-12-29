@@ -1,5 +1,17 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
+/**
+ * IMPORTANT: All services MUST use this apiClient instead of importing axios directly.
+ * 
+ * This client provides:
+ * - Automatic authentication (Bearer token in headers)
+ * - Centralized error handling
+ * - Request/response logging
+ * - Token refresh logic
+ * 
+ * See services/README.md for usage examples.
+ */
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 interface ApiErrorResponse {

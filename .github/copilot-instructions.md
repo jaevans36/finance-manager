@@ -66,6 +66,9 @@ Before creating new files or components, always check existing patterns in the c
 - Follow the established folder structure: `components/`, `contexts/`, `services/`, `pages/`
 - Reuse existing styled components and UI library components from `components/ui/`
 - Check `authService.ts` or similar service files before adding new API methods
+- **CRITICAL: All API services MUST use `apiClient` from `services/api-client.ts`** (never import axios directly)
+  * See `apps/web/src/services/README.md` for the service template and examples
+  * `apiClient` provides automatic authentication, error handling, and token management
 
 ### General Rules
 1. **Search first, create second** - Use `grep_search` or `file_search` to find existing patterns

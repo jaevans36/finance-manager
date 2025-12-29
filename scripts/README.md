@@ -44,6 +44,12 @@ PowerShell scripts for common development tasks.
   - Search logs by keyword or level
   - Filter by timestamp
 
+- **create-test-data.ps1** - Generate test data for the weekly progress dashboard
+  - Creates 3-5 tasks per day for the current week
+  - Assigns random priorities
+  - Marks ~60% of tasks as completed
+  - Useful for testing the weekly progress dashboard
+
 ## Usage
 
 Run scripts from the project root directory:

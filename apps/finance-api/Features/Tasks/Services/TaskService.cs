@@ -14,6 +14,7 @@ public interface ITaskService
     System.Threading.Tasks.Task DeleteTaskAsync(Guid userId, Guid taskId);
     System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid userId, Guid taskId);
     System.Threading.Tasks.Task<List<TaskDto>> GetTasksAsync(Guid userId);
+    System.Threading.Tasks.Task<List<TaskDto>> GetTasksByDateRangeAsync(Guid userId, DateTime startDate, DateTime endDate);
 }
 
 public class TaskService : ITaskService
@@ -136,6 +137,26 @@ public class TaskService : ITaskService
             .Include(t => t.Group)
             .Where(t => t.UserId == userId)
             .OrderByDescending(t => t.CreatedAt)
+            .ToListAsync();
+
+        var taskDtos = new List<TaskDto>();
+        foreach (var task in tasks)
+        {
+            taskDtos.Add(await MapToTaskDtoAsync(task));
+        }
+        return taskDtos;
+    }
+
+    public async System.Threading.Tasks.Task<List<TaskDto>> GetTasksByDateRangeAsync(Guid userId, DateTime startDate, DateTime endDate)
+    {
+        var tasks = await _context.Tasks
+            .Include(t => t.Group)
+            .Where(t => t.UserId == userId &&
+                        t.DueDate != null &&
+                        t.DueDate >= startDate &&
+                        t.DueDate <= endDate)
+            .OrderByDescending(t => t.Priority)
+            .ThenBy(t => t.DueDate)
             .ToListAsync();
 
         var taskDtos = new List<TaskDto>();

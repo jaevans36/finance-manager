@@ -59,4 +59,9 @@ export const taskService = {
   async deleteTask(id: string): Promise<void> {
     await apiClient.delete(`/tasks/${id}`);
   },
+
+  async toggleTask(id: string, completed: boolean): Promise<Task> {
+    const response = await apiClient.put<Task>(`/tasks/${id}`, { completed });
+    return response.data;
+  },
 };

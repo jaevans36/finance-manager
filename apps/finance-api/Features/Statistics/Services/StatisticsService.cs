@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using FinanceApi.Data;
 using FinanceApi.Features.Statistics.DTOs;
 using FinanceApi.Features.Tasks.Models;
+using FinanceApi.Features.Tasks.DTOs;
+using FinanceApi.Features.Tasks.Services;
 
 namespace FinanceApi.Features.Statistics.Services;
 
@@ -15,59 +17,71 @@ public interface IStatisticsService
 public class StatisticsService : IStatisticsService
 {
     private readonly FinanceDbContext _context;
+    private readonly ITaskService _taskService;
 
-    public StatisticsService(FinanceDbContext context)
+    public StatisticsService(FinanceDbContext context, ITaskService taskService)
     {
         _context = context;
+        _taskService = taskService;
     }
 
     public async Task<WeeklyStatisticsDto> GetWeeklyStatisticsAsync(Guid userId, DateTime weekStart)
     {
-        var weekEnd = weekStart.AddDays(7).AddSeconds(-1);
+        // Ensure we're working with UTC dates
+        var weekStartUtc = DateTime.SpecifyKind(weekStart.Date, DateTimeKind.Utc);
+        var weekEndUtc = weekStartUtc.AddDays(7);
 
         var tasks = await _context.Tasks
+            .Include(t => t.Group)
             .Where(t => t.UserId == userId &&
                         t.DueDate != null &&
-                        t.DueDate >= weekStart &&
-                        t.DueDate <= weekEnd)
+                        t.DueDate >= weekStartUtc &&
+                        t.DueDate < weekEndUtc)
             .ToListAsync();
 
-        var dailyBreakdown = tasks
-            .GroupBy(t => t.DueDate!.Value.Date)
-            .Select(g => new DailyStatisticsDto
+        var dailyBreakdown = new List<DailyStatisticsDto>();
+
+        // Create a day for each day of the week
+        for (var date = weekStartUtc; date < weekEndUtc; date = date.AddDays(1))
+        {
+            var nextDay = date.AddDays(1);
+            var dayTasks = tasks.Where(t => t.DueDate!.Value >= date && t.DueDate.Value < nextDay).ToList();
+            var taskDtos = dayTasks.Select(t => new TaskDto
             {
-                Date = g.Key,
-                TotalTasks = g.Count(),
-                CompletedTasks = g.Count(t => t.Completed),
-                CompletionRate = g.Any() ? (decimal)g.Count(t => t.Completed) / g.Count() * 100 : 0
+                Id = t.Id,
+                Title = t.Title,
+                Description = t.Description,
+                Priority = t.Priority.ToString(),
+                DueDate = t.DueDate,
+                Completed = t.Completed,
+                CompletedAt = t.CompletedAt,
+                GroupId = t.GroupId,
+                GroupName = t.Group?.Name,
+                GroupColour = t.Group?.Colour,
+                CreatedAt = t.CreatedAt,
+                UpdatedAt = t.UpdatedAt
             })
-            .OrderBy(d => d.Date)
+            .OrderByDescending(t => t.Priority)
+            .ThenBy(t => t.Completed)
             .ToList();
 
-        // Fill in missing days with zero stats
-        for (var date = weekStart.Date; date < weekEnd.Date; date = date.AddDays(1))
-        {
-            if (!dailyBreakdown.Any(d => d.Date == date))
+            dailyBreakdown.Add(new DailyStatisticsDto
             {
-                dailyBreakdown.Add(new DailyStatisticsDto
-                {
-                    Date = date,
-                    TotalTasks = 0,
-                    CompletedTasks = 0,
-                    CompletionRate = 0
-                });
-            }
+                Date = date,
+                TotalTasks = dayTasks.Count,
+                CompletedTasks = dayTasks.Count(t => t.Completed),
+                CompletionRate = dayTasks.Any() ? (decimal)dayTasks.Count(t => t.Completed) / dayTasks.Count * 100 : 0,
+                Tasks = taskDtos
+            });
         }
-
-        dailyBreakdown = dailyBreakdown.OrderBy(d => d.Date).ToList();
 
         var totalTasks = tasks.Count;
         var completedTasks = tasks.Count(t => t.Completed);
 
         return new WeeklyStatisticsDto
         {
-            WeekStart = weekStart,
-            WeekEnd = weekEnd,
+            WeekStart = weekStartUtc,
+            WeekEnd = weekEndUtc,
             TotalTasks = totalTasks,
             CompletedTasks = completedTasks,
             CompletionPercentage = totalTasks > 0 ? (decimal)completedTasks / totalTasks * 100 : 0,
@@ -101,14 +115,15 @@ public class StatisticsService : IStatisticsService
 
     public async Task<List<UrgentTaskDto>> GetUrgentTasksAsync(Guid userId, DateTime weekStart)
     {
-        var weekEnd = weekStart.AddDays(7);
+        var weekStartUtc = DateTime.SpecifyKind(weekStart.Date, DateTimeKind.Utc);
+        var weekEndUtc = weekStartUtc.AddDays(7);
 
         var urgentTasks = await _context.Tasks
             .Where(t => t.UserId == userId &&
                         !t.Completed &&
                         t.DueDate != null &&
                         t.DueDate >= DateTime.UtcNow &&
-                        t.DueDate <= weekEnd &&
+                        t.DueDate <= weekEndUtc &&
                         (t.Priority == Priority.Critical || t.Priority == Priority.High))
             .OrderBy(t => t.DueDate)
             .ThenByDescending(t => t.Priority)

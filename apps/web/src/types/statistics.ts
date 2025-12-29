@@ -1,8 +1,11 @@
+import { Task } from '../services/taskService';
+
 export interface DailyStatistics {
   date: string;
   totalTasks: number;
   completedTasks: number;
   completionRate: number;
+  tasks: Task[];
 }
 
 export interface WeeklyStatistics {
