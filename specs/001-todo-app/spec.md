@@ -155,6 +155,34 @@ Users can view comprehensive weekly progress analytics showing task completion t
 
 ---
 
+### User Story 9 - Calendar View (Priority: P3)
+
+Users can visualise and manage their tasks in a traditional monthly calendar format, providing an intuitive time-based view that complements the list and weekly dashboard views for better long-term planning and task scheduling.
+
+**Why this priority**: Calendar view offers a familiar and intuitive way to visualise task distribution over time. While not essential for basic task management, it significantly enhances the user experience by providing a clear temporal context and enabling date-based task creation. It builds on existing task functionality without requiring database changes.
+
+**Independent Test**: Can be fully tested by navigating to the calendar view, viewing tasks displayed on their due dates, clicking a date to create a new task, clicking an existing task to view details, and navigating between months to verify task persistence and accurate date display.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user has tasks with various due dates, **When** they navigate to the calendar view, **Then** they see a monthly calendar grid with task indicators on the relevant dates showing how many tasks are due that day
+2. **Given** a user viewing the calendar, **When** they click on a task displayed on a calendar date, **Then** a modal opens showing the full task details (title, description, priority, group, completion status) with options to edit or mark complete
+3. **Given** a user viewing the calendar, **When** they click on an empty date cell, **Then** a quick-add task form appears with the due date pre-populated, allowing them to create a task for that specific date
+4. **Given** a user viewing the current month, **When** they click the "Previous Month" or "Next Month" navigation buttons, **Then** the calendar updates to show the requested month with tasks displayed on their respective dates
+5. **Given** a user viewing the calendar, **When** they use a date picker to jump to a specific month, **Then** the calendar instantly navigates to that month and displays all tasks due during that period
+6. **Given** a user has multiple tasks on the same day, **When** they view that date in the calendar, **Then** task indicators show the count and clicking reveals a list of all tasks for that day with priority badges
+7. **Given** a user viewing the calendar on desktop, **When** they resize the browser to mobile width, **Then** the calendar adapts responsively, maintaining usability with appropriate touch targets and scrollable task lists
+8. **Given** a user viewing the calendar, **When** they look at the current date, **Then** today's date is visually highlighted with a distinct border or background colour
+9. **Given** a user has tasks with different priorities, **When** viewing the calendar, **Then** task indicators use colour coding (red for critical/high priority, grey for medium/low) to provide quick visual priority assessment
+10. **Given** a user is viewing the calendar, **When** they click the "Back to Dashboard" button, **Then** they navigate back to the main dashboard while preserving their session and task data
+11. **Given** a user viewing a month with no tasks, **When** they look at the calendar grid, **Then** an empty state message encourages them to add tasks by clicking on dates
+12. **Given** a user has applied task filters (by group or priority), **When** they view the calendar, **Then** only tasks matching the current filter criteria are displayed on the calendar dates
+13. **Given** a user creates or completes a task from the calendar modal, **When** the action completes, **Then** the calendar updates immediately to reflect the change without requiring a page refresh
+14. **Given** a user has tasks spanning multiple days, **When** viewing the calendar, **Then** each task appears on its specific due date only (not as a multi-day bar, unless future enhancement implemented)
+15. **Given** weekend days in the calendar, **When** the user views the calendar, **Then** Saturday and Sunday are visually distinguished from weekdays with different background shading
+
+---
+
 ### Edge Cases
 
 - What happens when a user tries to register with an already existing email address or username?
@@ -167,6 +195,13 @@ Users can view comprehensive weekly progress analytics showing task completion t
 - How does the weekly dashboard handle weeks with no tasks or all tasks completed?
 - What happens when a user navigates to a week far in the past or future with no data?
 - How does the system calculate "urgent" tasks when multiple tasks have the same priority and due date?
+- How does the calendar handle months with varying numbers of days (28, 29, 30, 31)?
+- What happens when a user has more than 10 tasks on a single calendar date?
+- How does the calendar display tasks without due dates (null dueDate)?
+- What happens when a user navigates to a month 10 years in the future or past?
+- How does the calendar handle timezone differences for due dates?
+- What happens when a user creates a task from the calendar and immediately navigates away?
+- How does the calendar perform with 1000+ tasks spanning multiple months?
 
 ## Requirements *(mandatory)*
 
@@ -206,6 +241,18 @@ Users can view comprehensive weekly progress analytics showing task completion t
 - **FR-032**: System MUST allow users to navigate between weeks (previous/next/date picker)
 - **FR-033**: System MUST calculate completion percentages and statistics in real-time
 - **FR-034**: System MUST handle empty states when no tasks exist for selected time period
+- **FR-035**: System MUST display tasks in a monthly calendar grid format with day cells showing task counts
+- **FR-036**: Users MUST be able to click on calendar dates to create new tasks with pre-populated due dates
+- **FR-037**: Users MUST be able to click on tasks in the calendar to view full details in a modal dialog
+- **FR-038**: System MUST provide month navigation controls (previous/next buttons and date picker)
+- **FR-039**: System MUST highlight the current date in the calendar view
+- **FR-040**: System MUST colour-code task indicators by priority for visual scanning
+- **FR-041**: System MUST display multiple tasks per day with an indicator showing the count
+- **FR-042**: System MUST provide responsive calendar layout for mobile devices with touch-friendly interactions
+- **FR-043**: System MUST distinguish weekend days from weekdays with visual styling
+- **FR-044**: System MUST match calendar page width with other main pages (Dashboard, Profile, Weekly Progress) at 1200px max-width and 80% width
+- **FR-045**: System MUST provide a "Back to Dashboard" navigation button in the calendar view
+- **FR-046**: System MUST add a "Calendar" navigation link to the main dashboard menu
 
 ### Non-Functional Requirements
 
@@ -344,3 +391,33 @@ Users can view comprehensive weekly progress analytics showing task completion t
 - Task entity gains optional `group_id` foreign key
 - New API endpoints required for group CRUD operations
 - UI updates needed for group management and task filtering by group
+
+---
+
+### 2025-12-29 - Calendar View Feature Added
+
+**Added**:
+
+- **User Story 9**: Calendar View (Priority P3) - Enables users to visualise and manage tasks in a traditional monthly calendar format
+- **FR-021 to FR-028**: Functional requirements for calendar display, task viewing, creation, navigation, and interactions
+- Month-based calendar view with day cells showing task indicators
+- Quick task creation by clicking on calendar dates
+- Task detail modal accessible from calendar
+- Month navigation controls (previous/next/date picker)
+
+**Rationale**:
+
+- Provides alternative visualisation for users who prefer calendar-based task management
+- Complements weekly progress dashboard with longer-term planning view
+- Enables better understanding of task distribution across time periods
+- Intuitive interface for adding tasks to specific dates
+- Aligns with common productivity tools (Google Calendar, Outlook, etc.)
+
+**Impact**:
+
+- No database schema changes required (uses existing Task entity with dueDate)
+- New frontend page component required (/calendar route)
+- Reuses existing task API endpoints (GET /api/tasks, POST /api/tasks, GET /api/tasks/{id})
+- Navigation updates needed to add calendar link to main menu
+- Responsive design considerations for mobile calendar views
+- Potential future enhancement: drag-and-drop task rescheduling

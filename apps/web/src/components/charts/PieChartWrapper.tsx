@@ -13,6 +13,8 @@ interface PieChartWrapperProps {
   data: PieChartData[];
   showLegend?: boolean;
   height?: number;
+  title?: string;
+  description?: string;
 }
 
 const ChartContainer = styled.div<{ height: number }>`
@@ -24,14 +26,17 @@ const ChartContainer = styled.div<{ height: number }>`
 export const PieChartWrapper: React.FC<PieChartWrapperProps> = ({ 
   data, 
   showLegend = true,
-  height = 250
+  height = 250,
+  title = 'Pie Chart',
+  description,
 }) => {
   const COLORS = data.map(item => item.color || chartColors.primary);
+  const ariaLabel = description || `${title} showing distribution of ${data.map(d => d.name).join(', ')}`;
 
   return (
-    <ChartContainer height={height}>
+    <ChartContainer height={height} role="img" aria-label={ariaLabel} tabIndex={0}>
       <ResponsiveContainer width="100%" height="100%">
-        <RechartsPieChart>
+        <RechartsPieChart aria-label={ariaLabel}>
           <Pie
             data={data}
             cx="50%"
@@ -41,13 +46,24 @@ export const PieChartWrapper: React.FC<PieChartWrapperProps> = ({
             outerRadius={80}
             fill={chartColors.primary}
             dataKey="value"
+            aria-label="Pie chart data"
           >
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              <Cell 
+                key={`cell-${index}`} 
+                fill={COLORS[index % COLORS.length]}
+                aria-label={`${entry.name}: ${entry.value}`}
+              />
             ))}
           </Pie>
-          <Tooltip />
-          {showLegend && <Legend />}
+          <Tooltip 
+            contentStyle={{
+              background: chartColors.tooltipBackground,
+              border: `1px solid ${chartColors.border}`,
+              borderRadius: '4px',
+            }}
+          />
+          {showLegend && <Legend wrapperStyle={{ paddingTop: '10px' }} />}
         </RechartsPieChart>
       </ResponsiveContainer>
     </ChartContainer>

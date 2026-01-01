@@ -354,17 +354,68 @@ const EmptyDay = styled.div`
   font-size: 13px;
 `;
 
+const ErrorContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  padding: 40px 20px;
+`;
+
+const ErrorIcon = styled.div`
+  font-size: 64px;
+  margin-bottom: 20px;
+`;
+
+const ErrorTitle = styled.h2`
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 24px;
+  margin: 0 0 12px 0;
+`;
+
+const ErrorMessage = styled.p`
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: 16px;
+  margin: 0 0 24px 0;
+  max-width: 500px;
+`;
+
+const RetryButton = styled.button`
+  padding: 12px 24px;
+  background: ${({ theme }) => theme.colors.primary};
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primaryHover};
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
 const WeeklyProgressPage: React.FC = () => {
   const [stats, setStats] = useState<WeeklyStatistics | null>(null);
   const [urgentTasks, setUrgentTasks] = useState<UrgentTask[]>([]);
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getWeekStart(new Date()));
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { showToast } = useToast();
   const navigate = useNavigate();
 
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const weekStartStr = currentWeekStart.toISOString();
       const [weeklyStats, urgent] = await Promise.all([
         statisticsService.getWeeklyStatistics(weekStartStr),
@@ -375,6 +426,7 @@ const WeeklyProgressPage: React.FC = () => {
       setUrgentTasks(urgent);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to load statistics';
+      setError(message);
       showToast('error', message);
     } finally {
       setLoading(false);
@@ -413,6 +465,30 @@ const WeeklyProgressPage: React.FC = () => {
     return (
       <PageContainer>
         <LoadingSkeleton>Loading statistics...</LoadingSkeleton>
+      </PageContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageContainer>
+        <Header>
+          <HeaderTop>
+            <BackButton onClick={() => navigate('/dashboard')}>
+              <ArrowLeft size={18} />
+              Back to Dashboard
+            </BackButton>
+          </HeaderTop>
+          <Title>Weekly Progress Dashboard</Title>
+        </Header>
+        <ErrorContainer>
+          <ErrorIcon>⚠️</ErrorIcon>
+          <ErrorTitle>Failed to Load Statistics</ErrorTitle>
+          <ErrorMessage>{error}</ErrorMessage>
+          <RetryButton onClick={() => loadData()}>
+            Retry
+          </RetryButton>
+        </ErrorContainer>
       </PageContainer>
     );
   }

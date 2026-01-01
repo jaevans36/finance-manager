@@ -391,44 +391,44 @@ description: "Task list for To Do App implementation"
 ### Frontend: Chart Library Setup
 
 - [x] T191 [P] [US8] Install Recharts library with `npm install recharts` (or Chart.js alternative)
-- [ ] T192 [P] [US8] Create chart wrapper components in apps/web/src/components/charts/ (BarChart, PieChart wrappers)
-- [ ] T193 [P] [US8] Create chart color theme constants matching app color scheme
-- [ ] T194 [US8] Create responsive chart container with aspect ratio handling for mobile
-- [ ] T195 [US8] Implement chart loading states and error boundaries
-- [ ] T196 [US8] Add chart accessibility (ARIA labels, keyboard navigation, screen reader support)
+- [x] T192 [P] [US8] Create chart wrapper components in apps/web/src/components/charts/ (BarChart, PieChart wrappers)
+- [x] T193 [P] [US8] Create chart color theme constants matching app color scheme
+- [x] T194 [US8] Create responsive chart container with aspect ratio handling for mobile
+- [x] T195 [US8] Implement chart loading states and error boundaries
+- [x] T196 [US8] Add chart accessibility (ARIA labels, keyboard navigation, screen reader support)
 
 ### Frontend: Weekly Dashboard UI
 
 - [x] T197 [P] [US8] Create WeeklyStatistics interface in apps/web/src/types/statistics.ts
 - [x] T198 [P] [US8] Create statisticsService.ts in services/ with API methods (getWeeklyStats, getDailyStats, getUrgentTasks)
-- [ ] T199 [US8] Create WeeklyProgress page in apps/web/src/pages/WeeklyProgress.tsx
-- [ ] T200 [US8] Create WeeklyOverview component showing total vs completed (bar chart + pie chart side-by-side)
-- [ ] T201 [US8] Create WeeklyStats summary cards (total tasks, completed, percentage, trend indicator)
-- [ ] T202 [US8] Create WeekNavigation component (previous/next buttons, current week display, date picker)
-- [ ] T203 [US8] Implement week calculation utilities (getWeekStart, getWeekEnd, formatWeekRange)
-- [ ] T204 [US8] Create DailyBreakdown component rendering 7 day cards (Mon-Sun)
-- [ ] T205 [US8] Create DayCard component with date, pie chart, completion rate, and task list
-- [ ] T206 [US8] Create DayTaskList component showing tasks with checkboxes (grouped completed/incomplete)
-- [ ] T207 [US8] Implement quick-toggle completion from dashboard with optimistic updates
-- [ ] T208 [US8] Create UrgentTasksPanel component displaying top 5-10 critical tasks
-- [ ] T209 [US8] Create UrgentTaskItem component with priority badge, due date, and days remaining
-- [ ] T210 [US8] Add empty state component for weeks with no tasks ("No tasks this week - Create one now!")
-- [ ] T211 [US8] Implement loading skeletons for all dashboard sections
-- [ ] T212 [US8] Add error handling with retry buttons for failed data loads
-- [ ] T213 [US8] Implement responsive layout (grid → stack on mobile, chart resizing)
+- [x] T199 [US8] Create WeeklyProgress page in apps/web/src/pages/WeeklyProgress.tsx
+- [x] T200 [US8] Create WeeklyOverview component showing total vs completed (bar chart + pie chart side-by-side)
+- [x] T201 [US8] Create WeeklyStats summary cards (total tasks, completed, percentage, trend indicator)
+- [x] T202 [US8] Create WeekNavigation component (previous/next buttons, current week display, date picker)
+- [x] T203 [US8] Implement week calculation utilities (getWeekStart, getWeekEnd, formatWeekRange)
+- [x] T204 [US8] Create DailyBreakdown component rendering 7 day cards (Mon-Sun)
+- [x] T205 [US8] Create DayCard component with date, pie chart, completion rate, and task list
+- [x] T206 [US8] Create DayTaskList component showing tasks with checkboxes (grouped completed/incomplete)
+- [x] T207 [US8] Implement quick-toggle completion from dashboard with optimistic updates
+- [x] T208 [US8] Create UrgentTasksPanel component displaying top 5-10 critical tasks
+- [x] T209 [US8] Create UrgentTaskItem component with priority badge, due date, and days remaining
+- [x] T210 [US8] Add empty state component for weeks with no tasks ("No tasks this week - Create one now!")
+- [x] T211 [US8] Implement loading skeletons for all dashboard sections
+- [x] T212 [US8] Add error handling with retry buttons for failed data loads
+- [x] T213 [US8] Implement responsive layout (grid → stack on mobile, chart resizing)
 
 ### Frontend: Navigation & Integration
 
-- [ ] T214 [US8] Add "Weekly Progress" link to main navigation/sidebar
-- [ ] T215 [US8] Add route configuration in App.tsx for /weekly-progress
-- [ ] T216 [US8] Create navigation icon for weekly progress (chart/analytics icon)
-- [ ] T217 [US8] Add "View Weekly Progress" CTA button on main Dashboard
+- [x] T214 [US8] Add "Weekly Progress" link to main navigation/sidebar
+- [x] T215 [US8] Add route configuration in App.tsx for /weekly-progress
+- [x] T216 [US8] Create navigation icon for weekly progress (chart/analytics icon)
+- [x] T217 [US8] Add "View Weekly Progress" CTA button on main Dashboard
 - [ ] T218 [US8] Implement real-time refresh when tasks are completed/created (websocket or polling)
 
 ### Data Visualization Enhancements
 
-- [ ] T219 [P] [US8] Implement bar chart showing daily task counts (7 bars, color-coded completed vs incomplete)
-- [ ] T220 [P] [US8] Implement pie chart for weekly completion ratio (completed vs incomplete)
+- [x] T219 [P] [US8] Implement bar chart showing daily task counts (7 bars, color-coded completed vs incomplete)
+- [x] T220 [P] [US8] Implement pie chart for weekly completion ratio (completed vs incomplete)
 - [ ] T221 [P] [US8] Implement mini pie charts for each day (individual completion ratios)
 - [ ] T222 [US8] Add chart tooltips showing exact numbers on hover
 - [ ] T223 [US8] Add chart legends with clear labeling
@@ -465,6 +465,127 @@ description: "Task list for To Do App implementation"
 
 ---
 
+## Phase 12: User Story 9 - Calendar View (Priority: P3)
+
+**Purpose**: Provide a traditional monthly calendar interface for visualising and managing tasks by date
+
+**Dependencies**: Requires Phase 2 (Foundational) and Phase 4 (Basic Task Management) complete. Enhanced by Phase 5 (Due Dates), Phase 6 (Priority), and Phase 8 (Task Groups).
+
+### Backend: No New Endpoints Required
+
+**Note**: Calendar view reuses existing task API endpoints. No backend changes needed unless adding calendar-specific features like multi-day events or recurring tasks in future.
+
+- [ ] T246 [US9] Review existing GET /api/v1/tasks endpoint to ensure it supports filtering by date range (if not already implemented)
+- [ ] T247 [US9] Add optional query parameters to GET /api/v1/tasks for monthStart and monthEnd filtering (if needed)
+- [ ] T248 [US9] Add database indexes on Task.DueDate if not already present for calendar query performance
+- [ ] T249 [US9] Test API performance with date range queries spanning full months with 100+ tasks
+
+### Frontend: Calendar Component Library Setup
+
+- [ ] T250 [P] [US9] Research and select calendar library (react-big-calendar, react-calendar, or FullCalendar)
+- [ ] T251 [P] [US9] Install chosen calendar library with `npm install [library]`
+- [ ] T252 [P] [US9] Create calendar theme configuration matching app color scheme
+- [ ] T253 [US9] Create calendar wrapper component in apps/web/src/components/calendar/ for consistent styling
+- [ ] T254 [US9] Implement responsive calendar container with aspect ratio handling for mobile
+- [ ] T255 [US9] Create custom day cell renderer for task count badges
+- [ ] T256 [US9] Implement calendar loading states and error boundaries
+- [ ] T257 [US9] Add calendar accessibility features (ARIA labels, keyboard navigation, screen reader support)
+
+### Frontend: Calendar Page & Core Components
+
+- [ ] T258 [P] [US9] Create CalendarPage.tsx in apps/web/src/pages/ with page layout
+- [ ] T259 [P] [US9] Create Calendar interfaces in apps/web/src/types/calendar.ts (CalendarTask, DayData)
+- [ ] T260 [US9] Implement month data fetching logic using taskService with date range parameters
+- [ ] T261 [US9] Create CalendarHeader component with month/year display and navigation controls
+- [ ] T262 [US9] Create MonthNavigation component with previous/next buttons and date picker
+- [ ] T263 [US9] Implement current month calculation and state management
+- [ ] T264 [US9] Create BackButton component matching Weekly Progress style with ArrowLeft icon
+- [ ] T265 [US9] Implement PageContainer with matching width (1200px max-width, 80% width, 95% on mobile)
+- [ ] T266 [US9] Create CalendarGrid component rendering month view with day cells
+- [ ] T267 [US9] Create DayCell component displaying date number and task count badge
+- [ ] T268 [US9] Implement current date highlighting with distinct border/background
+- [ ] T269 [US9] Implement weekend day styling (different background for Sat/Sun)
+- [ ] T270 [US9] Add task count badges to day cells with colour coding by priority
+
+### Frontend: Task Interaction & Modals
+
+- [ ] T271 [P] [US9] Create TaskDetailModal component reusing EditTaskModal functionality
+- [ ] T272 [P] [US9] Create QuickAddTaskModal component with minimal fields (title, group, priority)
+- [ ] T273 [US9] Implement day cell click handler to open QuickAddTaskModal with pre-populated due date
+- [ ] T274 [US9] Implement task badge click handler to show task list for that day
+- [ ] T275 [US9] Create DayTaskListModal component showing all tasks for selected date
+- [ ] T276 [US9] Implement task click handler in day modal to open TaskDetailModal
+- [ ] T277 [US9] Add quick completion toggle in task modals without closing
+- [ ] T278 [US9] Implement optimistic UI updates when tasks are created/completed from calendar
+- [ ] T279 [US9] Add loading spinners for async operations (create, update, delete tasks)
+- [ ] T280 [US9] Implement error handling with toast notifications for failed operations
+
+### Frontend: Advanced Calendar Features
+
+- [ ] T281 [P] [US9] Implement task filtering by group with dropdown selector
+- [ ] T282 [P] [US9] Implement task filtering by priority with checkbox filters
+- [ ] T283 [US9] Create FilterBar component for calendar filters matching Dashboard style
+- [ ] T284 [US9] Add "Clear Filters" button when filters are active
+- [ ] T285 [US9] Implement month-to-month navigation persistence (preserve filters when navigating)
+- [ ] T286 [US9] Create empty state component for months with no tasks
+- [ ] T287 [US9] Add task count summary at top of calendar (X tasks this month)
+- [ ] T288 [US9] Implement colour-coded priority indicators (red=critical/high, yellow=medium, grey=low)
+- [ ] T289 [US9] Add hover tooltips on day cells showing task titles
+- [ ] T290 [US9] Implement keyboard shortcuts (Left/Right arrows for month navigation, Enter to add task)
+
+### Frontend: Navigation & Integration
+
+- [ ] T291 [US9] Add "Calendar" link to main navigation menu with calendar icon
+- [ ] T292 [US9] Add route configuration in App.tsx for /calendar path
+- [ ] T293 [US9] Create calendar icon component or use Lucide React calendar icon
+- [ ] T294 [US9] Update Dashboard.tsx to add "View Calendar" CTA button
+- [ ] T295 [US9] Ensure protected route wrapper includes /calendar path
+- [ ] T296 [US9] Test navigation flow: Dashboard → Calendar → Back to Dashboard
+
+### Frontend: Responsive Design & Polish
+
+- [ ] T297 [P] [US9] Implement responsive grid breakpoints (7 columns desktop, stack on mobile)
+- [ ] T298 [P] [US9] Increase touch target sizes for mobile day cells (minimum 44x44px)
+- [ ] T299 [P] [US9] Implement horizontal swipe gestures for month navigation on mobile
+- [ ] T300 [US9] Add pull-to-refresh gesture for calendar data reload on mobile
+- [ ] T301 [US9] Test calendar layout on various screen sizes (320px to 1920px widths)
+- [ ] T302 [US9] Implement loading skeletons for calendar grid during data fetch
+- [ ] T303 [US9] Add smooth transitions when switching months
+- [ ] T304 [US9] Optimize performance with React.memo for day cell components
+- [ ] T305 [US9] Implement virtualization for task lists with many tasks per day (10+ tasks)
+
+### Testing & Validation
+
+- [ ] T306 [P] [US9] Create component tests for CalendarPage with Jest/Testing Library
+- [ ] T307 [P] [US9] Create component tests for day cell rendering and interactions
+- [ ] T308 [P] [US9] Create tests for modal interactions (open, close, submit)
+- [ ] T309 [US9] Test month navigation edge cases (year boundaries, leap years)
+- [ ] T310 [US9] Test task creation from calendar with pre-populated due date
+- [ ] T311 [US9] Test task detail viewing and editing from calendar
+- [ ] T312 [US9] Test filter interactions (group, priority filters)
+- [ ] T313 [US9] Test responsive behavior on mobile devices
+- [ ] T314 [US9] Test keyboard navigation and accessibility
+- [ ] T315 [US9] End-to-end test: navigate to calendar → view tasks → create task on date → verify persistence
+- [ ] T316 [US9] Performance test with 500+ tasks across multiple months
+- [ ] T317 [US9] Test timezone handling for task due dates in calendar
+- [ ] T318 [US9] Test empty state display for months with no tasks
+- [ ] T319 [US9] Validate against spec acceptance scenarios (User Story 9)
+
+### Future Enhancements (Not in Scope for Phase 12)
+
+- [ ] T320 [Future] Implement drag-and-drop task rescheduling between dates
+- [ ] T321 [Future] Add week view option alongside month view
+- [ ] T322 [Future] Implement multi-day task spans (e.g., task from Mon-Fri)
+- [ ] T323 [Future] Add recurring task support in calendar view
+- [ ] T324 [Future] Implement calendar export (iCal format)
+- [ ] T325 [Future] Add calendar sync with external calendars (Google Calendar, Outlook)
+- [ ] T326 [Future] Implement agenda view (list of upcoming tasks by date)
+- [ ] T327 [Future] Add mini calendar widget to Dashboard for quick navigation
+
+**Checkpoint**: Users can view and manage tasks in a monthly calendar format with intuitive date-based task creation
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -487,6 +608,7 @@ description: "Task list for To Do App implementation"
 - **US6 (P3)**: Extends US2 with grouping - recommend completing US2 first
 - **US7 (P2)**: Extends US1 authentication - can be done after US1
 - **US8 (P3)**: Requires US2 (tasks), enhanced by US3 (priority) and US4 (due dates)
+- **US9 (P3)**: Requires US2 (tasks), enhanced by US4 (due dates), US3 (priority), and US6 (groups)
 
 ### Within Each User Story
 
@@ -505,6 +627,7 @@ description: "Task list for To Do App implementation"
 - Within User Stories: All tasks marked [P] can run in parallel
 - Within Phase 8 (Task Groups): T128-T129 can run in parallel, T140-T141 can run in parallel
 - Within Phase 11 (Weekly Progress): T191-T196 (chart setup) can run in parallel, T197-T198 can run in parallel, T219-T226 (visualizations) can run in parallel, T227-T235 (advanced features) can run in parallel after core dashboard complete
+- Within Phase 12 (Calendar View): T250-T252 (calendar library setup) can run in parallel, T258-T259 can run in parallel, T271-T272 (modals) can run in parallel, T281-T282 (filters) can run in parallel, T297-T299 (responsive design) can run in parallel, T306-T309 (tests) can run in parallel
 - Phase 9 Polish: All tasks marked [P] can run in parallel
 
 ---
@@ -525,12 +648,13 @@ description: "Task list for To Do App implementation"
 1. Setup + Foundational → Foundation ready (T001-T032)
 2. Add US1 (Authentication) → Test independently → Deploy/Demo (T033-T053)
 3. Add US2 (Task Management) → Test independently → Deploy/Demo (T054-T075)
-4. Add US3 (Prioritization) → Test independently → Deploy/Demo (T076-T088)
-5. Add US7 (Username System) → Test independently → Deploy/Demo (T162-T177)
-9. Add Polish (Phase 9) → Improvements release (T147-T161)
-10. Add US8 (Weekly Progress Dashboard) → Analytics release (T178-T245oy/Demo (T089-T104)
+4. Add US4 (Due Dates) → Test independently → Deploy/Demo (T089-T104)
 6. Add US5 (Deletion) → Test independently → Deploy/Demo (T105-T115)
 7. Add US6 (Task Groups) → Test independently → Deploy/Demo (T116-T146)
+8. Add US7 (Username System) → Test independently → Deploy/Demo (T162-T177)
+9. Add US8 (Weekly Progress Dashboard) → Analytics release (T178-T245)
+10. Add US9 (Calendar View) → Calendar release (T246-T327)
+11. Add Polish (Phase 9) → Final improvements independently → Deploy/Demo (T116-T146)
 8. Add Polish (Phase 9) → Final release (T147-T161)
 
 ### Parallel Team Strategy

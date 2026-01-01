@@ -15,6 +15,11 @@ export const chartColors = {
   background: 'rgba(255, 255, 255, 0.05)',
   gridLines: 'rgba(0, 0, 0, 0.1)',
   
+  // Tooltip
+  tooltipBackground: '#ffffff',
+  tooltipCursor: 'rgba(0, 0, 0, 0.05)',
+  border: 'rgba(0, 0, 0, 0.1)',
+  
   // Text
   text: '#333',
   textLight: '#666',
