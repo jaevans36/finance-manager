@@ -429,10 +429,10 @@ description: "Task list for To Do App implementation"
 
 - [x] T219 [P] [US8] Implement bar chart showing daily task counts (7 bars, color-coded completed vs incomplete)
 - [x] T220 [P] [US8] Implement pie chart for weekly completion ratio (completed vs incomplete)
-- [ ] T221 [P] [US8] Implement mini pie charts for each day (individual completion ratios)
-- [ ] T222 [US8] Add chart tooltips showing exact numbers on hover
-- [ ] T223 [US8] Add chart legends with clear labeling
-- [ ] T224 [US8] Implement color coding (green=completed, gray=incomplete, red=overdue)
+- [x] T221 [P] [US8] Implement mini pie charts for each day (individual completion ratios)
+- [x] T222 [US8] Add chart tooltips showing exact numbers on hover
+- [x] T223 [US8] Add chart legends with clear labeling
+- [x] T224 [US8] Implement color coding (green=completed, gray=incomplete, red=overdue)
 - [ ] T225 [US8] Add animation transitions when data updates
 - [ ] T226 [US8] Implement chart export functionality (download as PNG/CSV)
 
@@ -440,10 +440,10 @@ description: "Task list for To Do App implementation"
 
 - [ ] T227 [P] [US8] Implement custom date range selector (beyond single week)
 - [ ] T228 [P] [US8] Add month view option in addition to week view
-- [ ] T229 [US8] Implement productivity trends (comparison with previous week)
-- [ ] T230 [US8] Add streak counter (consecutive days with completed tasks)
+- [x] T229 [US8] Implement productivity trends (comparison with previous week)
+- [x] T230 [US8] Add streak counter (consecutive days with completed tasks)
 - [ ] T231 [US8] Create completion rate history chart (last 4-8 weeks line graph)
-- [ ] T232 [US8] Implement "Best Day" and "Most Productive Day" badges
+- [x] T232 [US8] Implement "Best Day" and "Most Productive Day" badges
 - [ ] T233 [US8] Add group filtering to weekly stats (view progress by specific group)
 - [ ] T234 [US8] Implement task count goals with progress indicators
 - [ ] T235 [US8] Add "Unscheduled Tasks" section for tasks without due dates

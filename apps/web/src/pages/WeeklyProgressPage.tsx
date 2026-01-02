@@ -89,6 +89,7 @@ const StatsGrid = styled.div`
 const StatCard = styled(Card)`
   padding: 20px;
   text-align: center;
+  position: relative;
 `;
 
 const StatValue = styled.div`
@@ -101,6 +102,21 @@ const StatValue = styled.div`
 const StatLabel = styled(Text)`
   font-size: 14px;
   color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const TrendIndicator = styled.div<{ $trend: 'up' | 'down' | 'neutral' }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 8px;
+  color: ${({ $trend, theme }) => 
+    $trend === 'up' ? chartColors.primary :
+    $trend === 'down' ? chartColors.urgent :
+    theme.colors.textSecondary
+  };
 `;
 
 const ChartsSection = styled.div`
@@ -186,6 +202,40 @@ const LoadingSkeleton = styled.div`
 
 const DailyBreakdownSection = styled.div`
   margin-top: 30px;
+`;
+
+const InsightsSection = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+  margin-bottom: 30px;
+`;
+
+const InsightCard = styled(Card)`
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.cardBackground} 0%, ${({ theme }) => theme.colors.backgroundSecondary} 100%);
+`;
+
+const InsightIcon = styled.div`
+  font-size: 40px;
+  margin-bottom: 12px;
+`;
+
+const InsightValue = styled.div`
+  font-size: 28px;
+  font-weight: bold;
+  color: ${({ theme }) => theme.colors.primary};
+  margin-bottom: 8px;
+`;
+
+const InsightLabel = styled(Text)`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 const DailyGrid = styled.div`
@@ -405,6 +455,7 @@ const RetryButton = styled.button`
 
 const WeeklyProgressPage: React.FC = () => {
   const [stats, setStats] = useState<WeeklyStatistics | null>(null);
+  const [prevWeekStats, setPrevWeekStats] = useState<WeeklyStatistics | null>(null);
   const [urgentTasks, setUrgentTasks] = useState<UrgentTask[]>([]);
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getWeekStart(new Date()));
   const [loading, setLoading] = useState(true);
@@ -417,13 +468,21 @@ const WeeklyProgressPage: React.FC = () => {
       setLoading(true);
       setError(null);
       const weekStartStr = currentWeekStart.toISOString();
-      const [weeklyStats, urgent] = await Promise.all([
+      
+      // Calculate previous week start
+      const prevWeek = new Date(currentWeekStart);
+      prevWeek.setDate(prevWeek.getDate() - 7);
+      const prevWeekStartStr = prevWeek.toISOString();
+      
+      const [weeklyStats, urgent, previousWeekStats] = await Promise.all([
         statisticsService.getWeeklyStatistics(weekStartStr),
         statisticsService.getUrgentTasks(weekStartStr),
+        statisticsService.getWeeklyStatistics(prevWeekStartStr).catch(() => null), // Optional: previous week for comparison
       ]);
 
       setStats(weeklyStats);
       setUrgentTasks(urgent);
+      setPrevWeekStats(previousWeekStats);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to load statistics';
       setError(message);
@@ -493,6 +552,48 @@ const WeeklyProgressPage: React.FC = () => {
     );
   }
 
+  // Calculate trends compared to previous week
+  const calculateTrend = (current: number, previous: number | undefined): { trend: 'up' | 'down' | 'neutral', change: number } => {
+    if (!previous || previous === 0) return { trend: 'neutral', change: 0 };
+    const change = ((current - previous) / previous) * 100;
+    if (Math.abs(change) < 1) return { trend: 'neutral', change: 0 };
+    return { trend: change > 0 ? 'up' : 'down', change: Math.abs(change) };
+  };
+
+  const completionTrend = prevWeekStats ? calculateTrend(stats.completionPercentage, prevWeekStats.completionPercentage) : { trend: 'neutral' as const, change: 0 };
+  const completedTasksTrend = prevWeekStats ? calculateTrend(stats.completedTasks, prevWeekStats.completedTasks) : { trend: 'neutral' as const, change: 0 };
+
+  // Calculate productivity insights
+  const calculateStreak = (): number => {
+    let streak = 0;
+    const sortedDays = [...stats.dailyBreakdown].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    
+    for (const day of sortedDays) {
+      if (day.completedTasks > 0) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    return streak;
+  };
+
+  const findBestDay = (): { day: string, count: number } | null => {
+    if (stats.dailyBreakdown.length === 0) return null;
+    
+    const best = stats.dailyBreakdown.reduce((max, day) => 
+      day.completedTasks > max.completedTasks ? day : max
+    , stats.dailyBreakdown[0]);
+    
+    return {
+      day: new Date(best.date).toLocaleDateString('en-GB', { weekday: 'long' }),
+      count: best.completedTasks
+    };
+  };
+
+  const streak = calculateStreak();
+  const bestDay = findBestDay();
+
   // Prepare chart data
   const dailyChartData = stats.dailyBreakdown.map((day) => ({
     name: new Date(day.date).toLocaleDateString('en-GB', { weekday: 'short' }),
@@ -533,14 +634,32 @@ const WeeklyProgressPage: React.FC = () => {
         <StatCard>
           <StatLabel>Total Tasks</StatLabel>
           <StatValue>{stats.totalTasks}</StatValue>
+          {prevWeekStats && prevWeekStats.totalTasks > 0 && (
+            <TrendIndicator $trend={stats.totalTasks > prevWeekStats.totalTasks ? 'up' : stats.totalTasks < prevWeekStats.totalTasks ? 'down' : 'neutral'}>
+              {stats.totalTasks > prevWeekStats.totalTasks ? '↑' : stats.totalTasks < prevWeekStats.totalTasks ? '↓' : '→'}
+              {Math.abs(stats.totalTasks - prevWeekStats.totalTasks)} vs last week
+            </TrendIndicator>
+          )}
         </StatCard>
         <StatCard>
           <StatLabel>Completed</StatLabel>
           <StatValue style={{ color: chartColors.primary }}>{stats.completedTasks}</StatValue>
+          {prevWeekStats && completedTasksTrend.change > 0 && (
+            <TrendIndicator $trend={completedTasksTrend.trend}>
+              {completedTasksTrend.trend === 'up' ? '↑' : '↓'}
+              {completedTasksTrend.change.toFixed(0)}% vs last week
+            </TrendIndicator>
+          )}
         </StatCard>
         <StatCard>
           <StatLabel>Completion Rate</StatLabel>
           <StatValue>{stats.completionPercentage.toFixed(1)}%</StatValue>
+          {prevWeekStats && completionTrend.change > 0 && (
+            <TrendIndicator $trend={completionTrend.trend}>
+              {completionTrend.trend === 'up' ? '↑' : '↓'}
+              {completionTrend.change.toFixed(1)}% vs last week
+            </TrendIndicator>
+          )}
         </StatCard>
         <StatCard>
           <StatLabel>Remaining</StatLabel>
@@ -556,17 +675,62 @@ const WeeklyProgressPage: React.FC = () => {
           <BarChartWrapper 
             data={dailyChartData}
             dataKeys={[
-              { key: 'Completed', color: chartColors.primary, name: 'Completed' },
-              { key: 'Incomplete', color: chartColors.secondary, name: 'Incomplete' },
+              { key: 'Completed', color: chartColors.primary, name: 'Completed Tasks' },
+              { key: 'Incomplete', color: chartColors.secondary, name: 'Incomplete Tasks' },
             ]}
             height={300}
+            title="Daily Task Overview"
+            description="Bar chart showing completed and incomplete tasks for each day of the week"
           />
         </ChartCard>
         <ChartCard>
           <ChartTitle>Weekly Completion</ChartTitle>
-          <PieChartWrapper data={completionPieData} height={300} />
+          <PieChartWrapper 
+            data={completionPieData} 
+            height={300}
+            title="Weekly Completion Rate"
+            description={`Pie chart showing ${stats.completedTasks} completed out of ${stats.totalTasks} total tasks this week`}
+          />
         </ChartCard>
       </ChartsSection>
+
+      {/* Productivity Insights */}
+      <InsightsSection>
+        {streak > 0 && (
+          <InsightCard>
+            <InsightIcon>🔥</InsightIcon>
+            <InsightValue>{streak}</InsightValue>
+            <InsightLabel>
+              {streak === 1 ? 'Day Streak' : 'Days Streak'}
+            </InsightLabel>
+            <Text style={{ fontSize: '12px', marginTop: '8px', color: 'inherit' }}>
+              Consecutive days with completed tasks
+            </Text>
+          </InsightCard>
+        )}
+        
+        {bestDay && bestDay.count > 0 && (
+          <InsightCard>
+            <InsightIcon>⭐</InsightIcon>
+            <InsightValue>{bestDay.day}</InsightValue>
+            <InsightLabel>Most Productive Day</InsightLabel>
+            <Text style={{ fontSize: '12px', marginTop: '8px', color: 'inherit' }}>
+              {bestDay.count} {bestDay.count === 1 ? 'task' : 'tasks'} completed
+            </Text>
+          </InsightCard>
+        )}
+
+        {stats.completionPercentage >= 80 && (
+          <InsightCard>
+            <InsightIcon>🏆</InsightIcon>
+            <InsightValue>Excellent!</InsightValue>
+            <InsightLabel>High Achiever</InsightLabel>
+            <Text style={{ fontSize: '12px', marginTop: '8px', color: 'inherit' }}>
+              {stats.completionPercentage.toFixed(0)}% completion rate this week
+            </Text>
+          </InsightCard>
+        )}
+      </InsightsSection>
 
       <DailyBreakdownSection>
         <ChartTitle>Daily Task Breakdown</ChartTitle>
@@ -576,6 +740,12 @@ const WeeklyProgressPage: React.FC = () => {
             const dayName = dayDate.toLocaleDateString('en-GB', { weekday: 'short' });
             const dayNumber = dayDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
             const dayTasks = day.tasks || [];
+            
+            // Mini pie chart data for each day
+            const dayPieData = [
+              { name: 'Completed', value: day.completedTasks, color: chartColors.primary },
+              { name: 'Incomplete', value: day.totalTasks - day.completedTasks, color: chartColors.secondary },
+            ];
             
             return (
               <DayCard key={day.date}>
@@ -591,6 +761,19 @@ const WeeklyProgressPage: React.FC = () => {
                     </CompletionBadge>
                   </DayStats>
                 </DayHeader>
+                
+                {/* Mini pie chart visualization */}
+                {day.totalTasks > 0 && (
+                  <div style={{ marginBottom: '12px' }}>
+                    <PieChartWrapper 
+                      data={dayPieData} 
+                      height={120} 
+                      showLegend={false}
+                      title={`${dayName} completion`}
+                      description={`${day.completedTasks} of ${day.totalTasks} tasks completed on ${dayName}`}
+                    />
+                  </div>
+                )}
                 
                 {dayTasks.length > 0 ? (
                   <TaskList>
