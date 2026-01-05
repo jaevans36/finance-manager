@@ -137,6 +137,24 @@ const StatCard = styled(Card)`
   padding: 20px;
   text-align: center;
   position: relative;
+  transition: all 0.3s ease;
+  animation: fadeIn 0.5s ease-in;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 const StatValue = styled.div`
@@ -144,6 +162,19 @@ const StatValue = styled.div`
   font-weight: bold;
   color: ${({ theme }) => theme.colors.primary};
   margin: 10px 0;
+  transition: all 0.3s ease;
+  animation: scaleIn 0.6s ease-out;
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
 `;
 
 const StatLabel = styled(Text)`
@@ -179,12 +210,56 @@ const ChartsSection = styled.div`
 
 const ChartCard = styled(Card)`
   padding: 20px;
+  transition: all 0.3s ease;
+  animation: slideInUp 0.6s ease-out;
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 `;
 
 const ChartTitle = styled.h3`
   color: ${({ theme }) => theme.colors.text};
   margin: 0 0 15px 0;
   font-size: 18px;
+`;
+
+const ChartHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+`;
+
+const ExportButton = styled.button`
+  padding: 6px 12px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 4px;
+  color: ${({ theme }) => theme.colors.text};
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.cardBackground};
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
 
 const UrgentSection = styled.div`
@@ -300,6 +375,24 @@ const InsightCard = styled(Card)`
   align-items: center;
   text-align: center;
   background: linear-gradient(135deg, ${({ theme }) => theme.colors.cardBackground} 0%, ${({ theme }) => theme.colors.backgroundSecondary} 100%);
+  transition: all 0.3s ease;
+  animation: fadeInScale 0.7s ease-out;
+
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  &:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  }
 `;
 
 const InsightIcon = styled.div`
@@ -338,6 +431,13 @@ const DayCard = styled(Card)`
   min-height: 320px;
   display: flex;
   flex-direction: column;
+  transition: all 0.3s ease;
+  animation: fadeIn 0.5s ease-in;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12);
+  }
 `;
 
 const DayHeader = styled.div`
@@ -480,6 +580,76 @@ const EmptyDay = styled.div`
   font-size: 13px;
 `;
 
+const GoalSection = styled.div`
+  margin-bottom: 25px;
+  padding: 20px;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const GoalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+`;
+
+const GoalTitle = styled.h3`
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 16px;
+  margin: 0;
+`;
+
+const GoalInput = styled.input`
+  width: 80px;
+  padding: 6px 10px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 4px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 14px;
+  text-align: center;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+const GoalProgressBar = styled.div`
+  width: 100%;
+  height: 24px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+`;
+
+const GoalProgressFill = styled.div<{ $percentage: number; $achieved: boolean }>`
+  height: 100%;
+  background: ${({ $achieved, theme }) => 
+    $achieved ? `linear-gradient(90deg, ${chartColors.primary} 0%, #45a049 100%)` : 
+    `linear-gradient(90deg, ${theme.colors.primary} 0%, ${theme.colors.primaryHover} 100%)`
+  };
+  transition: width 0.5s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  width: ${({ $percentage }) => Math.min($percentage, 100)}%;
+`;
+
+const GoalStats = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
 const ErrorContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -541,6 +711,10 @@ const WeeklyProgressPage: React.FC = () => {
   const [customEndDate, setCustomEndDate] = useState<string>('');
   const [groups, setGroups] = useState<TaskGroup[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [weeklyGoal, setWeeklyGoal] = useState<number>(() => {
+    const saved = localStorage.getItem('weeklyTaskGoal');
+    return saved ? parseInt(saved, 10) : 10;
+  });
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -589,6 +763,15 @@ const WeeklyProgressPage: React.FC = () => {
     loadData();
   }, [loadData]);
 
+  // Real-time refresh: poll for updates every 60 seconds
+  useEffect(() => {
+    const refreshInterval = setInterval(() => {
+      loadData();
+    }, 60000); // 60 seconds
+
+    return () => clearInterval(refreshInterval);
+  }, [loadData]);
+
   // Load task groups on mount
   useEffect(() => {
     const loadGroups = async () => {
@@ -601,6 +784,15 @@ const WeeklyProgressPage: React.FC = () => {
     };
     loadGroups();
   }, []);
+
+  // Update goal in localStorage
+  const updateWeeklyGoal = (newGoal: number) => {
+    if (newGoal > 0 && newGoal <= 1000) {
+      setWeeklyGoal(newGoal);
+      localStorage.setItem('weeklyTaskGoal', newGoal.toString());
+      showToast('success', `Weekly goal updated to ${newGoal} tasks`);
+    }
+  };
 
   const navigateWeek = (direction: 'prev' | 'next') => {
     const newDate = new Date(currentWeekStart);
@@ -630,6 +822,32 @@ const WeeklyProgressPage: React.FC = () => {
 
   const formatMonthRange = (date: Date) => {
     return date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+  };
+
+  // Chart export functionality
+  const exportChartAsImage = async (chartId: string, filename: string) => {
+    try {
+      const chartElement = document.getElementById(chartId);
+      if (!chartElement) {
+        showToast('error', 'Chart element not found');
+        return;
+      }
+
+      // Use html2canvas to capture the chart
+      const canvas = await import('html2canvas').then(m => m.default(chartElement));
+      const dataUrl = canvas.toDataURL('image/png');
+      
+      // Download the image
+      const link = document.createElement('a');
+      link.download = `${filename}-${new Date().toISOString().split('T')[0]}.png`;
+      link.href = dataUrl;
+      link.click();
+      
+      showToast('success', 'Chart exported successfully');
+    } catch (error: unknown) {
+      console.error('Export failed:', error);
+      showToast('error', 'Failed to export chart');
+    }
   };
 
   if (loading || !stats) {
@@ -855,6 +1073,41 @@ const WeeklyProgressPage: React.FC = () => {
         </FilterSection>
       )}
 
+      {/* Weekly Goal Section */}
+      <GoalSection>
+        <GoalHeader>
+          <GoalTitle>📊 Weekly Completion Goal</GoalTitle>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Text style={{ fontSize: '14px' }}>Target:</Text>
+            <GoalInput
+              type="number"
+              min="1"
+              max="1000"
+              value={weeklyGoal}
+              onChange={(e) => updateWeeklyGoal(parseInt(e.target.value, 10) || 10)}
+            />
+            <Text style={{ fontSize: '14px' }}>tasks</Text>
+          </div>
+        </GoalHeader>
+        <GoalProgressBar>
+          <GoalProgressFill 
+            $percentage={(stats.completedTasks / weeklyGoal) * 100}
+            $achieved={stats.completedTasks >= weeklyGoal}
+          >
+            {stats.completedTasks >= weeklyGoal ? '🎉 Goal Achieved!' : `${Math.round((stats.completedTasks / weeklyGoal) * 100)}%`}
+          </GoalProgressFill>
+        </GoalProgressBar>
+        <GoalStats>
+          <span>{stats.completedTasks} / {weeklyGoal} tasks completed</span>
+          <span>
+            {stats.completedTasks >= weeklyGoal 
+              ? `+${stats.completedTasks - weeklyGoal} over goal!` 
+              : `${weeklyGoal - stats.completedTasks} remaining`
+            }
+          </span>
+        </GoalStats>
+      </GoalSection>
+
       <StatsGrid>
         <StatCard>
           <StatLabel>Total Tasks</StatLabel>
@@ -896,26 +1149,40 @@ const WeeklyProgressPage: React.FC = () => {
 
       <ChartsSection>
         <ChartCard>
-          <ChartTitle>Daily Task Overview</ChartTitle>
-          <BarChartWrapper 
-            data={dailyChartData}
-            dataKeys={[
-              { key: 'Completed', color: chartColors.primary, name: 'Completed Tasks' },
-              { key: 'Incomplete', color: chartColors.secondary, name: 'Incomplete Tasks' },
-            ]}
-            height={300}
-            title="Daily Task Overview"
-            description="Bar chart showing completed and incomplete tasks for each day of the week"
-          />
+          <ChartHeader>
+            <ChartTitle>Daily Task Overview</ChartTitle>
+            <ExportButton onClick={() => exportChartAsImage('daily-chart', 'daily-task-overview')}>
+              📥 Export
+            </ExportButton>
+          </ChartHeader>
+          <div id="daily-chart">
+            <BarChartWrapper 
+              data={dailyChartData}
+              dataKeys={[
+                { key: 'Completed', color: chartColors.primary, name: 'Completed Tasks' },
+                { key: 'Incomplete', color: chartColors.secondary, name: 'Incomplete Tasks' },
+              ]}
+              height={300}
+              title="Daily Task Overview"
+              description="Bar chart showing completed and incomplete tasks for each day of the week"
+            />
+          </div>
         </ChartCard>
         <ChartCard>
-          <ChartTitle>Weekly Completion</ChartTitle>
-          <PieChartWrapper 
-            data={completionPieData} 
-            height={300}
-            title="Weekly Completion Rate"
-            description={`Pie chart showing ${stats.completedTasks} completed out of ${stats.totalTasks} total tasks this week`}
-          />
+          <ChartHeader>
+            <ChartTitle>Weekly Completion</ChartTitle>
+            <ExportButton onClick={() => exportChartAsImage('weekly-pie-chart', 'weekly-completion')}>
+              📥 Export
+            </ExportButton>
+          </ChartHeader>
+          <div id="weekly-pie-chart">
+            <PieChartWrapper 
+              data={completionPieData} 
+              height={300}
+              title="Weekly Completion Rate"
+              description={`Pie chart showing ${stats.completedTasks} completed out of ${stats.totalTasks} total tasks this week`}
+            />
+          </div>
         </ChartCard>
       </ChartsSection>
 

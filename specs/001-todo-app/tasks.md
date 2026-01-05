@@ -423,7 +423,7 @@ description: "Task list for To Do App implementation"
 - [x] T215 [US8] Add route configuration in App.tsx for /weekly-progress
 - [x] T216 [US8] Create navigation icon for weekly progress (chart/analytics icon)
 - [x] T217 [US8] Add "View Weekly Progress" CTA button on main Dashboard
-- [ ] T218 [US8] Implement real-time refresh when tasks are completed/created (websocket or polling)
+- [x] T218 [US8] Implement real-time refresh when tasks are completed/created (websocket or polling)
 
 ### Data Visualization Enhancements
 
@@ -433,8 +433,8 @@ description: "Task list for To Do App implementation"
 - [x] T222 [US8] Add chart tooltips showing exact numbers on hover
 - [x] T223 [US8] Add chart legends with clear labeling
 - [x] T224 [US8] Implement color coding (green=completed, gray=incomplete, red=overdue)
-- [ ] T225 [US8] Add animation transitions when data updates
-- [ ] T226 [US8] Implement chart export functionality (download as PNG/CSV)
+- [x] T225 [US8] Add animation transitions when data updates
+- [x] T226 [US8] Implement chart export functionality (download as PNG/CSV)
 
 ### Advanced Features
 
@@ -445,7 +445,7 @@ description: "Task list for To Do App implementation"
 - [ ] T231 [US8] Create completion rate history chart (last 4-8 weeks line graph)
 - [x] T232 [US8] Implement "Best Day" and "Most Productive Day" badges
 - [x] T233 [US8] Add group filtering to weekly stats (view progress by specific group)
-- [ ] T234 [US8] Implement task count goals with progress indicators
+- [x] T234 [US8] Implement task count goals with progress indicators
 - [x] T235 [US8] Add "Unscheduled Tasks" section for tasks without due dates
 
 ### Testing & Optimization
