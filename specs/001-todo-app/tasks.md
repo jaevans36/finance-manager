@@ -438,15 +438,15 @@ description: "Task list for To Do App implementation"
 
 ### Advanced Features
 
-- [ ] T227 [P] [US8] Implement custom date range selector (beyond single week)
-- [ ] T228 [P] [US8] Add month view option in addition to week view
+- [x] T227 [P] [US8] Implement custom date range selector (beyond single week)
+- [x] T228 [P] [US8] Add month view option in addition to week view
 - [x] T229 [US8] Implement productivity trends (comparison with previous week)
 - [x] T230 [US8] Add streak counter (consecutive days with completed tasks)
 - [ ] T231 [US8] Create completion rate history chart (last 4-8 weeks line graph)
 - [x] T232 [US8] Implement "Best Day" and "Most Productive Day" badges
-- [ ] T233 [US8] Add group filtering to weekly stats (view progress by specific group)
+- [x] T233 [US8] Add group filtering to weekly stats (view progress by specific group)
 - [ ] T234 [US8] Implement task count goals with progress indicators
-- [ ] T235 [US8] Add "Unscheduled Tasks" section for tasks without due dates
+- [x] T235 [US8] Add "Unscheduled Tasks" section for tasks without due dates
 
 ### Testing & Optimization
 

@@ -3,9 +3,11 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { statisticsService } from '../services/statisticsService';
-import { taskService } from '../services/taskService';
+import { taskService, type Task } from '../services/taskService';
+import { taskGroupService } from '../services/taskGroupService';
 import { useToast } from '../contexts/ToastContext';
 import type { WeeklyStatistics, UrgentTask } from '../types/statistics';
+import type { TaskGroup } from '../types/taskGroup';
 import { BarChartWrapper } from '../components/charts/BarChartWrapper';
 import { PieChartWrapper } from '../components/charts/PieChartWrapper';
 import { chartColors } from '../components/charts/chartTheme';
@@ -67,6 +69,51 @@ const WeekNavigation = styled.div`
 
   @media (max-width: 768px) {
     flex-wrap: wrap;
+  }
+`;
+
+const ViewModeToggle = styled.div`
+  display: flex;
+  gap: 8px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border-radius: 6px;
+  padding: 4px;
+`;
+
+const ViewModeButton = styled.button<{ $active: boolean }>`
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  background: ${({ $active, theme }) => $active ? theme.colors.primary : 'transparent'};
+  color: ${({ $active, theme }) => $active ? 'white' : theme.colors.text};
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+
+  &:hover {
+    background: ${({ $active, theme }) => $active ? theme.colors.primaryHover : theme.colors.cardBackground};
+  }
+`;
+
+const DateRangeSelector = styled.div`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+`;
+
+const DateInput = styled.input`
+  padding: 8px 12px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 6px;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 14px;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
   }
 `;
 
@@ -190,6 +237,40 @@ const DaysRemaining = styled.span<{ $urgent: boolean }>`
   font-weight: 500;
 `;
 
+const InsightLabel = styled(Text)`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const FilterSection = styled.div`
+  margin-bottom: 20px;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+`;
+
+const FilterLabel = styled(Text)`
+  font-weight: 500;
+  font-size: 14px;
+`;
+
+const FilterSelect = styled.select`
+  padding: 8px 12px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 6px;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 14px;
+  cursor: pointer;
+  min-width: 200px;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
 const LoadingSkeleton = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: 8px;
@@ -231,11 +312,6 @@ const InsightValue = styled.div`
   font-weight: bold;
   color: ${({ theme }) => theme.colors.primary};
   margin-bottom: 8px;
-`;
-
-const InsightLabel = styled(Text)`
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 const DailyGrid = styled.div`
@@ -460,6 +536,11 @@ const WeeklyProgressPage: React.FC = () => {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getWeekStart(new Date()));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'week' | 'month' | 'custom'>('week');
+  const [customStartDate, setCustomStartDate] = useState<string>('');
+  const [customEndDate, setCustomEndDate] = useState<string>('');
+  const [groups, setGroups] = useState<TaskGroup[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -508,16 +589,47 @@ const WeeklyProgressPage: React.FC = () => {
     loadData();
   }, [loadData]);
 
+  // Load task groups on mount
+  useEffect(() => {
+    const loadGroups = async () => {
+      try {
+        const fetchedGroups = await taskGroupService.getGroups();
+        setGroups(fetchedGroups);
+      } catch (error: unknown) {
+        console.error('Failed to load groups:', error);
+      }
+    };
+    loadGroups();
+  }, []);
+
   const navigateWeek = (direction: 'prev' | 'next') => {
     const newDate = new Date(currentWeekStart);
     newDate.setDate(newDate.getDate() + (direction === 'next' ? 7 : -7));
     setCurrentWeekStart(getWeekStart(newDate));
   };
 
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    const newDate = new Date(currentWeekStart);
+    newDate.setMonth(newDate.getMonth() + (direction === 'next' ? 1 : -1));
+    setCurrentWeekStart(getMonthStart(newDate));
+  };
+
+  const applyCustomDateRange = () => {
+    if (customStartDate && customEndDate) {
+      const startDate = new Date(customStartDate);
+      setCurrentWeekStart(startDate);
+      loadData();
+    }
+  };
+
   const formatWeekRange = (start: Date) => {
     const end = new Date(start);
     end.setDate(end.getDate() + 6);
     return `${start.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - ${end.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+  };
+
+  const formatMonthRange = (date: Date) => {
+    return date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
   };
 
   if (loading || !stats) {
@@ -594,8 +706,35 @@ const WeeklyProgressPage: React.FC = () => {
   const streak = calculateStreak();
   const bestDay = findBestDay();
 
+  // Filter tasks by selected group if applicable
+  const filterTasksByGroup = (tasks: Task[]): Task[] => {
+    if (!selectedGroupId) return tasks;
+    return tasks.filter((task) => task.groupId === selectedGroupId);
+  };
+
+  // Filter daily breakdown and urgent tasks
+  const filteredDailyBreakdown = stats.dailyBreakdown.map(day => ({
+    ...day,
+    tasks: day.tasks ? filterTasksByGroup(day.tasks) : [],
+  }));
+
+  const filteredUrgentTasks = selectedGroupId 
+    ? urgentTasks.filter(task => task.groupId === selectedGroupId)
+    : urgentTasks;
+
+  // Get unscheduled tasks (tasks without due dates)
+  const getUnscheduledTasks = (): Task[] => {
+    const allTasks = stats.dailyBreakdown.flatMap(day => day.tasks || []);
+    const unscheduled = allTasks.filter((task) => !task.dueDate);
+    return selectedGroupId 
+      ? unscheduled.filter((task) => task.groupId === selectedGroupId)
+      : unscheduled;
+  };
+
+  const unscheduledTasks = getUnscheduledTasks();
+
   // Prepare chart data
-  const dailyChartData = stats.dailyBreakdown.map((day) => ({
+  const dailyChartData = filteredDailyBreakdown.map((day) => ({
     name: new Date(day.date).toLocaleDateString('en-GB', { weekday: 'short' }),
     Completed: day.completedTasks,
     Incomplete: day.totalTasks - day.completedTasks,
@@ -617,18 +756,104 @@ const WeeklyProgressPage: React.FC = () => {
         </HeaderTop>
         <Title>Weekly Progress Dashboard</Title>
         <WeekNavigation>
-          <Button variant="outline" size="small" onClick={() => navigateWeek('prev')}>
-            ← Previous
-          </Button>
-          <WeekDisplay>{formatWeekRange(currentWeekStart)}</WeekDisplay>
-          <Button variant="outline" size="small" onClick={() => navigateWeek('next')}>
-            Next →
-          </Button>
-          <Button variant="outline" size="small" onClick={() => setCurrentWeekStart(getWeekStart(new Date()))}>
-            Today
-          </Button>
+          {/* View Mode Toggle */}
+          <ViewModeToggle>
+            <ViewModeButton $active={viewMode === 'week'} onClick={() => setViewMode('week')}>
+              Week
+            </ViewModeButton>
+            <ViewModeButton $active={viewMode === 'month'} onClick={() => setViewMode('month')}>
+              Month
+            </ViewModeButton>
+            <ViewModeButton $active={viewMode === 'custom'} onClick={() => setViewMode('custom')}>
+              Custom
+            </ViewModeButton>
+          </ViewModeToggle>
+
+          {/* Navigation controls based on view mode */}
+          {viewMode === 'week' && (
+            <>
+              <Button variant="outline" size="small" onClick={() => navigateWeek('prev')}>
+                ← Previous
+              </Button>
+              <WeekDisplay>{formatWeekRange(currentWeekStart)}</WeekDisplay>
+              <Button variant="outline" size="small" onClick={() => navigateWeek('next')}>
+                Next →
+              </Button>
+              <Button variant="outline" size="small" onClick={() => setCurrentWeekStart(getWeekStart(new Date()))}>
+                Today
+              </Button>
+            </>
+          )}
+
+          {viewMode === 'month' && (
+            <>
+              <Button variant="outline" size="small" onClick={() => navigateMonth('prev')}>
+                ← Previous
+              </Button>
+              <WeekDisplay>{formatMonthRange(currentWeekStart)}</WeekDisplay>
+              <Button variant="outline" size="small" onClick={() => navigateMonth('next')}>
+                Next →
+              </Button>
+              <Button variant="outline" size="small" onClick={() => setCurrentWeekStart(getMonthStart(new Date()))}>
+                This Month
+              </Button>
+            </>
+          )}
+
+          {viewMode === 'custom' && (
+            <DateRangeSelector>
+              <DateInput
+                type="date"
+                value={customStartDate}
+                onChange={(e) => setCustomStartDate(e.target.value)}
+                placeholder="Start date"
+              />
+              <Text>to</Text>
+              <DateInput
+                type="date"
+                value={customEndDate}
+                onChange={(e) => setCustomEndDate(e.target.value)}
+                placeholder="End date"
+              />
+              <Button 
+                variant="outline" 
+                size="small" 
+                onClick={applyCustomDateRange}
+                disabled={!customStartDate || !customEndDate}
+              >
+                Apply
+              </Button>
+            </DateRangeSelector>
+          )}
         </WeekNavigation>
       </Header>
+
+      {/* Group Filter Section */}
+      {groups.length > 0 && (
+        <FilterSection>
+          <FilterLabel>Filter by Group:</FilterLabel>
+          <FilterSelect 
+            value={selectedGroupId || ''}
+            onChange={(e) => setSelectedGroupId(e.target.value || null)}
+          >
+            <option value="">All Groups</option>
+            {groups.map(group => (
+              <option key={group.id} value={group.id}>
+                {group.name}
+              </option>
+            ))}
+          </FilterSelect>
+          {selectedGroupId && (
+            <Button 
+              variant="outline" 
+              size="small" 
+              onClick={() => setSelectedGroupId(null)}
+            >
+              Clear Filter
+            </Button>
+          )}
+        </FilterSection>
+      )}
 
       <StatsGrid>
         <StatCard>
@@ -735,7 +960,7 @@ const WeeklyProgressPage: React.FC = () => {
       <DailyBreakdownSection>
         <ChartTitle>Daily Task Breakdown</ChartTitle>
         <DailyGrid>
-          {stats.dailyBreakdown.map((day) => {
+          {filteredDailyBreakdown.map((day) => {
             const dayDate = new Date(day.date);
             const dayName = dayDate.toLocaleDateString('en-GB', { weekday: 'short' });
             const dayNumber = dayDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
@@ -809,11 +1034,11 @@ const WeeklyProgressPage: React.FC = () => {
         </DailyGrid>
       </DailyBreakdownSection>
 
-      {urgentTasks && urgentTasks.length > 0 && (
+      {urgentTasks && filteredUrgentTasks.length > 0 && (
         <UrgentSection>
           <ChartTitle>Urgent Tasks This Week</ChartTitle>
           <UrgentList>
-            {urgentTasks.map(task => (
+            {filteredUrgentTasks.map(task => (
               <UrgentTaskCard key={task.id} $priority={task.priority}>
                 <TaskHeader>
                   <UrgentTaskTitle>{task.title}</UrgentTaskTitle>
@@ -834,6 +1059,39 @@ const WeeklyProgressPage: React.FC = () => {
           </UrgentList>
         </UrgentSection>
       )}
+
+      {/* Unscheduled Tasks Section */}
+      {unscheduledTasks.length > 0 && (
+        <UrgentSection>
+          <ChartTitle>Unscheduled Tasks</ChartTitle>
+          <Text style={{ marginBottom: '15px', color: 'inherit' }}>
+            Tasks without due dates ({unscheduledTasks.length})
+          </Text>
+          <UrgentList>
+            {unscheduledTasks.slice(0, 10).map((task: Task) => (
+              <UrgentTaskCard key={task.id} $priority={task.priority || 'Low'}>
+                <TaskHeader>
+                  <UrgentTaskTitle>{task.title}</UrgentTaskTitle>
+                  <PriorityBadge $priority={task.priority || 'Low'}>
+                    {task.priority || 'Low'}
+                  </PriorityBadge>
+                </TaskHeader>
+                {task.description && <Text>{task.description}</Text>}
+                {task.groupName && (
+                  <Text style={{ fontSize: '12px', marginTop: '8px', color: 'inherit' }}>
+                    📁 {task.groupName}
+                  </Text>
+                )}
+              </UrgentTaskCard>
+            ))}
+          </UrgentList>
+          {unscheduledTasks.length > 10 && (
+            <Text style={{ marginTop: '15px', textAlign: 'center', color: 'inherit' }}>
+              +{unscheduledTasks.length - 10} more unscheduled tasks
+            </Text>
+          )}
+        </UrgentSection>
+      )}
     </PageContainer>
   );
 };
@@ -843,6 +1101,10 @@ function getWeekStart(date: Date): Date {
   const day = d.getDay();
   const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday as start
   return new Date(d.setDate(diff));
+}
+
+function getMonthStart(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
 }
 
 export default WeeklyProgressPage;
