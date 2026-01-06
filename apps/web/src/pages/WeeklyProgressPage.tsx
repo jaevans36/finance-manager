@@ -31,6 +31,17 @@ import {
 
 // Note: PageContainer is now imported from '../components/ui' - no need to redefine
 
+// Helper function to remove day suffix from task titles (e.g., "Task - Monday" -> "Task")
+const removeDayPrefix = (title: string): string => {
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  for (const day of days) {
+    if (title.endsWith(` - ${day}`)) {
+      return title.substring(0, title.length - day.length - 3); // Remove " - Day"
+    }
+  }
+  return title;
+};
+
 const Header = styled.div`
   margin-bottom: 30px;
 `;
@@ -1207,7 +1218,7 @@ const WeeklyProgressPage: React.FC = () => {
                         />
                         <TaskContent>
                           <TaskTitle $completed={task.completed} title={task.title}>
-                            {task.title}
+                            {removeDayPrefix(task.title)}
                           </TaskTitle>
                           <TaskMeta>
                             <SmallBadge style={{ backgroundColor: getPriorityColor(task.priority) }}>
