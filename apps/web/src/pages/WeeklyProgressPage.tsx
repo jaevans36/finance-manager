@@ -26,7 +26,11 @@ import {
   ToggleGroup,
   ToggleButton,
   ScrollableContainer,
-  SmallButton
+  SmallButton,
+  Heading1,
+  Heading3,
+  TextSecondary,
+  TextSmall
 } from '../components/ui';
 
 // Note: PageContainer is now imported from '../components/ui' - no need to redefine
@@ -53,12 +57,6 @@ const HeaderTop = styled.div`
   margin-bottom: 10px;
 `;
 
-const Title = styled.h1`
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0;
-  font-size: 24px;
-`;
-
 const WeekNavigation = styled.div`
   display: flex;
   align-items: center;
@@ -77,7 +75,6 @@ const DateRangeSelector = styled.div`
 `;
 
 const WeekDisplay = styled(Text)`
-  font-size: 14px;
   font-weight: 500;
 `;
 
@@ -105,7 +102,7 @@ const StatCard = styled(Card)`
 `;
 
 const StatValue = styled.div`
-  font-size: 32px;
+  font-size: 42px;
   font-weight: bold;
   color: ${({ theme }) => theme.colors.primary};
   margin: 10px 0;
@@ -125,19 +122,22 @@ const StatValue = styled.div`
 `;
 
 const StatLabel = styled(Text)`
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.textSecondary};
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.5px;
 `;
 
-const TrendIndicator = styled.div<{ $trend: 'up' | 'down' | 'neutral' }>`
+const TrendIndicator = styled(Text)<{ $trend: 'up' | 'down' | 'neutral' }>`
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  font-size: 12px;
   font-weight: 500;
   margin-top: 8px;
-  color: ${({ $trend, theme }) => 
+  color: ${({ $trend, theme }) =>
     $trend === 'up' ? chartColors.primary :
     $trend === 'down' ? chartColors.urgent :
     theme.colors.textSecondary
@@ -159,12 +159,6 @@ const ChartCard = styled(Card)`
       transform: translateY(0);
     }
   }
-`;
-
-const ChartTitle = styled.h3`
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0 0 15px 0;
-  font-size: 18px;
 `;
 
 const ChartHeader = styled.div`
@@ -202,18 +196,15 @@ const TaskHeader = styled.div`
 
 const UrgentTaskTitle = styled(Text)`
   font-weight: 500;
-  font-size: 14px;
 `;
 
-const DaysRemaining = styled.span<{ $urgent: boolean }>`
+const DaysRemaining = styled(Text)<{ $urgent: boolean }>`
   color: ${({ $urgent }) => $urgent ? chartColors.urgent : chartColors.textLight};
-  font-size: 14px;
   font-weight: 500;
 `;
 
-const InsightLabel = styled(Text)`
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.textSecondary};
+const InsightLabel = styled(TextSecondary)`
+  display: block;
 `;
 
 const FilterSection = styled.div`
@@ -226,7 +217,6 @@ const FilterSection = styled.div`
 
 const FilterLabel = styled(Text)`
   font-weight: 500;
-  font-size: 14px;
 `;
 
 const LoadingSkeleton = styled.div`
@@ -313,15 +303,12 @@ const DayName = styled.div`
   color: ${({ theme }) => theme.colors.text};
 `;
 
-const DayDate = styled.div`
-  font-size: 12px;
-  color: ${({ theme }) => theme.colors.textSecondary};
+const DayDate = styled(TextSmall)`
+  display: block;
   margin-top: 2px;
 `;
 
-const TaskCount = styled.div`
-  font-size: 12px;
-  color: ${({ theme }) => theme.colors.textSecondary};
+const TaskCount = styled(TextSmall)`
   font-weight: 500;
 `;
 
@@ -434,19 +421,16 @@ const TaskMeta = styled.div`
   flex-wrap: wrap;
 `;
 
-const TaskGroup = styled.span`
-  font-size: 11px;
+const TaskGroup = styled(TextSmall)`
   padding: 2px 6px;
   border-radius: 3px;
   background-color: ${({ theme }) => theme.colors.backgroundSecondary};
-  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
-const EmptyDay = styled.div`
+const EmptyDay = styled(TextSmall)`
+  display: block;
   text-align: center;
   padding: 20px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 12px;
 `;
 
 const GoalSection = styled.div`
@@ -463,12 +447,6 @@ const GoalHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
-`;
-
-const GoalTitle = styled.h3`
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 18px;
-  margin: 0;
 `;
 
 const GoalProgressBar = styled.div`
@@ -491,17 +469,15 @@ const GoalProgressFill = styled.div<{ $percentage: number; $achieved: boolean }>
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   width: ${({ $percentage }) => Math.min($percentage, 100)}%;
 `;
 
-const GoalStats = styled.div`
+const GoalStats = styled(TextSmall)`
   display: flex;
   justify-content: space-between;
   margin-top: 10px;
-  font-size: 12px;
-  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 const GoalAndInsightGrid = styled.div`
@@ -534,15 +510,12 @@ const ErrorIcon = styled.div`
   margin-bottom: 20px;
 `;
 
-const ErrorTitle = styled.h2`
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 18px;
+const ErrorTitle = styled(Heading3)`
   margin: 0 0 12px 0;
 `;
 
-const ErrorMessage = styled.p`
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 14px;
+const ErrorMessage = styled(TextSecondary)`
+  display: block;
   margin: 0 0 24px 0;
   max-width: 500px;
 `;
@@ -809,7 +782,7 @@ const WeeklyProgressPage: React.FC = () => {
               Back to Dashboard
             </IconButton>
           </HeaderTop>
-          <Title>Weekly Progress Dashboard</Title>
+          <Heading1 style={{ margin: 0 }}>Weekly Progress Dashboard</Heading1>
         </Header>
         <ErrorContainer>
           <ErrorIcon>⚠️</ErrorIcon>
@@ -913,7 +886,7 @@ const WeeklyProgressPage: React.FC = () => {
             Back to Dashboard
           </IconButton>
         </HeaderTop>
-        <Title>Weekly Progress Dashboard</Title>
+        <Heading1 style={{ margin: 0 }}>Weekly Progress Dashboard</Heading1>
         <WeekNavigation>
           {/* View Mode Toggle */}
           <ToggleGroup>
@@ -1019,7 +992,7 @@ const WeeklyProgressPage: React.FC = () => {
       <GoalAndInsightGrid>
         <GoalSection>
           <GoalHeader>
-            <GoalTitle>📊 Weekly Completion Goal</GoalTitle>
+            <Heading3 style={{ margin: 0 }}>Weekly Completion Goal</Heading3>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Text style={{ fontSize: '14px' }}>Target:</Text>
               <InputField
@@ -1038,7 +1011,7 @@ const WeeklyProgressPage: React.FC = () => {
               $percentage={(stats.completedTasks / weeklyGoal) * 100}
               $achieved={stats.completedTasks >= weeklyGoal}
             >
-              {stats.completedTasks >= weeklyGoal ? '🎉 Goal Achieved!' : `${Math.round((stats.completedTasks / weeklyGoal) * 100)}%`}
+              {stats.completedTasks >= weeklyGoal ? 'Goal Achieved!' : `${Math.round((stats.completedTasks / weeklyGoal) * 100)}%`}
             </GoalProgressFill>
           </GoalProgressBar>
           <GoalStats>
@@ -1108,7 +1081,7 @@ const WeeklyProgressPage: React.FC = () => {
       <TwoColumnGrid gap={20} style={{ marginBottom: '30px' }}>
         <ChartCard>
           <ChartHeader>
-            <ChartTitle>Daily Task Overview</ChartTitle>
+            <Heading3 style={{ margin: 0 }}>Daily Task Overview</Heading3>
             <SmallButton onClick={() => exportChartAsImage('daily-chart', 'daily-task-overview')}>
               📥 Export
             </SmallButton>
@@ -1128,7 +1101,7 @@ const WeeklyProgressPage: React.FC = () => {
         </ChartCard>
         <ChartCard>
           <ChartHeader>
-            <ChartTitle>Weekly Completion</ChartTitle>
+            <Heading3 style={{ margin: 0 }}>Weekly Completion</Heading3>
             <SmallButton onClick={() => exportChartAsImage('weekly-pie-chart', 'weekly-completion')}>
               📥 Export
             </SmallButton>
@@ -1172,7 +1145,7 @@ const WeeklyProgressPage: React.FC = () => {
       </InsightsSection>
 
       <DailyBreakdownSection>
-        <ChartTitle>Daily Task Breakdown</ChartTitle>
+        <Heading3 style={{ margin: '0 0 15px 0' }}>Daily Task Breakdown</Heading3>
         <ResponsiveDailyGrid gap={20} style={{ marginTop: '20px' }}>
           {filteredDailyBreakdown.map((day) => {
             const dayDate = new Date(day.date);
@@ -1243,7 +1216,7 @@ const WeeklyProgressPage: React.FC = () => {
 
       {urgentTasks && filteredUrgentTasks.length > 0 && (
         <UrgentSection>
-          <ChartTitle>Urgent Tasks This Week</ChartTitle>
+          <Heading3 style={{ margin: '0 0 15px 0' }}>Urgent Tasks This Week</Heading3>
           <UrgentList>
             {filteredUrgentTasks.map(task => (
               <UrgentTaskCard key={task.id} $priority={task.priority}>
@@ -1270,7 +1243,7 @@ const WeeklyProgressPage: React.FC = () => {
       {/* Unscheduled Tasks Section */}
       {unscheduledTasks.length > 0 && (
         <UrgentSection>
-          <ChartTitle>Unscheduled Tasks</ChartTitle>
+          <Heading3 style={{ margin: '0 0 15px 0' }}>Unscheduled Tasks</Heading3>
           <Text style={{ marginBottom: '15px', color: 'inherit' }}>
             Tasks without due dates ({unscheduledTasks.length})
           </Text>
