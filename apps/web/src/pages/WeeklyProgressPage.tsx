@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Award } from 'lucide-react';
 import { statisticsService } from '../services/statisticsService';
 import { taskService, type Task } from '../services/taskService';
 import { taskGroupService } from '../services/taskGroupService';
@@ -11,19 +11,25 @@ import type { TaskGroup } from '../types/taskGroup';
 import { BarChartWrapper } from '../components/charts/BarChartWrapper';
 import { PieChartWrapper } from '../components/charts/PieChartWrapper';
 import { chartColors } from '../components/charts/chartTheme';
-import { Card, Button, Text } from '../components/ui';
+import { 
+  Card, 
+  Button, 
+  Text, 
+  ContentContainer,
+  IconButton,
+  SmallBadge,
+  ResponsiveGrid,
+  TwoColumnGrid,
+  ResponsiveDailyGrid,
+  InputField,
+  Select,
+  ToggleGroup,
+  ToggleButton,
+  ScrollableContainer,
+  SmallButton
+} from '../components/ui';
 
-const PageContainer = styled.div`
-  max-width: 1200px;
-  width: 80%;
-  margin: 0 auto;
-  padding: 20px;
-
-  @media (max-width: 768px) {
-    padding: 10px;
-    width: 95%;
-  }
-`;
+// Note: PageContainer is now imported from '../components/ui' - no need to redefine
 
 const Header = styled.div`
   margin-bottom: 30px;
@@ -36,29 +42,10 @@ const HeaderTop = styled.div`
   margin-bottom: 10px;
 `;
 
-const BackButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 6px;
-  color: ${({ theme }) => theme.colors.text};
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 14px;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.cardBackground};
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
-`;
-
 const Title = styled.h1`
   color: ${({ theme }) => theme.colors.text};
   margin: 0;
-  font-size: 28px;
+  font-size: 24px;
 `;
 
 const WeekNavigation = styled.div`
@@ -72,65 +59,15 @@ const WeekNavigation = styled.div`
   }
 `;
 
-const ViewModeToggle = styled.div`
-  display: flex;
-  gap: 8px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 6px;
-  padding: 4px;
-`;
-
-const ViewModeButton = styled.button<{ $active: boolean }>`
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  background: ${({ $active, theme }) => $active ? theme.colors.primary : 'transparent'};
-  color: ${({ $active, theme }) => $active ? 'white' : theme.colors.text};
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.2s;
-
-  &:hover {
-    background: ${({ $active, theme }) => $active ? theme.colors.primaryHover : theme.colors.cardBackground};
-  }
-`;
-
 const DateRangeSelector = styled.div`
   display: flex;
   gap: 10px;
   align-items: center;
 `;
 
-const DateInput = styled.input`
-  padding: 8px 12px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 6px;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 14px;
-  cursor: pointer;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
-`;
-
 const WeekDisplay = styled(Text)`
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
-`;
-
-const StatsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
 `;
 
 const StatCard = styled(Card)`
@@ -153,7 +90,6 @@ const StatCard = styled(Card)`
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 `;
 
@@ -197,17 +133,6 @@ const TrendIndicator = styled.div<{ $trend: 'up' | 'down' | 'neutral' }>`
   };
 `;
 
-const ChartsSection = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin-bottom: 30px;
-
-  @media (max-width: 968px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
 const ChartCard = styled(Card)`
   padding: 20px;
   transition: all 0.3s ease;
@@ -238,30 +163,6 @@ const ChartHeader = styled.div`
   margin-bottom: 15px;
 `;
 
-const ExportButton = styled.button`
-  padding: 6px 12px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 4px;
-  color: ${({ theme }) => theme.colors.text};
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.cardBackground};
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
-
 const UrgentSection = styled.div`
   margin-top: 30px;
 `;
@@ -281,19 +182,6 @@ const UrgentTaskCard = styled(Card)<{ $priority: string }>`
   };
 `;
 
-const PriorityBadge = styled.span<{ $priority: string }>`
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  background-color: ${({ $priority }) => 
-    $priority === 'Critical' ? chartColors.critical :
-    $priority === 'High' ? chartColors.high :
-    chartColors.medium
-  };
-  color: white;
-`;
-
 const TaskHeader = styled.div`
   display: flex;
   justify-content: space-between;
@@ -303,7 +191,7 @@ const TaskHeader = styled.div`
 
 const UrgentTaskTitle = styled(Text)`
   font-weight: 500;
-  font-size: 16px;
+  font-size: 14px;
 `;
 
 const DaysRemaining = styled.span<{ $urgent: boolean }>`
@@ -328,22 +216,6 @@ const FilterSection = styled.div`
 const FilterLabel = styled(Text)`
   font-weight: 500;
   font-size: 14px;
-`;
-
-const FilterSelect = styled.select`
-  padding: 8px 12px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 6px;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 14px;
-  cursor: pointer;
-  min-width: 200px;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
 `;
 
 const LoadingSkeleton = styled.div`
@@ -374,56 +246,28 @@ const InsightCard = styled(Card)`
   flex-direction: column;
   align-items: center;
   text-align: center;
-  background: linear-gradient(135deg, ${({ theme }) => theme.colors.cardBackground} 0%, ${({ theme }) => theme.colors.backgroundSecondary} 100%);
-  transition: all 0.3s ease;
-  animation: fadeInScale 0.7s ease-out;
-
-  @keyframes fadeInScale {
-    from {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  &:hover {
-    transform: scale(1.03);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-  }
+  justify-content: center;
+  height: 100%;
 `;
 
 const InsightIcon = styled.div`
-  font-size: 40px;
   margin-bottom: 12px;
+  color: ${({ theme }) => theme.colors.primary};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 40px;
+    height: 40px;
+  }
 `;
 
 const InsightValue = styled.div`
-  font-size: 28px;
+  font-size: 24px;
   font-weight: bold;
   color: ${({ theme }) => theme.colors.primary};
   margin-bottom: 8px;
-`;
-
-const DailyGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  margin-top: 20px;
-
-  @media (max-width: 1200px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  @media (max-width: 900px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
-  }
 `;
 
 const DayCard = styled(Card)`
@@ -436,19 +280,25 @@ const DayCard = styled(Card)`
 
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12);
   }
 `;
 
 const DayHeader = styled.div`
-  border-bottom: 2px solid ${({ theme }) => theme.colors.border};
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   padding-bottom: 10px;
   margin-bottom: 12px;
 `;
 
+const DayHeaderLeft = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
 const DayName = styled.div`
   font-weight: 600;
-  font-size: 14px;
+  font-size: 16px;
   color: ${({ theme }) => theme.colors.text};
 `;
 
@@ -458,48 +308,71 @@ const DayDate = styled.div`
   margin-top: 2px;
 `;
 
-const DayStats = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 8px;
-  padding: 8px;
+const TaskCount = styled.div`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-weight: 500;
+`;
+
+const DayProgressContainer = styled.div`
+  position: relative;
+  width: 100%;
+  margin-bottom: 16px;
+`;
+
+const DayProgressBar = styled.div`
+  width: 100%;
+  height: 12px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 4px;
+  border-radius: 6px;
+  overflow: visible;
+  position: relative;
 `;
 
-const CompletionBadge = styled.span<{ $rate: number }>`
-  font-size: 13px;
-  font-weight: 600;
-  color: ${({ $rate }) => $rate >= 75 ? chartColors.primary : $rate >= 50 ? chartColors.warning : chartColors.urgent};
+const DayProgressFill = styled.div<{ $percentage: number }>`
+  height: 100%;
+  width: ${({ $percentage }) => $percentage}%;
+  background: linear-gradient(90deg, ${chartColors.primary} 0%, #45a049 100%);
+  transition: width 0.5s ease;
+  border-radius: ${({ $percentage }) => $percentage === 100 ? '6px' : '6px 0 0 6px'};
 `;
 
-const TaskList = styled.div`
-  margin-top: 12px;
+const ProgressHeader = styled.div`
+  position: relative;
+  width: 100%;
+  height: 24px;
+  margin-bottom: 4px;
+`;
+
+const ProgressPercentage = styled.div<{ $percentage: number }>`
+  position: absolute;
+  left: ${({ $percentage }) => $percentage}%;
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 4px;
+  align-items: center;
+  gap: 2px;
+  transition: left 0.5s ease;
+`;
 
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
+const PercentageValue = styled.span<{ $percentage: number }>`
+  font-size: 14px;
+  font-weight: 700;
+  color: ${chartColors.primary};
+  position: relative;
+  left: ${({ $percentage }) => {
+    if ($percentage <= 2) return '24px';
+    if ($percentage >= 98) return '-16px';
+    return '0';
+  }};
+`;
 
-  &::-webkit-scrollbar-track {
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: ${({ theme }) => theme.colors.border};
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background: ${({ theme }) => theme.colors.textSecondary};
-  }
+const ProgressArrow = styled.div`
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid ${chartColors.primary};
 `;
 
 const TaskItem = styled.div<{ $completed: boolean }>`
@@ -511,7 +384,7 @@ const TaskItem = styled.div<{ $completed: boolean }>`
     $completed ? theme.colors.backgroundSecondary : theme.colors.cardBackground};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 4px;
-  font-size: 13px;
+  font-size: 14px;
   transition: all 0.2s;
   cursor: pointer;
 
@@ -541,7 +414,6 @@ const TaskTitle = styled.div<{ $completed: boolean }>`
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   line-height: 1.4;
-  cursor: help;
 `;
 
 const TaskMeta = styled.div`
@@ -549,20 +421,6 @@ const TaskMeta = styled.div`
   gap: 8px;
   margin-top: 4px;
   flex-wrap: wrap;
-`;
-
-const TaskPriority = styled.span<{ $priority: string }>`
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-weight: 500;
-  background-color: ${({ $priority }) => 
-    $priority === 'Critical' ? chartColors.critical :
-    $priority === 'High' ? chartColors.high :
-    $priority === 'Medium' ? chartColors.medium :
-    chartColors.low
-  };
-  color: white;
 `;
 
 const TaskGroup = styled.span`
@@ -577,7 +435,7 @@ const EmptyDay = styled.div`
   text-align: center;
   padding: 20px;
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 13px;
+  font-size: 12px;
 `;
 
 const GoalSection = styled.div`
@@ -586,6 +444,7 @@ const GoalSection = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: 8px;
   border: 1px solid ${({ theme }) => theme.colors.border};
+  height: 100%;
 `;
 
 const GoalHeader = styled.div`
@@ -597,24 +456,8 @@ const GoalHeader = styled.div`
 
 const GoalTitle = styled.h3`
   color: ${({ theme }) => theme.colors.text};
-  font-size: 16px;
+  font-size: 18px;
   margin: 0;
-`;
-
-const GoalInput = styled.input`
-  width: 80px;
-  padding: 6px 10px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 4px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 14px;
-  text-align: center;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
 `;
 
 const GoalProgressBar = styled.div`
@@ -646,8 +489,23 @@ const GoalStats = styled.div`
   display: flex;
   justify-content: space-between;
   margin-top: 10px;
-  font-size: 13px;
+  font-size: 12px;
   color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const GoalAndInsightGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 25px;
+
+  @media (max-width: 968px) {
+    grid-template-columns: 1fr;
+  }
+
+  > * {
+    min-height: 180px;
+  }
 `;
 
 const ErrorContainer = styled.div`
@@ -667,13 +525,13 @@ const ErrorIcon = styled.div`
 
 const ErrorTitle = styled.h2`
   color: ${({ theme }) => theme.colors.text};
-  font-size: 24px;
+  font-size: 18px;
   margin: 0 0 12px 0;
 `;
 
 const ErrorMessage = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 16px;
+  font-size: 14px;
   margin: 0 0 24px 0;
   max-width: 500px;
 `;
@@ -685,7 +543,7 @@ const RetryButton = styled.button`
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   transition: all 0.2s;
 
@@ -698,6 +556,15 @@ const RetryButton = styled.button`
     transform: translateY(0);
   }
 `;
+
+// Helper function to get border color for priority cards
+const getPriorityColor = (priority: string): string => {
+  switch (priority) {
+    case 'Critical': return chartColors.critical;
+    case 'High': return chartColors.high;
+    default: return chartColors.medium;
+  }
+};
 
 const WeeklyProgressPage: React.FC = () => {
   const [stats, setStats] = useState<WeeklyStatistics | null>(null);
@@ -717,6 +584,28 @@ const WeeklyProgressPage: React.FC = () => {
   });
   const { showToast } = useToast();
   const navigate = useNavigate();
+
+  // Handle view mode changes - reset to appropriate starting position
+  const handleViewModeChange = (newMode: 'week' | 'month' | 'custom') => {
+    setViewMode(newMode);
+    
+    if (newMode === 'week') {
+      // Reset to current week (Monday of this week)
+      setCurrentWeekStart(getWeekStart(new Date()));
+    } else if (newMode === 'month') {
+      // Reset to current month (1st of this month)
+      setCurrentWeekStart(getMonthStart(new Date()));
+    } else if (newMode === 'custom') {
+      // Initialize custom dates to current month range
+      const now = new Date();
+      const monthStart = getMonthStart(now);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0); // Last day of month
+      
+      setCustomStartDate(monthStart.toISOString().split('T')[0]);
+      setCustomEndDate(monthEnd.toISOString().split('T')[0]);
+      setCurrentWeekStart(monthStart);
+    }
+  };
 
   const loadData = useCallback(async () => {
     try {
@@ -747,13 +636,54 @@ const WeeklyProgressPage: React.FC = () => {
     }
   }, [currentWeekStart, showToast]);
 
+  // Background refresh without showing loading state
+  const refreshDataInBackground = useCallback(async () => {
+    try {
+      const weekStartStr = currentWeekStart.toISOString();
+      
+      // Calculate previous week start
+      const prevWeek = new Date(currentWeekStart);
+      prevWeek.setDate(prevWeek.getDate() - 7);
+      const prevWeekStartStr = prevWeek.toISOString();
+      
+      const [weeklyStats, urgent, previousWeekStats] = await Promise.all([
+        statisticsService.getWeeklyStatistics(weekStartStr),
+        statisticsService.getUrgentTasks(weekStartStr),
+        statisticsService.getWeeklyStatistics(prevWeekStartStr).catch(() => null),
+      ]);
+
+      setStats(weeklyStats);
+      setUrgentTasks(urgent);
+      setPrevWeekStats(previousWeekStats);
+    } catch (error: unknown) {
+      // Silently fail on background refresh, don't show error to user
+      console.error('Background refresh failed:', error);
+    }
+  }, [currentWeekStart]);
+
   const handleToggleTask = async (taskId: string, currentCompleted: boolean) => {
     try {
+      // Optimistically update the UI
+      if (stats) {
+        const updatedStats = { ...stats };
+        updatedStats.dailyBreakdown = updatedStats.dailyBreakdown.map(day => ({
+          ...day,
+          tasks: day.tasks?.map(task => 
+            task.id === taskId ? { ...task, completed: !currentCompleted } : task
+          ),
+        }));
+        setStats(updatedStats);
+      }
+
+      // Update on server
       await taskService.toggleTask(taskId, !currentCompleted);
-      // Reload data to get updated statistics
-      await loadData();
+      
+      // Refresh data in background without loading state
+      await refreshDataInBackground();
       showToast('success', `Task ${!currentCompleted ? 'completed' : 'reopened'}`);
     } catch (error: unknown) {
+      // Revert optimistic update on error
+      await refreshDataInBackground();
       const message = error instanceof Error ? error.message : 'Failed to update task';
       showToast('error', message);
     }
@@ -766,11 +696,11 @@ const WeeklyProgressPage: React.FC = () => {
   // Real-time refresh: poll for updates every 60 seconds
   useEffect(() => {
     const refreshInterval = setInterval(() => {
-      loadData();
+      refreshDataInBackground();
     }, 60000); // 60 seconds
 
     return () => clearInterval(refreshInterval);
-  }, [loadData]);
+  }, [refreshDataInBackground]);
 
   // Load task groups on mount
   useEffect(() => {
@@ -852,21 +782,21 @@ const WeeklyProgressPage: React.FC = () => {
 
   if (loading || !stats) {
     return (
-      <PageContainer>
+      <ContentContainer>
         <LoadingSkeleton>Loading statistics...</LoadingSkeleton>
-      </PageContainer>
+      </ContentContainer>
     );
   }
 
   if (error) {
     return (
-      <PageContainer>
+      <ContentContainer>
         <Header>
           <HeaderTop>
-            <BackButton onClick={() => navigate('/dashboard')}>
+            <IconButton onClick={() => navigate('/dashboard')}>
               <ArrowLeft size={18} />
               Back to Dashboard
-            </BackButton>
+            </IconButton>
           </HeaderTop>
           <Title>Weekly Progress Dashboard</Title>
         </Header>
@@ -878,7 +808,7 @@ const WeeklyProgressPage: React.FC = () => {
             Retry
           </RetryButton>
         </ErrorContainer>
-      </PageContainer>
+      </ContentContainer>
     );
   }
 
@@ -964,28 +894,28 @@ const WeeklyProgressPage: React.FC = () => {
   ];
 
   return (
-    <PageContainer>
+    <ContentContainer>
       <Header>
         <HeaderTop>
-          <BackButton onClick={() => navigate('/dashboard')}>
+          <IconButton onClick={() => navigate('/dashboard')}>
             <ArrowLeft size={18} />
             Back to Dashboard
-          </BackButton>
+          </IconButton>
         </HeaderTop>
         <Title>Weekly Progress Dashboard</Title>
         <WeekNavigation>
           {/* View Mode Toggle */}
-          <ViewModeToggle>
-            <ViewModeButton $active={viewMode === 'week'} onClick={() => setViewMode('week')}>
+          <ToggleGroup>
+            <ToggleButton $active={viewMode === 'week'} onClick={() => handleViewModeChange('week')}>
               Week
-            </ViewModeButton>
-            <ViewModeButton $active={viewMode === 'month'} onClick={() => setViewMode('month')}>
+            </ToggleButton>
+            <ToggleButton $active={viewMode === 'month'} onClick={() => handleViewModeChange('month')}>
               Month
-            </ViewModeButton>
-            <ViewModeButton $active={viewMode === 'custom'} onClick={() => setViewMode('custom')}>
+            </ToggleButton>
+            <ToggleButton $active={viewMode === 'custom'} onClick={() => handleViewModeChange('custom')}>
               Custom
-            </ViewModeButton>
-          </ViewModeToggle>
+            </ToggleButton>
+          </ToggleGroup>
 
           {/* Navigation controls based on view mode */}
           {viewMode === 'week' && (
@@ -1020,17 +950,17 @@ const WeeklyProgressPage: React.FC = () => {
 
           {viewMode === 'custom' && (
             <DateRangeSelector>
-              <DateInput
+              <InputField
                 type="date"
                 value={customStartDate}
                 onChange={(e) => setCustomStartDate(e.target.value)}
                 placeholder="Start date"
               />
               <Text>to</Text>
-              <DateInput
+              <InputField
                 type="date"
                 value={customEndDate}
-                onChange={(e) => setCustomEndDate(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomEndDate(e.target.value)}
                 placeholder="End date"
               />
               <Button 
@@ -1050,9 +980,10 @@ const WeeklyProgressPage: React.FC = () => {
       {groups.length > 0 && (
         <FilterSection>
           <FilterLabel>Filter by Group:</FilterLabel>
-          <FilterSelect 
+          <Select 
             value={selectedGroupId || ''}
-            onChange={(e) => setSelectedGroupId(e.target.value || null)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedGroupId(e.target.value || null)}
+            style={{ minWidth: '200px' }}
           >
             <option value="">All Groups</option>
             {groups.map(group => (
@@ -1060,7 +991,7 @@ const WeeklyProgressPage: React.FC = () => {
                 {group.name}
               </option>
             ))}
-          </FilterSelect>
+          </Select>
           {selectedGroupId && (
             <Button 
               variant="outline" 
@@ -1073,48 +1004,64 @@ const WeeklyProgressPage: React.FC = () => {
         </FilterSection>
       )}
 
-      {/* Weekly Goal Section */}
-      <GoalSection>
-        <GoalHeader>
-          <GoalTitle>📊 Weekly Completion Goal</GoalTitle>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Text style={{ fontSize: '14px' }}>Target:</Text>
-            <GoalInput
-              type="number"
-              min="1"
-              max="1000"
-              value={weeklyGoal}
-              onChange={(e) => updateWeeklyGoal(parseInt(e.target.value, 10) || 10)}
-            />
-            <Text style={{ fontSize: '14px' }}>tasks</Text>
-          </div>
-        </GoalHeader>
-        <GoalProgressBar>
-          <GoalProgressFill 
-            $percentage={(stats.completedTasks / weeklyGoal) * 100}
-            $achieved={stats.completedTasks >= weeklyGoal}
-          >
-            {stats.completedTasks >= weeklyGoal ? '🎉 Goal Achieved!' : `${Math.round((stats.completedTasks / weeklyGoal) * 100)}%`}
-          </GoalProgressFill>
-        </GoalProgressBar>
-        <GoalStats>
-          <span>{stats.completedTasks} / {weeklyGoal} tasks completed</span>
-          <span>
-            {stats.completedTasks >= weeklyGoal 
-              ? `+${stats.completedTasks - weeklyGoal} over goal!` 
-              : `${weeklyGoal - stats.completedTasks} remaining`
-            }
-          </span>
-        </GoalStats>
-      </GoalSection>
+      {/* Weekly Goal and Most Productive Day */}
+      <GoalAndInsightGrid>
+        <GoalSection>
+          <GoalHeader>
+            <GoalTitle>📊 Weekly Completion Goal</GoalTitle>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Text style={{ fontSize: '14px' }}>Target:</Text>
+              <InputField
+                type="number"
+                min="1"
+                max="1000"
+                value={weeklyGoal}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateWeeklyGoal(Number.parseInt(e.target.value, 10) || 10)}
+                style={{ width: '80px', textAlign: 'center' }}
+              />
+              <Text style={{ fontSize: '14px' }}>tasks</Text>
+            </div>
+          </GoalHeader>
+          <GoalProgressBar>
+            <GoalProgressFill 
+              $percentage={(stats.completedTasks / weeklyGoal) * 100}
+              $achieved={stats.completedTasks >= weeklyGoal}
+            >
+              {stats.completedTasks >= weeklyGoal ? '🎉 Goal Achieved!' : `${Math.round((stats.completedTasks / weeklyGoal) * 100)}%`}
+            </GoalProgressFill>
+          </GoalProgressBar>
+          <GoalStats>
+            <span>{stats.completedTasks} / {weeklyGoal} tasks completed</span>
+            <span>
+              {stats.completedTasks >= weeklyGoal 
+                ? `+${stats.completedTasks - weeklyGoal} over goal!` 
+                : `${weeklyGoal - stats.completedTasks} remaining`
+              }
+            </span>
+          </GoalStats>
+        </GoalSection>
 
-      <StatsGrid>
+        {bestDay && bestDay.count > 0 && (
+          <InsightCard>
+            <InsightIcon>
+              <Award />
+            </InsightIcon>
+            <InsightValue>{bestDay.day}</InsightValue>
+            <InsightLabel>Most Productive Day</InsightLabel>
+            <Text style={{ fontSize: '12px', marginTop: '8px', color: 'inherit' }}>
+              {bestDay.count} {bestDay.count === 1 ? 'task' : 'tasks'} completed
+            </Text>
+          </InsightCard>
+        )}
+      </GoalAndInsightGrid>
+
+      <ResponsiveGrid minWidth="200px" gap={20} style={{ marginBottom: '30px' }}>
         <StatCard>
           <StatLabel>Total Tasks</StatLabel>
           <StatValue>{stats.totalTasks}</StatValue>
           {prevWeekStats && prevWeekStats.totalTasks > 0 && (
             <TrendIndicator $trend={stats.totalTasks > prevWeekStats.totalTasks ? 'up' : stats.totalTasks < prevWeekStats.totalTasks ? 'down' : 'neutral'}>
-              {stats.totalTasks > prevWeekStats.totalTasks ? '↑' : stats.totalTasks < prevWeekStats.totalTasks ? '↓' : '→'}
+              {stats.totalTasks > prevWeekStats.totalTasks ? '↑' : stats.totalTasks < prevWeekStats.totalTasks ? '↓' : '→'}{' '}
               {Math.abs(stats.totalTasks - prevWeekStats.totalTasks)} vs last week
             </TrendIndicator>
           )}
@@ -1124,7 +1071,7 @@ const WeeklyProgressPage: React.FC = () => {
           <StatValue style={{ color: chartColors.primary }}>{stats.completedTasks}</StatValue>
           {prevWeekStats && completedTasksTrend.change > 0 && (
             <TrendIndicator $trend={completedTasksTrend.trend}>
-              {completedTasksTrend.trend === 'up' ? '↑' : '↓'}
+              {completedTasksTrend.trend === 'up' ? '↑' : '↓'}{' '}
               {completedTasksTrend.change.toFixed(0)}% vs last week
             </TrendIndicator>
           )}
@@ -1134,7 +1081,7 @@ const WeeklyProgressPage: React.FC = () => {
           <StatValue>{stats.completionPercentage.toFixed(1)}%</StatValue>
           {prevWeekStats && completionTrend.change > 0 && (
             <TrendIndicator $trend={completionTrend.trend}>
-              {completionTrend.trend === 'up' ? '↑' : '↓'}
+              {completionTrend.trend === 'up' ? '↑' : '↓'}{' '}
               {completionTrend.change.toFixed(1)}% vs last week
             </TrendIndicator>
           )}
@@ -1145,15 +1092,15 @@ const WeeklyProgressPage: React.FC = () => {
             {stats.totalTasks - stats.completedTasks}
           </StatValue>
         </StatCard>
-      </StatsGrid>
+      </ResponsiveGrid>
 
-      <ChartsSection>
+      <TwoColumnGrid gap={20} style={{ marginBottom: '30px' }}>
         <ChartCard>
           <ChartHeader>
             <ChartTitle>Daily Task Overview</ChartTitle>
-            <ExportButton onClick={() => exportChartAsImage('daily-chart', 'daily-task-overview')}>
+            <SmallButton onClick={() => exportChartAsImage('daily-chart', 'daily-task-overview')}>
               📥 Export
-            </ExportButton>
+            </SmallButton>
           </ChartHeader>
           <div id="daily-chart">
             <BarChartWrapper 
@@ -1171,9 +1118,9 @@ const WeeklyProgressPage: React.FC = () => {
         <ChartCard>
           <ChartHeader>
             <ChartTitle>Weekly Completion</ChartTitle>
-            <ExportButton onClick={() => exportChartAsImage('weekly-pie-chart', 'weekly-completion')}>
+            <SmallButton onClick={() => exportChartAsImage('weekly-pie-chart', 'weekly-completion')}>
               📥 Export
-            </ExportButton>
+            </SmallButton>
           </ChartHeader>
           <div id="weekly-pie-chart">
             <PieChartWrapper 
@@ -1184,7 +1131,7 @@ const WeeklyProgressPage: React.FC = () => {
             />
           </div>
         </ChartCard>
-      </ChartsSection>
+      </TwoColumnGrid>
 
       {/* Productivity Insights */}
       <InsightsSection>
@@ -1197,17 +1144,6 @@ const WeeklyProgressPage: React.FC = () => {
             </InsightLabel>
             <Text style={{ fontSize: '12px', marginTop: '8px', color: 'inherit' }}>
               Consecutive days with completed tasks
-            </Text>
-          </InsightCard>
-        )}
-        
-        {bestDay && bestDay.count > 0 && (
-          <InsightCard>
-            <InsightIcon>⭐</InsightIcon>
-            <InsightValue>{bestDay.day}</InsightValue>
-            <InsightLabel>Most Productive Day</InsightLabel>
-            <Text style={{ fontSize: '12px', marginTop: '8px', color: 'inherit' }}>
-              {bestDay.count} {bestDay.count === 1 ? 'task' : 'tasks'} completed
             </Text>
           </InsightCard>
         )}
@@ -1226,49 +1162,42 @@ const WeeklyProgressPage: React.FC = () => {
 
       <DailyBreakdownSection>
         <ChartTitle>Daily Task Breakdown</ChartTitle>
-        <DailyGrid>
+        <ResponsiveDailyGrid gap={20} style={{ marginTop: '20px' }}>
           {filteredDailyBreakdown.map((day) => {
             const dayDate = new Date(day.date);
-            const dayName = dayDate.toLocaleDateString('en-GB', { weekday: 'short' });
-            const dayNumber = dayDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+            const dayName = dayDate.toLocaleDateString('en-GB', { weekday: 'long' });
+            const dayNumber = dayDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
             const dayTasks = day.tasks || [];
-            
-            // Mini pie chart data for each day
-            const dayPieData = [
-              { name: 'Completed', value: day.completedTasks, color: chartColors.primary },
-              { name: 'Incomplete', value: day.totalTasks - day.completedTasks, color: chartColors.secondary },
-            ];
             
             return (
               <DayCard key={day.date}>
                 <DayHeader>
-                  <DayName>{dayName}</DayName>
-                  <DayDate>{dayNumber}</DayDate>
-                  <DayStats>
-                    <Text style={{ fontSize: '12px' }}>
-                      {day.completedTasks}/{day.totalTasks}
-                    </Text>
-                    <CompletionBadge $rate={day.completionRate}>
-                      {day.completionRate.toFixed(0)}%
-                    </CompletionBadge>
-                  </DayStats>
+                  <DayHeaderLeft>
+                    <DayName>{dayName}</DayName>
+                    <DayDate>{dayNumber}</DayDate>
+                  </DayHeaderLeft>
+                  <TaskCount>
+                    {day.completedTasks}/{day.totalTasks} tasks
+                  </TaskCount>
                 </DayHeader>
                 
-                {/* Mini pie chart visualization */}
+                {/* Progress bar with percentage above at completion point */}
                 {day.totalTasks > 0 && (
-                  <div style={{ marginBottom: '12px' }}>
-                    <PieChartWrapper 
-                      data={dayPieData} 
-                      height={120} 
-                      showLegend={false}
-                      title={`${dayName} completion`}
-                      description={`${day.completedTasks} of ${day.totalTasks} tasks completed on ${dayName}`}
-                    />
-                  </div>
+                  <DayProgressContainer>
+                    <ProgressHeader>
+                      <ProgressPercentage $percentage={day.completionRate}>
+                        <PercentageValue $percentage={day.completionRate}>{day.completionRate.toFixed(0)}%</PercentageValue>
+                        <ProgressArrow />
+                      </ProgressPercentage>
+                    </ProgressHeader>
+                    <DayProgressBar>
+                      <DayProgressFill $percentage={day.completionRate} />
+                    </DayProgressBar>
+                  </DayProgressContainer>
                 )}
                 
                 {dayTasks.length > 0 ? (
-                  <TaskList>
+                  <ScrollableContainer style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
                     {dayTasks.map((task) => (
                       <TaskItem key={task.id} $completed={task.completed}>
                         <TaskCheckbox 
@@ -1281,9 +1210,9 @@ const WeeklyProgressPage: React.FC = () => {
                             {task.title}
                           </TaskTitle>
                           <TaskMeta>
-                            <TaskPriority $priority={task.priority}>
+                            <SmallBadge style={{ backgroundColor: getPriorityColor(task.priority) }}>
                               {task.priority}
-                            </TaskPriority>
+                            </SmallBadge>
                             {task.groupName && (
                               <TaskGroup>{task.groupName}</TaskGroup>
                             )}
@@ -1291,14 +1220,14 @@ const WeeklyProgressPage: React.FC = () => {
                         </TaskContent>
                       </TaskItem>
                     ))}
-                  </TaskList>
+                  </ScrollableContainer>
                 ) : (
                   <EmptyDay>No tasks</EmptyDay>
                 )}
               </DayCard>
             );
           })}
-        </DailyGrid>
+        </ResponsiveDailyGrid>
       </DailyBreakdownSection>
 
       {urgentTasks && filteredUrgentTasks.length > 0 && (
@@ -1309,9 +1238,9 @@ const WeeklyProgressPage: React.FC = () => {
               <UrgentTaskCard key={task.id} $priority={task.priority}>
                 <TaskHeader>
                   <UrgentTaskTitle>{task.title}</UrgentTaskTitle>
-                  <PriorityBadge $priority={task.priority}>
+                  <SmallBadge style={{ backgroundColor: getPriorityColor(task.priority) }}>
                     {task.priority}
-                  </PriorityBadge>
+                  </SmallBadge>
                 </TaskHeader>
                 {task.description && <Text>{task.description}</Text>}
                 {task.daysUntilDue !== undefined && (
@@ -1339,9 +1268,9 @@ const WeeklyProgressPage: React.FC = () => {
               <UrgentTaskCard key={task.id} $priority={task.priority || 'Low'}>
                 <TaskHeader>
                   <UrgentTaskTitle>{task.title}</UrgentTaskTitle>
-                  <PriorityBadge $priority={task.priority || 'Low'}>
+                  <SmallBadge style={{ backgroundColor: getPriorityColor(task.priority || 'Low') }}>
                     {task.priority || 'Low'}
-                  </PriorityBadge>
+                  </SmallBadge>
                 </TaskHeader>
                 {task.description && <Text>{task.description}</Text>}
                 {task.groupName && (
@@ -1359,7 +1288,7 @@ const WeeklyProgressPage: React.FC = () => {
           )}
         </UrgentSection>
       )}
-    </PageContainer>
+    </ContentContainer>
   );
 };
 

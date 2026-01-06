@@ -1,15 +1,90 @@
-# UI Component Library
+# UI Component Library & Design System
 
-A centralized, theme-aware component library for consistent styling across the Finance Manager application.
+A centralized, theme-aware component library and design system for consistent styling across the Finance Manager application.
 
 ## Purpose
 
-This component library ensures:
-- **Consistency**: All components follow the same design patterns
-- **Centralized Theming**: Colors and styles managed from one place
+This component library and design system ensures:
+- **Consistency**: All components follow the same design patterns with standardized typography and spacing
+- **Centralized Theming**: Colors, fonts, and spacing managed from design tokens
 - **Type Safety**: Full TypeScript support
 - **Accessibility**: Built-in ARIA support and keyboard navigation
 - **Maintainability**: Easy to update design system globally
+- **Reusability**: Common patterns extracted into reusable components
+
+## Design System Files
+
+- **Typography**: `src/styles/typography.ts` - Font sizes, weights, and text styles
+- **Layout & Spacing**: `src/styles/layout.ts` - Spacing scale, breakpoints, and layout utilities
+- **UI Components**: `src/components/ui/index.ts` - Reusable styled components
+- **Chart Theme**: `src/components/charts/chartTheme.ts` - Chart colors and styling
+
+## Typography System
+
+### Usage
+
+```tsx
+import { typography } from '../styles/typography';
+import styled from 'styled-components';
+
+const Title = styled.h1`
+  ${typography.pageTitle}
+  color: ${({ theme }) => theme.colors.text};
+`;
+```
+
+### Available Styles
+
+**Headings:**
+- `pageTitle` - 24px, weight 600 (Main page titles)
+- `sectionHeading` - 18px, weight 600 (Section headings, chart titles)
+- `cardTitle` - 16px, weight 600 (Card and subsection titles)
+
+**Body Text:**
+- `bodyLarge` - 16px (Prominent body text)
+- `body` - 14px (Standard body text, buttons, inputs)
+- `bodySmall` - 12px (Secondary information, meta text)
+
+**Special:**
+- `label` - 14px, weight 500 (Form labels, emphasized text)
+- `caption` - 12px (Captions, help text)
+- `badge` - 11px, weight 500 (Badges, tags, tiny UI elements)
+
+**Display (for stats/numbers):**
+- `displayLarge` - 32px, weight 700
+- `displayMedium` - 24px, weight 700
+- `displaySmall` - 18px, weight 600
+
+## Spacing System
+
+### 4px-based Spacing Scale
+
+```tsx
+import { spacing } from '../styles/layout';
+
+const Container = styled.div`
+  padding: ${spacing.lg};        // 16px
+  gap: ${spacing.md};            // 12px
+  margin-bottom: ${spacing['2xl']}; // 24px
+`;
+```
+
+Available values: `xs` (4px), `sm` (8px), `md` (12px), `lg` (16px), `xl` (20px), `2xl` (24px), `3xl` (32px), `4xl` (40px), `5xl` (48px)
+
+### Layout Utilities
+
+```tsx
+import { flexCenter, flexBetween, truncateText, scrollbar, mediaQueries } from '../styles/layout';
+
+const Container = styled.div`
+  ${flexBetween}  // Flex with space-between and centered items
+  ${scrollbar}    // Custom scrollbar styling
+  
+  ${mediaQueries.tablet} {
+    flex-direction: column;
+  }
+`;
+```
 
 ## Available Components
 
@@ -311,9 +386,212 @@ Components to be added:
 - [ ] Tooltip
 - [ ] Tabs
 - [ ] Pagination
-- [ ] Select/Dropdown
 - [ ] Checkbox/Radio
 - [ ] Toggle Switch
-- [ ] Progress Bar
 - [ ] Skeleton Loaders
-- [ ] Toast Notifications
+- [ ] Toast Notifications (partially implemented)
+
+## Recently Added Components (v2)
+
+### Typography Components
+Pre-styled heading and text components with consistent sizing:
+
+```tsx
+import { Heading1, Heading2, Heading3, BodyText, SmallText, Label } from './components/ui';
+
+<Heading1>Page Title</Heading1>
+<Heading2>Section Heading</Heading2>
+<Heading3>Subsection</Heading3>
+<BodyText>Regular paragraph text</BodyText>
+<SmallText>Small meta information</SmallText>
+<Label htmlFor="input">Form Label</Label>
+```
+
+### Layout Components
+
+**PageContainer** - Standard page wrapper with max-width and responsive padding:
+```tsx
+import { PageContainer } from './components/ui';
+
+<PageContainer>
+  {/* Page content */}
+</PageContainer>
+```
+
+**GridLayout** - Responsive grid with auto-fit:
+```tsx
+import { GridLayout } from './components/ui';
+
+<GridLayout columns={4} gap={20} minColumnWidth="250px">
+  <Card>Item 1</Card>
+  <Card>Item 2</Card>
+</GridLayout>
+```
+
+**FlexRow** - Flexible row layout:
+```tsx
+import { FlexRow } from './components/ui';
+
+<FlexRow gap={16} align="center" justify="space-between">
+  <span>Left</span>
+  <span>Right</span>
+</FlexRow>
+```
+
+**Section** - Consistent section spacing:
+```tsx
+import { Section } from './components/ui';
+
+<Section spacing="large">
+  {/* Section content */}
+</Section>
+```
+
+### Progress Bar Components
+
+```tsx
+import { ProgressBar, ProgressFill } from './components/ui';
+
+<ProgressBar height="12px">
+  <ProgressFill $percentage={75} $variant="primary" />
+</ProgressBar>
+```
+
+Props:
+- `$percentage`: number (0-100)
+- `$variant`: 'primary' | 'success' | 'warning' | 'error'
+- `height`: string (default: '8px')
+
+### Empty State Components
+
+```tsx
+import { EmptyState, EmptyStateIcon, EmptyStateText } from './components/ui';
+
+<EmptyState>
+  <EmptyStateIcon>📭</EmptyStateIcon>
+  <EmptyStateText>No items to display</EmptyStateText>
+</EmptyState>
+```
+
+## Best Practices for Consistency
+
+### 1. Use Design Tokens
+
+❌ **Don't** hardcode values:
+```tsx
+const Title = styled.h1`
+  font-size: 24px;
+  margin-bottom: 20px;
+`;
+```
+
+✅ **Do** use design tokens:
+```tsx
+import { typography } from '../styles/typography';
+import { spacing } from '../styles/layout';
+
+const Title = styled.h1`
+  ${typography.pageTitle}
+  margin-bottom: ${spacing.xl};
+`;
+```
+
+### 2. Extend Existing Components
+
+❌ **Don't** recreate from scratch:
+```tsx
+const MyCard = styled.div`
+  background: white;
+  border: 1px solid gray;
+  padding: 20px;
+  border-radius: 8px;
+`;
+```
+
+✅ **Do** extend shared components:
+```tsx
+import { Card } from '../components/ui';
+
+const MyCard = styled(Card)`
+  border-left: 4px solid ${({ theme }) => theme.colors.primary};
+`;
+```
+
+### 3. Consistent Spacing
+
+Always use the spacing scale for padding, margin, and gaps:
+```tsx
+import { spacing } from '../styles/layout';
+
+const Container = styled.div`
+  padding: ${spacing.lg};
+  gap: ${spacing.md};
+  margin-bottom: ${spacing['2xl']};
+`;
+```
+
+### 4. Typography Consistency
+
+Use typography mixins or pre-styled components instead of ad-hoc font sizes:
+```tsx
+import { typography } from '../styles/typography';
+import { Heading2 } from '../components/ui';
+
+// Option 1: Use mixin
+const Title = styled.h2`
+  ${typography.sectionHeading}
+`;
+
+// Option 2: Use pre-styled component
+<Heading2>Section Title</Heading2>
+```
+
+## Migration Guide for Existing Pages
+
+To migrate existing page-specific components to use the design system:
+
+1. **Import design tokens** at the top of your file
+2. **Replace hardcoded values** with tokens (font-sizes, spacing, colors)
+3. **Use shared components** where possible (Heading1, Card, Button, GridLayout, etc.)
+4. **Extract reusable patterns** into the UI library if used in multiple places
+
+### Example Migration
+
+**Before:**
+```tsx
+const Title = styled.h1`
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 30px 0;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const Container = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+`;
+```
+
+**After:**
+```tsx
+import { Heading1, GridLayout } from '../components/ui';
+import { spacing } from '../styles/layout';
+
+const Title = styled(Heading1)`
+  margin-bottom: ${spacing['2xl']};
+`;
+
+// Or use directly:
+<GridLayout columns={4} gap={20}>
+  {/* content */}
+</GridLayout>
+```
+
+## Questions or Improvements?
+
+If you need a component that doesn't exist or have suggestions for the design system:
+1. Check if it can be composed from existing components
+2. Consider if it's reusable enough for the shared library
+3. Document new patterns in this README
+4. Use consistent naming and follow existing conventions

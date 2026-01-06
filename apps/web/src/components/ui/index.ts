@@ -242,7 +242,6 @@ export const Card = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.cardBorder};
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 4px ${({ theme }) => theme.colors.shadow};
 `;
 
 export const CardHeader = styled.div`
@@ -364,6 +363,18 @@ export const Container = styled.div`
 
   @media (max-width: 768px) {
     padding: 0 16px;
+  }
+`;
+
+export const ContentContainer = styled.div`
+  max-width: 1200px;
+  width: 80%;
+  margin: 0 auto;
+  padding: 20px;
+
+  @media (max-width: 768px) {
+    padding: 10px;
+    width: 95%;
   }
 `;
 
@@ -499,5 +510,216 @@ export const LoadingSpinner = styled.div`
     to {
       transform: rotate(360deg);
     }
+  }
+`;
+
+// ============================================================================
+// BUTTON VARIANTS
+// ============================================================================
+
+export const IconButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 6px;
+  color: ${({ theme }) => theme.colors.text};
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.cardBackground};
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 768px) {
+    min-height: 44px;
+  }
+`;
+
+export const SmallButton = styled.button`
+  padding: 6px 12px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 4px;
+  color: ${({ theme }) => theme.colors.text};
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.cardBackground};
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+// Add SmallBadge component for smaller badges
+export const SmallBadge = styled.span`
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 500;
+  color: white;
+  display: inline-block;
+`;
+
+// ============================================================================
+// RESPONSIVE GRID LAYOUTS
+// ============================================================================
+
+export const ResponsiveGrid = styled.div<{ 
+  minWidth?: string;
+  gap?: number;
+}>`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(${({ minWidth = '200px' }) => minWidth}, 1fr));
+  gap: ${({ gap = 20 }) => gap}px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const TwoColumnGrid = styled.div<{ gap?: number }>`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: ${({ gap = 20 }) => gap}px;
+
+  @media (max-width: 968px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const ResponsiveDailyGrid = styled.div<{ gap?: number }>`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: ${({ gap = 20 }) => gap}px;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+// ============================================================================
+// INPUT COMPONENTS
+// ============================================================================
+
+export const InputField = styled.input`
+  padding: 8px 12px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 6px;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 14px;
+  transition: border-color 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+export const Select = styled.select`
+  padding: 8px 12px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 6px;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+// ============================================================================
+// TOGGLE GROUP COMPONENT
+// ============================================================================
+
+export const ToggleGroup = styled.div`
+  display: flex;
+  gap: 8px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border-radius: 6px;
+  padding: 4px;
+`;
+
+export const ToggleButton = styled.button<{ $active: boolean }>`
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  background: ${({ $active, theme }) => $active ? theme.colors.primary : 'transparent'};
+  color: ${({ $active, theme }) => $active ? 'white' : theme.colors.text};
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+
+  &:hover {
+    background: ${({ $active, theme }) => $active ? theme.colors.primaryHover : theme.colors.cardBackground};
+  }
+`;
+
+// ============================================================================
+// SCROLLABLE CONTAINER
+// ============================================================================
+
+export const ScrollableContainer = styled.div`
+  overflow-y: auto;
+  padding-right: 4px;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: ${({ theme }) => theme.colors.backgroundSecondary};
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: ${({ theme }) => theme.colors.border};
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: ${({ theme }) => theme.colors.textSecondary};
   }
 `;

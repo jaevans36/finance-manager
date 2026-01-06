@@ -1,6 +1,6 @@
 export const chartColors = {
   primary: '#4CAF50',      // Green for completed tasks
-  secondary: '#9E9E9E',    // Gray for incomplete tasks
+  secondary: '#fa4f4fff',    // Gray for incomplete tasks
   urgent: '#f44336',       // Red for overdue/urgent
   warning: '#FF9800',      // Orange for warnings
   info: '#2196F3',         // Blue for info

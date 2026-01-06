@@ -421,3 +421,39 @@ Users can visualise and manage their tasks in a traditional monthly calendar for
 - Navigation updates needed to add calendar link to main menu
 - Responsive design considerations for mobile calendar views
 - Potential future enhancement: drag-and-drop task rescheduling
+---
+
+### 2026-01-05 - Phase 11 Advanced Features Completed
+
+**Completed**:
+
+- **T218**: Real-time refresh with 60-second polling interval
+- **T221-T226**: Enhanced chart features (mini pie charts, tooltips, legends, colour coding, animations, PNG export)
+- **T227-T228**: Custom date ranges and month view toggle
+- **T229-T230**: Productivity trends (comparison with previous week) and streak counter
+- **T232**: "Best Day" and "Most Productive Day" achievement badges
+- **T233**: Group filtering for weekly statistics
+- **T234**: Task count goals with progress indicators and localStorage persistence
+- **T235**: Unscheduled tasks section displaying tasks without due dates
+
+**Deferred for Future Implementation**:
+
+- **T231**: Completion rate history chart (last 4-8 weeks line graph)
+  - **Reason**: Requires new backend API endpoint to fetch multi-week historical statistics data
+  - **Implementation Notes**: 
+    * Create GET /api/v1/statistics/history endpoint accepting startDate and endDate parameters
+    * Return array of weekly statistics for specified date range
+    * Frontend: Add LineChart wrapper component using Recharts
+    * Display trend line showing completion percentage over 4-8 weeks
+    * Add to Weekly Progress page as separate chart section
+  - **Priority**: Medium - valuable for long-term productivity insights
+  - **Estimated Effort**: 4-6 hours (2-3 hours backend, 2-3 hours frontend)
+
+**Impact**:
+
+- Weekly Progress Dashboard now feature-complete with all planned enhancements
+- Smooth animations improve user experience and visual feedback
+- Goal tracking provides motivation and progress visibility
+- Real-time updates ensure data freshness without manual refresh
+- Chart export enables sharing and reporting capabilities
+- All features work seamlessly with existing task and group filtering

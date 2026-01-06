@@ -442,7 +442,7 @@ description: "Task list for To Do App implementation"
 - [x] T228 [P] [US8] Add month view option in addition to week view
 - [x] T229 [US8] Implement productivity trends (comparison with previous week)
 - [x] T230 [US8] Add streak counter (consecutive days with completed tasks)
-- [ ] T231 [US8] Create completion rate history chart (last 4-8 weeks line graph)
+- [ ] T231 [US8] Create completion rate history chart (last 4-8 weeks line graph) **[DEFERRED: Requires new backend endpoint GET /api/v1/statistics/history - see spec.md changelog 2026-01-05 for implementation notes]**
 - [x] T232 [US8] Implement "Best Day" and "Most Productive Day" badges
 - [x] T233 [US8] Add group filtering to weekly stats (view progress by specific group)
 - [x] T234 [US8] Implement task count goals with progress indicators
