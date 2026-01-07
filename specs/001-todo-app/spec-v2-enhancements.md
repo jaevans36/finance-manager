@@ -776,3 +776,1524 @@ Users can export their task data in multiple formats and integrate with external
 - Images and assets must be optimized and lazy-loaded
 - API rate limiting must prevent abuse while allowing normal usage
 
+---
+
+## Phase 5 - Administration & System Management
+
+### User Story 5.1 - User Management (Priority: P1)
+
+Administrators need comprehensive user management capabilities to maintain system integrity, handle support requests, and ensure proper account lifecycle management.
+
+**Why this priority**: User management is foundational for administration. Without it, administrators cannot handle basic support tasks like account lockouts, suspicious activity, or user data requests.
+
+**Independent Test**: Can be fully tested by creating admin account, viewing all users, managing user states (active/suspended), and verifying role assignments work correctly.
+
+**Acceptance Scenarios**:
+
+1. **Given** an authenticated administrator, **When** they access the admin dashboard, **Then** they see a paginated list of all registered users with key information (email, username, registration date, last login, status)
+2. **Given** an administrator viewing the user list, **When** they search by email/username or filter by status/registration date, **Then** the list updates to show matching users only
+3. **Given** an administrator viewing a specific user, **When** they click on a user record, **Then** they see detailed user information including account statistics (total tasks, completion rate, last activity)
+4. **Given** an administrator viewing user details, **When** they suspend a user account, **Then** the user is immediately logged out and cannot log in until reactivated
+5. **Given** an administrator viewing user details, **When** they reset a user's password, **Then** a secure reset link is generated and can be sent to the user's email
+6. **Given** an administrator, **When** they assign or revoke admin privileges for a user, **Then** the changes take effect immediately and are logged in the audit trail
+7. **Given** a suspended user attempts to log in, **When** they enter valid credentials, **Then** they receive a clear message that their account has been suspended
+8. **Given** an administrator, **When** they bulk export user data for GDPR compliance, **Then** they receive a secure download containing requested user information in JSON/CSV format
+
+---
+
+### User Story 5.2 - Target & Goal Management (Priority: P2)
+
+Administrators can define system-wide default goals, create recommended target templates, and monitor user engagement with goal-setting features to encourage productivity.
+
+**Why this priority**: Centralised goal management allows administrators to establish productivity benchmarks, create guided experiences for new users, and analyze goal-setting patterns across the user base.
+
+**Independent Test**: Can be fully tested by creating default targets, assigning them to new users, creating target templates, and verifying users see and can adopt these suggestions.
+
+**Acceptance Scenarios**:
+
+1. **Given** an administrator accesses target management, **When** they set a system-wide default weekly task goal, **Then** all new user accounts are created with this default goal automatically applied
+2. **Given** an administrator, **When** they create a target template (e.g., "Beginner: 5 tasks/week", "Professional: 15 tasks/week"), **Then** the template is available for users to select during onboarding or in settings
+3. **Given** an administrator views target analytics, **When** they access the goals dashboard, **Then** they see aggregate statistics (average goals set, achievement rates, most popular targets, goal adoption rate)
+4. **Given** an administrator, **When** they update a default goal value, **Then** existing users are notified of the recommended adjustment (but not forced to change)
+5. **Given** an administrator creates a seasonal goal template (e.g., "New Year Sprint: 20 tasks/week"), **When** they publish it with a date range, **Then** it appears as a suggested goal to active users during that period
+6. **Given** an administrator, **When** they view individual user goal history, **Then** they can see goal changes over time, achievement patterns, and identify users who might benefit from adjusted targets
+
+---
+
+### User Story 5.3 - System Analytics & Insights (Priority: P2)
+
+Administrators need comprehensive visibility into system usage, user engagement patterns, and application health metrics to make informed decisions about features and infrastructure.
+
+**Why this priority**: Data-driven decision making requires comprehensive analytics. Understanding how users interact with the system helps prioritize features, identify issues, and optimize user experience.
+
+**Independent Test**: Can be fully tested by generating various activities across test accounts, accessing analytics dashboard, and verifying all metrics calculate correctly with proper date range filtering.
+
+**Acceptance Scenarios**:
+
+1. **Given** an administrator accesses the analytics dashboard, **When** the dashboard loads, **Then** they see key metrics: total users (active/inactive), tasks created/completed (daily/weekly/monthly), average completion rate, and system uptime
+2. **Given** an administrator views engagement metrics, **When** they select a date range, **Then** they see user activity trends (daily active users, new registrations, returning users, churn rate) with visual charts
+3. **Given** an administrator accesses productivity insights, **When** they view task statistics, **Then** they see average tasks per user, most common priorities, completion time patterns, and peak usage hours
+4. **Given** an administrator views feature adoption metrics, **When** they access the features dashboard, **Then** they see usage statistics for each feature (groups, priorities, due dates, recurring tasks) with adoption percentages
+5. **Given** an administrator, **When** they export analytics data for reporting, **Then** they can download comprehensive reports in CSV/Excel format with customizable date ranges and metrics
+6. **Given** an administrator monitoring system health, **When** they view the technical dashboard, **Then** they see API response times, error rates, database performance metrics, and authentication success rates
+7. **Given** an administrator analyzing user retention, **When** they view cohort analysis, **Then** they see user retention curves grouped by registration month with week-over-week engagement patterns
+
+---
+
+### User Story 5.4 - Content Moderation & Data Management (Priority: P3)
+
+Administrators need tools to moderate user-generated content, manage inappropriate task groups, and handle data cleanup requests while maintaining user privacy and system integrity.
+
+**Why this priority**: As the user base grows, content moderation becomes necessary to maintain a professional environment and comply with data privacy regulations.
+
+**Independent Test**: Can be fully tested by creating flagged content, reviewing it in admin panel, taking moderation actions, and verifying users receive appropriate notifications.
+
+**Acceptance Scenarios**:
+
+1. **Given** a task group is flagged (automatically by keyword filter or manually reported), **When** an administrator views the moderation queue, **Then** they see the flagged item with context (user, creation date, flag reason)
+2. **Given** an administrator reviewing flagged content, **When** they approve the content as acceptable, **Then** the flag is removed and the content remains visible to the user
+3. **Given** an administrator reviewing inappropriate content, **When** they remove it, **Then** the content is hidden from the user, they receive a notification explaining the removal, and the action is logged
+4. **Given** an administrator, **When** they configure automatic content filters, **Then** they can add keywords/patterns that trigger automatic flagging for manual review
+5. **Given** a user requests account deletion (GDPR compliance), **When** an administrator processes the request, **Then** all user data is permanently deleted after a 30-day grace period, with confirmation sent to the user
+6. **Given** an administrator, **When** they perform data cleanup operations, **Then** they can identify and remove orphaned records, old completed tasks (by user preference), and inactive accounts (90+ days)
+7. **Given** an administrator viewing data management dashboard, **When** they access storage metrics, **Then** they see database size, task volume per user, and can identify users with excessive data storage
+
+---
+
+### User Story 5.5 - System Configuration & Feature Flags (Priority: P3)
+
+Administrators can control system-wide settings, enable/disable features dynamically, and configure application behavior without code deployments, enabling rapid response to issues.
+
+**Why this priority**: Dynamic configuration allows administrators to respond quickly to issues, test features with subsets of users, and adjust system behavior based on real-time conditions.
+
+**Independent Test**: Can be fully tested by modifying feature flags, adjusting system settings, and verifying changes take effect immediately for affected users without requiring restarts.
+
+**Acceptance Scenarios**:
+
+1. **Given** an administrator accesses system configuration, **When** they view the settings panel, **Then** they see configurable options: maintenance mode, registration enabled, email notifications, rate limiting, session timeout
+2. **Given** an administrator, **When** they enable maintenance mode, **Then** all users (except admins) see a maintenance message and cannot access the application until disabled
+3. **Given** an administrator managing feature flags, **When** they access the feature flags panel, **Then** they see all available features with current state (enabled/disabled/percentage rollout)
+4. **Given** an administrator, **When** they enable a feature for percentage rollout (e.g., "Calendar View - 25%"), **Then** approximately 25% of active users see the feature, randomly assigned and consistently maintained
+5. **Given** an administrator, **When** they disable new user registration, **Then** the registration page shows an informational message and existing users can continue using the application
+6. **Given** an administrator configuring rate limits, **When** they adjust API rate limit values (requests per minute/hour), **Then** the new limits apply immediately to all incoming requests
+7. **Given** an administrator, **When** they configure email settings (SMTP, sender address, template defaults), **Then** all outgoing emails use the updated configuration
+8. **Given** an administrator enabling emergency features, **When** they activate "read-only mode," **Then** users can view their tasks but cannot create, edit, or delete until disabled
+
+---
+
+### User Story 5.6 - Audit Logging & Compliance (Priority: P2)
+
+All administrative actions must be comprehensively logged with tamper-proof audit trails, enabling compliance with data protection regulations and providing accountability.
+
+**Why this priority**: Audit logging is critical for security, compliance (GDPR, SOC2), and debugging. It provides transparency and accountability for all administrative actions.
+
+**Independent Test**: Can be fully tested by performing various admin actions, viewing the audit log, filtering by action type/user/date, and verifying all sensitive operations are recorded with complete context.
+
+**Acceptance Scenarios**:
+
+1. **Given** an administrator performs any action (user suspension, goal modification, feature flag change), **When** the action completes, **Then** it is immediately logged with timestamp, admin user, action type, affected entity, and before/after values
+2. **Given** an administrator views the audit log, **When** they access the logs dashboard, **Then** they see a paginated, searchable list of all administrative actions with detailed context
+3. **Given** an administrator searching audit logs, **When** they filter by action type, date range, admin user, or affected user, **Then** the log updates to show only matching entries
+4. **Given** an auditor or compliance officer, **When** they export audit logs for a specific period, **Then** they receive a tamper-evident export (with checksums) containing all relevant log entries
+5. **Given** a security incident requires investigation, **When** an administrator searches for suspicious activity, **Then** they can trace all actions related to a specific user account or time period
+6. **Given** audit log retention policies, **When** logs exceed the retention period (e.g., 2 years), **Then** they are automatically archived to long-term storage before being removed from active database
+7. **Given** critical administrative actions (privilege escalation, bulk deletions), **When** they are performed, **Then** additional verification is required and the action is highlighted in audit logs
+
+---
+
+### User Story 5.7 - Notification & Communication Management (Priority: P3)
+
+Administrators can send system-wide announcements, manage notification templates, and monitor email delivery status to ensure effective communication with users.
+
+**Why this priority**: Centralized communication management allows administrators to inform users of updates, maintenance windows, and important changes while monitoring delivery effectiveness.
+
+**Independent Test**: Can be fully tested by creating announcements, customizing notification templates, sending test communications, and verifying delivery status tracking works correctly.
+
+**Acceptance Scenarios**:
+
+1. **Given** an administrator creating a system announcement, **When** they compose a message with title, body, severity level (info/warning/critical), and target audience (all/active/specific), **Then** the announcement is queued for delivery
+2. **Given** an administrator publishes an announcement, **When** users next log in, **Then** they see the announcement as a prominent banner/modal (based on severity) until dismissed
+3. **Given** an administrator managing notification templates, **When** they access the templates panel, **Then** they can edit email templates for all automated notifications (password reset, verification, task reminders)
+4. **Given** an administrator customizing email templates, **When** they use template variables ({{username}}, {{taskCount}}, {{url}}), **Then** the variables are replaced with actual values when emails are sent
+5. **Given** an administrator, **When** they view email delivery metrics, **Then** they see statistics: sent count, delivery rate, bounce rate, open rate (if tracking enabled), by email type
+6. **Given** failed email deliveries, **When** an administrator views the failed delivery log, **Then** they see recipient, timestamp, error message, and can manually retry sending
+7. **Given** an administrator scheduling maintenance notifications, **When** they create a scheduled announcement (e.g., "Maintenance in 24 hours"), **Then** it is automatically displayed/sent at the specified time
+8. **Given** an administrator, **When** they send a test notification to their own account, **Then** they receive the notification immediately and can verify formatting before broader distribution
+
+---
+
+### User Story 5.8 - Role-Based Access Control (RBAC) (Priority: P1)
+
+The system must support multiple administrator roles with granular permissions, ensuring administrators only have access to functions appropriate to their responsibilities.
+
+**Why this priority**: RBAC is essential for security and compliance in multi-administrator environments. It follows the principle of least privilege and prevents unauthorized access to sensitive functions.
+
+**Independent Test**: Can be fully tested by creating multiple admin accounts with different roles, attempting to access various admin functions, and verifying permission boundaries are enforced correctly.
+
+**Acceptance Scenarios**:
+
+1. **Given** a super administrator, **When** they access role management, **Then** they can define custom roles with specific permissions (e.g., "Content Moderator": read users, edit content, no system config)
+2. **Given** a super administrator assigning roles, **When** they grant a user a specific role (e.g., "Support Agent"), **Then** that user gains admin access but only to functions within their role permissions
+3. **Given** an administrator with limited permissions (e.g., "Viewer" role), **When** they attempt to access restricted functions (user deletion, system config), **Then** they receive a clear "insufficient permissions" message
+4. **Given** predefined roles exist (Super Admin, User Manager, Content Moderator, Analytics Viewer, Support Agent), **When** an administrator is assigned one, **Then** they inherit all permissions defined for that role
+5. **Given** a super administrator, **When** they modify role permissions (add/remove capabilities), **Then** all users with that role immediately gain or lose the affected permissions
+6. **Given** an administrator performing an action, **When** the action requires specific permissions, **Then** the system validates permissions before execution and logs the authorization check
+7. **Given** a support agent (limited role), **When** they view user details, **Then** they see necessary support information but sensitive fields (password hashes, tokens) are redacted
+8. **Given** role escalation requests, **When** an administrator requests additional permissions, **Then** the request is logged and requires approval from a super administrator
+
+---
+
+### Technical Requirements for Phase 5
+
+**Backend API Additions**:
+- New AdminController with RBAC middleware enforcement
+- User management endpoints (list, search, suspend, activate, export)
+- Target management endpoints (CRUD operations for defaults and templates)
+- Analytics aggregation service with caching for performance
+- Audit logging service with write-only append operations
+- Feature flag service with percentage-based rollout logic
+- Content moderation queue with workflow management
+- System configuration service with validation and hot-reload
+- Email management service with template rendering engine
+- RBAC permission checking middleware with role hierarchy
+
+**Frontend Components**:
+- Admin dashboard with navigation sidebar
+- User management table with search, filter, and pagination
+- Target management interface with template builder
+- Analytics dashboard with charts (using Recharts or Chart.js)
+- Audit log viewer with advanced filtering
+- Feature flag toggle interface with rollout percentage slider
+- Content moderation queue with approve/reject workflow
+- System settings panel with real-time validation
+- Notification composer with preview functionality
+- Role management interface with permission matrix
+
+**Database Schema**:
+```sql
+-- Admin roles and permissions
+CREATE TABLE admin_roles (
+  id UUID PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  description TEXT,
+  permissions JSONB NOT NULL, -- Flexible permission structure
+  is_system_role BOOLEAN DEFAULT FALSE, -- Prevents deletion of core roles
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- User role assignments
+CREATE TABLE user_admin_roles (
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  role_id UUID REFERENCES admin_roles(id) ON DELETE CASCADE,
+  assigned_by UUID REFERENCES users(id),
+  assigned_at TIMESTAMP DEFAULT NOW(),
+  PRIMARY KEY (user_id, role_id)
+);
+
+-- System-wide target templates
+CREATE TABLE target_templates (
+  id UUID PRIMARY KEY,
+  name VARCHAR(200) NOT NULL,
+  description TEXT,
+  target_value INTEGER NOT NULL,
+  target_type VARCHAR(50) NOT NULL, -- 'weekly_tasks', 'daily_tasks', 'completion_rate'
+  difficulty_level VARCHAR(20), -- 'beginner', 'intermediate', 'advanced'
+  is_default BOOLEAN DEFAULT FALSE,
+  active_from DATE,
+  active_until DATE,
+  created_by UUID REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Audit log for all admin actions
+CREATE TABLE audit_logs (
+  id UUID PRIMARY KEY,
+  admin_user_id UUID REFERENCES users(id),
+  action_type VARCHAR(100) NOT NULL, -- 'user_suspend', 'goal_update', 'feature_toggle', etc.
+  entity_type VARCHAR(100), -- 'user', 'task', 'system_config', etc.
+  entity_id UUID,
+  before_value JSONB, -- State before action
+  after_value JSONB, -- State after action
+  ip_address VARCHAR(45),
+  user_agent TEXT,
+  severity VARCHAR(20) DEFAULT 'info', -- 'info', 'warning', 'critical'
+  timestamp TIMESTAMP DEFAULT NOW()
+);
+
+-- Feature flags for dynamic feature control
+CREATE TABLE feature_flags (
+  id UUID PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  description TEXT,
+  enabled BOOLEAN DEFAULT FALSE,
+  rollout_percentage INTEGER DEFAULT 100, -- 0-100 for gradual rollout
+  enabled_for_user_ids UUID[], -- Specific user allowlist
+  disabled_for_user_ids UUID[], -- Specific user blocklist
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- System-wide announcements
+CREATE TABLE announcements (
+  id UUID PRIMARY KEY,
+  title VARCHAR(200) NOT NULL,
+  content TEXT NOT NULL,
+  severity VARCHAR(20) DEFAULT 'info', -- 'info', 'warning', 'critical'
+  target_audience VARCHAR(50) DEFAULT 'all', -- 'all', 'active', 'admins'
+  published_at TIMESTAMP,
+  expires_at TIMESTAMP,
+  created_by UUID REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Track which users have dismissed announcements
+CREATE TABLE user_dismissed_announcements (
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  announcement_id UUID REFERENCES announcements(id) ON DELETE CASCADE,
+  dismissed_at TIMESTAMP DEFAULT NOW(),
+  PRIMARY KEY (user_id, announcement_id)
+);
+
+-- Content moderation queue
+CREATE TABLE moderation_queue (
+  id UUID PRIMARY KEY,
+  entity_type VARCHAR(50) NOT NULL, -- 'task_group', 'task', 'user_profile'
+  entity_id UUID NOT NULL,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  flag_reason VARCHAR(100),
+  flagged_content TEXT,
+  status VARCHAR(20) DEFAULT 'pending', -- 'pending', 'approved', 'removed'
+  reviewed_by UUID REFERENCES users(id),
+  reviewed_at TIMESTAMP,
+  review_notes TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Email notification tracking
+CREATE TABLE email_logs (
+  id UUID PRIMARY KEY,
+  recipient_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  email_address VARCHAR(255) NOT NULL,
+  email_type VARCHAR(100) NOT NULL, -- 'password_reset', 'verification', 'announcement'
+  subject VARCHAR(500),
+  sent_at TIMESTAMP DEFAULT NOW(),
+  delivery_status VARCHAR(50) DEFAULT 'sent', -- 'sent', 'delivered', 'bounced', 'failed'
+  error_message TEXT,
+  opened_at TIMESTAMP -- Optional: for tracking (requires email tracking pixel)
+);
+
+-- System configuration (key-value store)
+CREATE TABLE system_config (
+  key VARCHAR(100) PRIMARY KEY,
+  value JSONB NOT NULL,
+  description TEXT,
+  data_type VARCHAR(50) NOT NULL, -- 'string', 'number', 'boolean', 'json'
+  requires_restart BOOLEAN DEFAULT FALSE,
+  updated_by UUID REFERENCES users(id),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+**Indexes for Performance**:
+```sql
+-- Audit log queries
+CREATE INDEX idx_audit_logs_admin_user ON audit_logs(admin_user_id);
+CREATE INDEX idx_audit_logs_timestamp ON audit_logs(timestamp DESC);
+CREATE INDEX idx_audit_logs_action_type ON audit_logs(action_type);
+CREATE INDEX idx_audit_logs_entity ON audit_logs(entity_type, entity_id);
+
+-- User management queries
+CREATE INDEX idx_users_status ON users(account_status) WHERE account_status IS NOT NULL;
+CREATE INDEX idx_users_last_login ON users(last_login_at DESC NULLS LAST);
+CREATE INDEX idx_users_created ON users(created_at DESC);
+
+-- Feature flag lookups
+CREATE INDEX idx_feature_flags_enabled ON feature_flags(enabled) WHERE enabled = true;
+
+-- Moderation queue
+CREATE INDEX idx_moderation_status ON moderation_queue(status, created_at DESC);
+CREATE INDEX idx_moderation_user ON moderation_queue(user_id);
+
+-- Email delivery tracking
+CREATE INDEX idx_email_logs_user ON email_logs(recipient_user_id);
+CREATE INDEX idx_email_logs_sent ON email_logs(sent_at DESC);
+CREATE INDEX idx_email_logs_status ON email_logs(delivery_status);
+```
+
+**Security Considerations**:
+- All admin endpoints require authentication + role-based authorization
+- Audit logs are append-only (no updates or deletions allowed via API)
+- Sensitive user data (password hashes, tokens) redacted in admin views
+- Rate limiting enforced on admin API endpoints (prevents automation abuse)
+- Admin sessions have shorter timeout periods (30 minutes vs 24 hours for regular users)
+- Two-factor authentication required for super administrator accounts
+- IP address logging for all admin actions
+- Automatic lockout after 5 failed admin authentication attempts
+- Admin actions on user accounts trigger email notifications to affected users
+- Bulk operations require additional confirmation step
+
+**Performance Considerations**:
+- Analytics queries use materialized views refreshed hourly
+- Audit log table partitioned by month for efficient querying
+- Feature flag checks cached in-memory with 5-minute TTL
+- User search implements full-text search with PostgreSQL's `tsvector`
+- Admin dashboard data cached with Redis for 60-second TTL
+- Export operations (users, analytics) queued as background jobs
+- Large datasets paginated with cursor-based pagination (not offset)
+
+**Accessibility Requirements**:
+- Admin interface follows WCAG 2.1 AA standards
+- All data tables include keyboard navigation
+- Charts include text-based data table alternatives
+- Form validation provides clear, accessible error messages
+- Confirmation dialogs for destructive actions with clear escape routes
+
+---
+
+### Implementation Priorities for Phase 5
+
+**Critical Path (Must Have)**:
+1. User Story 5.8 - RBAC system (security foundation)
+2. User Story 5.1 - User management (core admin function)
+3. User Story 5.6 - Audit logging (compliance requirement)
+4. User Story 5.2 - Target management (addresses user request)
+
+**High Value (Should Have)**:
+5. User Story 5.3 - System analytics (data-driven decisions)
+6. User Story 5.5 - System configuration & feature flags (operational flexibility)
+
+**Nice to Have (Could Have)**:
+7. User Story 5.4 - Content moderation (for scaling)
+8. User Story 5.7 - Notification management (enhanced communication)
+
+**Testing Requirements**:
+- Unit tests for all permission checking logic (100% coverage required)
+- Integration tests for all admin endpoints with various role combinations
+- E2E tests for critical admin workflows (user suspension, goal assignment)
+- Security testing focused on privilege escalation attempts
+- Performance testing for analytics queries with large datasets
+- Accessibility testing for entire admin interface
+
+**Estimated Effort**: 6-8 weeks (full-time developer)
+- Week 1-2: RBAC system + database schema + audit logging
+- Week 3-4: User management + target management
+- Week 5-6: System analytics + feature flags + configuration
+- Week 7-8: Content moderation + notification management + testing
+
+---
+
+## Phase 6 - Application Hub Dashboard
+
+### User Story 6.1 - Unified Application Portal (Priority: P1)
+
+Users need a central hub dashboard that provides quick access to all applications in the Finance Manager stack, replacing the current To Do-centric dashboard with a true application launcher.
+
+**Why this priority**: As the platform grows to include multiple tools (To Do, Finance Manager, future applications), users need a unified entry point to navigate between applications. This architectural change establishes proper separation of concerns.
+
+**Independent Test**: Can be fully tested by logging in, viewing the hub dashboard with application tiles, clicking through to different applications, and returning to the hub.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user successfully logs in, **When** they land on the application hub, **Then** they see a grid of application tiles including "To Do Manager" (active) and placeholders for upcoming applications
+2. **Given** a user viewing the hub dashboard, **When** they click on the "To Do Manager" tile, **Then** they navigate to the To Do application main view (current dashboard becomes `/todo`)
+3. **Given** a user in any application, **When** they click the "Home" or logo icon in the navigation, **Then** they return to the application hub
+4. **Given** the hub displays application tiles, **When** rendered, **Then** each tile shows: app icon (flat design style), app name, brief description, and "Launch" action
+5. **Given** placeholder tiles for unreleased applications, **When** a user hovers over them, **Then** they see a "Coming Soon" badge with estimated release timeframe
+6. **Given** a user viewing the hub on mobile, **When** the layout renders, **Then** application tiles stack vertically with full-width responsive design
+
+---
+
+### User Story 6.2 - Persistent Information Bar (Priority: P2)
+
+The hub dashboard features a top information bar displaying contextual user information, real-time data, and quick actions, providing at-a-glance awareness without navigation.
+
+**Why this priority**: A persistent info bar enhances user orientation, provides quick access to account settings, and displays important real-time information that helps users stay informed.
+
+**Independent Test**: Can be fully tested by viewing the info bar, verifying all information displays correctly, testing responsive behavior, and confirming quick actions work.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user views the hub dashboard, **When** the page loads, **Then** the top bar displays: welcome message with username, current date and time, account settings icon, and logout button
+2. **Given** the time display in the info bar, **When** one minute passes, **Then** the displayed time updates automatically without page refresh (using client-side interval)
+3. **Given** a user viewing the info bar, **When** they see their username, **Then** it's accompanied by a small avatar (user's initials in a coloured circle if no profile picture)
+4. **Given** a user clicks the account settings icon in the info bar, **When** activated, **Then** a dropdown menu appears with links to: Profile, Change Password, Email Preferences, Theme Settings
+5. **Given** the info bar displays notifications indicator, **When** unread system notifications exist, **Then** a badge shows the count and clicking opens a notification dropdown
+6. **Given** the info bar on mobile devices, **When** rendered, **Then** it collapses to show only essential items (username avatar, time, notifications) with hamburger menu for others
+
+---
+
+### User Story 6.3 - Quick Stats Dashboard Widget (Priority: P3)
+
+The hub dashboard includes a quick stats section showing aggregated metrics across all applications, providing users with high-level insights without entering individual apps.
+
+**Why this priority**: Aggregated statistics give users immediate visibility into their productivity and activities across the platform, encouraging engagement and providing value on the landing page.
+
+**Independent Test**: Can be fully tested by completing tasks in the To Do app, returning to hub, and verifying stats update correctly with real-time or periodic refresh.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user views the hub dashboard, **When** they look at the quick stats section, **Then** they see: total tasks (all-time), tasks completed this week, completion rate percentage, active task groups
+2. **Given** a user completes a task in the To Do application, **When** they return to the hub, **Then** the quick stats refresh automatically or display a "refresh" button to update stats
+3. **Given** the quick stats widget, **When** displaying metrics, **Then** each stat includes a small icon, the metric value (large font), and a label (secondary text)
+4. **Given** a user clicks on a quick stat (e.g., "Tasks This Week"), **When** activated, **Then** they navigate to the relevant section in the To Do app with appropriate filters applied
+5. **Given** future applications are added (e.g., Finance Manager), **When** they become active, **Then** the quick stats expand to include metrics from those apps (e.g., "Transactions This Month")
+6. **Given** a user with no data yet, **When** they view quick stats, **Then** they see empty states with encouraging messages like "Start your first task" or "Track your first transaction"
+
+---
+
+### User Story 6.4 - Application Card Design System (Priority: P2)
+
+Application tiles follow a consistent, accessible design system with flat iconography, clear typography, and visual states (available, coming soon, locked) that align with existing design patterns.
+
+**Why this priority**: Consistent visual design creates a professional, cohesive experience. Establishing design patterns now ensures future applications integrate seamlessly.
+
+**Independent Test**: Can be fully tested by viewing application tiles, verifying visual consistency, testing hover states, and confirming accessibility standards (keyboard navigation, ARIA labels).
+
+**Acceptance Scenarios**:
+
+1. **Given** an application tile is rendered, **When** displayed, **Then** it includes: flat icon (primary colour accent), application name (Heading3 typography), 2-line description (Text typography), visual status indicator
+2. **Given** a user hovers over an active application tile, **When** the mouse enters the tile area, **Then** the tile background shifts to a subtle hover colour and displays a slight elevation shadow
+3. **Given** an application tile for an unreleased app, **When** rendered, **Then** it displays with reduced opacity (70%), "Coming Soon" badge (top-right corner), and is non-interactive (cursor: not-allowed)
+4. **Given** a user with insufficient permissions for an app (e.g., admin-only tool), **When** viewing the hub, **Then** that tile shows a lock icon and "Restricted Access" badge
+5. **Given** the application tiles grid, **When** rendered on desktop, **Then** tiles display 3 per row with consistent spacing; on tablet: 2 per row; on mobile: 1 per row (full width)
+6. **Given** keyboard navigation on the hub, **When** a user tabs through tiles, **Then** each tile receives focus styling (outline border, primary colour) and can be activated with Enter/Space keys
+7. **Given** an application tile icon, **When** designed, **Then** it follows flat design principles: simple geometric shapes, solid colours (no gradients), 2-3 colour palette maximum, 64x64px minimum size
+
+---
+
+### User Story 6.5 - Recent Activity Feed (Priority: P3)
+
+The hub dashboard displays a recent activity feed showing the user's latest actions across all applications, providing quick context and easy resumption of work.
+
+**Why this priority**: A recent activity feed helps users quickly return to their workflow by showing recent tasks, transactions, or activities without navigating through applications.
+
+**Independent Test**: Can be fully tested by performing various actions across applications (create task, complete task, future: add transaction), returning to hub, and verifying activity feed displays chronologically.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user views the hub dashboard, **When** the recent activity section loads, **Then** they see their last 10 actions across all applications in reverse chronological order
+2. **Given** an activity item in the feed, **When** rendered, **Then** it displays: action icon, action description, timestamp (relative: "2 minutes ago", "Yesterday"), source application badge
+3. **Given** a user clicks on an activity item, **When** activated, **Then** they navigate to that specific item in the source application (e.g., clicking "Completed 'Bug fix task'" opens that task)
+4. **Given** the activity feed with no recent actions, **When** a new user views it, **Then** they see an empty state message: "Your recent activity will appear here" with a motivational icon
+5. **Given** activity items from different applications, **When** displayed, **Then** each has a colour-coded left border matching the application's primary colour (To Do: green, Finance: blue)
+6. **Given** the activity feed on mobile, **When** rendered, **Then** it shows the most recent 5 items with a "View All Activity" link to a dedicated activity history page
+
+---
+
+### User Story 6.6 - Personalized Welcome Experience (Priority: P3)
+
+The hub dashboard greets users with personalized messages based on time of day, achievements, and usage patterns, creating a welcoming and engaging experience.
+
+**Why this priority**: Personalization increases user engagement and makes the application feel more human and responsive to individual user behavior.
+
+**Independent Test**: Can be fully tested by logging in at different times of day, completing achievements, and verifying contextual messages display appropriately.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user logs in between 5:00-11:59, **When** the hub loads, **Then** they see "Good morning, [Username]" in the welcome header
+2. **Given** a user logs in between 12:00-17:59, **When** the hub loads, **Then** they see "Good afternoon, [Username]" in the welcome header
+3. **Given** a user logs in between 18:00-04:59, **When** the hub loads, **Then** they see "Good evening, [Username]" in the welcome header
+4. **Given** a user completes a notable achievement (e.g., 100 tasks completed), **When** they return to the hub, **Then** a celebration message displays: "🎉 Congratulations! You've completed 100 tasks!"
+5. **Given** a user hasn't logged in for 7+ days, **When** they return, **Then** the hub displays: "Welcome back, [Username]! You've been away for [X] days. Here's what you missed:" with summary stats
+6. **Given** a user on their first login, **When** they land on the hub, **Then** they see an onboarding card: "Welcome to Finance Manager! Let's get you started" with quick setup links
+7. **Given** a user during their birthday (if profile date set), **When** they log in, **Then** the hub displays a birthday message with a special icon/animation
+
+---
+
+### User Story 6.7 - Application Health & Status Indicators (Priority: P3)
+
+The hub dashboard displays real-time health status for each application, informing users of maintenance windows, incidents, or degraded performance.
+
+**Why this priority**: Transparency about system health builds trust and prevents user frustration when issues occur. Users know immediately if problems are on their end or system-wide.
+
+**Independent Test**: Can be fully tested by simulating maintenance mode, verifying status badges display correctly, and confirming users can access status details.
+
+**Acceptance Scenarios**:
+
+1. **Given** all applications are operating normally, **When** the hub loads, **Then** each application tile shows a small green "Operational" status dot (bottom-right corner)
+2. **Given** an application is under scheduled maintenance, **When** the hub loads, **Then** that tile shows an amber "Maintenance" badge and displays estimated completion time on hover
+3. **Given** an application is experiencing issues, **When** the hub loads, **Then** that tile shows a red "Degraded" badge and the tile is semi-transparent with click disabled
+4. **Given** a user clicks on a status indicator, **When** activated, **Then** a modal displays detailed status information: current state, incident description (if any), estimated resolution
+5. **Given** the hub during a system-wide maintenance window, **When** loaded, **Then** a prominent banner displays: "Scheduled Maintenance: Some features may be unavailable. Estimated completion: [time]"
+6. **Given** status information updates, **When** conditions change, **Then** the hub checks for status updates every 60 seconds and updates badges without full page refresh
+
+---
+
+### User Story 6.8 - Favourites & Customization (Priority: P4)
+
+Users can mark applications as favourites, reorder tiles, and customize their hub layout, creating a personalized workspace that matches their workflow.
+
+**Why this priority**: Customization empowers users to optimize their workflow, especially as more applications are added. Power users benefit from quick access to frequently used tools.
+
+**Independent Test**: Can be fully tested by marking apps as favourites, reordering tiles via drag-and-drop, and verifying preferences persist across sessions.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user hovers over an application tile, **When** they click the star icon (top-right), **Then** the application is marked as favourite and moves to the top of the grid
+2. **Given** a user has marked favourites, **When** they view the hub, **Then** favourite tiles appear first (regardless of original order) with a gold star icon
+3. **Given** a user viewing the hub, **When** they click "Customize Layout" button, **Then** tiles enter drag-and-drop mode with visual handles and drop zones
+4. **Given** a user in customize mode, **When** they drag a tile to a new position, **Then** other tiles adjust position with smooth animation, and the layout saves automatically
+5. **Given** a user's customized layout, **When** they log in from a different device, **Then** their hub displays the same custom layout (stored in user preferences on backend)
+6. **Given** a user clicks "Reset Layout", **When** confirmed, **Then** the hub returns to default layout: alphabetical order, no favourites, all tiles visible
+7. **Given** a user with many applications, **When** they view the hub, **Then** a "Show More/Show Less" toggle controls whether all tiles display or just favourites (if more than 6 apps exist)
+
+---
+
+### User Story 6.9 - Profile Image Management (Priority: P2)
+
+Users need the ability to upload, update, and remove profile images that display as avatars throughout the application, providing personalization and visual identity.
+
+**Why this priority**: Avatar/profile images enhance user identity and make the interface more personal. This feature is essential since the info bar displays user avatars, requiring backend support for image storage and management.
+
+**Independent Test**: Can be fully tested by uploading various image formats and sizes, viewing avatar in info bar, changing profile image, and verifying old images are cleaned up properly.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user accesses their profile settings, **When** they view the profile image section, **Then** they see their current avatar (or initials fallback) with an "Upload New Image" button
+2. **Given** a user clicks "Upload New Image", **When** the file picker opens, **Then** they can only select image files: JPEG (.jpg, .jpeg), PNG (.png), WebP (.webp), max 5MB file size
+3. **Given** a user selects a valid image file, **When** they confirm the upload, **Then** the image is validated (type, size, dimensions), uploaded to server, processed, and set as their new avatar
+4. **Given** a user uploads an image larger than 512x512px, **When** processed, **Then** the server automatically resizes it to 512x512px (preserving aspect ratio) and generates thumbnails: 128x128px, 64x64px, 32x32px
+5. **Given** a user's avatar displays in the info bar, **When** rendered, **Then** it uses the 64x64px thumbnail for optimal performance with lazy loading
+6. **Given** a user uploads a non-square image, **When** processed, **Then** the server crops to square (centre-focused) before resizing to ensure circular avatar display works correctly
+7. **Given** a user wants to remove their profile image, **When** they click "Remove Image", **Then** the avatar reverts to initials fallback and the image files are deleted from storage
+8. **Given** a user uploads a new image, **When** the old image exists, **Then** the old image files are automatically deleted from storage (cleanup) after successful upload
+9. **Given** a user uploads an invalid file, **When** validation fails, **Then** they see clear error messages: "File type not supported" (for non-images), "File too large (max 5MB)" (for oversized files), "Image dimensions too small (min 100x100px)"
+10. **Given** a user's avatar throughout the application, **When** displayed in different contexts (info bar, profile page, admin panel), **Then** it consistently shows the same image with appropriate size variant (32px, 64px, or 128px)
+
+---
+
+### Technical Requirements for Phase 6
+
+**Routing & Architecture Changes**:
+- Current `/dashboard` route becomes `/todo` (To Do app main view)
+- New `/` or `/hub` route becomes the main application hub landing page
+- Update all navigation links to point to `/hub` as home
+- Implement nested routing: `/todo/*` (tasks, progress, groups, etc.), `/finance/*` (future), `/admin/*` (Phase 5)
+- Update authentication redirect: successful login lands on `/hub` instead of `/dashboard`
+- To Do app subroutes: `/todo` (main tasks view), `/todo/progress` (weekly progress), `/todo/groups` (task groups management)
+
+**Backend API Additions**:
+```typescript
+// New endpoints for hub functionality
+GET /api/v1/hub/stats - Aggregated quick stats across all apps
+GET /api/v1/hub/activity - Recent activity feed (paginated)
+GET /api/v1/hub/status - Application health status
+GET /api/v1/user/preferences - User hub preferences (favourites, layout)
+PUT /api/v1/user/preferences - Update hub preferences
+GET /api/v1/applications - List of available applications (with permissions check)
+
+// Profile image management endpoints
+POST /api/v1/user/profile/avatar - Upload new profile image (multipart/form-data)
+DELETE /api/v1/user/profile/avatar - Remove profile image
+GET /api/v1/user/profile/avatar/:size - Get avatar by size (32, 64, 128, 512)
+GET /api/v1/user/:userId/avatar/:size - Public endpoint for viewing other users' avatars
+```
+
+**Frontend Components**:
+```
+apps/web/src/
+  pages/
+    HubDashboard.tsx (new main hub)
+    ProfilePage.tsx (enhanced with avatar upload)
+    todo/
+      TodoPage.tsx (main To Do app view, renamed from Dashboard.tsx)
+      TaskListPage.tsx
+      WeeklyProgressPage.tsx
+      TaskGroupsPage.tsx
+      ... (all existing To Do pages move here)
+  components/
+    hub/
+      ApplicationTile.tsx
+      InfoBar.tsx
+      QuickStatsWidget.tsx
+      ActivityFeedItem.tsx
+      StatusBadge.tsx
+      WelcomeMessage.tsx
+      CustomizeLayoutModal.tsx
+    profile/
+      AvatarUpload.tsx
+      AvatarPreview.tsx
+      ImageCropper.tsx (optional: for client-side cropping)
+    common/
+      Avatar.tsx (reusable avatar component with initials fallback)
+```
+
+**Database Schema Additions**:
+```sql
+-- User hub preferences
+CREATE TABLE user_hub_preferences (
+  user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  favourite_apps TEXT[], -- Array of application IDs
+  tile_order JSONB, -- Custom tile ordering
+  show_activity_feed BOOLEAN DEFAULT TRUE,
+  show_quick_stats BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Activity log for recent actions across apps
+CREATE TABLE user_activity_log (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  action_type VARCHAR(100) NOT NULL, -- 'task_created', 'task_completed', 'transaction_added', etc.
+  action_description TEXT NOT NULL, -- Human-readable description
+  entity_type VARCHAR(50), -- 'task', 'transaction', 'goal'
+  entity_id UUID, -- ID of the affected entity
+  application VARCHAR(50) NOT NULL, -- 'todo', 'finance', 'admin'
+  metadata JSONB, -- Additional context (task priority, amount, etc.)
+  timestamp TIMESTAMP DEFAULT NOW()
+);
+
+-- System status tracking
+CREATE TABLE application_status (
+  application VARCHAR(50) PRIMARY KEY, -- 'todo', 'finance', 'admin'
+  status VARCHAR(20) NOT NULL DEFAULT 'operational', -- 'operational', 'maintenance', 'degraded', 'down'
+  message TEXT, -- Status message for users
+  updated_at TIMESTAMP DEFAULT NOW(),
+  maintenance_until TIMESTAMP -- Estimated completion for maintenance
+);
+
+-- Available applications registry
+CREATE TABLE applications (
+  id VARCHAR(50) PRIMARY KEY, -- 'todo', 'finance', 'admin', etc.
+  name VARCHAR(100) NOT NULL,
+  description TEXT,
+  icon_path VARCHAR(255), -- Path to icon asset
+  route_path VARCHAR(100) NOT NULL, -- '/todo', '/finance'
+  status VARCHAR(20) DEFAULT 'active', -- 'active', 'coming_soon', 'restricted'
+  required_role VARCHAR(50), -- NULL = public, 'admin' = admins only
+  sort_order INTEGER DEFAULT 0,
+  estimated_release DATE, -- For 'coming_soon' apps
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Profile images storage
+CREATE TABLE user_profile_images (
+  user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  original_filename VARCHAR(255) NOT NULL,
+  file_extension VARCHAR(10) NOT NULL, -- 'jpg', 'png', 'webp'
+  file_size_bytes INTEGER NOT NULL,
+  mime_type VARCHAR(50) NOT NULL, -- 'image/jpeg', 'image/png', 'image/webp'
+  storage_path VARCHAR(500) NOT NULL, -- Path to original image file
+  thumbnail_512_path VARCHAR(500), -- 512x512 version (original processed)
+  thumbnail_128_path VARCHAR(500), -- 128x128 version (profile page)
+  thumbnail_64_path VARCHAR(500), -- 64x64 version (info bar, navigation)
+  thumbnail_32_path VARCHAR(500), -- 32x32 version (mentions, small icons)
+  uploaded_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+**Indexes**:
+```sql
+CREATE INDEX idx_activity_log_user_timestamp ON user_activity_log(user_id, timestamp DESC);
+CREATE INDEX idx_activity_log_app ON user_activity_log(application);
+CREATE INDEX idx_applications_status ON applications(status) WHERE status = 'active';
+CREATE INDEX idx_profile_images_updated ON user_profile_images(updated_at DESC);
+```
+
+**File Storage Configuration**:
+```typescript
+// Image storage options (choose one based on infrastructure)
+
+// Option 1: Local filesystem (development/small deployments)
+const storageConfig = {
+  type: 'local',
+  basePath: '/var/www/finance-manager/uploads/avatars',
+  publicUrl: 'https://your-domain.com/uploads/avatars',
+  maxFileSizeBytes: 5 * 1024 * 1024, // 5MB
+  allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+  allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp']
+};
+
+// Option 2: Cloud storage (production recommended)
+const storageConfig = {
+  type: 'cloud', // AWS S3, Azure Blob, Google Cloud Storage
+  bucket: 'finance-manager-avatars',
+  region: 'us-east-1',
+  cdnUrl: 'https://cdn.your-domain.com/avatars',
+  maxFileSizeBytes: 5 * 1024 * 1024,
+  allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+  allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp'],
+  publicRead: true, // Images are publicly accessible via CDN
+  encryption: true // Server-side encryption for stored files
+};
+
+// Image processing configuration
+const imageProcessing = {
+  quality: 85, // JPEG/WebP quality (0-100)
+  format: 'webp', // Convert all uploads to WebP for optimal size
+  sizes: {
+    original: 512, // Max dimension for original
+    large: 128,
+    medium: 64,
+    small: 32
+  },
+  cropStrategy: 'centre', // 'centre', 'smart' (face detection), 'entropy'
+  maintainAspectRatio: false, // Force square crops for circular avatars
+  stripMetadata: true // Remove EXIF data for privacy/size
+};
+```
+
+**Backend Implementation Details**:
+
+```csharp
+// apps/finance-api/Features/User/Services/ImageProcessingService.cs
+public class ImageProcessingService
+{
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<ImageProcessingService> _logger;
+    
+    public async Task<ProfileImageResult> ProcessAndStoreAvatar(
+        IFormFile file, 
+        string userId)
+    {
+        // 1. Validate file
+        ValidateImageFile(file);
+        
+        // 2. Load image with ImageSharp/SkiaSharp
+        using var image = await Image.LoadAsync(file.OpenReadStream());
+        
+        // 3. Crop to square (centre-focused)
+        image.Mutate(x => x.Resize(new ResizeOptions
+        {
+            Size = new Size(512, 512),
+            Mode = ResizeMode.Crop,
+            Position = AnchorPositionMode.Center
+        }));
+        
+        // 4. Generate thumbnails (512, 128, 64, 32)
+        var thumbnails = await GenerateThumbnails(image, userId);
+        
+        // 5. Upload to storage (local or cloud)
+        var storagePaths = await UploadToStorage(thumbnails, userId);
+        
+        // 6. Save to database
+        await SaveProfileImageRecord(userId, storagePaths, file);
+        
+        // 7. Delete old images (cleanup)
+        await DeleteOldAvatarFiles(userId);
+        
+        return new ProfileImageResult
+        {
+            Success = true,
+            AvatarUrl = storagePaths.Thumbnail64Path
+        };
+    }
+    
+    private void ValidateImageFile(IFormFile file)
+    {
+        var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp" };
+        var maxSize = 5 * 1024 * 1024; // 5MB
+        
+        if (!allowedTypes.Contains(file.ContentType))
+            throw new ValidationException("Invalid file type. Only JPEG, PNG, and WebP allowed.");
+            
+        if (file.Length > maxSize)
+            throw new ValidationException("File too large. Maximum size is 5MB.");
+            
+        if (file.Length == 0)
+            throw new ValidationException("File is empty.");
+            
+        // Verify actual image content (not just extension)
+        using var image = Image.Identify(file.OpenReadStream());
+        if (image == null)
+            throw new ValidationException("Invalid image file.");
+            
+        if (image.Width < 100 || image.Height < 100)
+            throw new ValidationException("Image too small. Minimum dimensions: 100x100px.");
+    }
+}
+
+// apps/finance-api/Features/User/Controllers/ProfileController.cs
+[ApiController]
+[Route("api/v1/user/profile")]
+[Authorize]
+public class ProfileController : ControllerBase
+{
+    [HttpPost("avatar")]
+    [RequestSizeLimit(5 * 1024 * 1024)] // 5MB limit
+    [RequestFormLimits(MultipartBodyLengthLimit = 5 * 1024 * 1024)]
+    public async Task<IActionResult> UploadAvatar([FromForm] IFormFile file)
+    {
+        try
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _imageProcessingService.ProcessAndStoreAvatar(file, userId);
+            
+            return Ok(new { 
+                success = true, 
+                avatarUrl = result.AvatarUrl,
+                message = "Profile image updated successfully" 
+            });
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to upload avatar for user {UserId}", userId);
+            return StatusCode(500, new { error = "Failed to upload image" });
+        }
+    }
+    
+    [HttpDelete("avatar")]
+    public async Task<IActionResult> RemoveAvatar()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        await _imageProcessingService.DeleteAvatar(userId);
+        return Ok(new { success = true, message = "Profile image removed" });
+    }
+    
+    [HttpGet("avatar/{size}")]
+    public async Task<IActionResult> GetAvatar(int size)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var avatarPath = await _profileService.GetAvatarPath(userId, size);
+        
+        if (avatarPath == null)
+            return NotFound();
+            
+        var fileStream = await _storageService.GetFileStream(avatarPath);
+        return File(fileStream, "image/webp");
+    }
+    
+    // Public endpoint for viewing other users' avatars (for future features)
+    [HttpGet("../user/{userId}/avatar/{size}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetUserAvatar(string userId, int size)
+    {
+        var avatarPath = await _profileService.GetAvatarPath(userId, size);
+        
+        if (avatarPath == null)
+            return NotFound();
+            
+        var fileStream = await _storageService.GetFileStream(avatarPath);
+        return File(fileStream, "image/webp", enableRangeProcessing: true);
+    }
+}
+```
+
+**Frontend Implementation**:
+
+```typescript
+// apps/web/src/components/profile/AvatarUpload.tsx
+export const AvatarUpload: React.FC = () => {
+  const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+  const { user, refreshUser } = useAuth();
+  const { showToast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Client-side validation
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      showToast('error', 'Invalid file type. Please upload JPEG, PNG, or WebP.');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('error', 'File too large. Maximum size is 5MB.');
+      return;
+    }
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (e) => setPreview(e.target?.result as string);
+    reader.readAsDataURL(file);
+
+    // Upload to server
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await apiClient.post('/user/profile/avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      showToast('success', 'Profile image updated successfully');
+      await refreshUser(); // Refresh user data to get new avatar URL
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to upload image';
+      showToast('error', message);
+      setPreview(null);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!confirm('Are you sure you want to remove your profile image?')) return;
+
+    try {
+      await apiClient.delete('/user/profile/avatar');
+      showToast('success', 'Profile image removed');
+      setPreview(null);
+      await refreshUser();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to remove image';
+      showToast('error', message);
+    }
+  };
+
+  return (
+    <AvatarSection>
+      <Label>Profile Image</Label>
+      <AvatarContainer>
+        <Avatar 
+          src={preview || user?.avatarUrl} 
+          alt={user?.username}
+          size={128}
+          fallback={user?.username?.[0]?.toUpperCase()}
+        />
+        <AvatarActions>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleFileSelect}
+            style={{ display: 'none' }}
+          />
+          <Button
+            variant="outline"
+            size="small"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+          >
+            {uploading ? 'Uploading...' : 'Upload New Image'}
+          </Button>
+          {user?.avatarUrl && (
+            <Button
+              variant="outline"
+              size="small"
+              onClick={handleRemoveAvatar}
+              disabled={uploading}
+            >
+              Remove Image
+            </Button>
+          )}
+        </AvatarActions>
+      </AvatarContainer>
+      <HelpText>
+        Accepted formats: JPEG, PNG, WebP • Maximum size: 5MB • Recommended: Square images, at least 200x200px
+      </HelpText>
+    </AvatarSection>
+  );
+};
+
+// apps/web/src/components/common/Avatar.tsx
+interface AvatarProps {
+  src?: string | null;
+  alt?: string;
+  size?: number; // 32, 64, 128
+  fallback?: string; // Initials
+  className?: string;
+}
+
+export const Avatar: React.FC<AvatarProps> = ({ 
+  src, 
+  alt, 
+  size = 64, 
+  fallback,
+  className 
+}) => {
+  const [imageError, setImageError] = useState(false);
+  const initials = fallback || alt?.[0]?.toUpperCase() || '?';
+
+  if (!src || imageError) {
+    return (
+      <AvatarFallback size={size} className={className}>
+        {initials}
+      </AvatarFallback>
+    );
+  }
+
+  return (
+    <AvatarImage
+      src={`${src}?size=${size}`} // Request appropriate size
+      alt={alt || 'User avatar'}
+      size={size}
+      loading="lazy"
+      onError={() => setImageError(true)}
+      className={className}
+    />
+  );
+};
+
+const AvatarImage = styled.img<{ size: number }>`
+  width: ${({ size }) => size}px;
+  height: ${({ size }) => size}px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+`;
+
+const AvatarFallback = styled.div<{ size: number }>`
+  width: ${({ size }) => size}px;
+  height: ${({ size }) => size}px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.colors.primary};
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: ${({ size }) => size * 0.4}px;
+  text-transform: uppercase;
+`;
+```
+
+**Database Migration**:
+```sql
+-- Add avatar_url column to users table
+ALTER TABLE users ADD COLUMN avatar_url VARCHAR(500);
+ALTER TABLE users ADD COLUMN avatar_updated_at TIMESTAMP;
+
+-- Create profile images table (see schema above)
+CREATE TABLE user_profile_images (...);
+```
+
+**Security & Best Practices for Avatar Management**:
+
+1. **File Validation**:
+   - Verify MIME type AND actual file content (prevent malicious files with fake extensions)
+   - Check magic bytes/file signatures (JPEG: FF D8 FF, PNG: 89 50 4E 47)
+   - Reject files with embedded scripts or malicious payloads
+   - Strip all EXIF metadata to remove GPS, camera info, personal data
+
+2. **Rate Limiting**:
+   - Maximum 5 avatar uploads per user per hour (prevent abuse)
+   - Temporary lockout after 10 failed upload attempts
+   - Monitor for patterns indicating automated attacks
+
+3. **Storage Security**:
+   - Store avatars outside webroot if using local filesystem
+   - Use unpredictable filenames: `{userId}_{timestamp}_{random}.webp`
+   - Set appropriate file permissions (read-only for web server)
+   - Implement Content-Security-Policy headers for image serving
+   - Add `X-Content-Type-Options: nosniff` header
+
+4. **Access Control**:
+   - Authenticated users can only upload/delete their own avatars
+   - Public avatar viewing uses read-only endpoints
+   - CDN/storage URLs should not expose user IDs directly
+   - Implement signed URLs for temporary access (if using cloud storage)
+
+5. **Resource Management**:
+   - Automatic cleanup of old avatar files when new ones uploaded
+   - Scheduled job to remove orphaned avatar files (user deleted but files remain)
+   - Monitor storage usage per user (alert if excessive)
+   - Implement storage quotas if needed
+
+6. **Privacy Considerations**:
+   - Users can opt to hide avatar from other users (future feature)
+   - Don't log avatar URLs in application logs (PII concern)
+   - Include avatar data in GDPR data export
+   - Permanently delete avatars when user account deleted
+
+7. **Performance Optimization**:
+   - Serve avatars via CDN with aggressive caching (Cache-Control: public, max-age=86400)
+   - Use WebP format for optimal compression (80-85% quality)
+   - Implement lazy loading for avatar images
+   - Return appropriate thumbnail size based on request parameter
+   - Consider image sprite sheets for common UI avatars (future optimization)
+
+8. **Error Handling**:
+   - Graceful fallback to initials if avatar fails to load
+   - Log upload failures for monitoring (without exposing user data)
+   - Return user-friendly error messages (not technical details)
+   - Handle partial upload failures (cleanup temporary files)
+
+**Required NuGet Packages** (.NET API):
+```xml
+<PackageReference Include="SixLabors.ImageSharp" Version="3.x" />
+<PackageReference Include="SixLabors.ImageSharp.Web" Version="3.x" />
+<PackageReference Include="Azure.Storage.Blobs" Version="12.x" /> <!-- If using Azure -->
+<PackageReference Include="AWSSDK.S3" Version="3.x" /> <!-- If using AWS -->
+```
+
+**Required npm Packages** (Frontend):
+```json
+{
+  "dependencies": {
+    "browser-image-compression": "^2.0.2",
+    "react-dropzone": "^14.2.3"
+  }
+}
+```
+
+**Design System Additions** (to be documented in Phase 7 - Design Guidelines):
+```typescript
+// Application colour palette
+const appColors = {
+  todo: {
+    primary: '#4CAF50',
+    secondary: '#81C784',
+    accent: '#2E7D32'
+  },
+  finance: {
+    primary: '#2196F3',
+    secondary: '#64B5F6',
+    accent: '#1565C0'
+  },
+  admin: {
+    primary: '#FF9800',
+    secondary: '#FFB74D',
+    accent: '#E65100'
+  }
+};
+
+// Application tile component styling
+const ApplicationTile = styled(Card)`
+  position: relative;
+  padding: 24px;
+  min-height: 200px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover:not([disabled]) {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+  
+  &[disabled] {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+`;
+
+// Info bar styling
+const InfoBar = styled.div`
+  height: 64px;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+`;
+```
+
+**Icon Design Requirements** (flat style):
+- **To Do Manager**: Checkmark circle with tick (solid green)
+- **Finance Manager**: Pie chart or coins icon (solid blue)
+- **Admin Panel**: Settings gear icon (solid orange)
+- **Future Apps**: Placeholder icon template (outline style with question mark)
+- All icons: 64x64px, SVG format, 2-colour maximum, geometric shapes, no gradients
+- Icon library: Lucide React (already in use) for consistency
+
+**State Management**:
+```typescript
+// Hub context for global hub state
+interface HubContextType {
+  applications: Application[];
+  quickStats: QuickStats;
+  recentActivity: ActivityItem[];
+  userPreferences: HubPreferences;
+  systemStatus: ApplicationStatus[];
+  updatePreferences: (prefs: Partial<HubPreferences>) => Promise<void>;
+  refreshStats: () => Promise<void>;
+}
+```
+
+**Accessibility Requirements**:
+- All application tiles keyboard navigable (Tab, Enter, Space)
+- Screen reader announces: "Launch [App Name], [Status], [Description]"
+- Info bar time updates announced via ARIA live region (polite)
+- Activity feed items have proper semantic HTML (list items)
+- Colour is not the only indicator of status (text + icons required)
+- Focus management when navigating between hub and applications
+- Customize mode announces drag-and-drop state changes
+
+**Performance Considerations**:
+- Activity feed lazy-loaded (initial 10 items, load more on scroll)
+- Quick stats cached with 60-second TTL
+- Application status checked every 60 seconds (not per render)
+- Hub preferences cached in context (avoid repeated API calls)
+- Application tiles use CSS Grid for optimal layout performance
+- Icons lazy-loaded with React.lazy + Suspense
+- Time display uses requestAnimationFrame for smooth updates
+
+**Mobile Responsiveness**:
+- Info bar collapses to hamburger menu below 768px
+- Application tiles stack vertically (full width) below 640px
+- Quick stats widget becomes scrollable carousel on mobile
+- Activity feed shows 3 items initially on mobile with "View More" button
+- Customize layout mode disabled on mobile (predefined responsive layout)
+
+---
+
+### Implementation Priorities for Phase 6
+
+**Critical Path (Must Have)**:
+1. User Story 6.1 - Unified portal structure (architectural foundation)
+2. User Story 6.2 - Info bar (navigation & user orientation)
+3. User Story 6.4 - Design system (consistent visual language)
+
+**High Value (Should Have)**:
+4. User Story 6.3 - Quick stats widget (immediate user value)
+5. User Story 6.5 - Activity feed (workflow continuity)
+
+**Nice to Have (Could Have)**:
+6. User Story 6.6 - Personalized welcome (engagement boost)
+7. User Story 6.7 - Health indicators (transparency)
+8. User Story 6.8 - Favourites & customization (power users)
+
+**Testing Requirements**:
+- E2E tests for hub navigation to all applications
+- Visual regression tests for application tiles and layouts
+- Accessibility testing for keyboard navigation and screen readers
+- Responsive design testing across mobile, tablet, desktop
+- Performance testing for activity feed with 1000+ items
+- Unit tests for layout customization logic
+
+**Estimated Effort**: 3-4 weeks (full-time developer)
+- Week 1: Routing restructure + hub page layout + info bar
+- Week 2: Application tiles + design system + status indicators
+- Week 3: Quick stats + activity feed + backend endpoints
+- Week 4: Personalization + customization + polish + testing
+
+---
+
+## Phase 7 - Design Guidelines & Standards
+
+### User Story 7.1 - Comprehensive Design System Documentation (Priority: P1)
+
+The project requires formal design guidelines documenting the established visual language, component patterns, and design principles to ensure consistency as the platform scales.
+
+**Why this priority**: Without documented guidelines, design consistency degrades over time as new features are added. Formal documentation enables multiple developers to contribute while maintaining visual coherence.
+
+**Independent Test**: Can be fully tested by having a new developer implement a feature using only the design guidelines and verifying the result matches existing component styling.
+
+**Acceptance Scenarios**:
+
+1. **Given** a developer needs to create a new component, **When** they reference the design guidelines, **Then** they find documented specifications for: colour palette, typography scale, spacing system, component patterns
+2. **Given** the design guidelines document, **When** accessed, **Then** it includes live examples of all UI components with code snippets showing proper usage
+3. **Given** a designer creating mockups, **When** they reference the guidelines, **Then** they find Figma/design tool specifications matching the implemented component library
+4. **Given** the colour system, **When** documented, **Then** it specifies: primary, secondary, accent colours, semantic colours (success, error, warning, info), text hierarchy colours, background colours
+5. **Given** the typography system, **When** documented, **Then** it specifies: font families, font sizes (Heading1-6, Text, TextSmall, TextSecondary), font weights, line heights, letter spacing
+6. **Given** the spacing system, **When** documented, **Then** it defines a scale (4px base unit): 4px, 8px, 12px, 16px, 24px, 32px, 48px, 64px with usage guidelines
+7. **Given** component documentation, **When** viewing a component guide, **Then** each component includes: visual example, props API, accessibility notes, usage do's and don'ts
+
+---
+
+### Technical Requirements for Phase 7
+
+**Documentation Structure**:
+```
+docs/
+  design-system/
+    README.md (overview + quick start)
+    colour-palette.md
+    typography.md
+    spacing-layout.md
+    iconography.md
+    components/
+      buttons.md
+      cards.md
+      forms.md
+      navigation.md
+      data-display.md
+    patterns/
+      authentication-flows.md
+      data-loading-states.md
+      error-handling.md
+      responsive-design.md
+    accessibility.md
+    animation-motion.md
+```
+
+**Design Tokens** (to be formalized):
+```typescript
+// apps/web/src/styles/tokens.ts
+export const designTokens = {
+  colors: {
+    // Primary palette
+    primary: {
+      50: '#E8F5E9',
+      100: '#C8E6C9',
+      500: '#4CAF50', // Main brand colour
+      600: '#43A047',
+      700: '#388E3C',
+      900: '#1B5E20'
+    },
+    // Semantic colours
+    success: '#4CAF50',
+    error: '#F44336',
+    warning: '#FF9800',
+    info: '#2196F3',
+    
+    // Neutral palette
+    grey: {
+      50: '#FAFAFA',
+      100: '#F5F5F5',
+      200: '#EEEEEE',
+      300: '#E0E0E0',
+      500: '#9E9E9E',
+      700: '#616161',
+      900: '#212121'
+    },
+    
+    // Application-specific colours
+    todo: '#4CAF50',
+    finance: '#2196F3',
+    admin: '#FF9800'
+  },
+  
+  typography: {
+    fontFamily: {
+      primary: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      mono: '"Fira Code", "Courier New", monospace'
+    },
+    fontSize: {
+      h1: '32px',
+      h2: '24px',
+      h3: '20px',
+      h4: '18px',
+      h5: '16px',
+      h6: '14px',
+      body: '14px',
+      small: '12px',
+      tiny: '10px'
+    },
+    fontWeight: {
+      regular: 400,
+      medium: 500,
+      semibold: 600,
+      bold: 700
+    },
+    lineHeight: {
+      tight: 1.2,
+      normal: 1.5,
+      relaxed: 1.75
+    }
+  },
+  
+  spacing: {
+    xs: '4px',
+    sm: '8px',
+    md: '12px',
+    base: '16px',
+    lg: '24px',
+    xl: '32px',
+    '2xl': '48px',
+    '3xl': '64px'
+  },
+  
+  borderRadius: {
+    sm: '4px',
+    md: '6px',
+    lg: '8px',
+    xl: '12px',
+    full: '9999px'
+  },
+  
+  shadows: {
+    sm: '0 1px 2px rgba(0, 0, 0, 0.05)',
+    md: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    lg: '0 8px 16px rgba(0, 0, 0, 0.1)',
+    xl: '0 12px 24px rgba(0, 0, 0, 0.15)'
+  },
+  
+  animation: {
+    duration: {
+      fast: '150ms',
+      normal: '300ms',
+      slow: '500ms'
+    },
+    easing: {
+      default: 'cubic-bezier(0.4, 0, 0.2, 1)',
+      in: 'cubic-bezier(0.4, 0, 1, 1)',
+      out: 'cubic-bezier(0, 0, 0.2, 1)',
+      inOut: 'cubic-bezier(0.4, 0, 0.2, 1)'
+    }
+  }
+};
+```
+
+**Icon Guidelines**:
+- **Style**: Flat design with solid fills (no outlines unless specifically needed)
+- **Size**: 24px default, 16px small, 32px large, 48px+ extra large
+- **Colour**: Single colour (inherit from parent or theme primary)
+- **Library**: Lucide React (primary), custom SVG for brand icons
+- **Custom Icon Requirements**:
+  - Square viewBox (0 0 24 24)
+  - 2px stroke width maximum
+  - No gradients or complex effects
+  - Optimize with SVGO before committing
+
+**Component Patterns**:
+1. **Loading States**: Skeleton screens (no spinners) with subtle pulse animation
+2. **Empty States**: Icon + message + CTA button, centred layout
+3. **Error States**: Red accent, error icon, clear message, retry button
+4. **Success Feedback**: Green checkmark, toast notification (4-second duration)
+5. **Form Validation**: Inline errors below field, red border, error icon
+6. **Modal Patterns**: Backdrop blur, centred card, close button top-right
+7. **Card Hover**: Subtle lift (4px translateY), shadow increase, 300ms transition
+
+**Accessibility Standards**:
+- WCAG 2.1 AA compliance minimum
+- 4.5:1 contrast ratio for normal text
+- 3:1 contrast ratio for large text (18pt+)
+- All interactive elements 44x44px minimum touch target
+- Focus indicators visible on all focusable elements
+- Semantic HTML (headings hierarchy, landmarks, lists)
+- ARIA labels for icon-only buttons
+- Form labels always visible (no placeholder-only labels)
+
+**Responsive Breakpoints**:
+```typescript
+export const breakpoints = {
+  mobile: '0px',      // 0-639px
+  tablet: '640px',    // 640-1023px
+  desktop: '1024px',  // 1024-1439px
+  wide: '1440px'      // 1440px+
+};
+```
+
+**Animation Guidelines**:
+- Subtle animations only (avoid distraction)
+- Respect `prefers-reduced-motion` media query
+- Use CSS transitions for simple state changes
+- Use Framer Motion for complex animations
+- Duration: 150ms for micro-interactions, 300ms for transitions, 500ms max
+- Easing: `ease-out` for entrances, `ease-in` for exits
+
+**File Organization Standards**:
+```
+apps/web/src/
+  components/
+    ui/           # Atomic design system components
+    feature/      # Feature-specific components
+    layouts/      # Page layout components
+  styles/
+    tokens.ts     # Design tokens
+    theme.ts      # Styled-components theme
+    global.ts     # Global styles
+  assets/
+    icons/        # Custom SVG icons
+    images/       # Static images
+```
+
+**Implementation Requirements**:
+- Create Storybook for component documentation (optional but recommended)
+- Generate design tokens JSON for design tools (Figma, Sketch)
+- Automated visual regression testing with Percy or Chromatic
+- Lint rules enforce design token usage (no hardcoded colours)
+- Pre-commit hook validates SVG optimization
+
+**Estimated Effort**: 1-2 weeks
+- Week 1: Document existing patterns + create design tokens + write guidelines
+- Week 2: Create examples + setup tooling (Storybook, linting) + team review
+
