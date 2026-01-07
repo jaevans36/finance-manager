@@ -1,5 +1,9 @@
 export interface Theme {
   name: 'light' | 'dark';
+  fonts: {
+    body: string;
+    heading: string;
+  };
   colors: {
     // Primary colors
     primary: string;
@@ -43,6 +47,10 @@ export interface Theme {
 
 export const lightTheme: Theme = {
   name: 'light',
+  fonts: {
+    body: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    heading: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  },
   colors: {
     // Primary colors
     primary: '#007bff',
@@ -86,6 +94,10 @@ export const lightTheme: Theme = {
 
 export const darkTheme: Theme = {
   name: 'dark',
+  fonts: {
+    body: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    heading: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  },
   colors: {
     // Primary colors
     primary: '#4dabf7',
