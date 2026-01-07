@@ -68,16 +68,6 @@ const CloseButton = styled.button`
   }
 `;
 
-const DateDisplay = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  text-align: center;
-`;
-
 const ButtonGroup = styled.div`
   display: flex;
   gap: 12px;
@@ -93,17 +83,9 @@ interface QuickAddTaskModalProps {
 export const QuickAddTaskModal = ({ date, onSubmit, onCancel }: QuickAddTaskModalProps) => {
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<'Low' | 'Medium' | 'High' | 'Critical'>('Medium');
+  const [dueDate, setDueDate] = useState(date.toISOString().split('T')[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-
-  const formatDate = (date: Date): string => {
-    return date.toLocaleDateString('en-GB', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,7 +102,7 @@ export const QuickAddTaskModal = ({ date, onSubmit, onCancel }: QuickAddTaskModa
       await onSubmit({
         title: title.trim(),
         priority,
-        dueDate: date.toISOString().split('T')[0],
+        dueDate,
       });
       onCancel();
     } catch (err: unknown) {
@@ -142,8 +124,6 @@ export const QuickAddTaskModal = ({ date, onSubmit, onCancel }: QuickAddTaskModa
             <X />
           </CloseButton>
         </ModalHeader>
-
-        <DateDisplay>{formatDate(date)}</DateDisplay>
 
         {error && (
           <Alert variant="error" style={{ marginBottom: '16px' }}>
@@ -180,6 +160,17 @@ export const QuickAddTaskModal = ({ date, onSubmit, onCancel }: QuickAddTaskModa
               <option value="High">High</option>
               <option value="Critical">Critical</option>
             </Input>
+          </FormGroup>
+
+          <FormGroup>
+            <Label htmlFor="task-due-date">Due Date</Label>
+            <Input
+              id="task-due-date"
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              disabled={isSubmitting}
+            />
           </FormGroup>
 
           <ButtonGroup>

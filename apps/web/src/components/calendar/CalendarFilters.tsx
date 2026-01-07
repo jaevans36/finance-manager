@@ -47,31 +47,27 @@ const Select = styled.select`
   }
 `;
 
-const CheckboxGroup = styled.div`
+const ToggleGroup = styled.div`
   display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-
-  @media (max-width: 768px) {
-    gap: 8px;
-  }
+  gap: 8px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border-radius: 6px;
+  padding: 4px;
 `;
 
-const CheckboxLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.text};
+const ToggleButton = styled.button<{ $active: boolean }>`
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  background: ${({ $active, theme }) => $active ? theme.colors.primary : 'transparent'};
+  color: ${({ $active, theme }) => $active ? 'white' : theme.colors.text};
   cursor: pointer;
-  user-select: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
 
-  input[type='checkbox'] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    accent-color: ${({ theme }) => theme.colors.primary};
+  &:hover {
+    background: ${({ $active, theme }) => $active ? theme.colors.primaryHover : theme.colors.cardBackground};
   }
 `;
 
@@ -100,6 +96,11 @@ const ClearButton = styled.button`
   }
 `;
 
+const SummaryText = styled.div`
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.primary};
 
   @media (max-width: 768px) {
     margin-left: 0;
@@ -108,11 +109,6 @@ const ClearButton = styled.button`
     background: ${({ theme }) => theme.colors.backgroundSecondary};
     border-radius: 6px;
   }
-const SummaryText = styled.div`
-  margin-left: auto;
-  font-size: 14px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.primary};
 `;
 
 interface TaskGroup {
@@ -170,18 +166,18 @@ export const CalendarFilters = ({
 
       <FilterGroup>
         <FilterLabel>Priority:</FilterLabel>
-        <CheckboxGroup>
+        <ToggleGroup>
           {['Critical', 'High', 'Medium', 'Low'].map((priority) => (
-            <CheckboxLabel key={priority}>
-              <input
-                type="checkbox"
-                checked={selectedPriorities.includes(priority)}
-                onChange={() => handlePriorityToggle(priority)}
-              />
+            <ToggleButton
+              key={priority}
+              $active={selectedPriorities.includes(priority)}
+              onClick={() => handlePriorityToggle(priority)}
+              type="button"
+            >
               {priority}
-            </CheckboxLabel>
+            </ToggleButton>
           ))}
-        </CheckboxGroup>
+        </ToggleGroup>
       </FilterGroup>
 
       {hasActiveFilters && (

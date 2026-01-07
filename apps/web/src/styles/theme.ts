@@ -9,6 +9,7 @@ export interface Theme {
     primary: string;
     primaryHover: string;
     primaryDisabled: string;
+    primaryLight: string;
 
     // Background colors
     background: string;
@@ -56,6 +57,7 @@ export const lightTheme: Theme = {
     primary: '#007bff',
     primaryHover: '#0056b3',
     primaryDisabled: '#cce5ff',
+    primaryLight: '#e7f3ff',
 
     // Background colors
     background: '#ffffff',
@@ -103,6 +105,7 @@ export const darkTheme: Theme = {
     primary: '#4dabf7',
     primaryHover: '#339af0',
     primaryDisabled: '#1c4966',
+    primaryLight: '#0c2d48',
 
     // Background colors
     background: '#1a1a1a',

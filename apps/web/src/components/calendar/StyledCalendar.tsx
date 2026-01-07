@@ -3,7 +3,8 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 
 export const StyledCalendar = styled(Calendar)`
-  width: 100%;
+  width: 100% !important;
+  max-width: 100% !important;
   height: 100%;
   min-height: 600px;
   border: 1px solid ${({ theme }) => theme.colors.border};
@@ -11,6 +12,7 @@ export const StyledCalendar = styled(Calendar)`
   background: ${({ theme }) => theme.colors.background};
   font-family: ${({ theme }) => theme.fonts.body};
   padding: 16px;
+  box-sizing: border-box;
 
   /* Navigation */
   .react-calendar__navigation {
@@ -133,6 +135,11 @@ export const StyledCalendar = styled(Calendar)`
     display: grid !important;
     grid-template-columns: repeat(7, 1fr);
     gap: 8px;
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    padding: 12px;
     min-height: 500px;
 
     .react-calendar__tile {
@@ -162,12 +169,7 @@ export const StyledCalendar = styled(Calendar)`
       padding: 4px 2px;
 
       abbr {
-        font-size: 11navigation button {
-      padding: 6px 8px;
-      font-size: 14px;
-
-      &.react-calendar__navigation__label {
-        font-size: 16px;
+        font-size: 11px;
       }
     }
   }

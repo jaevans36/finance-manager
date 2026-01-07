@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { StyledCalendar, TaskBadge } from '../../components/calendar/StyledCalendar';
 import { QuickAddTaskModal } from '../../components/calendar/QuickAddTaskModal';
 import { DayTaskListModal } from '../../components/calendar/DayTaskListModal';
@@ -12,61 +11,6 @@ import { CalendarTask } from '../../types/calendar';
 import { taskService } from '../../services/taskService';
 import type { Task } from '../../services/taskService';
 import type { TaskGroup } from '../../types/taskGroup';
-
-const PageContainer = styled.div`
-  max-width: 1200px;
-  width: 80%;
-  margin: 0 auto;
-  padding: 32px 16px;
-
-  @media (max-width: 768px) {
-    width: 95%;
-    padding: 16px 8px;
-  }
-`;
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 32px;
-`;
-
-const BackButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: transparent;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 8px;
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
-`;
-
-const Title = styled.h1`
-  font-size: 32px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0;
-
-  @media (max-width: 768px) {
-    font-size: 24px;
-  }
-`;
 
 const CalendarContainer = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
@@ -79,22 +23,7 @@ const CalendarContainer = styled.div`
   }
 `;
 
-const LoadingMessage = styled.div`
-  text-align: center;
-  padding: 40px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 16px;
-`;
-
-const ErrorMessage = styled.div`
-  text-align: center;
-  padding: 40px;
-  color: ${({ theme }) => theme.colors.error};
-  font-size: 16px;
-`;
-
 const CalendarPage = () => {
-  const navigate = useNavigate();
   const { showToast } = useToast();
   const [value, setValue] = useState<Date>(new Date());
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -326,43 +255,27 @@ const CalendarPage = () => {
     );
   };
 
-  if (loading) {
-    return (
-      <PageContainer>
-        <LoadingMessage>Loading calendar...</LoadingMessage>
-      </PageContainer>
-    );
-  }
-
-  if (error) {
-    return (
-      <PageContainer>
-        <ErrorMessage>{error}</ErrorMessage>
-      </PageContainer>
-    );
-  }
-
   return (
-    <PageContainer>
-      <Header>
-        <BackButton onClick={() => navigate('/todo')} aria-label="Back to tasks">
-          <ArrowLeft />
-          Back to Tasks
-        </BackButton>
-        <Title>Calendar View</Title>
-      </Header>
-
-      <CalendarFilters
-        groups={groups}
-        selectedGroupId={selectedGroupId}
-        selectedPriorities={selectedPriorities}
-        taskCount={getMonthTaskCount()}
-        onGroupChange={setSelectedGroupId}
-        onPriorityChange={setSelectedPriorities}
-        onClearFilters={handleClearFilters}
-        hasActiveFilters={hasActiveFilters}
-      />
-
+    <PageLayout
+      title="Task Calendar"
+      showBackButton
+      backButtonPath="/dashboard"
+      backButtonText="Back to Dashboard"
+      loading={loading}
+      error={error}
+      headerActions={
+        <CalendarFilters
+          groups={groups}
+          selectedGroupId={selectedGroupId}
+          selectedPriorities={selectedPriorities}
+          taskCount={getMonthTaskCount()}
+          onGroupChange={setSelectedGroupId}
+          onPriorityChange={setSelectedPriorities}
+          onClearFilters={handleClearFilters}
+          hasActiveFilters={hasActiveFilters}
+        />
+      }
+    >
       <CalendarContainer>
         <StyledCalendar
           onChange={(value) => value instanceof Date && setValue(value)}
@@ -408,7 +321,7 @@ const CalendarPage = () => {
           }}
         />
       )}
-    </PageContainer>
+    </PageLayout>
   );
 };
 
