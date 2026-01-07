@@ -4,6 +4,8 @@ import 'react-calendar/dist/Calendar.css';
 
 export const StyledCalendar = styled(Calendar)`
   width: 100%;
+  height: 100%;
+  min-height: 600px;
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 8px;
   background: ${({ theme }) => theme.colors.background};
@@ -71,7 +73,12 @@ export const StyledCalendar = styled(Calendar)`
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
-    min-height: 80px;
+    min-height: 100px;
+
+    @media (max-width: 768px) {
+      min-height: 70px;
+      padding: 6px 2px;
+    }
 
     &:hover:not(:disabled) {
       background: ${({ theme }) => theme.colors.backgroundSecondary};
@@ -126,14 +133,10 @@ export const StyledCalendar = styled(Calendar)`
     display: grid !important;
     grid-template-columns: repeat(7, 1fr);
     gap: 8px;
-  }
-
-  /* Responsive design */
-  @media (max-width: 768px) {
-    padding: 12px;
+    min-height: 500px;
 
     .react-calendar__tile {
-      min-height: 60px;
+      min-height: 70px;
       padding: 6px 2px;
 
       abbr {
@@ -142,6 +145,24 @@ export const StyledCalendar = styled(Calendar)`
     }
 
     .react-calendar__navigation button {
+      padding: 6px 8px;
+      font-size: 14px;
+
+      &.react-calendar__navigation__label {
+        font-size: 16px;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    min-height: 400px;
+
+    .react-calendar__tile {
+      min-height: 50px;
+      padding: 4px 2px;
+
+      abbr {
+        font-size: 11navigation button {
       padding: 6px 8px;
       font-size: 14px;
 

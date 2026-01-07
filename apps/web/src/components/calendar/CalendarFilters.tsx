@@ -7,6 +7,12 @@ const FilterBar = styled.div`
   gap: 16px;
   margin-bottom: 24px;
   flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
 `;
 
 const FilterGroup = styled.div`
@@ -45,6 +51,11 @@ const CheckboxGroup = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    gap: 8px;
+  }
 `;
 
 const CheckboxLabel = styled.label`
@@ -89,6 +100,14 @@ const ClearButton = styled.button`
   }
 `;
 
+
+  @media (max-width: 768px) {
+    margin-left: 0;
+    text-align: center;
+    padding: 8px;
+    background: ${({ theme }) => theme.colors.backgroundSecondary};
+    border-radius: 6px;
+  }
 const SummaryText = styled.div`
   margin-left: auto;
   font-size: 14px;

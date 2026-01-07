@@ -42,6 +42,7 @@ const BackButton = styled.button`
   border-radius: 8px;
   color: ${({ theme }) => theme.colors.text};
   font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
 
@@ -344,7 +345,7 @@ const CalendarPage = () => {
   return (
     <PageContainer>
       <Header>
-        <BackButton onClick={() => navigate('/todo')}>
+        <BackButton onClick={() => navigate('/todo')} aria-label="Back to tasks">
           <ArrowLeft />
           Back to Tasks
         </BackButton>
