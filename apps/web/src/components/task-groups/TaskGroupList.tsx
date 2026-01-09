@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import { TaskGroup } from '../../types/taskGroup';
 import { TaskGroupItem } from './TaskGroupItem';

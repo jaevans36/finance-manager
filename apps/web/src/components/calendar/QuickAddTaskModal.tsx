@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import { X } from 'lucide-react';
 import { Button, Input, FormGroup, Label, Alert } from '../ui';

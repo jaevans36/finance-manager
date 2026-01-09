@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { RegisterForm } from '../components/auth/RegisterForm';
 import { CenteredContainer, FormCard } from '../components/ui';
 

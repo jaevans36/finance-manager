@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components';
 import { Card, Text } from '../ui';
 import { CheckCircleIcon, CircleIcon, AlertCircleIcon, FolderIcon } from 'lucide-react';

@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components';
 import { TaskGroup } from '../../types/taskGroup';
 import { Text, Badge } from '../ui';

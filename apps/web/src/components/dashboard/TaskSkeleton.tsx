@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components';
 import { Skeleton, SkeletonLine, SkeletonCircle } from '../ui/Skeleton';
 

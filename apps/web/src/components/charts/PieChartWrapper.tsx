@@ -1,4 +1,3 @@
-import React from 'react';
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import styled from 'styled-components';
 import { chartColors } from './chartTheme';
