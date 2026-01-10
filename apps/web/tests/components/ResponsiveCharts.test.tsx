@@ -27,11 +27,11 @@ describe('Responsive Chart Tests (T241)', () => {
   ];
 
   const mockBarData = [
-    { day: 'Mon', completed: 5, total: 10 },
-    { day: 'Tue', completed: 8, total: 12 },
-    { day: 'Wed', completed: 3, total: 8 },
-    { day: 'Thu', completed: 6, total: 10 },
-    { day: 'Fri', completed: 9, total: 15 },
+    { name: 'Mon', completed: 5, total: 10 },
+    { name: 'Tue', completed: 8, total: 12 },
+    { name: 'Wed', completed: 3, total: 8 },
+    { name: 'Thu', completed: 6, total: 10 },
+    { name: 'Fri', completed: 9, total: 15 },
   ];
 
   beforeEach(() => {
@@ -140,7 +140,7 @@ describe('Responsive Chart Tests (T241)', () => {
 
       render(
         <ThemeProvider theme={lightTheme}>
-          <BarChartWrapper data={mockBarData} dataKeys={['completed', 'total']} />
+          <BarChartWrapper data={mockBarData} dataKeys={[{ key: 'completed' }, { key: 'total' }]} />
         </ThemeProvider>
       );
 
@@ -155,7 +155,7 @@ describe('Responsive Chart Tests (T241)', () => {
 
       render(
         <ThemeProvider theme={lightTheme}>
-          <BarChartWrapper data={mockBarData} dataKeys={['completed', 'total']} />
+          <BarChartWrapper data={mockBarData} dataKeys={[{ key: 'completed' }, { key: 'total' }]} />
         </ThemeProvider>
       );
 
@@ -170,7 +170,7 @@ describe('Responsive Chart Tests (T241)', () => {
 
       render(
         <ThemeProvider theme={lightTheme}>
-          <BarChartWrapper data={mockBarData} dataKeys={['completed', 'total']} />
+          <BarChartWrapper data={mockBarData} dataKeys={[{ key: 'completed' }, { key: 'total' }]} />
         </ThemeProvider>
       );
 
@@ -186,7 +186,7 @@ describe('Responsive Chart Tests (T241)', () => {
       global.innerWidth = 375;
       const { rerender } = render(
         <ThemeProvider theme={lightTheme}>
-          <BarChartWrapper data={mockBarData} dataKeys={['completed']} height={customHeight} />
+          <BarChartWrapper data={mockBarData} dataKeys={[{ key: 'completed' }]} height={customHeight} />
         </ThemeProvider>
       );
 
@@ -197,7 +197,7 @@ describe('Responsive Chart Tests (T241)', () => {
       global.innerWidth = 1440;
       rerender(
         <ThemeProvider theme={lightTheme}>
-          <BarChartWrapper data={mockBarData} dataKeys={['completed']} height={customHeight} />
+          <BarChartWrapper data={mockBarData} dataKeys={[{ key: 'completed' }]} height={customHeight} />
         </ThemeProvider>
       );
 
@@ -211,7 +211,7 @@ describe('Responsive Chart Tests (T241)', () => {
 
       render(
         <ThemeProvider theme={lightTheme}>
-          <BarChartWrapper data={mockBarData} dataKeys={['completed']} />
+          <BarChartWrapper data={mockBarData} dataKeys={[{ key: 'completed' }]} />
         </ThemeProvider>
       );
 
@@ -235,7 +235,7 @@ describe('Responsive Chart Tests (T241)', () => {
     it('should use 100% width for bar chart responsive container', () => {
       const { container } = render(
         <ThemeProvider theme={lightTheme}>
-          <BarChartWrapper data={mockBarData} dataKeys={['completed']} />
+          <BarChartWrapper data={mockBarData} dataKeys={[{ key: 'completed' }]} />
         </ThemeProvider>
       );
 
@@ -309,8 +309,7 @@ describe('Responsive Chart Tests (T241)', () => {
           <ThemeProvider theme={lightTheme}>
             <BarChartWrapper 
               data={mockBarData} 
-              dataKeys={['completed', 'total']}
-              showLabels={true}
+              dataKeys={[{ key: 'completed' }, { key: 'total' }]}
             />
           </ThemeProvider>
         );
@@ -358,13 +357,13 @@ describe('Responsive Chart Tests (T241)', () => {
     it('should render bar chart with many data points on mobile', () => {
       global.innerWidth = 375;
       const manyBars = Array.from({ length: 30 }, (_, i) => ({
-        day: `Day ${i + 1}`,
+        name: `Day ${i + 1}`,
         value: Math.random() * 100
       }));
 
       render(
         <ThemeProvider theme={lightTheme}>
-          <BarChartWrapper data={manyBars} dataKeys={['value']} />
+          <BarChartWrapper data={manyBars} dataKeys={[{ key: 'value' }]} />
         </ThemeProvider>
       );
 
@@ -418,7 +417,7 @@ describe('Responsive Chart Tests (T241)', () => {
         <ThemeProvider theme={lightTheme}>
           <BarChartWrapper 
             data={mockBarData} 
-            dataKeys={['completed']}
+            dataKeys={[{ key: 'completed' }]}
             title="Completion Progress"
           />
         </ThemeProvider>
