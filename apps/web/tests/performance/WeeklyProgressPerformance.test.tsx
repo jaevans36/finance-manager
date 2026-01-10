@@ -47,34 +47,22 @@ describe('Weekly Progress Performance Tests (T242)', () => {
 
       return {
         date: date.toISOString(),
-        tasksCompleted: completed,
-        tasksTotal: dayTasks,
+        completedTasks: completed,
+        totalTasks: dayTasks,
         completionRate: dayTasks > 0 ? Math.round((completed / dayTasks) * 100) : 0,
+        tasks: [], // Empty tasks array for performance testing
       };
     });
 
-    const totalCompleted = dailyBreakdown.reduce((sum, day) => sum + day.tasksCompleted, 0);
+    const totalCompleted = dailyBreakdown.reduce((sum, day) => sum + day.completedTasks, 0);
 
     return {
       weekStart: weekStart.toISOString(),
       weekEnd: weekEnd.toISOString(),
       totalTasks: taskCount, // Use exact input count
       completedTasks: totalCompleted,
-      completionRate: taskCount > 0 ? Math.round((totalCompleted / taskCount) * 100) : 0,
+      completionPercentage: taskCount > 0 ? Math.round((totalCompleted / taskCount) * 100) : 0,
       dailyBreakdown,
-      priorityBreakdown: {
-        critical: Math.floor(taskCount * 0.15),
-        high: Math.floor(taskCount * 0.25),
-        medium: Math.floor(taskCount * 0.35),
-        low: Math.floor(taskCount * 0.25),
-      },
-      categoryBreakdown: [
-        { name: 'Work', count: Math.floor(taskCount * 0.4) },
-        { name: 'Personal', count: Math.floor(taskCount * 0.35) },
-        { name: 'Urgent', count: Math.floor(taskCount * 0.25) },
-      ],
-      streakDays: 5,
-      achievementMessage: 'Great work this week!',
     };
   };
 
@@ -135,7 +123,7 @@ describe('Weekly Progress Performance Tests (T242)', () => {
       mockStatisticsService.getWeeklyStatistics.mockResolvedValue(stats);
 
       const startTime = performance.now();
-      const result = await statisticsService.getWeeklyStatistics(new Date());
+      const result = await statisticsService.getWeeklyStatistics(new Date().toISOString());
       const endTime = performance.now();
       
       const callTime = endTime - startTime;
@@ -150,7 +138,7 @@ describe('Weekly Progress Performance Tests (T242)', () => {
       mockStatisticsService.getWeeklyStatistics.mockResolvedValue(stats);
 
       const startTime = performance.now();
-      const result = await statisticsService.getWeeklyStatistics(new Date());
+      const result = await statisticsService.getWeeklyStatistics(new Date().toISOString());
       const endTime = performance.now();
       
       const callTime = endTime - startTime;
@@ -180,8 +168,8 @@ describe('Weekly Progress Performance Tests (T242)', () => {
       const stats = generateWeeklyStats(1000);
       
       const startTime = performance.now();
-      const totalCompleted = stats.dailyBreakdown.reduce((sum, day) => sum + day.tasksCompleted, 0);
-      const totalTasks = stats.dailyBreakdown.reduce((sum, day) => sum + day.tasksTotal, 0);
+      const totalCompleted = stats.dailyBreakdown.reduce((sum, day) => sum + day.completedTasks, 0);
+      const totalTasks = stats.dailyBreakdown.reduce((sum, day) => sum + day.totalTasks, 0);
       const avgCompletionRate = stats.dailyBreakdown.reduce((sum, day) => sum + day.completionRate, 0) / 7;
       const endTime = performance.now();
       
@@ -194,37 +182,38 @@ describe('Weekly Progress Performance Tests (T242)', () => {
       expect(avgCompletionRate).toBeGreaterThan(0);
     });
 
-    it('should process priority breakdown efficiently for 5000 tasks', () => {
+    it('should calculate totals efficiently for 5000 tasks', () => {
       const stats = generateWeeklyStats(5000);
       
       const startTime = performance.now();
-      const { priorityBreakdown } = stats;
-      const totalPriority = priorityBreakdown.critical + priorityBreakdown.high + 
-                           priorityBreakdown.medium + priorityBreakdown.low;
-      const endTime = performance.now();
-      
-      const processingTime = endTime - startTime;
-      
-      // Simple arithmetic should be instant
-      expect(processingTime).toBeLessThan(5);
-      expect(totalPriority).toBeGreaterThan(0);
-    });
-
-    it('should process category breakdown efficiently for 5000 tasks', () => {
-      const stats = generateWeeklyStats(5000);
-      
-      const startTime = performance.now();
-      const { categoryBreakdown } = stats;
-      const totalCategories = categoryBreakdown.reduce((sum, cat) => sum + cat.count, 0);
-      const categoryNames = categoryBreakdown.map(cat => cat.name);
+      const totalFromDaily = stats.dailyBreakdown.reduce((sum, day) => sum + day.totalTasks, 0);
+      const completedFromDaily = stats.dailyBreakdown.reduce((sum, day) => sum + day.completedTasks, 0);
       const endTime = performance.now();
       
       const processingTime = endTime - startTime;
       
       // Array operations should be fast
       expect(processingTime).toBeLessThan(10);
-      expect(totalCategories).toBeGreaterThan(0);
-      expect(categoryNames.length).toBe(3);
+      expect(totalFromDaily).toBeGreaterThanOrEqual(5000);
+      expect(completedFromDaily).toBeGreaterThan(0);
+    });
+
+    it('should calculate completion percentage efficiently for 5000 tasks', () => {
+      const stats = generateWeeklyStats(5000);
+      
+      const startTime = performance.now();
+      const calculatedPercentage = stats.totalTasks > 0 
+        ? Math.round((stats.completedTasks / stats.totalTasks) * 100) 
+        : 0;
+      const endTime = performance.now();
+      
+      const processingTime = endTime - startTime;
+      
+      // Simple arithmetic should be instant
+      expect(processingTime).toBeLessThan(5);
+      expect(calculatedPercentage).toBe(stats.completionPercentage);
+      expect(stats.completionPercentage).toBeGreaterThanOrEqual(0);
+      expect(stats.completionPercentage).toBeLessThanOrEqual(100);
     });
   });
 
@@ -278,8 +267,8 @@ describe('Weekly Progress Performance Tests (T242)', () => {
       
       const startTime = performance.now();
       const [result1, result2, result3] = await Promise.all([
-        statisticsService.getWeeklyStatistics(new Date()),
-        statisticsService.getWeeklyStatistics(new Date()),
+        statisticsService.getWeeklyStatistics(new Date().toISOString()),
+        statisticsService.getWeeklyStatistics(new Date().toISOString()),
         statisticsService.getUrgentTasks(),
       ]);
       const endTime = performance.now();
@@ -305,8 +294,8 @@ describe('Weekly Progress Performance Tests (T242)', () => {
       // Should handle even extreme datasets
       expect(generationTime).toBeLessThan(1000); // Under 1 second
       expect(stats.totalTasks).toBe(50000);
-      expect(stats.completionRate).toBeGreaterThanOrEqual(0);
-      expect(stats.completionRate).toBeLessThanOrEqual(100);
+      expect(stats.completionPercentage).toBeGreaterThanOrEqual(0);
+      expect(stats.completionPercentage).toBeLessThanOrEqual(100);
     });
 
     it('should process urgent tasks from 100,000 task dataset', () => {
@@ -326,18 +315,15 @@ describe('Weekly Progress Performance Tests (T242)', () => {
       const stats = generateWeeklyStats(taskCount);
       
       // Verify data consistency
-      const dailyTotal = stats.dailyBreakdown.reduce((sum, day) => sum + day.tasksTotal, 0);
-      const priorityTotal = stats.priorityBreakdown.critical + stats.priorityBreakdown.high +
-                           stats.priorityBreakdown.medium + stats.priorityBreakdown.low;
-      const categoryTotal = stats.categoryBreakdown.reduce((sum, cat) => sum + cat.count, 0);
+      const dailyTotal = stats.dailyBreakdown.reduce((sum, day) => sum + day.totalTasks, 0);
+      const dailyCompleted = stats.dailyBreakdown.reduce((sum, day) => sum + day.completedTasks, 0);
       
       // All breakdowns should be consistent
       expect(dailyTotal).toBeGreaterThanOrEqual(taskCount);
       expect(stats.totalTasks).toBe(taskCount); // Exact match on totalTasks
-      expect(Math.abs(priorityTotal - taskCount)).toBeLessThan(10);
-      expect(Math.abs(categoryTotal - taskCount)).toBeLessThan(10);
-      expect(stats.completionRate).toBeGreaterThanOrEqual(0);
-      expect(stats.completionRate).toBeLessThanOrEqual(100);
+      expect(dailyCompleted).toBe(stats.completedTasks); // Daily breakdown should match total
+      expect(stats.completionPercentage).toBeGreaterThanOrEqual(0);
+      expect(stats.completionPercentage).toBeLessThanOrEqual(100);
     });
   });
 });
