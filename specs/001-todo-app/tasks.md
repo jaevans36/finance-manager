@@ -450,9 +450,9 @@ description: "Task list for To Do App implementation"
 
 ### Testing & Optimization
 
-- [ ] T236 [P] [US8] Create StatisticsControllerTests.cs with weekly calculation tests
-- [ ] T237 [P] [US8] Add edge case tests (empty weeks, weeks spanning months/years, timezone boundaries)
-- [ ] T238 [P] [US8] Create chart component tests with Jest/Testing Library
+- [x] T236 [P] [US8] Create StatisticsControllerTests.cs with weekly calculation tests
+- [x] T237 [P] [US8] Add edge case tests (empty weeks, weeks spanning months/years, timezone boundaries)
+- [x] T238 [P] [US8] Create chart component tests with Jest/Testing Library
 - [ ] T239 [US8] Test week navigation (previous/next, date picker, edge cases)
 - [ ] T240 [US8] Test urgent task identification logic (priority ordering, date filtering)
 - [ ] T241 [US8] Test responsive chart rendering on different screen sizes
