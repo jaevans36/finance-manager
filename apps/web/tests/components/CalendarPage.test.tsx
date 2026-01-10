@@ -164,7 +164,8 @@ describe('CalendarPage', () => {
       renderCalendarPage();
       
       await waitFor(() => {
-        expect(screen.getByText('Failed to load tasks')).toBeInTheDocument();
+        const errorMessages = screen.getAllByText('Failed to load tasks');
+        expect(errorMessages.length).toBeGreaterThan(0);
       });
     });
   });
