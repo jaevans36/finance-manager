@@ -21,7 +21,7 @@ jest.mock('../../src/services/taskService', () => ({
 
 // Mock react-calendar
 jest.mock('react-calendar', () => {
-  return function MockCalendar({ onChange, value, tileContent }: any) {
+  return function MockCalendar({ onChange, tileContent }: { onChange: (date: Date) => void; tileContent?: (props: { date: Date }) => React.ReactNode }) {
     return (
       <div data-testid="mock-calendar">
         <button onClick={() => onChange(new Date('2026-01-15'))}>Select Jan 15</button>
@@ -72,6 +72,9 @@ const mockTasks: Task[] = [
     completed: false,
     dueDate: '2026-01-20',
     userId: 'user1',
+    groupId: 'group1',
+    groupName: 'Work',
+    groupColour: '#3b82f6',
     createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2026-01-01T00:00:00Z',
     completedAt: null,
