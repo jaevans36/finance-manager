@@ -455,7 +455,7 @@ description: "Task list for To Do App implementation"
 - [x] T238 [P] [US8] Create chart component tests with Jest/Testing Library
 - [x] T239 [US8] Test week navigation (previous/next, date picker, edge cases)
 - [x] T240 [US8] Test urgent task identification logic (priority ordering, date filtering)
-- [ ] T241 [US8] Test responsive chart rendering on different screen sizes
+- [x] T241 [US8] Test responsive chart rendering on different screen sizes
 - [ ] T242 [US8] Performance testing for large task sets (1000+ tasks)
 - [ ] T243 [US8] Implement query caching with cache invalidation on task updates
 - [ ] T244 [US8] Test real-time updates when tasks are completed from dashboard
