@@ -1,4 +1,5 @@
 import { apiClient } from './api-client';
+import { statisticsService } from './statisticsService';
 
 export interface Task {
   id: string;
@@ -48,20 +49,35 @@ export const taskService = {
 
   async createTask(input: CreateTaskInput): Promise<Task> {
     const response = await apiClient.post<Task>('/tasks', input);
+    
+    // Invalidate statistics cache when tasks are modified
+    statisticsService.invalidateCache();
+    
     return response.data;
   },
 
   async updateTask(id: string, input: UpdateTaskInput): Promise<Task> {
     const response = await apiClient.put<Task>(`/tasks/${id}`, input);
+    
+    // Invalidate statistics cache when tasks are modified
+    statisticsService.invalidateCache();
+    
     return response.data;
   },
 
   async deleteTask(id: string): Promise<void> {
     await apiClient.delete(`/tasks/${id}`);
+    
+    // Invalidate statistics cache when tasks are modified
+    statisticsService.invalidateCache();
   },
 
   async toggleTask(id: string, completed: boolean): Promise<Task> {
     const response = await apiClient.put<Task>(`/tasks/${id}`, { completed });
+    
+    // Invalidate statistics cache when tasks are modified
+    statisticsService.invalidateCache();
+    
     return response.data;
   },
 };

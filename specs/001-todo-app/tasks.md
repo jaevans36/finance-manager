@@ -457,7 +457,7 @@ description: "Task list for To Do App implementation"
 - [x] T240 [US8] Test urgent task identification logic (priority ordering, date filtering)
 - [x] T241 [US8] Test responsive chart rendering on different screen sizes
 - [x] T242 [US8] Performance testing for large task sets (1000+ tasks)
-- [ ] T243 [US8] Implement query caching with cache invalidation on task updates
+- [x] T243 [US8] Implement query caching with cache invalidation on task updates
 - [ ] T244 [US8] Test real-time updates when tasks are completed from dashboard
 - [ ] T245 [US8] End-to-end test: navigate to weekly progress → view charts → toggle task → verify update
 
