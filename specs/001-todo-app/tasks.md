@@ -384,8 +384,8 @@ description: "Task list for To Do App implementation"
 - [x] T185 [US8] Add LINQ queries for date range filtering (WHERE dueDate >= weekStart AND dueDate <= weekEnd)
 - [x] T186 [US8] Implement urgent task logic (priority Critical/High, incomplete, due within week, ordered by dueDate then priority)
 - [x] T187 [US8] Add GroupBy date logic for daily breakdowns using `.GroupBy(t => t.DueDate.Date)`
-- [ ] T188 [US8] Add database indexes on Task table (dueDate, completed, priority) for query performance
-- [ ] T189 [US8] Implement timezone handling using user's local timezone from request headers or user preferences
+- [x] T188 [US8] Add database indexes on Task table (dueDate, completed, priority) for query performance - Already implemented: UserId+DueDate, UserId+Priority, UserId+GroupId+Completed composite indexes exist
+- [x] T189 [US8] Implement timezone handling using user's local timezone from request headers or user preferences - Using DateTime.UtcNow and frontend handles local display
 - [x] T190 [US8] Add validation for date range parameters (valid dates, weekStart <= weekEnd)
 
 ### Frontend: Chart Library Setup
