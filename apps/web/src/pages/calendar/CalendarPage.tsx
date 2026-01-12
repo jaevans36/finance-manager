@@ -38,17 +38,39 @@ const CalendarPage = () => {
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
   const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
 
+  // Helper to get month start and end dates
+  const getMonthRange = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    
+    // Start of month
+    const startDate = new Date(year, month, 1);
+    
+    // End of month (last day)
+    const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
+    
+    return { startDate, endDate };
+  };
+
   useEffect(() => {
-    loadTasks();
+    loadTasksForMonth(value);
     loadGroups();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [value]);
 
-  const loadTasks = async () => {
+  const loadTasksForMonth = async (monthDate: Date) => {
     try {
       setLoading(true);
       setError(null);
-      const fetchedTasks = await taskService.getTasks();
+      
+      const { startDate, endDate } = getMonthRange(monthDate);
+      
+      // Fetch tasks with date range filtering
+      const fetchedTasks = await taskService.getTasks({
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+      });
+      
       setTasks(fetchedTasks);
     } catch (err: unknown) {
       const message = 'Failed to load tasks';
@@ -278,7 +300,15 @@ const CalendarPage = () => {
     >
       <CalendarContainer>
         <StyledCalendar
-          onChange={(value) => value instanceof Date && setValue(value)}
+          onChange={(newValue) => {
+            if (newValue instanceof Date) {
+              setValue(newValue);
+              // Reload tasks if month changed
+              if (newValue.getMonth() !== value.getMonth() || newValue.getFullYear() !== value.getFullYear()) {
+                loadTasksForMonth(newValue);
+              }
+            }
+          }}
           value={value}
           tileContent={getTileContent}
           onClickDay={handleDayClick}

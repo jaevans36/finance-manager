@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import styled from 'styled-components';
 import { Search, X } from 'lucide-react';
 
@@ -62,7 +63,7 @@ interface TaskSearchProps {
   placeholder?: string;
 }
 
-export const TaskSearch = React.forwardRef<HTMLInputElement, TaskSearchProps>((
+export const TaskSearch = forwardRef<HTMLInputElement, TaskSearchProps>((
   {
     value,
     onChange,

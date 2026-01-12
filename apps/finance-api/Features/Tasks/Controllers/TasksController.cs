@@ -19,10 +19,15 @@ public class TasksController : ControllerBase
     }
 
     [HttpGet]
-    public async System.Threading.Tasks.Task<ActionResult<List<TaskDto>>> GetTasks()
+    public async System.Threading.Tasks.Task<ActionResult<List<TaskDto>>> GetTasks(
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        [FromQuery] string? priority,
+        [FromQuery] Guid? groupId,
+        [FromQuery] bool? completed)
     {
         var userId = GetUserId();
-        var tasks = await _taskService.GetTasksAsync(userId);
+        var tasks = await _taskService.GetTasksAsync(userId, startDate, endDate, priority, groupId, completed);
         return Ok(tasks);
     }
 

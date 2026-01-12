@@ -34,11 +34,25 @@ interface UpdateTaskInput {
   groupId?: string;
 }
 
-
+interface TaskQueryParams {
+  groupId?: string;
+  priority?: string;
+  completed?: boolean;
+  startDate?: string;
+  endDate?: string;
+}
 
 export const taskService = {
-  async getTasks(): Promise<Task[]> {
-    const response = await apiClient.get<Task[]>('/tasks');
+  async getTasks(params?: TaskQueryParams): Promise<Task[]> {
+    const queryString = params
+      ? '?' + new URLSearchParams(
+          Object.entries(params)
+            .filter(([, value]) => value !== undefined && value !== '')
+            .map(([key, value]) => [key, String(value)])
+        ).toString()
+      : '';
+    
+    const response = await apiClient.get<Task[]>(`/tasks${queryString}`);
     return response.data;
   },
 

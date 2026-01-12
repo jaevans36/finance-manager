@@ -13,7 +13,13 @@ public interface ITaskService
     System.Threading.Tasks.Task<TaskDto> UpdateTaskAsync(Guid userId, Guid taskId, UpdateTaskRequest request);
     System.Threading.Tasks.Task DeleteTaskAsync(Guid userId, Guid taskId);
     System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid userId, Guid taskId);
-    System.Threading.Tasks.Task<List<TaskDto>> GetTasksAsync(Guid userId);
+    System.Threading.Tasks.Task<List<TaskDto>> GetTasksAsync(
+        Guid userId, 
+        DateTime? startDate = null, 
+        DateTime? endDate = null,
+        string? priority = null,
+        Guid? groupId = null,
+        bool? completed = null);
     System.Threading.Tasks.Task<List<TaskDto>> GetTasksByDateRangeAsync(Guid userId, DateTime startDate, DateTime endDate);
 }
 
@@ -131,11 +137,53 @@ public class TaskService : ITaskService
         return task == null ? null : await MapToTaskDtoAsync(task);
     }
 
-    public async System.Threading.Tasks.Task<List<TaskDto>> GetTasksAsync(Guid userId)
+    public async System.Threading.Tasks.Task<List<TaskDto>> GetTasksAsync(
+        Guid userId,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        string? priority = null,
+        Guid? groupId = null,
+        bool? completed = null)
     {
-        var tasks = await _context.Tasks
+        var query = _context.Tasks
             .Include(t => t.Group)
-            .Where(t => t.UserId == userId)
+            .Where(t => t.UserId == userId);
+
+        // Apply date range filter
+        if (startDate.HasValue && endDate.HasValue)
+        {
+            query = query.Where(t => t.DueDate != null && 
+                                  t.DueDate >= startDate.Value && 
+                                  t.DueDate <= endDate.Value);
+        }
+        else if (startDate.HasValue)
+        {
+            query = query.Where(t => t.DueDate != null && t.DueDate >= startDate.Value);
+        }
+        else if (endDate.HasValue)
+        {
+            query = query.Where(t => t.DueDate != null && t.DueDate <= endDate.Value);
+        }
+
+        // Apply priority filter
+        if (!string.IsNullOrEmpty(priority) && Enum.TryParse<Models.Priority>(priority, true, out var parsedPriority))
+        {
+            query = query.Where(t => t.Priority == parsedPriority);
+        }
+
+        // Apply group filter
+        if (groupId.HasValue)
+        {
+            query = query.Where(t => t.GroupId == groupId.Value);
+        }
+
+        // Apply completed filter
+        if (completed.HasValue)
+        {
+            query = query.Where(t => t.Completed == completed.Value);
+        }
+
+        var tasks = await query
             .OrderByDescending(t => t.CreatedAt)
             .ToListAsync();
 
