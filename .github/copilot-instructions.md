@@ -93,6 +93,116 @@ Example workflow:
 
 This ensures the task list remains an accurate reflection of project progress and prevents confusion about what has been completed.
 
+## Test Documentation Maintenance
+
+**CRITICAL**: Test documentation must be kept synchronized with the codebase. This is not optional.
+
+When adding, modifying, or removing tests:
+
+1. **Update TEST-INVENTORY.md immediately** after test changes:
+   - Add new tests to the Feature Coverage Matrix
+   - Update test counts in the overview table
+   - Mark coverage gaps as addressed when filled
+   - Update "Last Updated" date
+   - Location: `docs/testing/TEST-INVENTORY.md`
+
+2. **Update metrics when significant changes occur**:
+   - Total test count
+   - Coverage percentages (if known from coverage reports)
+   - Test duration if materially different
+   - Add notes about new test suites or removed tests
+
+3. **Document test patterns** in TEST-WRITING-GUIDE.md when:
+   - Creating a new type of test (e.g., visual regression)
+   - Establishing a new testing pattern or utility
+   - Solving a complex testing challenge that others might face
+   - Location: `docs/testing/TEST-WRITING-GUIDE.md`
+
+4. **Update NIGHTLY-TESTS.md when**:
+   - Adding tests that should run nightly (not on every PR)
+   - Changing test categorization (Tier 1/2/3)
+   - Modifying nightly workflow configuration
+   - Location: `docs/testing/NIGHTLY-TESTS.md`
+
+### Workflow Examples
+
+**Example 1: Adding New Feature Tests**
+```markdown
+User: "Add tests for password reset flow"
+
+Agent Actions:
+1. Create password reset tests (backend + frontend + E2E)
+2. Run tests to verify they pass
+3. Update docs/testing/TEST-INVENTORY.md:
+   - Add "Password Reset" row to Feature Coverage Matrix
+   - Increment test counts in overview table
+   - Remove "Password Reset Flow" from coverage gaps
+   - Update "Last Updated" date
+4. Commit all changes together
+```
+
+**Example 2: Moving Tests to Nightly**
+```markdown
+User: "These E2E tests are too slow for PR checks"
+
+Agent Actions:
+1. Move slow tests to apps/web/e2e/extended/
+2. Update playwright.config.ts to categorize them
+3. Update .github/workflows/ci.yml to exclude them
+4. Update docs/testing/NIGHTLY-TESTS.md:
+   - Add tests to extended-e2e job description
+   - Update estimated duration
+5. Update docs/testing/TEST-INVENTORY.md:
+   - Change "Run On" column to "Nightly"
+6. Commit changes with descriptive message
+```
+
+**Example 3: Addressing Coverage Gap**
+```markdown
+User: "Implement the task search E2E test"
+
+Agent Actions:
+1. Create E2E test for task search
+2. Verify test passes
+3. Update docs/testing/TEST-INVENTORY.md:
+   - Change Task Search row: E2E Tests from ❌ to ✅ (1)
+   - Update coverage from 60% to 95%
+   - Remove "Task Search E2E Test" from High Priority gaps
+   - Increment total E2E count
+   - Update "Last Updated" date
+4. Commit with message: "test: add E2E test for task search (coverage gap #1)"
+```
+
+### Maintenance Checklist
+
+Before completing any testing work, verify:
+
+- [ ] All new tests are documented in TEST-INVENTORY.md
+- [ ] Test counts are accurate in overview table
+- [ ] Coverage percentages updated if changed
+- [ ] Coverage gaps marked as addressed when filled
+- [ ] Complex test patterns documented in TEST-WRITING-GUIDE.md
+- [ ] Nightly test categorization is correct
+- [ ] "Last Updated" dates are current
+- [ ] Commit message references test documentation updates
+
+### When to Skip Documentation Updates
+
+Only skip test documentation updates for:
+- Trivial test refactoring (renaming variables, formatting)
+- Fixing typos in test descriptions
+- Adjusting test timeouts without changing functionality
+
+**Always update documentation for:**
+- ✅ New tests added
+- ✅ Tests removed or skipped
+- ✅ Test coverage changes
+- ✅ Test categorization changes (PR → Nightly)
+- ✅ New test patterns or utilities
+- ✅ Coverage gap addressed
+
+This ensures test documentation remains the single source of truth for the project's testing state.
+
 ## TypeScript Standards
 
 **NEVER use the `any` type in TypeScript code.** This is a critical requirement for type safety and maintainability.

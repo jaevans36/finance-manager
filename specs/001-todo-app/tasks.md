@@ -459,7 +459,7 @@ description: "Task list for To Do App implementation"
 - [x] T242 [US8] Performance testing for large task sets (1000+ tasks)
 - [x] T243 [US8] Implement query caching with cache invalidation on task updates
 - [x] T244 [US8] Test real-time updates when tasks are completed from dashboard
-- [ ] T245 [US8] End-to-end test: navigate to weekly progress → view charts → toggle task → verify update
+- [x] T245 [US8] End-to-end test: navigate to weekly progress → view charts → toggle task → verify update
 
 **Checkpoint**: Users can view comprehensive weekly analytics with charts, daily breakdowns, and urgent task tracking
 
