@@ -54,9 +54,15 @@ const CalendarPage = () => {
 
   useEffect(() => {
     loadTasksForMonth(value);
-    loadGroups();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
+
+  useEffect(() => {
+    if (tasks.length > 0) {
+      loadGroups();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tasks.length]);
 
   const loadTasksForMonth = async (monthDate: Date) => {
     try {
@@ -303,10 +309,12 @@ const CalendarPage = () => {
           onChange={(newValue) => {
             if (newValue instanceof Date) {
               setValue(newValue);
-              // Reload tasks if month changed
-              if (newValue.getMonth() !== value.getMonth() || newValue.getFullYear() !== value.getFullYear()) {
-                loadTasksForMonth(newValue);
-              }
+            }
+          }}
+          onActiveStartDateChange={({ activeStartDate }) => {
+            // This fires when navigating months using arrows
+            if (activeStartDate instanceof Date) {
+              setValue(activeStartDate);
             }
           }}
           value={value}
