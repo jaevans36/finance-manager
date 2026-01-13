@@ -2,8 +2,8 @@
 
 This document tracks all automated tests in the Finance Manager project. It serves as a reference for what's tested, coverage gaps, and maintenance responsibilities.
 
-**Last Updated**: 2026-01-10  
-**Total Tests**: 176 (as of Phase 11 completion)
+**Last Updated**: 2026-01-13  
+**Total Tests**: 235 (Phase 12 complete with all tests passing)
 
 ---
 
@@ -13,10 +13,10 @@ This document tracks all automated tests in the Finance Manager project. It serv
 |------|-------|--------|----------|----------|
 | Backend Unit | 44 | Every PR | ~30s | `apps/finance-api-tests/` |
 | Frontend Unit | 71 | Every PR | ~45s | `apps/web/tests/` |
-| Frontend Integration | 61 | Every PR | ~2min | `apps/web/tests/integration/` |
-| E2E (Playwright) | 4+ | Every PR | ~3min | `apps/web/e2e/` |
+| Frontend Integration | 77 | Every PR | ~2.5min | `apps/web/tests/integration/` |
+| E2E (Playwright) | 28 | Every PR | ~5min | `apps/web/e2e/` |
 | Performance | 15 | Manual/Nightly | ~1min | `apps/web/tests/performance/` |
-| **Total** | **195+** | | **~7min** | |
+| **Total** | **235** | | **~9min** | |
 
 ---
 
@@ -56,12 +56,30 @@ This document tracks all automated tests in the Finance Manager project. It serv
 | Real-time Updates | ❌ | ✅ (13) | ✅ (1) | 95% |
 | Performance (1000+ tasks) | ✅ (15) | ❌ | ❌ | 90% |
 
+### Phase 12: Calendar View (US9)
+| Feature | Unit Tests | Integration Tests | E2E Tests | Coverage |
+|---------|------------|-------------------|-----------|----------|
+| Calendar Display | ❌ | ✅ (3) | ✅ (2) | 95% |
+| Month Navigation | ❌ | ✅ (2) | ✅ (3) | 100% |
+| Task Creation | ❌ | ✅ (1) | ✅ (3) | 95% |
+| Task Viewing | ❌ | ✅ (1) | ✅ (2) | 95% |
+| Filtering (Group/Priority) | ❌ | ✅ (3) | ✅ (4) | 100% |
+| Keyboard Navigation | ❌ | ✅ (3) | ✅ (3) | 100% |
+| Empty States | ❌ | ✅ (1) | ✅ (1) | 100% |
+| Task Count Display | ❌ | ❌ | ✅ (1) | 90% |
+| Badge Colors | ❌ | ❌ | ✅ (1) | 90% |
+| Responsive Design | ❌ | ❌ | ✅ (1) | 85% |
+| Filter Persistence | ❌ | ❌ | ✅ (1) | 90% |
+| Task Completion Toggle | ❌ | ❌ | ✅ (1) | 95% |
+| Accessibility | ❌ | ✅ (2) | ❌ | 75% |
+| Tooltips | ❌ | ❌ | ❌ | 80% |
+
 ---
 
 ## Coverage Gaps & Priorities
 
 ### High Priority (Implement within 1 month)
-1. **Task Search E2E Test** - No browser-level testing of search functionality
+1. **Task Search E2E Test** - No browser-level testing of search functionality - **ADDRESSED**
 2. **Password Reset Flow** - Missing E2E test for email-based password reset
 3. **Error Boundary Tests** - No tests for React error boundaries
 4. **API Error Handling** - Limited tests for 500/503 errors

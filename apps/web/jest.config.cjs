@@ -11,11 +11,23 @@ module.exports = {
         jsx: 'react-jsx',
         esModuleInterop: true,
         allowSyntheticDefaultImports: true,
+        types: ['jest', '@testing-library/jest-dom'],
       },
     }],
+    '^.+\\.jsx?$': ['babel-jest', { configFile: './babel.config.test.cjs' }],
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(react-calendar)/)',
+  ],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+  },
+  globals: {
+    'import.meta': {
+      env: {
+        VITE_API_URL: 'http://localhost:5000',
+      },
+    },
   },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

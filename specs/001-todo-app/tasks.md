@@ -475,101 +475,101 @@ description: "Task list for To Do App implementation"
 
 **Note**: Calendar view reuses existing task API endpoints. No backend changes needed unless adding calendar-specific features like multi-day events or recurring tasks in future.
 
-- [ ] T246 [US9] Review existing GET /api/v1/tasks endpoint to ensure it supports filtering by date range (if not already implemented)
-- [ ] T247 [US9] Add optional query parameters to GET /api/v1/tasks for monthStart and monthEnd filtering (if needed)
-- [ ] T248 [US9] Add database indexes on Task.DueDate if not already present for calendar query performance
-- [ ] T249 [US9] Test API performance with date range queries spanning full months with 100+ tasks
+- [x] T246 [US9] Review existing GET /api/v1/tasks endpoint to ensure it supports filtering by date range (if not already implemented)
+- [x] T247 [US9] Add optional query parameters to GET /api/v1/tasks for monthStart and monthEnd filtering (if needed)
+- [x] T248 [US9] Add database indexes on Task.DueDate if not already present for calendar query performance
+- [x] T249 [US9] Test API performance with date range queries spanning full months with 100+ tasks
 
 ### Frontend: Calendar Component Library Setup
 
 - [x] T250 [P] [US9] Research and select calendar library (react-big-calendar, react-calendar, or FullCalendar)
 - [x] T251 [P] [US9] Install chosen calendar library with `npm install [library]`
 - [x] T252 [P] [US9] Create calendar theme configuration matching app color scheme
-- [ ] T253 [US9] Create calendar wrapper component in apps/web/src/components/calendar/ for consistent styling
-- [ ] T254 [US9] Implement responsive calendar container with aspect ratio handling for mobile
-- [ ] T255 [US9] Create custom day cell renderer for task count badges
-- [ ] T256 [US9] Implement calendar loading states and error boundaries
-- [ ] T257 [US9] Add calendar accessibility features (ARIA labels, keyboard navigation, screen reader support)
+- [x] T253 [US9] Create calendar wrapper component in apps/web/src/components/calendar/ for consistent styling
+- [x] T254 [US9] Implement responsive calendar container with aspect ratio handling for mobile
+- [x] T255 [US9] Create custom day cell renderer for task count badges
+- [x] T256 [US9] Implement calendar loading states and error boundaries
+- [x] T257 [US9] Add calendar accessibility features (ARIA labels, keyboard navigation, screen reader support)
 
 ### Frontend: Calendar Page & Core Components
 
 - [x] T258 [P] [US9] Create CalendarPage.tsx in apps/web/src/pages/ with page layout
 - [x] T259 [P] [US9] Create Calendar interfaces in apps/web/src/types/calendar.ts (CalendarTask, DayData)
 - [x] T260 [US9] Implement month data fetching logic using taskService with date range parameters
-- [ ] T261 [US9] Create CalendarHeader component with month/year display and navigation controls
-- [ ] T262 [US9] Create MonthNavigation component with previous/next buttons and date picker
-- [ ] T263 [US9] Implement current month calculation and state management
-- [ ] T264 [US9] Create BackButton component matching Weekly Progress style with ArrowLeft icon
-- [ ] T265 [US9] Implement PageContainer with matching width (1200px max-width, 80% width, 95% on mobile)
-- [ ] T266 [US9] Create CalendarGrid component rendering month view with day cells
-- [ ] T267 [US9] Create DayCell component displaying date number and task count badge
-- [ ] T268 [US9] Implement current date highlighting with distinct border/background
-- [ ] T269 [US9] Implement weekend day styling (different background for Sat/Sun)
-- [ ] T270 [US9] Add task count badges to day cells with colour coding by priority
+- [x] T261 [US9] Create CalendarHeader component with month/year display and navigation controls
+- [x] T262 [US9] Create MonthNavigation component with previous/next buttons and date picker
+- [x] T263 [US9] Implement current month calculation and state management
+- [x] T264 [US9] Create BackButton component matching Weekly Progress style with ArrowLeft icon
+- [x] T265 [US9] Implement PageContainer with matching width (1200px max-width, 80% width, 95% on mobile)
+- [x] T266 [US9] Create CalendarGrid component rendering month view with day cells
+- [x] T267 [US9] Create DayCell component displaying date number and task count badge
+- [x] T268 [US9] Implement current date highlighting with distinct border/background
+- [x] T269 [US9] Implement weekend day styling (different background for Sat/Sun)
+- [x] T270 [US9] Add task count badges to day cells with colour coding by priority
 
 ### Frontend: Task Interaction & Modals
 
 - [x] T271 [P] [US9] Create TaskDetailModal component reusing EditTaskModal functionality
 - [x] T272 [P] [US9] Create QuickAddTaskModal component with minimal fields (title, group, priority)
 - [x] T273 [US9] Implement day cell click handler to open QuickAddTaskModal with pre-populated due date
-- [ ] T274 [US9] Implement task badge click handler to show task list for that day
-- [ ] T275 [US9] Create DayTaskListModal component showing all tasks for selected date
-- [ ] T276 [US9] Implement task click handler in day modal to open TaskDetailModal
-- [ ] T277 [US9] Add quick completion toggle in task modals without closing
-- [ ] T278 [US9] Implement optimistic UI updates when tasks are created/completed from calendar
-- [ ] T279 [US9] Add loading spinners for async operations (create, update, delete tasks)
-- [ ] T280 [US9] Implement error handling with toast notifications for failed operations
+- [x] T274 [US9] Implement task badge click handler to show task list for that day
+- [x] T275 [US9] Create DayTaskListModal component showing all tasks for selected date
+- [x] T276 [US9] Implement task click handler in day modal to open TaskDetailModal
+- [x] T277 [US9] Add quick completion toggle in task modals without closing
+- [x] T278 [US9] Implement optimistic UI updates when tasks are created/completed from calendar
+- [x] T279 [US9] Add loading spinners for async operations (create, update, delete tasks)
+- [x] T280 [US9] Implement error handling with toast notifications for failed operations
 
 ### Frontend: Advanced Calendar Features
 
 - [x] T281 [P] [US9] Implement task filtering by group with dropdown selector
 - [x] T282 [P] [US9] Implement task filtering by priority with checkbox filters
 - [x] T283 [US9] Create FilterBar component for calendar filters matching Dashboard style
-- [ ] T284 [US9] Add "Clear Filters" button when filters are active
-- [ ] T285 [US9] Implement month-to-month navigation persistence (preserve filters when navigating)
-- [ ] T286 [US9] Create empty state component for months with no tasks
-- [ ] T287 [US9] Add task count summary at top of calendar (X tasks this month)
-- [ ] T288 [US9] Implement colour-coded priority indicators (red=critical/high, yellow=medium, grey=low)
-- [ ] T289 [US9] Add hover tooltips on day cells showing task titles
-- [ ] T290 [US9] Implement keyboard shortcuts (Left/Right arrows for month navigation, Enter to add task)
+- [x] T284 [US9] Add "Clear Filters" button when filters are active
+- [x] T285 [US9] Implement month-to-month navigation persistence (preserve filters when navigating)
+- [x] T286 [US9] Create empty state component for months with no tasks
+- [x] T287 [US9] Add task count summary at top of calendar (X tasks this month)
+- [x] T288 [US9] Implement colour-coded priority indicators (red=critical/high, yellow=medium, grey=low)
+- [x] T289 [US9] Add hover tooltips on day cells showing task titles
+- [x] T290 [US9] Implement keyboard shortcuts (Left/Right arrows for month navigation, Enter to add task)
 
 ### Frontend: Navigation & Integration
 
 - [x] T291 [US9] Add "Calendar" link to main navigation menu with calendar icon
 - [x] T292 [US9] Add route configuration in App.tsx for /calendar path
 - [x] T293 [US9] Create calendar icon component or use Lucide React calendar icon
-- [ ] T294 [US9] Update Dashboard.tsx to add "View Calendar" CTA button
-- [ ] T295 [US9] Ensure protected route wrapper includes /calendar path
-- [ ] T296 [US9] Test navigation flow: Dashboard → Calendar → Back to Dashboard
+- [x] T294 [US9] Update Dashboard.tsx to add "View Calendar" CTA button
+- [x] T295 [US9] Ensure protected route wrapper includes /calendar path
+- [x] T296 [US9] Test navigation flow: Dashboard → Calendar → Back to Dashboard
 
 ### Frontend: Responsive Design & Polish
 
-- [ ] T297 [P] [US9] Implement responsive grid breakpoints (7 columns desktop, stack on mobile)
-- [ ] T298 [P] [US9] Increase touch target sizes for mobile day cells (minimum 44x44px)
-- [ ] T299 [P] [US9] Implement horizontal swipe gestures for month navigation on mobile
-- [ ] T300 [US9] Add pull-to-refresh gesture for calendar data reload on mobile
-- [ ] T301 [US9] Test calendar layout on various screen sizes (320px to 1920px widths)
-- [ ] T302 [US9] Implement loading skeletons for calendar grid during data fetch
-- [ ] T303 [US9] Add smooth transitions when switching months
-- [ ] T304 [US9] Optimize performance with React.memo for day cell components
-- [ ] T305 [US9] Implement virtualization for task lists with many tasks per day (10+ tasks)
+- [x] T297 [P] [US9] Implement responsive grid breakpoints (7 columns desktop, stack on mobile)
+- [x] T298 [P] [US9] Increase touch target sizes for mobile day cells (minimum 44x44px)
+- [x] T299 [P] [US9] Implement horizontal swipe gestures for month navigation on mobile
+- [x] T300 [US9] Add pull-to-refresh gesture for calendar data reload on mobile
+- [x] T301 [US9] Test calendar layout on various screen sizes (320px to 1920px widths)
+- [x] T302 [US9] Implement loading skeletons for calendar grid during data fetch
+- [x] T303 [US9] Add smooth transitions when switching months
+- [x] T304 [US9] Optimize performance with React.memo for day cell components
+- [x] T305 [US9] Implement virtualization for task lists with many tasks per day (10+ tasks)
 
 ### Testing & Validation
 
 - [x] T306 [P] [US9] Create component tests for CalendarPage with Jest/Testing Library
 - [x] T307 [P] [US9] Create component tests for day cell rendering and interactions
-- [ ] T308 [P] [US9] Create tests for modal interactions (open, close, submit)
-- [ ] T309 [US9] Test month navigation edge cases (year boundaries, leap years)
-- [ ] T310 [US9] Test task creation from calendar with pre-populated due date
-- [ ] T311 [US9] Test task detail viewing and editing from calendar
-- [ ] T312 [US9] Test filter interactions (group, priority filters)
-- [ ] T313 [US9] Test responsive behavior on mobile devices
-- [ ] T314 [US9] Test keyboard navigation and accessibility
-- [ ] T315 [US9] End-to-end test: navigate to calendar → view tasks → create task on date → verify persistence
-- [ ] T316 [US9] Performance test with 500+ tasks across multiple months
-- [ ] T317 [US9] Test timezone handling for task due dates in calendar
-- [ ] T318 [US9] Test empty state display for months with no tasks
-- [ ] T319 [US9] Validate against spec acceptance scenarios (User Story 9)
+- [x] T308 [P] [US9] Create tests for modal interactions (open, close, submit)
+- [x] T309 [US9] Test month navigation edge cases (year boundaries, leap years)
+- [x] T310 [US9] Test task creation from calendar with pre-populated due date
+- [x] T311 [US9] Test task detail viewing and editing from calendar
+- [x] T312 [US9] Test filter interactions (group, priority filters)
+- [x] T313 [US9] Test responsive behavior on mobile devices
+- [x] T314 [US9] Test keyboard navigation and accessibility
+- [x] T315 [US9] End-to-end test: navigate to calendar → view tasks → create task on date → verify persistence
+- [x] T316 [US9] Performance test with 500+ tasks across multiple months
+- [x] T317 [US9] Test timezone handling for task due dates in calendar
+- [x] T318 [US9] Test empty state display for months with no tasks
+- [x] T319 [US9] Validate against spec acceptance scenarios (User Story 9)
 
 ### Future Enhancements (Not in Scope for Phase 12)
 

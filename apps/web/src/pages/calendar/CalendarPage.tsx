@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useToast } from '../../contexts/ToastContext';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { PageLayout } from '../../components/layout/PageLayout';
 import { StyledCalendar, TaskBadge } from '../../components/calendar/StyledCalendar';
 import { QuickAddTaskModal } from '../../components/calendar/QuickAddTaskModal';
@@ -23,6 +24,49 @@ const CalendarContainer = styled.div`
   }
 `;
 
+const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  color: ${({ theme }) => theme.colors.textSecondary};
+
+  h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: ${({ theme }) => theme.colors.text};
+  }
+
+  p {
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+`;
+
+const KeyboardHint = styled.div`
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border-radius: 6px;
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+
+  kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    margin: 0 2px;
+    background: ${({ theme }) => theme.colors.background};
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: 600;
+  }
+`;
+
 const CalendarPage = () => {
   const { showToast } = useToast();
   const [value, setValue] = useState<Date>(new Date());
@@ -37,6 +81,42 @@ const CalendarPage = () => {
   const [groups, setGroups] = useState<TaskGroup[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
   const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
+
+  // Keyboard shortcuts: Left/Right arrows for month navigation, Enter to add task, Escape to close modals
+  useKeyboardShortcuts({
+    'ArrowLeft': () => {
+      if (!showQuickAdd && !showDayTasks && !showEditTask) {
+        const newDate = new Date(value);
+        newDate.setMonth(newDate.getMonth() - 1);
+        setValue(newDate);
+      }
+    },
+    'ArrowRight': () => {
+      if (!showQuickAdd && !showDayTasks && !showEditTask) {
+        const newDate = new Date(value);
+        newDate.setMonth(newDate.getMonth() + 1);
+        setValue(newDate);
+      }
+    },
+    'Enter': () => {
+      if (!showQuickAdd && !showDayTasks && !showEditTask) {
+        setSelectedDate(new Date());
+        setShowQuickAdd(true);
+      }
+    },
+    'Escape': () => {
+      if (showQuickAdd) {
+        setShowQuickAdd(false);
+        setSelectedDate(null);
+      } else if (showDayTasks) {
+        setShowDayTasks(false);
+        setSelectedDate(null);
+      } else if (showEditTask) {
+        setShowEditTask(false);
+        setSelectedTask(null);
+      }
+    }
+  }, [showQuickAdd, showDayTasks, showEditTask, value]);
 
   // Helper to get month start and end dates
   const getMonthRange = (date: Date) => {
@@ -273,10 +353,14 @@ const CalendarPage = () => {
       return currentIndex > highestIndex ? task.priority : highest;
     }, 'Low');
 
+    // Create tooltip with task titles
+    const tooltipText = dayTasks.map((task) => `• ${task.title}`).join('\n');
+
     return (
       <TaskBadge
         priority={highestPriority}
         onClick={(e) => handleBadgeClick(e, date)}
+        title={tooltipText}
       >
         {dayTasks.length}
       </TaskBadge>
@@ -305,6 +389,15 @@ const CalendarPage = () => {
       }
     >
       <CalendarContainer>
+        {getMonthTaskCount() === 0 && !loading && (
+          <EmptyState>
+            <h3>No Tasks This Month</h3>
+            <p>Click on any date to create your first task</p>
+            <KeyboardHint>
+              <kbd>←</kbd> <kbd>→</kbd> Navigate months • <kbd>Enter</kbd> Quick add task • <kbd>Esc</kbd> Close modal
+            </KeyboardHint>
+          </EmptyState>
+        )}
         <StyledCalendar
           onChange={(newValue) => {
             if (newValue instanceof Date) {
