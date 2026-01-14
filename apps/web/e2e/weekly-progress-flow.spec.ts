@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 // Test configuration
 const API_BASE_URL = 'http://localhost:3000';
-const APP_BASE_URL = 'http://localhost:5173';
+// const APP_BASE_URL = 'http://localhost:5173';
 
 // Test user credentials
 const TEST_TIMESTAMP = Date.now();

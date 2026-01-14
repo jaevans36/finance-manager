@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { authService } from '../services/authService';
-import { getErrorMessage } from '../utils/errorHelpers';
+import { authService } from '../../services/authService';
+import { getErrorMessage } from '../../utils/errorHelpers';
 
 const ResetPasswordPage = () => {
   const { token } = useParams<{ token: string }>();

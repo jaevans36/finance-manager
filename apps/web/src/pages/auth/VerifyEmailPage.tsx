@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { authService } from '../services/authService';
-import { getErrorMessage } from '../utils/errorHelpers';
+import { authService } from '../../services/authService';
+import { getErrorMessage } from '../../utils/errorHelpers';
 
 const VerifyEmailPage = () => {
   const { token } = useParams<{ token: string }>();

@@ -11,8 +11,6 @@ import {
   Button, 
   Alert,
   Heading2,
-  Flex,
-  TextSecondary
 } from '../ui';
 import styled from 'styled-components';
 

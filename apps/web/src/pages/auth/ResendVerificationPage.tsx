@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { authService } from '../services/authService';
-import { getErrorMessage } from '../utils/errorHelpers';
+import { authService } from '../../services/authService';
+import { getErrorMessage } from '../../utils/errorHelpers';
 
-const ForgotPasswordPage = () => {
+const ResendVerificationPage = () => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -15,10 +15,10 @@ const ForgotPasswordPage = () => {
     setIsSubmitting(true);
 
     try {
-      await authService.requestPasswordReset(email);
+      await authService.resendVerificationEmail(email);
       setSuccess(true);
     } catch (err: unknown) {
-      setError(getErrorMessage(err, 'Failed to send reset email'));
+      setError(getErrorMessage(err, 'Failed to resend verification email'));
     } finally {
       setIsSubmitting(false);
     }
@@ -33,15 +33,14 @@ const ForgotPasswordPage = () => {
               Check your email
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
-              We&apos;ve sent password reset instructions to <strong>{email}</strong>
+              We&apos;ve sent a new verification email to <strong>{email}</strong>
             </p>
           </div>
           <div className="rounded-md bg-green-50 p-4">
             <div className="flex">
               <div className="ml-3">
                 <p className="text-sm font-medium text-green-800">
-                  If an account exists with this email, you will receive a password reset link shortly.
-                  The link will expire in 1 hour.
+                  Please check your inbox and click the verification link. The link will expire in 24 hours.
                 </p>
               </div>
             </div>
@@ -64,10 +63,10 @@ const ForgotPasswordPage = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Reset your password
+            Resend Verification Email
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Enter your email address and we&apos;ll send you a link to reset your password.
+            Enter your email address and we&apos;ll send you a new verification link.
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -106,7 +105,7 @@ const ForgotPasswordPage = () => {
               disabled={isSubmitting}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Sending...' : 'Send reset link'}
+              {isSubmitting ? 'Sending...' : 'Resend verification email'}
             </button>
           </div>
 
@@ -124,4 +123,4 @@ const ForgotPasswordPage = () => {
   );
 };
 
-export default ForgotPasswordPage;
+export default ResendVerificationPage;

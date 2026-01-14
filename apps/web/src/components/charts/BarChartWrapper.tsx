@@ -59,7 +59,7 @@ export const BarChartWrapper: React.FC<BarChartWrapperProps> = ({
             cursor={{ fill: chartColors.tooltipCursor }}
           />
           <Legend wrapperStyle={{ paddingTop: '10px' }} />
-          {dataKeys.map((item, index) => (
+          {dataKeys.map((item) => (
             <Bar 
               key={item.key}
               dataKey={item.key} 

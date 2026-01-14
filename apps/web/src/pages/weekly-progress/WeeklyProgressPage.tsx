@@ -2,38 +2,40 @@ import { useEffect, useState, useCallback } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Award } from 'lucide-react';
-import { statisticsService } from '../services/statisticsService';
-import { taskService, type Task } from '../services/taskService';
-import { taskGroupService } from '../services/taskGroupService';
-import { useToast } from '../contexts/ToastContext';
-import type { WeeklyStatistics, UrgentTask } from '../types/statistics';
-import type { TaskGroup } from '../types/taskGroup';
-import { BarChartWrapper } from '../components/charts/BarChartWrapper';
-import { PieChartWrapper } from '../components/charts/PieChartWrapper';
-import { chartColors } from '../components/charts/chartTheme';
+import { statisticsService } from '../../services/statisticsService';
+import { taskService, type Task } from '../../services/taskService';
+import { taskGroupService } from '../../services/taskGroupService';
+import { useToast } from '../../contexts/ToastContext';
+import type { WeeklyStatistics, UrgentTask } from '../../types/statistics';
+import type { TaskGroup } from '../../types/taskGroup';
+import { BarChartWrapper } from '../../components/charts/BarChartWrapper';
+import { PieChartWrapper } from '../../components/charts/PieChartWrapper';
+import { chartColors } from '../../components/charts/chartTheme';
 import { 
-  Card, 
-  Button, 
-  Text, 
   ContentContainer,
   IconButton,
-  SmallBadge,
   ResponsiveGrid,
   TwoColumnGrid,
   ResponsiveDailyGrid,
   InputField,
   Select,
-  ToggleGroup,
-  ToggleButton,
-  ScrollableContainer,
   SmallButton,
   Heading1,
   Heading3,
+  Text,
+  TextSmall,
   TextSecondary,
-  TextSmall
-} from '../components/ui';
-
-// Note: PageContainer is now imported from '../components/ui' - no need to redefine
+  Button,
+  ToggleGroup,
+  ToggleButton,
+  SmallBadge,
+  ScrollableContainer,
+  Card
+} from '../../components/ui';
+import {
+  ChartCard,
+  ErrorDisplay,
+} from './components';
 
 // Helper function to remove day suffix from task titles (e.g., "Task - Monday" -> "Task")
 const removeDayPrefix = (title: string): string => {
@@ -44,6 +46,15 @@ const removeDayPrefix = (title: string): string => {
     }
   }
   return title;
+};
+
+// Helper function to get border color for priority cards
+const getPriorityColor = (priority: string): string => {
+  switch (priority) {
+    case 'Critical': return chartColors.critical;
+    case 'High': return chartColors.high;
+    default: return chartColors.medium;
+  }
 };
 
 const Header = styled.div`
@@ -68,14 +79,138 @@ const WeekNavigation = styled.div`
   }
 `;
 
+const WeekDisplay = styled(Text)`
+  font-weight: 500;
+`;
+
 const DateRangeSelector = styled.div`
   display: flex;
   gap: 10px;
   align-items: center;
 `;
 
-const WeekDisplay = styled(Text)`
+const LoadingSkeleton = styled.div`
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: 8px;
+  padding: 20px;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const DailyBreakdownSection = styled.div`
+  margin-top: 30px;
+`;
+
+const InsightsSection = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+  margin-bottom: 30px;
+`;
+
+const UrgentSection = styled.div`
+  margin-top: 30px;
+`;
+
+const FilterSection = styled.div`
+  margin-bottom: 20px;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+`;
+
+const FilterLabel = styled(Text)`
   font-weight: 500;
+`;
+
+const GoalAndInsightGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 25px;
+
+  @media (max-width: 968px) {
+    grid-template-columns: 1fr;
+  }
+
+  > * {
+    min-height: 180px;
+  }
+`;
+
+const GoalSection = styled.div`
+  margin-bottom: 25px;
+  padding: 20px;
+  background: ${({ theme }) => theme.colors.cardBackground};
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  height: 100%;
+`;
+
+const GoalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+`;
+
+const GoalProgressBar = styled.div`
+  width: 100%;
+  height: 24px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+`;
+
+const GoalProgressFill = styled.div<{ $percentage: number; $achieved: boolean }>`
+  height: 100%;
+  background: ${({ $achieved, theme }) => 
+    $achieved ? `linear-gradient(90deg, ${chartColors.primary} 0%, #45a049 100%)` : 
+    `linear-gradient(90deg, ${theme.colors.primary} 0%, ${theme.colors.primaryHover} 100%)`
+  };
+  transition: width 0.5s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  width: ${({ $percentage }) => Math.min($percentage, 100)}%;
+`;
+
+const GoalStats = styled(TextSmall)`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+`;
+
+const InsightIcon = styled.div`
+  margin-bottom: 12px;
+  color: ${({ theme }) => theme.colors.primary};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 40px;
+    height: 40px;
+  }
+`;
+
+const InsightValue = styled.div`
+  font-size: 24px;
+  font-weight: bold;
+  color: ${({ theme }) => theme.colors.primary};
+  margin-bottom: 8px;
+`;
+
+const InsightLabel = styled(TextSecondary)`
+  display: block;
 `;
 
 const StatCard = styled(Card)`
@@ -144,34 +279,6 @@ const TrendIndicator = styled(Text)<{ $trend: 'up' | 'down' | 'neutral' }>`
   };
 `;
 
-const ChartCard = styled(Card)`
-  padding: 20px;
-  transition: all 0.3s ease;
-  animation: slideInUp 0.6s ease-out;
-
-  @keyframes slideInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-`;
-
-const ChartHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-`;
-
-const UrgentSection = styled.div`
-  margin-top: 30px;
-`;
-
 const UrgentList = styled.div`
   display: flex;
   flex-direction: column;
@@ -201,74 +308,6 @@ const UrgentTaskTitle = styled(Text)`
 const DaysRemaining = styled(Text)<{ $urgent: boolean }>`
   color: ${({ $urgent }) => $urgent ? chartColors.urgent : chartColors.textLight};
   font-weight: 500;
-`;
-
-const InsightLabel = styled(TextSecondary)`
-  display: block;
-`;
-
-const FilterSection = styled.div`
-  margin-bottom: 20px;
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  flex-wrap: wrap;
-`;
-
-const FilterLabel = styled(Text)`
-  font-weight: 500;
-`;
-
-const LoadingSkeleton = styled.div`
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: 8px;
-  padding: 20px;
-  min-height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const DailyBreakdownSection = styled.div`
-  margin-top: 30px;
-`;
-
-const InsightsSection = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
-  margin-bottom: 30px;
-`;
-
-const InsightCard = styled(Card)`
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  justify-content: center;
-  height: 100%;
-`;
-
-const InsightIcon = styled.div`
-  margin-bottom: 12px;
-  color: ${({ theme }) => theme.colors.primary};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  svg {
-    width: 40px;
-    height: 40px;
-  }
-`;
-
-const InsightValue = styled.div`
-  font-size: 24px;
-  font-weight: bold;
-  color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: 8px;
 `;
 
 const DayCard = styled(Card)`
@@ -433,122 +472,6 @@ const EmptyDay = styled(TextSmall)`
   padding: 20px;
 `;
 
-const GoalSection = styled.div`
-  margin-bottom: 25px;
-  padding: 20px;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: 8px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  height: 100%;
-`;
-
-const GoalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-`;
-
-const GoalProgressBar = styled.div`
-  width: 100%;
-  height: 24px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 12px;
-  overflow: hidden;
-  position: relative;
-`;
-
-const GoalProgressFill = styled.div<{ $percentage: number; $achieved: boolean }>`
-  height: 100%;
-  background: ${({ $achieved, theme }) => 
-    $achieved ? `linear-gradient(90deg, ${chartColors.primary} 0%, #45a049 100%)` : 
-    `linear-gradient(90deg, ${theme.colors.primary} 0%, ${theme.colors.primaryHover} 100%)`
-  };
-  transition: width 0.5s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  width: ${({ $percentage }) => Math.min($percentage, 100)}%;
-`;
-
-const GoalStats = styled(TextSmall)`
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-`;
-
-const GoalAndInsightGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin-bottom: 25px;
-
-  @media (max-width: 968px) {
-    grid-template-columns: 1fr;
-  }
-
-  > * {
-    min-height: 180px;
-  }
-`;
-
-const ErrorContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  text-align: center;
-  padding: 40px 20px;
-`;
-
-const ErrorIcon = styled.div`
-  font-size: 64px;
-  margin-bottom: 20px;
-`;
-
-const ErrorTitle = styled(Heading3)`
-  margin: 0 0 12px 0;
-`;
-
-const ErrorMessage = styled(TextSecondary)`
-  display: block;
-  margin: 0 0 24px 0;
-  max-width: 500px;
-`;
-
-const RetryButton = styled.button`
-  padding: 12px 24px;
-  background: ${({ theme }) => theme.colors.primary};
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.primaryHover};
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-`;
-
-// Helper function to get border color for priority cards
-const getPriorityColor = (priority: string): string => {
-  switch (priority) {
-    case 'Critical': return chartColors.critical;
-    case 'High': return chartColors.high;
-    default: return chartColors.medium;
-  }
-};
 
 const WeeklyProgressPage: React.FC = () => {
   const [stats, setStats] = useState<WeeklyStatistics | null>(null);
@@ -784,14 +707,11 @@ const WeeklyProgressPage: React.FC = () => {
           </HeaderTop>
           <Heading1 style={{ margin: 0 }}>Weekly Progress Dashboard</Heading1>
         </Header>
-        <ErrorContainer>
-          <ErrorIcon>⚠️</ErrorIcon>
-          <ErrorTitle>Failed to Load Statistics</ErrorTitle>
-          <ErrorMessage>{error}</ErrorMessage>
-          <RetryButton onClick={() => loadData()}>
-            Retry
-          </RetryButton>
-        </ErrorContainer>
+        <ErrorDisplay 
+          message={error}
+          onRetry={() => loadData()}
+          title="Failed to Load Statistics"
+        />
       </ContentContainer>
     );
   }
@@ -1026,7 +946,7 @@ const WeeklyProgressPage: React.FC = () => {
         </GoalSection>
 
         {bestDay && bestDay.count > 0 && (
-          <InsightCard>
+          <Card style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', justifyContent: 'center', height: '100%' }}>
             <InsightIcon>
               <Award />
             </InsightIcon>
@@ -1035,7 +955,7 @@ const WeeklyProgressPage: React.FC = () => {
             <Text style={{ fontSize: '12px', marginTop: '8px', color: 'inherit' }}>
               {bestDay.count} {bestDay.count === 1 ? 'task' : 'tasks'} completed
             </Text>
-          </InsightCard>
+          </Card>
         )}
       </GoalAndInsightGrid>
 
@@ -1079,13 +999,14 @@ const WeeklyProgressPage: React.FC = () => {
       </ResponsiveGrid>
 
       <TwoColumnGrid gap={20} style={{ marginBottom: '30px' }}>
-        <ChartCard>
-          <ChartHeader>
-            <Heading3 style={{ margin: 0 }}>Daily Task Overview</Heading3>
+        <ChartCard 
+          title="Daily Task Overview"
+          headerAction={
             <SmallButton onClick={() => exportChartAsImage('daily-chart', 'daily-task-overview')}>
               📥 Export
             </SmallButton>
-          </ChartHeader>
+          }
+        >
           <div id="daily-chart">
             <BarChartWrapper 
               data={dailyChartData}
@@ -1099,13 +1020,14 @@ const WeeklyProgressPage: React.FC = () => {
             />
           </div>
         </ChartCard>
-        <ChartCard>
-          <ChartHeader>
-            <Heading3 style={{ margin: 0 }}>Weekly Completion</Heading3>
+        <ChartCard 
+          title="Weekly Completion"
+          headerAction={
             <SmallButton onClick={() => exportChartAsImage('weekly-pie-chart', 'weekly-completion')}>
               📥 Export
             </SmallButton>
-          </ChartHeader>
+          }
+        >
           <div id="weekly-pie-chart">
             <PieChartWrapper 
               data={completionPieData} 
@@ -1120,7 +1042,7 @@ const WeeklyProgressPage: React.FC = () => {
       {/* Productivity Insights */}
       <InsightsSection>
         {streak > 0 && (
-          <InsightCard>
+          <Card style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', justifyContent: 'center', height: '100%' }}>
             <InsightIcon>🔥</InsightIcon>
             <InsightValue>{streak}</InsightValue>
             <InsightLabel>
@@ -1129,18 +1051,18 @@ const WeeklyProgressPage: React.FC = () => {
             <Text style={{ fontSize: '12px', marginTop: '8px', color: 'inherit' }}>
               Consecutive days with completed tasks
             </Text>
-          </InsightCard>
+          </Card>
         )}
 
         {stats.completionPercentage >= 80 && (
-          <InsightCard>
+          <Card style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', justifyContent: 'center', height: '100%' }}>
             <InsightIcon>🏆</InsightIcon>
             <InsightValue>Excellent!</InsightValue>
             <InsightLabel>High Achiever</InsightLabel>
             <Text style={{ fontSize: '12px', marginTop: '8px', color: 'inherit' }}>
               {stats.completionPercentage.toFixed(0)}% completion rate this week
             </Text>
-          </InsightCard>
+          </Card>
         )}
       </InsightsSection>
 

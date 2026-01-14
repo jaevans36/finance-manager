@@ -1,6 +1,6 @@
 
-import { RegisterForm } from '../components/auth/RegisterForm';
-import { CenteredContainer, FormCard } from '../components/ui';
+import { RegisterForm } from '../../components/auth/RegisterForm';
+import { CenteredContainer, FormCard } from '../../components/ui';
 
 const RegisterPage = () => {
   return (

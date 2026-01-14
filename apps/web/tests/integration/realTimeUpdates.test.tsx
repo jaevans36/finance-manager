@@ -64,17 +64,6 @@ describe('Real-Time Updates (T244)', () => {
     };
   };
 
-  const mockUrgentTasks: UrgentTask[] = [
-    {
-      id: '1',
-      title: 'Urgent Task',
-      priority: 'High',
-      dueDate: new Date().toISOString(),
-      daysUntilDue: 1,
-      groupId: '1',
-    },
-  ];
-
   beforeEach(() => {
     jest.clearAllMocks();
     queryCache.clear();

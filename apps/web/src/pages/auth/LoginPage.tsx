@@ -1,6 +1,6 @@
 
-import { LoginForm } from '../components/auth/LoginForm';
-import { CenteredContainer, FormCard } from '../components/ui';
+import { LoginForm } from '../../components/auth/LoginForm';
+import { CenteredContainer, FormCard } from '../../components/ui';
 
 const LoginPage = () => {
   return (

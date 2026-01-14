@@ -2297,3 +2297,1025 @@ apps/web/src/
 - Week 1: Document existing patterns + create design tokens + write guidelines
 - Week 2: Create examples + setup tooling (Storybook, linting) + team review
 
+---
+
+## Phase 5 - Collaboration & Advanced Features
+
+### User Story 5.1 - Task Relationships & Linking (Priority: P2)
+
+Users need the ability to link related tasks and events together with clear relationship types, enabling them to understand dependencies, track related work, and navigate complex projects with interconnected items.
+
+**Why this priority**: As users manage more complex workflows, they need to express relationships between tasks (e.g., "Task B blocks Task A", "Event X relates to Task Y"). This builds on the existing task and event systems to add semantic connections.
+
+**Independent Test**: Can be fully tested by creating multiple tasks and events, establishing various link types between them, viewing linked items from each item's detail view, and verifying that links are bidirectional and correctly typed.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user viewing a task or event, **When** they choose to add a link, **Then** they can search for other tasks/events and select a relationship type (blocks, blocked-by, relates-to, duplicates, parent-of, child-of)
+2. **Given** a user creates a link between items, **When** the link is saved, **Then** both items display the relationship with appropriate visual indicators and the linked item's key details
+3. **Given** a task with blocking dependencies, **When** the user views the task, **Then** they see a clear warning if blocked tasks are incomplete and can navigate directly to blocking tasks
+4. **Given** linked items, **When** a user clicks on a linked item reference, **Then** they navigate to that item's detail view with context about the originating link
+5. **Given** a user deletes a task or event, **When** the deletion is confirmed, **Then** all links involving that item are automatically removed and linked items are updated
+6. **Given** tasks and events linked together, **When** a user views the link section, **Then** items are clearly distinguished with icons/labels showing which are tasks vs events
+7. **Given** a user has edit permissions, **When** they view a link, **Then** they can modify the relationship type or remove the link entirely
+
+**User-Friendly ID System**:
+- Each task/event receives a readable ID (e.g., `TASK-1234`, `EVENT-5678`)
+- IDs are sequential within each type and never reused
+- IDs are displayed prominently in UI (task card header, breadcrumbs, URL)
+- IDs can be used in quick search and linking dialogs
+- IDs are included in exports and integrations
+
+**Link Type Definitions**:
+- **blocks/blocked-by**: Task A must complete before Task B can start
+- **relates-to**: General association without dependency
+- **duplicates**: Items represent the same work (suggest merging)
+- **parent-of/child-of**: Hierarchical subtask relationship
+- **event-task**: Event is scheduled time for task completion
+
+**Visual Indicators**:
+- Warning badge on tasks blocked by incomplete dependencies
+- Relationship icon next to each linked item (chain, hierarchy, calendar)
+- Count of linked items on task cards
+- Network graph view for complex link structures (optional advanced feature)
+
+**Additional Suggested Functionality**:
+- **Link validation**: Prevent circular dependencies (A blocks B blocks A)
+- **Bulk linking**: Select multiple items and link them all to a parent
+- **Link templates**: Quick-create common link patterns (sprint planning, project hierarchy)
+- **Link notifications**: Notify when a blocking task is completed
+- **Link history**: Audit trail of link creation/modification/deletion
+- **Smart suggestions**: AI/heuristic suggestions for potential links based on similar titles, dates, or tags
+
+**Technical Considerations**:
+- Database schema: `TaskLinks` table with `sourceId`, `targetId`, `linkType`, `createdAt`, `createdBy`
+- Bidirectional queries: Efficient lookup of all links for a given item
+- Cascade deletion: Automatic cleanup when items are deleted
+- Link integrity: Ensure both endpoints exist before creating link
+- Performance: Index on source/target IDs for fast relationship queries
+
+**Estimated Effort**: 2-3 weeks
+- Week 1: ID system + database schema + backend API endpoints
+- Week 2: Frontend link creation UI + link display components
+- Week 3: Validation + notifications + testing + polish
+
+---
+
+### User Story 5.2 - Comments & Annotations (Priority: P2)
+
+Users need the ability to add timestamped comments to tasks and events, enabling communication, context capture, decision documentation, and progress notes without cluttering the main task description.
+
+**Why this priority**: As tasks evolve, users need to document updates, decisions, questions, and discussions. Comments provide a chronological record separate from the task description, supporting both individual note-taking and future team collaboration.
+
+**Independent Test**: Can be fully tested by creating tasks/events, adding multiple comments with different importance levels, editing/deleting comments, and verifying proper timestamp display and sorting.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user viewing a task or event, **When** they open the comments section, **Then** they see all existing comments in chronological order with author, timestamp, and content
+2. **Given** a user adding a comment, **When** they type their message and submit, **Then** the comment is immediately visible with current timestamp and user information
+3. **Given** a user creating a comment, **When** they mark it as important, **Then** the comment is visually distinguished (highlighted background, flag icon) and appears in important comment filters
+4. **Given** a user viewing their own comment, **When** they choose to edit it, **Then** they can modify the content and the comment shows an "edited" indicator with edit timestamp
+5. **Given** a user viewing their own comment, **When** they choose to delete it, **Then** they receive confirmation and the comment is permanently removed
+6. **Given** a task with multiple comments, **When** a user filters by "important only", **Then** only flagged comments are displayed
+7. **Given** a task with many comments, **When** a user views the task card, **Then** they see a comment count badge and can quickly jump to the comments section
+8. **Given** a comment with a long timestamp, **When** displayed in the UI, **Then** relative timestamps are shown ("2 hours ago", "yesterday") with full date on hover
+
+**Comment Features**:
+- **Rich text support**: Bold, italic, bullet lists, basic Markdown formatting
+- **Importance flag**: Visual indicator + filter for critical comments
+- **Edit history**: Track when comments were modified (optional)
+- **Mention support**: @username to reference other users (future team feature)
+- **Attachment support**: Link to external resources or upload small files (future enhancement)
+- **Comment pinning**: Pin important comments to top of list (optional)
+- **Comment reactions**: Simple emoji reactions (optional, for team environments)
+
+**Display Specifications**:
+- **Timestamp format**: "2 hours ago" < 24h, "Yesterday at 3:45 PM" < 7 days, "Jan 15, 2026 at 3:45 PM" beyond
+- **Important comment styling**: Light yellow/amber background, flag icon, bold border
+- **Author display**: Username or "You" for current user's comments
+- **Edit indicator**: Small "edited" text with edit timestamp in tooltip
+- **Comment actions**: Edit/Delete icons only visible on hover for own comments
+- **Loading states**: Skeleton comments while fetching, optimistic UI for new comments
+
+**Additional Suggested Functionality**:
+- **Comment search**: Full-text search across all comments within a task/event
+- **Comment export**: Include comments in task exports (PDF, CSV)
+- **Comment notifications**: Notify when someone adds a comment (team collaboration)
+- **Comment templates**: Quick-insert common update patterns ("Status update", "Blocker identified")
+- **Comment threading**: Replies to specific comments for discussions (team feature)
+- **Comment drafts**: Auto-save comment input to prevent data loss
+
+**Technical Considerations**:
+- Database schema: `Comments` table with `taskId`, `eventId`, `userId`, `content`, `isImportant`, `createdAt`, `updatedAt`
+- Soft delete: Mark deleted comments as hidden rather than removing from DB (audit trail)
+- Pagination: Load comments in batches for tasks with many comments (20 per page)
+- Real-time updates: WebSocket support for live comment updates (team collaboration)
+- Content sanitization: XSS protection for rich text content
+- Performance: Index on taskId/eventId for efficient comment queries
+
+**Estimated Effort**: 2-3 weeks
+- Week 1: Database schema + backend API (CRUD endpoints) + comment model
+- Week 2: Frontend comment UI + rich text editor + importance flagging
+- Week 3: Edit/delete functionality + filtering + testing + polish
+
+---
+
+### User Story 5.3 - Production Deployment & Security Audit (Priority: P1)
+
+The application needs to be production-ready with comprehensive security hardening, deployment infrastructure, and accessibility over local network and internet, enabling real-world usage in a secure and reliable manner.
+
+**Why this priority**: Before users can rely on the application for daily use, it must be properly deployed with security best practices, reliable infrastructure, and appropriate access controls. This is essential for data protection and user trust.
+
+**Independent Test**: Can be fully tested by deploying to production environment, accessing over local network and internet, running security scans, verifying SSL/TLS certificates, testing backup/restore procedures, and confirming all security controls are active.
+
+**Acceptance Scenarios**:
+
+1. **Given** the application is deployed, **When** accessed via HTTPS, **Then** SSL/TLS certificates are valid, TLS 1.2+ is enforced, and browser security indicators show secure connection
+2. **Given** the application is running in production, **When** accessed from local network, **Then** internal users can connect via private IP/hostname with proper authentication
+3. **Given** the application is internet-accessible, **When** external requests arrive, **Then** rate limiting, CORS policies, and firewall rules protect against abuse
+4. **Given** user data is stored, **When** automated backups run, **Then** encrypted backups are created daily and stored in secure location with 30-day retention
+5. **Given** a security audit is performed, **When** scanning tools run, **Then** no critical or high-severity vulnerabilities are detected in dependencies, configuration, or custom code
+6. **Given** an administrator views monitoring dashboard, **When** checking system health, **Then** metrics show uptime, response times, error rates, and resource usage
+7. **Given** database credentials are needed, **When** configuration is checked, **Then** secrets are stored in environment variables/vault, never in code or config files
+
+**Security Audit Checklist**:
+- ✅ **Authentication**: Strong password policy, JWT token security, session management
+- ✅ **Authorization**: Proper access controls, user data isolation, admin role separation
+- ✅ **Input Validation**: All user inputs sanitized, SQL injection prevention, XSS protection
+- ✅ **Data Protection**: Passwords hashed with bcrypt, sensitive data encrypted at rest, HTTPS only
+- ✅ **API Security**: Rate limiting, CORS configured properly, API authentication required
+- ✅ **Dependencies**: All npm/NuGet packages up to date, no known vulnerabilities (npm audit, Snyk)
+- ✅ **Headers**: Security headers configured (CSP, X-Frame-Options, HSTS, X-Content-Type-Options)
+- ✅ **Logging**: Security events logged (login attempts, auth failures), PII not logged
+- ✅ **Infrastructure**: Firewall configured, only necessary ports open, services run as non-root
+- ✅ **Backups**: Automated encrypted backups, tested restore procedures, offsite storage
+
+**Deployment Infrastructure Requirements**:
+
+**Local Network Access**:
+- Deploy on home server/NAS with static local IP
+- Configure reverse proxy (Nginx/Traefik) for clean URLs
+- mDNS/DNS setup for friendly hostname (e.g., `tasks.local`)
+- SSL certificate from Let's Encrypt or self-signed for local use
+- Access control via firewall (only home network IPs)
+
+**Internet Access**:
+- Domain name registered and DNS configured
+- Reverse proxy with SSL termination (Let's Encrypt via certbot)
+- DDoS protection via Cloudflare (optional but recommended)
+- Port forwarding configured on home router (if hosting at home)
+- Alternative: Cloud hosting (DigitalOcean, AWS Lightsail, Hetzner) for reliability
+- VPN access option for secure remote access without exposing application publicly
+
+**Container Deployment (Recommended)**:
+```yaml
+# docker-compose.yml for production
+version: '3.8'
+services:
+  web:
+    image: finance-manager-web:latest
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=https://api.yourdomain.com
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./ssl:/etc/ssl/certs:ro
+    networks:
+      - app-network
+    
+  api:
+    image: finance-manager-api:latest
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING}
+      - JwtSettings__Secret=${JWT_SECRET}
+    ports:
+      - "5000:5000"
+    networks:
+      - app-network
+    depends_on:
+      - db
+    
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=financemanager
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./backups:/backups
+    networks:
+      - app-network
+    
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=financemanager
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ./backups:/backups
+    command: |
+      sh -c "while true; do
+        pg_dump -h db -U $$POSTGRES_USER $$POSTGRES_DB | gzip > /backups/backup_$$(date +%Y%m%d_%H%M%S).sql.gz
+        find /backups -name 'backup_*.sql.gz' -mtime +30 -delete
+        sleep 86400
+      done"
+    networks:
+      - app-network
+    depends_on:
+      - db
+
+volumes:
+  postgres-data:
+
+networks:
+  app-network:
+    driver: bridge
+```
+
+**Monitoring & Observability**:
+- Application logging: Structured logs with Serilog (API) and Winston (frontend)
+- Health check endpoints: `/health` for uptime monitoring
+- Performance monitoring: Response time tracking, slow query detection
+- Error tracking: Sentry or similar for exception capture
+- Uptime monitoring: External service (UptimeRobot, Pingdom) to alert on downtime
+- Resource monitoring: CPU, memory, disk usage alerts
+
+**Backup & Disaster Recovery**:
+- **Automated daily backups**: Database exported to encrypted file
+- **Offsite backup**: Copy to cloud storage (Backblaze B2, AWS S3) or external drive
+- **Backup testing**: Monthly restore test to verify backup integrity
+- **Retention policy**: 30 daily backups, 12 weekly backups, 6 monthly backups
+- **Recovery time objective**: < 1 hour to restore from backup
+- **Database migration rollback**: Keep previous database state before migrations
+
+**Performance Optimization**:
+- Database connection pooling configured
+- Static asset CDN or caching headers
+- Database indexes on frequent queries
+- API response caching for read-heavy endpoints
+- Image optimization and lazy loading
+- Bundle size optimization (code splitting, tree shaking)
+
+**Documentation Requirements**:
+- Deployment runbook with step-by-step instructions
+- Security checklist with validation steps
+- Backup/restore procedures documentation
+- Incident response playbook
+- System architecture diagram
+- Environment variable reference
+
+---
+
+### CI/CD Pipeline & Automated Deployment
+
+**GitHub Actions Workflow Structure**:
+
+```yaml
+# .github/workflows/ci-cd.yml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  release:
+    types: [published]
+
+env:
+  NODE_VERSION: '20.x'
+  DOTNET_VERSION: '8.0.x'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # --- VALIDATION STAGE ---
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+      - name: Install dependencies
+        run: |
+          npm install -g pnpm
+          pnpm install
+          dotnet restore
+      
+      - name: Lint frontend
+        run: pnpm --filter @finance-manager/web lint
+      
+      - name: TypeScript type check
+        run: pnpm --filter @finance-manager/web typecheck
+      
+      - name: Lint backend
+        run: dotnet format --verify-no-changes
+  
+  # --- SECURITY STAGE ---
+  security-scan:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run npm audit
+        run: |
+          npm install -g pnpm
+          pnpm audit --audit-level=high
+        continue-on-error: true
+      
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: test
+          args: --all-projects --severity-threshold=high
+        continue-on-error: true
+      
+      - name: .NET dependency check
+        run: |
+          dotnet list package --vulnerable --include-transitive
+          dotnet list package --outdated
+  
+  # --- TEST STAGE ---
+  test-backend:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: financemanager_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test123
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+      - name: Restore dependencies
+        run: dotnet restore
+      
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+      
+      - name: Run unit tests
+        run: dotnet test apps/finance-api-tests/FinanceApi.UnitTests --no-build --configuration Release --logger "trx;LogFileName=unit-tests.trx"
+      
+      - name: Run integration tests
+        run: dotnet test apps/finance-api-tests/FinanceApi.IntegrationTests --no-build --configuration Release --logger "trx;LogFileName=integration-tests.trx"
+        env:
+          ConnectionStrings__DefaultConnection: "Host=localhost;Database=financemanager_test;Username=test;Password=test123"
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-results
+          path: '**/*.trx'
+      
+      - name: Publish code coverage
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/coverage.cobertura.xml
+          flags: backend
+  
+  test-frontend:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      
+      - name: Install dependencies
+        run: |
+          npm install -g pnpm
+          pnpm install
+      
+      - name: Run unit tests
+        run: pnpm --filter @finance-manager/web test
+      
+      - name: Run integration tests
+        run: pnpm --filter @finance-manager/web test:integration
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-test-results
+          path: apps/web/coverage/
+      
+      - name: Publish code coverage
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./apps/web/coverage/coverage-final.json
+          flags: frontend
+  
+  test-e2e:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: financemanager_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test123
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+      - name: Install dependencies
+        run: |
+          npm install -g pnpm
+          pnpm install
+          dotnet restore
+      
+      - name: Install Playwright browsers
+        run: pnpm --filter @finance-manager/web exec playwright install --with-deps
+      
+      - name: Build backend
+        run: dotnet build --configuration Release
+      
+      - name: Build frontend
+        run: pnpm --filter @finance-manager/web build
+      
+      - name: Start application
+        run: |
+          dotnet run --project apps/finance-api --no-build --configuration Release &
+          pnpm --filter @finance-manager/web preview &
+        env:
+          ConnectionStrings__DefaultConnection: "Host=localhost;Database=financemanager_test;Username=test;Password=test123"
+          ASPNETCORE_ENVIRONMENT: Test
+      
+      - name: Wait for services
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:5000/health; do sleep 2; done'
+          timeout 60 bash -c 'until curl -f http://localhost:4173; do sleep 2; done'
+      
+      - name: Run E2E tests
+        run: pnpm --filter @finance-manager/web test:e2e
+        env:
+          VITE_API_URL: http://localhost:5000
+      
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 30
+  
+  # --- BUILD STAGE ---
+  build-and-push:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    needs: [code-quality, security-scan, test-backend, test-frontend, test-e2e]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata (tags, labels)
+        id: meta-api
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-api
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+      
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/finance-api/Dockerfile
+          push: true
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Extract metadata for web
+        id: meta-web
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-web
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+      
+      - name: Build and push Web image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/web/Dockerfile
+          push: true
+          tags: ${{ steps.meta-web.outputs.tags }}
+          labels: ${{ steps.meta-web.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+  
+  # --- DEPLOY STAGE ---
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build-and-push]
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url: https://staging.yourdomain.com
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to staging server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            cd /opt/finance-manager
+            docker compose -f docker-compose.staging.yml pull
+            docker compose -f docker-compose.staging.yml up -d
+            docker system prune -f
+      
+      - name: Run database migrations
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            docker exec finance-manager-api dotnet ef database update
+      
+      - name: Health check
+        run: |
+          sleep 30
+          curl -f https://staging.yourdomain.com/health || exit 1
+  
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build-and-push]
+    if: github.event_name == 'release'
+    environment:
+      name: production
+      url: https://yourdomain.com
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Create database backup
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd /opt/finance-manager
+            docker exec finance-manager-db pg_dump -U $DB_USER financemanager | gzip > /backups/pre-deploy-$(date +%Y%m%d_%H%M%S).sql.gz
+      
+      - name: Deploy to production server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd /opt/finance-manager
+            docker compose pull
+            docker compose up -d
+            docker system prune -f
+      
+      - name: Run database migrations
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            docker exec finance-manager-api dotnet ef database update
+      
+      - name: Health check
+        run: |
+          sleep 30
+          curl -f https://yourdomain.com/health || exit 1
+      
+      - name: Notify deployment
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          text: 'Production deployment ${{ job.status }}'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+```
+
+**Required GitHub Secrets**:
+- `SNYK_TOKEN`: Security scanning authentication
+- `CODECOV_TOKEN`: Code coverage reporting
+- `STAGING_HOST`: Staging server IP/hostname
+- `STAGING_USER`: SSH username for staging
+- `STAGING_SSH_KEY`: SSH private key for staging
+- `PROD_HOST`: Production server IP/hostname
+- `PROD_USER`: SSH username for production
+- `PROD_SSH_KEY`: SSH private key for production
+- `SLACK_WEBHOOK`: Deployment notifications (optional)
+
+---
+
+### Hosting Options Analysis
+
+#### **Option 1: Self-Hosted (Home Server / NAS)**
+
+**Best for**: Personal use, full control, no recurring costs
+
+**Pros**:
+- ✅ Zero ongoing costs (after hardware investment)
+- ✅ Complete data ownership and privacy
+- ✅ No bandwidth charges for internal network use
+- ✅ Can utilize existing home server/NAS hardware
+- ✅ Learn devops skills hands-on
+
+**Cons**:
+- ❌ Requires static IP or dynamic DNS for internet access
+- ❌ Home internet upload speeds typically slower (affects remote access)
+- ❌ Responsible for hardware maintenance, power outages, cooling
+- ❌ Security burden entirely on you (firewall, updates, monitoring)
+- ❌ No SLA or guaranteed uptime
+
+**Setup Requirements**:
+- Home server/NAS with Docker support (Synology, QNAP, or custom build)
+- Static IP or dynamic DNS service (No-IP, DuckDNS, Cloudflare)
+- Port forwarding on router (80, 443, or custom ports)
+- SSL certificate (Let's Encrypt via certbot or reverse proxy)
+- Backup solution (external drive + cloud backup recommended)
+
+**Monthly Cost**: £0 (electricity ~£5-15/month depending on hardware)
+
+**Internet Access Options**:
+- Direct port forwarding (simple but exposes home IP)
+- VPN access only (WireGuard/Tailscale for secure remote access)
+- Cloudflare Tunnel (free, hides home IP, no port forwarding needed)
+- Reverse SSH tunnel to VPS (£3-5/month VPS + free home hosting)
+
+**Recommended Configuration**:
+```yaml
+# Using Cloudflare Tunnel (no port forwarding needed)
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    restart: unless-stopped
+    networks:
+      - app-network
+```
+
+---
+
+#### **Option 2: Cloud VPS (DigitalOcean, Hetzner, Linode)**
+
+**Best for**: Reliable uptime, easy scaling, professional hosting
+
+**Pros**:
+- ✅ Predictable monthly costs
+- ✅ Fast, symmetric bandwidth (100Mbps-1Gbps+)
+- ✅ Data centre reliability (99.9%+ uptime)
+- ✅ Easy to scale resources (RAM, CPU, storage)
+- ✅ Automated backups available
+- ✅ Professional support and documentation
+
+**Cons**:
+- ❌ Monthly recurring costs
+- ❌ Data transfer limits (though usually generous)
+- ❌ Less control than bare metal
+- ❌ Potential privacy concerns (data on third-party servers)
+
+**Provider Comparison**:
+
+| Provider | Specs | Price/Month | Notes |
+|----------|-------|-------------|-------|
+| **Hetzner** | 2 vCPU, 4GB RAM, 40GB SSD, 20TB traffic | €4.51 (~£3.85) | Best value, EU-based |
+| **DigitalOcean** | 2 vCPU, 4GB RAM, 80GB SSD, 4TB traffic | $24 (~£19) | Excellent docs, managed DB available |
+| **Linode** | 2 vCPU, 4GB RAM, 80GB SSD, 4TB traffic | $24 (~£19) | Good performance, Akamai network |
+| **Vultr** | 2 vCPU, 4GB RAM, 80GB SSD, 3TB traffic | $18 (~£14.50) | Many regions, competitive pricing |
+| **OVH** | 2 vCPU, 4GB RAM, 40GB SSD, Unmetered | €4.89 (~£4.15) | Similar to Hetzner, more regions |
+
+**Recommended Starter**: Hetzner CPX21 (€4.51/month) or Vultr ($12/month for 2GB plan for minimal setup)
+
+**Setup Requirements**:
+- SSH access to VPS
+- Docker + Docker Compose installed
+- Domain name pointed to VPS IP (£10-15/year)
+- SSL certificate via Let's Encrypt (free, auto-renewal)
+- Firewall configuration (UFW or cloud provider firewall)
+
+---
+
+#### **Option 3: Cloud Platform (AWS, Azure, Google Cloud)**
+
+**Best for**: Enterprise features, compliance requirements, future scaling to large user base
+
+**Pros**:
+- ✅ Comprehensive service ecosystem (managed DB, load balancers, CDN, etc.)
+- ✅ Global availability zones for redundancy
+- ✅ Advanced monitoring and analytics built-in
+- ✅ Compliance certifications (GDPR, SOC2, etc.)
+- ✅ Free tier available (limited, but useful for testing)
+
+**Cons**:
+- ❌ Expensive for small projects (can easily exceed £50-100/month)
+- ❌ Complex pricing (per resource, per hour, per GB transferred)
+- ❌ Steeper learning curve
+- ❌ Easy to overspend without careful monitoring
+- ❌ Overkill for personal/small projects
+
+**Service Options**:
+
+**AWS**:
+- EC2 t3.small (2 vCPU, 2GB RAM): ~$0.0208/hour (~£12/month)
+- RDS PostgreSQL db.t3.micro: ~$0.017/hour (~£10/month)
+- Application Load Balancer: ~£18/month
+- **Total**: ~£40-50/month minimum
+
+**Azure**:
+- B2s VM (2 vCPU, 4GB RAM): ~£24/month
+- Azure Database for PostgreSQL: ~£15/month
+- Application Gateway: ~£18/month
+- **Total**: ~£57/month minimum
+
+**Google Cloud**:
+- e2-small (2 vCPU, 2GB RAM): ~£12/month
+- Cloud SQL PostgreSQL: ~£8/month
+- Cloud Load Balancing: ~£15/month
+- **Total**: ~£35/month minimum
+
+**Recommendation**: Only choose this if you plan to scale significantly or need compliance features. Otherwise, use VPS or self-hosted.
+
+---
+
+#### **Option 4: Managed Platform-as-a-Service (Heroku, Render, Railway, Fly.io)**
+
+**Best for**: Zero devops overhead, fast deployment, prototyping
+
+**Pros**:
+- ✅ Deploy with git push (no server management)
+- ✅ Automatic SSL, scaling, health checks
+- ✅ Built-in database hosting
+- ✅ Easy rollbacks and CI/CD integration
+- ✅ Focus on code, not infrastructure
+
+**Cons**:
+- ❌ More expensive than VPS for equivalent resources
+- ❌ Less control over environment
+- ❌ Vendor lock-in (harder to migrate)
+- ❌ Cold start issues on free/cheap tiers
+- ❌ Limited to platform-supported tech stacks
+
+**Provider Comparison**:
+
+| Provider | Specs | Price/Month | Notes |
+|----------|-------|-------------|-------|
+| **Railway** | 512MB RAM, 1GB disk, 100GB transfer | $5 + usage | Great DX, generous free tier |
+| **Render** | 512MB RAM, free SSL, auto-deploy | $7/service (web+api) = $14 | Good docs, reliable |
+| **Fly.io** | 256MB RAM, 1GB disk | $0 (1 app free) then ~$1.94/GB RAM | Edge network, fast globally |
+| **Heroku** | 512MB RAM, limited hours free | $7/dyno ($14 for web+api) | Original PaaS, reliable but pricey |
+
+**Recommended**: Railway or Render for ease of use, Fly.io for global performance
+
+---
+
+#### **Option 5: Hybrid (Self-Hosted + Cloud Backup/CDN)**
+
+**Best for**: Cost optimization with reliability
+
+**Pros**:
+- ✅ Primary hosting at home (free)
+- ✅ Cloud backup/failover for reliability
+- ✅ CDN for static assets (fast, cheap)
+- ✅ Best of both worlds
+
+**Cons**:
+- ❌ More complex setup
+- ❌ Multiple systems to manage
+
+**Architecture**:
+- Primary hosting: Home server/NAS
+- Backup/failover: Small VPS (£3-5/month) that monitors and takes over if home server down
+- Database backups: Cloud storage (Backblaze B2, AWS S3 Glacier - £1-2/month for 100GB)
+- Static assets: Cloudflare CDN (free tier often sufficient)
+- Monitoring: UptimeRobot (free tier for 50 monitors)
+
+**Monthly Cost**: £5-10 (VPS + backup storage)
+
+---
+
+### Recommended Hosting Strategy by Scenario
+
+**Scenario 1: Personal Use Only (You + Family)**
+- **Choice**: Self-hosted on home server
+- **Access**: Local network + Tailscale VPN for remote access
+- **Cost**: ~£0/month (electricity only)
+- **Complexity**: Moderate (one-time setup)
+
+**Scenario 2: Personal Use + Occasional Remote Access**
+- **Choice**: Self-hosted + Cloudflare Tunnel
+- **Cost**: £0/month
+- **Complexity**: Low (Cloudflare handles SSL and DNS)
+
+**Scenario 3: Learning DevOps + Reliable Access**
+- **Choice**: Hetzner VPS (CPX21)
+- **Cost**: ~£4/month
+- **Complexity**: Moderate (SSH, Docker, Nginx)
+
+**Scenario 4: Sharing with Friends/Family**
+- **Choice**: Hetzner VPS or Render
+- **Cost**: £4-15/month depending on PaaS vs VPS
+- **Complexity**: Low (Render) or Moderate (Hetzner)
+
+**Scenario 5: Future SaaS Product**
+- **Choice**: Start with VPS, migrate to AWS/Azure when scaling
+- **Cost**: £4/month initially, scale as needed
+- **Complexity**: High (requires proper architecture planning)
+
+---
+
+### Docker Configuration for Deployment
+
+**Production Dockerfiles**:
+
+```dockerfile
+# apps/finance-api/Dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY ["Finance Manager.sln", "./"]
+COPY ["apps/finance-api/FinanceApi.csproj", "apps/finance-api/"]
+RUN dotnet restore "apps/finance-api/FinanceApi.csproj"
+COPY . .
+WORKDIR "/src/apps/finance-api"
+RUN dotnet build "FinanceApi.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "FinanceApi.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+EXPOSE 5000
+ENV ASPNETCORE_URLS=http://+:5000
+ENTRYPOINT ["dotnet", "FinanceApi.dll"]
+```
+
+```dockerfile
+# apps/web/Dockerfile
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json ./apps/web/
+RUN npm install -g pnpm && pnpm install --frozen-lockfile
+COPY . .
+WORKDIR /app/apps/web
+RUN pnpm build
+
+FROM nginx:alpine AS final
+COPY --from=build /app/apps/web/dist /usr/share/nginx/html
+COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+**nginx.conf for SPA routing**:
+```nginx
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+    
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    
+    location /api {
+        proxy_pass http://api:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+    
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+    
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_types text/plain text/css text/xml text/javascript application/json application/javascript application/xml+rss;
+}
+```
+
+**Estimated Effort**: 3-4 weeks
+- Week 1: Security audit + hardening + dependency updates + secret management
+- Week 2: Docker setup + CI/CD pipeline (GitHub Actions) + hosting decision
+- Week 3: Deployment automation + monitoring + backup automation
+- Week 4: Documentation + testing + staging environment validation
+
+---
+
+## Implementation Priority Summary
+
+### Immediate Focus (Phase 5):
+1. **Task Relationships & Linking (US 5.1)** - Builds on existing task system, adds valuable organization
+2. **Comments & Annotations (US 5.2)** - Enhances individual tasks with context and history
+3. **Production Deployment (US 5.3)** - Makes application usable in real-world scenarios
+
+### Integration Points:
+- **US 5.1** integrates with existing Task and Event entities, requires user-friendly ID system
+- **US 5.2** integrates with Task and Event detail views, adds comment model
+- **US 5.3** is infrastructure-focused, required before public/production use
+
+### Dependencies:
+- US 5.1 and US 5.2 can be developed in parallel (different data models, minimal overlap)
+- US 5.3 should be completed before exposing application to external users
+- All three build on existing Phase 1-4 features without blocking other enhancements
+

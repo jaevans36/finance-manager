@@ -9,15 +9,15 @@ import { ThemeToggle } from './components/ThemeToggle';
 import { LoadingSpinner } from './components/ui';
 
 // Lazy load pages for code splitting
-const LoginPage = lazy(() => import('./pages/LoginPage'));
-const RegisterPage = lazy(() => import('./pages/RegisterPage'));
-const DashboardPage = lazy(() => import('./pages/DashboardPage'));
-const ProfilePage = lazy(() => import('./pages/ProfilePage'));
-const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
-const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
-const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage'));
-const ResendVerificationPage = lazy(() => import('./pages/ResendVerificationPage'));
-const WeeklyProgressPage = lazy(() => import('./pages/WeeklyProgressPage'));
+const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
+const DashboardPage = lazy(() => import('./pages/dashboard/DashboardPage'));
+const ProfilePage = lazy(() => import('./pages/profile/ProfilePage'));
+const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'));
+const VerifyEmailPage = lazy(() => import('./pages/auth/VerifyEmailPage'));
+const ResendVerificationPage = lazy(() => import('./pages/auth/ResendVerificationPage'));
+const WeeklyProgressPage = lazy(() => import('./pages/weekly-progress/WeeklyProgressPage'));
 const CalendarPage = lazy(() => import('./pages/calendar/CalendarPage'));
 
 function App() {

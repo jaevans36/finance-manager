@@ -1,54 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
-import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../contexts/ToastContext';
-import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
-import { taskService } from '../services/taskService';
-import { taskGroupService } from '../services/taskGroupService';
-import { CreateTaskForm } from '../components/tasks/CreateTaskForm';
-import { EditTaskModal } from '../components/tasks/EditTaskModal';
-import { TaskList } from '../components/tasks/TaskList';
-import { TaskGroupList } from '../components/task-groups/TaskGroupList';
-import { TaskStatistics } from '../components/dashboard/TaskStatistics';
-import { TaskSkeleton } from '../components/dashboard/TaskSkeleton';
-import { TaskSearch } from '../components/dashboard/TaskSearch';
-import { Button, Alert, Heading1, TextSecondary, Container, Flex } from '../components/ui';
-import { XCircle, UserIcon, BarChart3, Calendar } from 'lucide-react';
-import { TaskGroup } from '../types/taskGroup';
-
-const DashboardHeader = styled(Flex)`
-  margin-bottom: 30px;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start !important;
-    gap: 16px;
-  }
-
-  > div:last-child {
-    @media (max-width: 768px) {
-      width: 100%;
-      justify-content: stretch;
-
-      button {
-        flex: 1;
-      }
-    }
-  }
-`;
-
-const DashboardLayout = styled.div`
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 24px;
-  align-items: start;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-`;
+import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
+import { taskService } from '../../services/taskService';
+import { taskGroupService } from '../../services/taskGroupService';
+import { CreateTaskForm } from '../../components/tasks/CreateTaskForm';
+import { EditTaskModal } from '../../components/tasks/EditTaskModal';
+import { TaskList } from '../../components/tasks/TaskList';
+import { TaskGroupList } from '../../components/task-groups/TaskGroupList';
+import { TaskStatistics } from '../../components/dashboard/TaskStatistics';
+import { TaskSkeleton } from '../../components/dashboard/TaskSkeleton';
+import { TaskSearch } from '../../components/dashboard/TaskSearch';
+import { Button, Alert, Container } from '../../components/ui';
+import { XCircle } from 'lucide-react';
+import { TaskGroup } from '../../types/taskGroup';
+import { DashboardHeader, DashboardLayout } from './components';
 
 interface Task {
   id: string;
@@ -66,7 +33,7 @@ interface Task {
   updatedAt: string;
 }
 
-export const Dashboard = () => {
+const DashboardPage = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
@@ -239,29 +206,7 @@ export const Dashboard = () => {
 
   return (
     <Container style={{ padding: '20px', maxWidth: '1200px', width: '80%' }}>
-      <DashboardHeader justify="space-between" align="center" as="header" role="banner">
-        <div>
-          <Heading1 style={{ margin: 0 }}>Dashboard</Heading1>
-          <TextSecondary style={{ margin: '5px 0 0' }}>Welcome back, @{user?.username}</TextSecondary>
-        </div>
-        <Flex gap={12} as="nav" aria-label="User navigation">
-          <Button variant="outline" onClick={() => navigate('/calendar')} aria-label="View calendar">
-            <Calendar size={18} aria-hidden="true" style={{ marginRight: 4 }} />
-            Calendar
-          </Button>
-          <Button variant="outline" onClick={() => navigate('/weekly-progress')} aria-label="View weekly progress dashboard">
-            <BarChart3 size={18} aria-hidden="true" style={{ marginRight: 4 }} />
-            Weekly Progress
-          </Button>
-          <Button variant="outline" onClick={() => navigate('/profile')} aria-label="Go to profile page">
-            <UserIcon size={18} aria-hidden="true" />
-            Profile
-          </Button>
-          <Button variant="danger" onClick={logout} aria-label="Logout from account">
-            Logout
-          </Button>
-        </Flex>
-      </DashboardHeader>
+      <DashboardHeader username={user?.username || ''} onLogout={logout} />
 
       {error && (
         <Alert variant="error" style={{ marginBottom: '20px' }}>
@@ -328,3 +273,5 @@ export const Dashboard = () => {
     </Container>
   );
 };
+
+export default DashboardPage;

@@ -15,7 +15,7 @@ jest.mock('../../src/services/api-client', () => ({
   },
 }));
 
-import WeeklyProgressPage from '../../src/pages/WeeklyProgressPage';
+import WeeklyProgressPage from '../../src/pages/weekly-progress/WeeklyProgressPage';
 import { statisticsService } from '../../src/services/statisticsService';
 import { taskService } from '../../src/services/taskService';
 import { taskGroupService } from '../../src/services/taskGroupService';
