@@ -80,12 +80,15 @@ Start here if you're new to the project:
 
 All completed phases now have dedicated documentation folders:
 
-**Phase 1: Security & Foundation**
-- **[phases/phase-01-security/complete.md](phases/phase-01-security/complete.md)** - Implementation summary
-- **[phases/phase-01-security/progress.md](phases/phase-01-security/progress.md)** - Progress tracking
-- **[phases/phase-01-security/session-management.md](phases/phase-01-security/session-management.md)** - Session details
-- **[phases/phase-01-security/test-results.md](phases/phase-01-security/test-results.md)** - Test results
-- **[phases/phase-01-security/testing-guide.md](phases/phase-01-security/testing-guide.md)** - Testing guide
+**Phases 1-10: Core Todo Application**
+- **[phases/phases-01-10-core-app/complete.md](phases/phases-01-10-core-app/complete.md)** - Complete core app (Setup through Username System)
+
+**V2 Security Enhancements**
+- **[phases/phase-v2-security/complete.md](phases/phase-v2-security/complete.md)** - Implementation summary
+- **[phases/phase-v2-security/progress.md](phases/phase-v2-security/progress.md)** - Progress tracking
+- **[phases/phase-v2-security/session-management.md](phases/phase-v2-security/session-management.md)** - Session details
+- **[phases/phase-v2-security/test-results.md](phases/phase-v2-security/test-results.md)** - Test results
+- **[phases/phase-v2-security/testing-guide.md](phases/phase-v2-security/testing-guide.md)** - Testing guide
 
 **Phase 11: Weekly Progress Dashboard**
 - **[phases/phase-11-weekly-progress/complete.md](phases/phase-11-weekly-progress/complete.md)** - Implementation summary

@@ -510,8 +510,8 @@ DELETE /api/user/account
 ## Documentation Created
 
 1. `specs/001-todo-app/spec-v2-enhancements.md` - Complete v2.0 specification (780 lines)
-2. `docs/phases/phase-01-security/progress.md` - Phase 1 tracking document
-3. `docs/phases/phase-01-security/session-management.md` - Session management details
+2. `docs/phases/phase-v2-security/progress.md` - V2 Security tracking document
+3. `docs/phases/phase-v2-security/session-management.md` - Session management details
 4. `docs/v2-implementation-summary.md` - This file (complete progress tracking)
 
 ---

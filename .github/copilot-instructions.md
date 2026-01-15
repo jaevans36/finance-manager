@@ -203,6 +203,64 @@ Only skip test documentation updates for:
 
 This ensures test documentation remains the single source of truth for the project's testing state.
 
+## Phase Documentation Requirements
+
+**CRITICAL**: When completing a development phase, ALWAYS create comprehensive completion documentation.
+
+### Required Actions When Completing a Phase
+
+1. **Create completion summary** at `docs/phases/phase-XX-name/complete.md` with:
+   - Phase overview and purpose
+   - List of all completed tasks (with task IDs from tasks.md)
+   - Features implemented (detailed description)
+   - Tests added (backend, frontend, E2E with counts)
+   - Architecture decisions made
+   - Known limitations or issues
+   - Git commit references
+   - Performance metrics (if applicable)
+   - Next phase recommendations
+
+2. **Update docs/README.md** to:
+   - Add phase entry to "Phase-Specific Documentation" section
+   - Link to the new complete.md file
+   - Update "Last Updated" date
+
+3. **Update specs/001-todo-app/tasks.md** to:
+   - Mark all completed tasks as `[x]` complete
+   - Add completion date to phase header
+
+4. **Follow established patterns**:
+   - See `docs/phases/phase-11-weekly-progress/complete.md` as template
+   - See `docs/phases/phase-12-calendar-view/complete.md` for comprehensive example
+   - Include code snippets, challenges faced, and solutions
+
+### Workflow
+
+```markdown
+User: "Let's complete Phase 13"
+
+Agent Actions:
+1. Implement all Phase 13 tasks
+2. Write comprehensive tests
+3. Verify all tests pass
+4. Create docs/phases/phase-13-name/complete.md (400+ lines)
+5. Update docs/README.md with phase entry
+6. Update specs/001-todo-app/tasks.md to mark tasks complete
+7. Commit with message: "feat: complete Phase 13 - Feature Name"
+8. Immediately commit documentation: "docs: add Phase 13 completion summary"
+```
+
+### Why This Matters
+
+- Maintains complete project history
+- Helps onboarding new developers
+- Documents architecture evolution
+- Provides test coverage tracking
+- Creates audit trail for decisions
+- Enables knowledge transfer
+
+**Never skip phase documentation** - it's as important as the code itself.
+
 ## TypeScript Standards
 
 **NEVER use the `any` type in TypeScript code.** This is a critical requirement for type safety and maintainability.

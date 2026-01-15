@@ -410,9 +410,10 @@ The CI pipeline ensures all tests pass before merging code, maintaining code qua
 ### v2.0 Enhancements ✨
 - **v2.0 Specification**: `specs/001-todo-app/spec-v2-enhancements.md`
 - **Phase 1 API Routes**: `docs/api-phase1-routes.md`
-- **Phase 1 Completion Summary**: `docs/phases/phase-01-security/complete.md`
-- **Phase 1 Testing Guide**: `docs/phases/phase-01-security/testing-guide.md`
-- **Session Management**: `docs/phases/phase-01-security/session-management.md`
+- **Core App (Phases 1-10)**: `docs/phases/phases-01-10-core-app/complete.md`
+- **V2 Security Enhancements**: `docs/phases/phase-v2-security/complete.md`
+- **V2 Testing Guide**: `docs/phases/phase-v2-security/testing-guide.md`
+- **Session Management**: `docs/phases/phase-v2-security/session-management.md`
 - **Implementation Progress**: `docs/v2-implementation-summary.md`
 
 ## 🎯 Implementation Strategy
