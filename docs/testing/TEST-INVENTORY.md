@@ -228,7 +228,7 @@ pnpm --filter @finance-manager/api test
 
 ## Related Documentation
 
-- [CI/CD Pipeline Details](../CI-CD.md)
+- [CI/CD Pipeline Details](../operations/CI-CD.md)
 - [Testing Strategy](../../specs/testing-strategy.md)
 - [Nightly Test Suite](./NIGHTLY-TESTS.md) *(to be created)*
 - [Test Writing Guide](./TEST-WRITING-GUIDE.md) *(to be created)*

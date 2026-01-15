@@ -59,7 +59,7 @@ Phase 1 (Security & Foundation) backend implementation is **complete** with all 
 ### 📚 Documentation
 - ✅ Complete API documentation (`docs/api-phase1-routes.md`)
 - ✅ Implementation progress tracking (`docs/v2-implementation-summary.md`)
-- ✅ Session management details (`docs/phase1-session-management.md`)
+- ✅ Session management details (`session-management.md`)
 
 ## Architecture Notes
 

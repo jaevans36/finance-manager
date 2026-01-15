@@ -406,7 +406,7 @@ export default defineConfig({
 ## Related Documentation
 
 - [Test Inventory](./TEST-INVENTORY.md)
-- [CI/CD Pipeline](../CI-CD.md)
+- [CI/CD Pipeline](../operations/CI-CD.md)
 - [Testing Strategy](../../specs/testing-strategy.md)
 
 ---

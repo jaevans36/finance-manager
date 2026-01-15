@@ -77,12 +77,24 @@ Start here if you're new to the project:
   - `view-logs.ps1` - View logs
 
 ### Phase Documentation
-- **[phase1-complete.md](phase1-complete.md)** - Phase 1 implementation summary
-- **[phase1-progress.md](phase1-progress.md)** - Phase 1 progress tracking
-- **[phase1-session-management.md](phase1-session-management.md)** - Session management details
-- **[phase1-test-results.md](phase1-test-results.md)** - Phase 1 test results
+
+All completed phases now have dedicated documentation folders:
+
+**Phase 1: Security & Foundation**
+- **[phases/phase-01-security/complete.md](phases/phase-01-security/complete.md)** - Implementation summary
+- **[phases/phase-01-security/progress.md](phases/phase-01-security/progress.md)** - Progress tracking
+- **[phases/phase-01-security/session-management.md](phases/phase-01-security/session-management.md)** - Session details
+- **[phases/phase-01-security/test-results.md](phases/phase-01-security/test-results.md)** - Test results
+- **[phases/phase-01-security/testing-guide.md](phases/phase-01-security/testing-guide.md)** - Testing guide
+
+**Phase 11: Weekly Progress Dashboard**
+- **[phases/phase-11-weekly-progress/complete.md](phases/phase-11-weekly-progress/complete.md)** - Implementation summary
+
+**Phase 12: Calendar View**
+- **[phases/phase-12-calendar-view/complete.md](phases/phase-12-calendar-view/complete.md)** - Implementation summary
 
 ### Development Guides
+- **[development/pages-structure.md](development/pages-structure.md)** - Frontend structure guide
 - **[development/TESTING_COMPLETE.md](development/TESTING_COMPLETE.md)** - Testing completion status
 - **[development/design-system-audit.md](development/design-system-audit.md)** - Design system review
 
@@ -91,9 +103,9 @@ Start here if you're new to the project:
 ## 🔌 API Documentation
 
 ### API References
-- **[api-phase1-routes.md](api-phase1-routes.md)** - Phase 1 API endpoints
-- **[swagger-documentation.md](swagger-documentation.md)** - Swagger/OpenAPI setup
-- **[api/](api/)** - Detailed API documentation (if exists)
+- **[api/routes-phase1.md](api/routes-phase1.md)** - Phase 1 API endpoints
+- **[api/swagger.md](api/swagger.md)** - Swagger/OpenAPI setup
+- **[api/](api/)** - Additional API documentation
 
 ### Service Documentation
 - **[apps/web/src/services/README.md](../apps/web/src/services/README.md)** - Service patterns
@@ -103,17 +115,16 @@ Start here if you're new to the project:
 ## 🚀 Deployment & Operations
 
 ### CI/CD
-- **[CI-CD.md](CI-CD.md)** - Continuous integration setup
+- **[operations/CI-CD.md](operations/CI-CD.md)** - Continuous integration setup
+- **[view-logs.ps1](../scripts/view-logs.ps1)** - Log viewing script
 - GitHub Actions workflows in `.github/workflows/`
 
 ### Logging & Monitoring
-- **[LOGGING.md](LOGGING.md)** - Logging strategy
-- **[error-logging-monitoring.md](error-logging-monitoring.md)** - Error tracking
-- **[view-logs.ps1](../scripts/view-logs.ps1)** - Log viewing script
+- **[operations/LOGGING.md](operations/LOGGING.md)** - Logging strategy
+- **[operations/error-logging-monitoring.md](operations/error-logging-monitoring.md)** - Error tracking
 
-### Security & Performance
-- **[security-audit.md](security-audit.md)** - Security review
-- **[performance-optimizations.md](performance-optimizations.md)** - Performance improvements
+### Email Configuration
+- **[operations/EMAIL-SETUP.md](operations/EMAIL-SETUP.md)** - Email service setup
 
 ### Deployment Plans
 - **[specs/applications/todo/enhancements.md](../specs/applications/todo/enhancements.md)** - Phase 5: Deployment specs
@@ -135,18 +146,21 @@ Start here if you're new to the project:
 
 ### Design System
 - **[design-system-summary.md](design-system-summary.md)** - Design system overview
+- **[reference/design-system-summary.md](reference/design-system-summary.md)** - Design system overview
 - **[guides/THEME_IMPLEMENTATION.md](guides/THEME_IMPLEMENTATION.md)** - Theme implementation
 - **[guides/THEME_MANAGEMENT.md](guides/THEME_MANAGEMENT.md)** - Theme management
 - **[guides/ICON_GUIDE.md](guides/ICON_GUIDE.md)** - Icon usage guide
 
 ---
 
-## 🗂️ Reference Checklists
+## 🗂️ Reference Documentation
 
-### Validation & QA
-- **[validation-checklist.md](validation-checklist.md)** - Pre-release checklist
-- **[phase1-testing-guide.md](phase1-testing-guide.md)** - Phase 1 testing guide
-
+### Technical Reference
+- **[reference/validation-checklist.md](reference/validation-checklist.md)** - Pre-release checklist
+- **[reference/performance-optimizations.md](reference/performance-optimizations.md)** - Performance improvements
+- **[reference/security-audit.md](reference/security-audit.md)** - Security review
+- **[reference/v2-implementation-summary.md](reference/v2-implementation-summary.md)** - v2.0 summary
+- **[reference/PRISMA-CLIENT-FIX.md](reference/PRISMA-CLIENT-FIX.md)** - Historical fixes
 ---
 
 ## 📖 Documentation Maintenance
@@ -167,7 +181,8 @@ Start here if you're new to the project:
 | Document | Update When |
 |----------|-------------|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Major architectural changes, ADRs |
-| [pages-structure.md](development/pages-structure.md) | Frontend structure changes |
+| [pages-structure.md](development/pages-structure.md) | Frontend st
+| [phases/phase-XX/complete.md](phases/) | When phase is completed |ructure changes |
 | [TEST-INVENTORY.md](testing/TEST-INVENTORY.md) | Tests added/removed/modified |
 | [tasks.md](../specs/001-todo-app/tasks.md) | Task completion status |
 | [README.md](../README.md) | Project status, tech stack, features |

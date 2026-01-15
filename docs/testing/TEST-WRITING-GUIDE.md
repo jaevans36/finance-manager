@@ -551,7 +551,7 @@ await expect(page).toHaveURL(/regex/);
 
 - [Test Inventory](./TEST-INVENTORY.md)
 - [Nightly Tests](./NIGHTLY-TESTS.md)
-- [CI/CD Pipeline](../CI-CD.md)
+- [CI/CD Pipeline](../operations/CI-CD.md)
 
 ---
 
