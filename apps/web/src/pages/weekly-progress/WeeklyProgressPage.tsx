@@ -18,35 +18,24 @@ import {
   TwoColumnGrid,
   ResponsiveDailyGrid,
   InputField,
-  Select,
   SmallButton,
   Heading1,
   Heading3,
   Text,
-  TextSmall,
   TextSecondary,
-  Button,
-  ToggleGroup,
-  ToggleButton,
   SmallBadge,
-  ScrollableContainer,
   Card
 } from '../../components/ui';
 import {
   ChartCard,
   ErrorDisplay,
+  StatisticCard,
+  ViewModeSelector,
+  DateNavigation,
+  GroupFilter,
+  WeeklyGoalCard,
+  DailyTaskCard,
 } from './components';
-
-// Helper function to remove day suffix from task titles (e.g., "Task - Monday" -> "Task")
-const removeDayPrefix = (title: string): string => {
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  for (const day of days) {
-    if (title.endsWith(` - ${day}`)) {
-      return title.substring(0, title.length - day.length - 3); // Remove " - Day"
-    }
-  }
-  return title;
-};
 
 // Helper function to get border color for priority cards
 const getPriorityColor = (priority: string): string => {
@@ -79,16 +68,6 @@ const WeekNavigation = styled.div`
   }
 `;
 
-const WeekDisplay = styled(Text)`
-  font-weight: 500;
-`;
-
-const DateRangeSelector = styled.div`
-  display: flex;
-  gap: 10px;
-  align-items: center;
-`;
-
 const LoadingSkeleton = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: 8px;
@@ -97,6 +76,34 @@ const LoadingSkeleton = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+`;
+
+const CustomDateSelector = styled.div`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+`;
+
+const ApplyButton = styled.button`
+  padding: 8px 16px;
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.text};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.backgroundSecondary};
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
 
 const DailyBreakdownSection = styled.div`
@@ -115,18 +122,6 @@ const UrgentSection = styled.div`
   margin-top: 30px;
 `;
 
-const FilterSection = styled.div`
-  margin-bottom: 20px;
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  flex-wrap: wrap;
-`;
-
-const FilterLabel = styled(Text)`
-  font-weight: 500;
-`;
-
 const GoalAndInsightGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -140,53 +135,6 @@ const GoalAndInsightGrid = styled.div`
   > * {
     min-height: 180px;
   }
-`;
-
-const GoalSection = styled.div`
-  margin-bottom: 25px;
-  padding: 20px;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: 8px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  height: 100%;
-`;
-
-const GoalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-`;
-
-const GoalProgressBar = styled.div`
-  width: 100%;
-  height: 24px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 12px;
-  overflow: hidden;
-  position: relative;
-`;
-
-const GoalProgressFill = styled.div<{ $percentage: number; $achieved: boolean }>`
-  height: 100%;
-  background: ${({ $achieved, theme }) => 
-    $achieved ? `linear-gradient(90deg, ${chartColors.primary} 0%, #45a049 100%)` : 
-    `linear-gradient(90deg, ${theme.colors.primary} 0%, ${theme.colors.primaryHover} 100%)`
-  };
-  transition: width 0.5s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  width: ${({ $percentage }) => Math.min($percentage, 100)}%;
-`;
-
-const GoalStats = styled(TextSmall)`
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
 `;
 
 const InsightIcon = styled.div`
@@ -211,72 +159,6 @@ const InsightValue = styled.div`
 
 const InsightLabel = styled(TextSecondary)`
   display: block;
-`;
-
-const StatCard = styled(Card)`
-  padding: 20px;
-  text-align: center;
-  position: relative;
-  transition: all 0.3s ease;
-  animation: fadeIn 0.5s ease-in;
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-  }
-`;
-
-const StatValue = styled.div`
-  font-size: 42px;
-  font-weight: bold;
-  color: ${({ theme }) => theme.colors.primary};
-  margin: 10px 0;
-  transition: all 0.3s ease;
-  animation: scaleIn 0.6s ease-out;
-
-  @keyframes scaleIn {
-    from {
-      transform: scale(0.8);
-      opacity: 0;
-    }
-    to {
-      transform: scale(1);
-      opacity: 1;
-    }
-  }
-`;
-
-const StatLabel = styled(Text)`
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 13px;
-  letter-spacing: 0.5px;
-`;
-
-const TrendIndicator = styled(Text)<{ $trend: 'up' | 'down' | 'neutral' }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  font-weight: 500;
-  margin-top: 8px;
-  color: ${({ $trend, theme }) =>
-    $trend === 'up' ? chartColors.primary :
-    $trend === 'down' ? chartColors.urgent :
-    theme.colors.textSecondary
-  };
 `;
 
 const UrgentList = styled.div`
@@ -308,168 +190,6 @@ const UrgentTaskTitle = styled(Text)`
 const DaysRemaining = styled(Text)<{ $urgent: boolean }>`
   color: ${({ $urgent }) => $urgent ? chartColors.urgent : chartColors.textLight};
   font-weight: 500;
-`;
-
-const DayCard = styled(Card)`
-  padding: 18px;
-  min-height: 320px;
-  display: flex;
-  flex-direction: column;
-  transition: all 0.3s ease;
-  animation: fadeIn 0.5s ease-in;
-
-  &:hover {
-    transform: translateY(-3px);
-  }
-`;
-
-const DayHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding-bottom: 10px;
-  margin-bottom: 12px;
-`;
-
-const DayHeaderLeft = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const DayName = styled.div`
-  font-weight: 600;
-  font-size: 16px;
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const DayDate = styled(TextSmall)`
-  display: block;
-  margin-top: 2px;
-`;
-
-const TaskCount = styled(TextSmall)`
-  font-weight: 500;
-`;
-
-const DayProgressContainer = styled.div`
-  position: relative;
-  width: 100%;
-  margin-bottom: 16px;
-`;
-
-const DayProgressBar = styled.div`
-  width: 100%;
-  height: 12px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 6px;
-  overflow: visible;
-  position: relative;
-`;
-
-const DayProgressFill = styled.div<{ $percentage: number }>`
-  height: 100%;
-  width: ${({ $percentage }) => $percentage}%;
-  background: linear-gradient(90deg, ${chartColors.primary} 0%, #45a049 100%);
-  transition: width 0.5s ease;
-  border-radius: ${({ $percentage }) => $percentage === 100 ? '6px' : '6px 0 0 6px'};
-`;
-
-const ProgressHeader = styled.div`
-  position: relative;
-  width: 100%;
-  height: 24px;
-  margin-bottom: 4px;
-`;
-
-const ProgressPercentage = styled.div<{ $percentage: number }>`
-  position: absolute;
-  left: ${({ $percentage }) => $percentage}%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  transition: left 0.5s ease;
-`;
-
-const PercentageValue = styled.span<{ $percentage: number }>`
-  font-size: 14px;
-  font-weight: 700;
-  color: ${chartColors.primary};
-  position: relative;
-  left: ${({ $percentage }) => {
-    if ($percentage <= 2) return '24px';
-    if ($percentage >= 98) return '-16px';
-    return '0';
-  }};
-`;
-
-const ProgressArrow = styled.div`
-  width: 0;
-  height: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 5px solid ${chartColors.primary};
-`;
-
-const TaskItem = styled.div<{ $completed: boolean }>`
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 8px;
-  background: ${({ theme, $completed }) => 
-    $completed ? theme.colors.backgroundSecondary : theme.colors.cardBackground};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 4px;
-  font-size: 14px;
-  transition: all 0.2s;
-  cursor: pointer;
-
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.primary};
-    transform: translateX(2px);
-  }
-`;
-
-const TaskCheckbox = styled.input`
-  margin-top: 2px;
-  cursor: pointer;
-`;
-
-const TaskContent = styled.div`
-  flex: 1;
-  min-width: 0;
-`;
-
-const TaskTitle = styled.div<{ $completed: boolean }>`
-  font-weight: 500;
-  color: ${({ theme, $completed }) => $completed ? theme.colors.textSecondary : theme.colors.text};
-  text-decoration: ${({ $completed }) => $completed ? 'line-through' : 'none'};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  line-height: 1.4;
-`;
-
-const TaskMeta = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-top: 4px;
-  flex-wrap: wrap;
-`;
-
-const TaskGroup = styled(TextSmall)`
-  padding: 2px 6px;
-  border-radius: 3px;
-  background-color: ${({ theme }) => theme.colors.backgroundSecondary};
-`;
-
-const EmptyDay = styled(TextSmall)`
-  display: block;
-  text-align: center;
-  padding: 20px;
 `;
 
 
@@ -808,52 +528,33 @@ const WeeklyProgressPage: React.FC = () => {
         </HeaderTop>
         <Heading1 style={{ margin: 0 }}>Weekly Progress Dashboard</Heading1>
         <WeekNavigation>
-          {/* View Mode Toggle */}
-          <ToggleGroup>
-            <ToggleButton $active={viewMode === 'week'} onClick={() => handleViewModeChange('week')}>
-              Week
-            </ToggleButton>
-            <ToggleButton $active={viewMode === 'month'} onClick={() => handleViewModeChange('month')}>
-              Month
-            </ToggleButton>
-            <ToggleButton $active={viewMode === 'custom'} onClick={() => handleViewModeChange('custom')}>
-              Custom
-            </ToggleButton>
-          </ToggleGroup>
+          <ViewModeSelector
+            currentMode={viewMode}
+            onModeChange={handleViewModeChange}
+          />
 
-          {/* Navigation controls based on view mode */}
           {viewMode === 'week' && (
-            <>
-              <Button variant="outline" size="small" onClick={() => navigateWeek('prev')}>
-                ← Previous
-              </Button>
-              <WeekDisplay>{formatWeekRange(currentWeekStart)}</WeekDisplay>
-              <Button variant="outline" size="small" onClick={() => navigateWeek('next')}>
-                Next →
-              </Button>
-              <Button variant="outline" size="small" onClick={() => setCurrentWeekStart(getWeekStart(new Date()))}>
-                Today
-              </Button>
-            </>
+            <DateNavigation
+              currentStartDate={currentWeekStart}
+              viewMode={viewMode}
+              onNavigate={navigateWeek}
+              onToday={() => setCurrentWeekStart(getWeekStart(new Date()))}
+              formatDateRange={formatWeekRange}
+            />
           )}
 
           {viewMode === 'month' && (
-            <>
-              <Button variant="outline" size="small" onClick={() => navigateMonth('prev')}>
-                ← Previous
-              </Button>
-              <WeekDisplay>{formatMonthRange(currentWeekStart)}</WeekDisplay>
-              <Button variant="outline" size="small" onClick={() => navigateMonth('next')}>
-                Next →
-              </Button>
-              <Button variant="outline" size="small" onClick={() => setCurrentWeekStart(getMonthStart(new Date()))}>
-                This Month
-              </Button>
-            </>
+            <DateNavigation
+              currentStartDate={currentWeekStart}
+              viewMode={viewMode}
+              onNavigate={navigateMonth}
+              onToday={() => setCurrentWeekStart(getMonthStart(new Date()))}
+              formatDateRange={formatMonthRange}
+            />
           )}
 
           {viewMode === 'custom' && (
-            <DateRangeSelector>
+            <CustomDateSelector>
               <InputField
                 type="date"
                 value={customStartDate}
@@ -867,83 +568,40 @@ const WeeklyProgressPage: React.FC = () => {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomEndDate(e.target.value)}
                 placeholder="End date"
               />
-              <Button 
-                variant="outline" 
-                size="small" 
+              <ApplyButton 
                 onClick={applyCustomDateRange}
                 disabled={!customStartDate || !customEndDate}
               >
                 Apply
-              </Button>
-            </DateRangeSelector>
+              </ApplyButton>
+            </CustomDateSelector>
           )}
         </WeekNavigation>
       </Header>
 
       {/* Group Filter Section */}
       {groups.length > 0 && (
-        <FilterSection>
-          <FilterLabel>Filter by Group:</FilterLabel>
-          <Select 
-            value={selectedGroupId || ''}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedGroupId(e.target.value || null)}
-            style={{ minWidth: '200px' }}
-          >
-            <option value="">All Groups</option>
-            {groups.map(group => (
-              <option key={group.id} value={group.id}>
-                {group.name}
-              </option>
-            ))}
-          </Select>
-          {selectedGroupId && (
-            <Button 
-              variant="outline" 
-              size="small" 
-              onClick={() => setSelectedGroupId(null)}
-            >
-              Clear Filter
-            </Button>
-          )}
-        </FilterSection>
+        <GroupFilter
+          groups={groups.map(g => g.name)}
+          selectedGroup={selectedGroupId ? groups.find(g => g.id === selectedGroupId)?.name || null : null}
+          onGroupChange={(groupName) => {
+            if (groupName === null) {
+              setSelectedGroupId(null);
+            } else {
+              const group = groups.find(g => g.name === groupName);
+              setSelectedGroupId(group?.id || null);
+            }
+          }}
+        />
       )}
 
       {/* Weekly Goal and Most Productive Day */}
       <GoalAndInsightGrid>
-        <GoalSection>
-          <GoalHeader>
-            <Heading3 style={{ margin: 0 }}>Weekly Completion Goal</Heading3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Text style={{ fontSize: '14px' }}>Target:</Text>
-              <InputField
-                type="number"
-                min="1"
-                max="1000"
-                value={weeklyGoal}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateWeeklyGoal(Number.parseInt(e.target.value, 10) || 10)}
-                style={{ width: '80px', textAlign: 'center' }}
-              />
-              <Text style={{ fontSize: '14px' }}>tasks</Text>
-            </div>
-          </GoalHeader>
-          <GoalProgressBar>
-            <GoalProgressFill 
-              $percentage={(stats.completedTasks / weeklyGoal) * 100}
-              $achieved={stats.completedTasks >= weeklyGoal}
-            >
-              {stats.completedTasks >= weeklyGoal ? 'Goal Achieved!' : `${Math.round((stats.completedTasks / weeklyGoal) * 100)}%`}
-            </GoalProgressFill>
-          </GoalProgressBar>
-          <GoalStats>
-            <span>{stats.completedTasks} / {weeklyGoal} tasks completed</span>
-            <span>
-              {stats.completedTasks >= weeklyGoal 
-                ? `+${stats.completedTasks - weeklyGoal} over goal!` 
-                : `${weeklyGoal - stats.completedTasks} remaining`
-              }
-            </span>
-          </GoalStats>
-        </GoalSection>
+        <WeeklyGoalCard
+          completedTasks={stats.completedTasks}
+          weeklyGoal={weeklyGoal}
+          onUpdateGoal={updateWeeklyGoal}
+        />
 
         {bestDay && bestDay.count > 0 && (
           <Card style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', justifyContent: 'center', height: '100%' }}>
@@ -960,42 +618,36 @@ const WeeklyProgressPage: React.FC = () => {
       </GoalAndInsightGrid>
 
       <ResponsiveGrid minWidth="200px" gap={20} style={{ marginBottom: '30px' }}>
-        <StatCard>
-          <StatLabel>Total Tasks</StatLabel>
-          <StatValue>{stats.totalTasks}</StatValue>
-          {prevWeekStats && prevWeekStats.totalTasks > 0 && (
-            <TrendIndicator $trend={stats.totalTasks > prevWeekStats.totalTasks ? 'up' : stats.totalTasks < prevWeekStats.totalTasks ? 'down' : 'neutral'}>
-              {stats.totalTasks > prevWeekStats.totalTasks ? '↑' : stats.totalTasks < prevWeekStats.totalTasks ? '↓' : '→'}{' '}
-              {Math.abs(stats.totalTasks - prevWeekStats.totalTasks)} vs last week
-            </TrendIndicator>
-          )}
-        </StatCard>
-        <StatCard>
-          <StatLabel>Completed</StatLabel>
-          <StatValue style={{ color: chartColors.primary }}>{stats.completedTasks}</StatValue>
-          {prevWeekStats && completedTasksTrend.change > 0 && (
-            <TrendIndicator $trend={completedTasksTrend.trend}>
-              {completedTasksTrend.trend === 'up' ? '↑' : '↓'}{' '}
-              {completedTasksTrend.change.toFixed(0)}% vs last week
-            </TrendIndicator>
-          )}
-        </StatCard>
-        <StatCard>
-          <StatLabel>Completion Rate</StatLabel>
-          <StatValue>{stats.completionPercentage.toFixed(1)}%</StatValue>
-          {prevWeekStats && completionTrend.change > 0 && (
-            <TrendIndicator $trend={completionTrend.trend}>
-              {completionTrend.trend === 'up' ? '↑' : '↓'}{' '}
-              {completionTrend.change.toFixed(1)}% vs last week
-            </TrendIndicator>
-          )}
-        </StatCard>
-        <StatCard>
-          <StatLabel>Remaining</StatLabel>
-          <StatValue style={{ color: chartColors.secondary }}>
-            {stats.totalTasks - stats.completedTasks}
-          </StatValue>
-        </StatCard>
+        <StatisticCard
+          label="Total Tasks"
+          value={stats.totalTasks}
+          trend={prevWeekStats && prevWeekStats.totalTasks > 0 ? {
+            direction: stats.totalTasks > prevWeekStats.totalTasks ? 'up' : stats.totalTasks < prevWeekStats.totalTasks ? 'down' : 'neutral',
+            value: `${Math.abs(stats.totalTasks - prevWeekStats.totalTasks)} vs last week`
+          } : undefined}
+        />
+        <StatisticCard
+          label="Completed"
+          value={stats.completedTasks}
+          valueColor={chartColors.primary}
+          trend={prevWeekStats && completedTasksTrend.change > 0 ? {
+            direction: completedTasksTrend.trend,
+            value: `${completedTasksTrend.change.toFixed(0)}% vs last week`
+          } : undefined}
+        />
+        <StatisticCard
+          label="Completion Rate"
+          value={`${stats.completionPercentage.toFixed(1)}%`}
+          trend={prevWeekStats && completionTrend.change > 0 ? {
+            direction: completionTrend.trend,
+            value: `${completionTrend.change.toFixed(1)}% vs last week`
+          } : undefined}
+        />
+        <StatisticCard
+          label="Remaining"
+          value={stats.totalTasks - stats.completedTasks}
+          valueColor={chartColors.secondary}
+        />
       </ResponsiveGrid>
 
       <TwoColumnGrid gap={20} style={{ marginBottom: '30px' }}>
@@ -1069,70 +721,17 @@ const WeeklyProgressPage: React.FC = () => {
       <DailyBreakdownSection>
         <Heading3 style={{ margin: '0 0 15px 0' }}>Daily Task Breakdown</Heading3>
         <ResponsiveDailyGrid gap={20} style={{ marginTop: '20px' }}>
-          {filteredDailyBreakdown.map((day) => {
-            const dayDate = new Date(day.date);
-            const dayName = dayDate.toLocaleDateString('en-GB', { weekday: 'long' });
-            const dayNumber = dayDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
-            const dayTasks = day.tasks || [];
-            
-            return (
-              <DayCard key={day.date}>
-                <DayHeader>
-                  <DayHeaderLeft>
-                    <DayName>{dayName}</DayName>
-                    <DayDate>{dayNumber}</DayDate>
-                  </DayHeaderLeft>
-                  <TaskCount>
-                    {day.completedTasks}/{day.totalTasks} tasks
-                  </TaskCount>
-                </DayHeader>
-                
-                {/* Progress bar with percentage above at completion point */}
-                {day.totalTasks > 0 && (
-                  <DayProgressContainer>
-                    <ProgressHeader>
-                      <ProgressPercentage $percentage={day.completionRate}>
-                        <PercentageValue $percentage={day.completionRate}>{day.completionRate.toFixed(0)}%</PercentageValue>
-                        <ProgressArrow />
-                      </ProgressPercentage>
-                    </ProgressHeader>
-                    <DayProgressBar>
-                      <DayProgressFill $percentage={day.completionRate} />
-                    </DayProgressBar>
-                  </DayProgressContainer>
-                )}
-                
-                {dayTasks.length > 0 ? (
-                  <ScrollableContainer style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
-                    {dayTasks.map((task) => (
-                      <TaskItem key={task.id} $completed={task.completed}>
-                        <TaskCheckbox 
-                          type="checkbox" 
-                          checked={task.completed}
-                          onChange={() => handleToggleTask(task.id, task.completed)}
-                        />
-                        <TaskContent>
-                          <TaskTitle $completed={task.completed} title={task.title}>
-                            {removeDayPrefix(task.title)}
-                          </TaskTitle>
-                          <TaskMeta>
-                            <SmallBadge style={{ backgroundColor: getPriorityColor(task.priority) }}>
-                              {task.priority}
-                            </SmallBadge>
-                            {task.groupName && (
-                              <TaskGroup>{task.groupName}</TaskGroup>
-                            )}
-                          </TaskMeta>
-                        </TaskContent>
-                      </TaskItem>
-                    ))}
-                  </ScrollableContainer>
-                ) : (
-                  <EmptyDay>No tasks</EmptyDay>
-                )}
-              </DayCard>
-            );
-          })}
+          {filteredDailyBreakdown.map((day) => (
+            <DailyTaskCard
+              key={day.date}
+              date={day.date}
+              totalTasks={day.totalTasks}
+              completedTasks={day.completedTasks}
+              completionRate={day.completionRate}
+              tasks={day.tasks || []}
+              onToggleTask={handleToggleTask}
+            />
+          ))}
         </ResponsiveDailyGrid>
       </DailyBreakdownSection>
 
