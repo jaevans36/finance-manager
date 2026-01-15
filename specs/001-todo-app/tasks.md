@@ -103,8 +103,8 @@ description: "Task list for To Do App implementation"
 
 ### Frontend for User Story 1
 
-- [x] T042 [P] [US1] Create registration page in apps/web/src/pages/Register.tsx
-- [x] T043 [P] [US1] Create login page in apps/web/src/pages/Login.tsx
+- [x] T042 [P] [US1] Create registration page in apps/web/src/pages/auth/RegisterPage.tsx
+- [x] T043 [P] [US1] Create login page in apps/web/src/pages/auth/LoginPage.tsx
 - [x] T044 [P] [US1] Create auth service in apps/web/src/services/authService.ts (register, login, logout API calls)
 - [x] T045 [US1] Create registration form component in apps/web/src/components/auth/RegisterForm.tsx
 - [x] T046 [US1] Create login form component in apps/web/src/components/auth/LoginForm.tsx
@@ -143,7 +143,7 @@ description: "Task list for To Do App implementation"
 
 ### Frontend for User Story 2
 
-- [x] T063 [P] [US2] Create dashboard page in apps/web/src/pages/Dashboard.tsx
+- [x] T063 [P] [US2] Create dashboard page in apps/web/src/pages/dashboard/DashboardPage.tsx
 - [x] T064 [P] [US2] Create task service in apps/web/src/services/taskService.ts (CRUD API calls)
 - [x] T065 [P] [US2] Create task list component in apps/web/src/components/tasks/TaskList.tsx
 - [x] T066 [P] [US2] Create task item component in apps/web/src/components/tasks/TaskItem.tsx
@@ -318,7 +318,7 @@ description: "Task list for To Do App implementation"
 - [x] T147 [P] Add responsive design for mobile devices (breakpoints, touch targets)
 - [x] T148 [P] Implement loading skeletons for better perceived performance
 - [x] T149 [P] Add toast notifications for user actions (success/error messages)
-- [x] T150 [P] Create user profile page in apps/web/src/pages/ProfilePage.tsx
+- [x] T150 [P] Create user profile page in apps/web/src/pages/profile/ProfilePage.tsx
 - [x] T151 [P] Add keyboard shortcuts for common actions (N=new task, /=search, Esc=close/unfocus)
 - [x] T152 Implement task search functionality (search by title/description)
 - [x] T153 Add task statistics dashboard (total, completed, overdue counts)
@@ -401,7 +401,7 @@ description: "Task list for To Do App implementation"
 
 - [x] T197 [P] [US8] Create WeeklyStatistics interface in apps/web/src/types/statistics.ts
 - [x] T198 [P] [US8] Create statisticsService.ts in services/ with API methods (getWeeklyStats, getDailyStats, getUrgentTasks)
-- [x] T199 [US8] Create WeeklyProgress page in apps/web/src/pages/WeeklyProgress.tsx
+- [x] T199 [US8] Create WeeklyProgress page in apps/web/src/pages/weekly-progress/WeeklyProgressPage.tsx
 - [x] T200 [US8] Create WeeklyOverview component showing total vs completed (bar chart + pie chart side-by-side)
 - [x] T201 [US8] Create WeeklyStats summary cards (total tasks, completed, percentage, trend indicator)
 - [x] T202 [US8] Create WeekNavigation component (previous/next buttons, current week display, date picker)

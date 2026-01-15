@@ -50,7 +50,39 @@ See `specs/001-todo-app/spec-v2-enhancements.md` for v2.0 enhancements.
 - Create Entity Framework Core models for financial data
 - Continue to Phase 2: Organization & Productivity (TypeScript) and Finance Features (C#)
 
-## 🛠️ Tech Stack
+## � Architecture Decisions
+
+### Feature-Based Organisation
+Both frontend and backend use **feature-based folder structures** rather than technical grouping:
+
+**Benefits**:
+- Related code co-located (easier to find and maintain)
+- Clear boundaries between features
+- Enables independent component development
+- Scales better as the application grows
+
+**Frontend Pattern** (`apps/web/src/pages/`):
+```
+feature-name/
+├── FeatureNamePage.tsx    # Main page component
+└── components/            # Feature-specific components (created when needed)
+    ├── ComponentA.tsx
+    ├── ComponentB.tsx
+    └── index.ts           # Barrel export
+```
+
+**Backend Pattern** (`apps/finance-api/Features/`):
+```
+FeatureName/
+├── Controllers/
+├── Services/
+├── DTOs/
+└── Validators/
+```
+
+See [pages-structure.md](docs/development/pages-structure.md) for detailed frontend structure documentation.
+
+## �🛠️ Tech Stack
 
 ### Backend - .NET API
 - **Runtime**: .NET 8.0
@@ -73,9 +105,23 @@ See `specs/001-todo-app/spec-v2-enhancements.md` for v2.0 enhancements.
 ### Monorepo Structure
 ```
 apps/
-├── api/          # Node.js/Express REST API (Todo features)
-├── finance-api/  # C# .NET Web API (Finance features) 🆕
-└── web/          # React frontend (unified UI)
+├── finance-api/       # C# .NET Web API (Primary backend)
+│   └── Features/      # Feature-based organisation
+│       ├── Auth/
+│       ├── Tasks/
+│       ├── TaskGroups/
+│       └── Statistics/
+└── web/              # React TypeScript frontend
+    └── src/
+        ├── pages/    # Feature-based page organisation
+        │   ├── auth/              # Authentication pages
+        │   ├── dashboard/         # Dashboard + components
+        │   ├── calendar/          # Calendar + components
+        │   ├── weekly-progress/  # Progress + components
+        │   └── profile/           # Profile page
+        ├── components/  # Shared components
+        ├── services/    # API client services
+        └── contexts/    # React contexts
 packages/
 ├── schema/       # Shared types & validation
 └── ui/           # Shared UI components

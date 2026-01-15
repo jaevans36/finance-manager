@@ -36,6 +36,8 @@ New users must verify their email address before gaining full access to the appl
 
 **Independent Test**: Can be fully tested by registering a new account, receiving the verification email, clicking the verification link, and confirming account activation.
 
+**Note**: Authentication pages now located in `apps/web/src/pages/auth/` following feature-based organisation.
+
 **Acceptance Scenarios**:
 
 1. **Given** a new user completes registration, **When** they submit their details, **Then** they receive a verification email immediately and see a message to check their inbox

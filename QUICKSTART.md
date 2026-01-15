@@ -32,16 +32,13 @@ If you prefer to run commands individually:
 # 2. Start PostgreSQL database
 docker-compose up -d
 
-# 3. Run database migrations
-cd apps/api
-pnpm db:migrate
+# 3. Run database migrations (C# .NET API)
+cd apps/finance-api
+dotnet ef database update
 
-# 4. Generate Prisma Client  
-pnpm db:generate
-
-# 5. Start development servers
+# 4. Start development servers
 cd ../..
-pnpm dev
+.\scripts\start-dev.ps1
 ```
 
 ## Daily Development Workflow

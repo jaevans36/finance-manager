@@ -61,12 +61,33 @@ Phase 1 (Security & Foundation) backend implementation is **complete** with all 
 - ✅ Implementation progress tracking (`docs/v2-implementation-summary.md`)
 - ✅ Session management details (`docs/phase1-session-management.md`)
 
+## Architecture Notes
+
+### Feature-Based Organisation
+The application now uses feature-based folder structures:
+
+**Frontend** (`apps/web/src/pages/`):
+- `auth/` - All authentication pages (login, register, password reset, email verification)
+- `dashboard/` - Dashboard page with extracted components
+- `calendar/` - Calendar page with extracted components
+- `weekly-progress/` - Weekly progress page with extracted components
+- `profile/` - User profile page
+
+**Backend** (`apps/finance-api/Features/`):
+- `Auth/` - Authentication controllers, services, DTOs
+- `Tasks/` - Task management
+- `TaskGroups/` - Task group management
+- `Statistics/` - Analytics and reporting
+
+See [docs/development/pages-structure.md](./development/pages-structure.md) for detailed documentation.
+
 ## Git Commits
 
 1. **46d510f** - Phase 1 specification and database schema
 2. **0a0c392** - Email, token, and session services
 3. **0b955fd** - Activity logging and password validation
-4. **4b6a175** - API routes and auth integration (current)
+4. **4b6a175** - API routes and auth integration
+5. **77a220a** - Feature-based folder structure refactoring
 
 ## Testing Status
 

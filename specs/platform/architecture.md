@@ -51,6 +51,7 @@ Finance Manager Platform
 - Styled Components 6.1.13
 - Recharts (data visualization)
 - Lucide React (icons)
+- **Feature-based page organisation** (pages/auth/, pages/dashboard/, etc.)
 
 **Backend**:
 - .NET Core 8.0 Web API (C#)
@@ -58,11 +59,12 @@ Finance Manager Platform
 - PostgreSQL 16+ database
 - JWT authentication
 - BCrypt password hashing
+- **Feature-based code organisation** (Features/Auth/, Features/Tasks/, etc.)
 
 **Infrastructure**:
 - Docker Compose for development
 - Monorepo structure (pnpm workspaces)
-- Feature-based code organisation
+- PowerShell scripts for development workflow
 
 ## Routing Architecture
 
