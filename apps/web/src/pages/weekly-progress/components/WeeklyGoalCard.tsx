@@ -57,11 +57,11 @@ interface WeeklyGoalCardProps {
   onUpdateGoal: (goal: number) => void;
 }
 
-export const WeeklyGoalCard: React.FC<WeeklyGoalCardProps> = ({
+export const WeeklyGoalCard = ({
   completedTasks,
   weeklyGoal,
   onUpdateGoal,
-}) => {
+}: WeeklyGoalCardProps) => {
   const progressPercentage = (completedTasks / weeklyGoal) * 100;
   const isAchieved = completedTasks >= weeklyGoal;
   const remaining = weeklyGoal - completedTasks;

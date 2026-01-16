@@ -10,7 +10,7 @@ interface GroupSkeletonProps {
   count?: number;
 }
 
-export const GroupSkeleton: React.FC<GroupSkeletonProps> = ({ count = 4 }) => {
+export const GroupSkeleton = ({ count = 4 }: GroupSkeletonProps) => {
   return (
     <>
       {Array.from({ length: count }).map((_, index) => (

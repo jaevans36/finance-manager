@@ -97,12 +97,12 @@ interface UrgentTasksCardProps {
   onToggleTask: (taskId: string, completed: boolean) => void;
 }
 
-export const UrgentTasksCard: React.FC<UrgentTasksCardProps> = ({
+export const UrgentTasksCard = ({
   tasks,
   title,
   emptyMessage = 'No tasks',
   onToggleTask,
-}) => {
+}: UrgentTasksCardProps) => {
   return (
     <Card style={{ padding: '18px' }}>
       <h3 style={{ marginBottom: '16px', fontSize: '18px', fontWeight: '600' }}>{title}</h3>

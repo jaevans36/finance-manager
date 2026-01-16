@@ -57,13 +57,13 @@ interface TaskGroupListProps {
   loading?: boolean;
 }
 
-export const TaskGroupList: React.FC<TaskGroupListProps> = ({
+export const TaskGroupList = ({
   groups,
   selectedGroupId,
   onSelectGroup,
   onGroupCreated,
   loading = false
-}) => {
+}: TaskGroupListProps) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   if (loading) {

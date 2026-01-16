@@ -45,7 +45,7 @@ interface TaskGroupItemProps {
   onClick: () => void;
 }
 
-export const TaskGroupItem: React.FC<TaskGroupItemProps> = ({ group, isActive, onClick }) => {
+export const TaskGroupItem = ({ group, isActive, onClick }: TaskGroupItemProps) => {
   return (
     <GroupItemContainer 
       $isActive={isActive} 

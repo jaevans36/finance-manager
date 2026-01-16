@@ -78,12 +78,12 @@ interface StatisticCardProps {
   };
 }
 
-export const StatisticCard: React.FC<StatisticCardProps> = ({ 
+export const StatisticCard = ({ 
   label, 
   value, 
   valueColor,
   trend 
-}) => {
+}: StatisticCardProps) => {
   return (
     <StatCard>
       <StatLabel>{label}</StatLabel>

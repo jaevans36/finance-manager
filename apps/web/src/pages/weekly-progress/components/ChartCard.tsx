@@ -48,12 +48,12 @@ interface ChartCardProps {
   headerAction?: React.ReactNode;
 }
 
-export const ChartCard: React.FC<ChartCardProps> = ({
+export const ChartCard = ({
   title,
   subtitle,
   children,
   headerAction,
-}) => {
+}: ChartCardProps) => {
   return (
     <ChartSection>
       <ChartHeader>

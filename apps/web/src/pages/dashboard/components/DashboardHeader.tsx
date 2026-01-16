@@ -29,7 +29,7 @@ interface DashboardHeaderProps {
   onLogout: () => void;
 }
 
-export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ username, onLogout }) => {
+export const DashboardHeader = ({ username, onLogout }: DashboardHeaderProps) => {
   const navigate = useNavigate();
 
   return (

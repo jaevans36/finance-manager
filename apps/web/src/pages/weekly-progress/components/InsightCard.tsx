@@ -73,12 +73,12 @@ interface InsightCardProps {
   emptyMessage?: string;
 }
 
-export const InsightCard: React.FC<InsightCardProps> = ({
+export const InsightCard = ({
   insights,
   title = 'Productivity Insights',
   icon = '💡',
   emptyMessage = 'Complete more tasks to generate insights',
-}) => {
+}: InsightCardProps) => {
   return (
     <InsightSection>
       <InsightTitle>

@@ -39,12 +39,12 @@ interface GroupFilterProps {
   label?: string;
 }
 
-export const GroupFilter: React.FC<GroupFilterProps> = ({
+export const GroupFilter = ({
   groups,
   selectedGroup,
   onGroupChange,
   label = 'Filter by group:',
-}) => {
+}: GroupFilterProps) => {
   return (
     <FilterContainer>
       <FilterLabel>{label}</FilterLabel>

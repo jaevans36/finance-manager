@@ -78,20 +78,6 @@ const NavigationLeft = styled.div`
   flex-wrap: wrap;
 `;
 
-const NavigationCenter = styled.div`
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  min-width: 150px;
-`;
-
-const DateRangeText = styled(Text)`
-  font-size: 16px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.text};
-  text-align: center;
-`;
-
 const LoadingSkeleton = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
   border-radius: 8px;
@@ -221,7 +207,7 @@ const DaysRemaining = styled(Text)<{ $urgent: boolean }>`
 `;
 
 
-const WeeklyProgressPage: React.FC = () => {
+const WeeklyProgressPage = () => {
   const [stats, setStats] = useState<WeeklyStatistics | null>(null);
   const [prevWeekStats, setPrevWeekStats] = useState<WeeklyStatistics | null>(null);
   const [urgentTasks, setUrgentTasks] = useState<UrgentTask[]>([]);
@@ -606,16 +592,6 @@ const WeeklyProgressPage: React.FC = () => {
               </CustomDateSelector>
             )}
           </NavigationLeft>
-
-          <NavigationCenter>
-            <DateRangeText>
-              {viewMode === 'week' && formatWeekRange(currentWeekStart)}
-              {viewMode === 'month' && formatMonthRange(currentWeekStart)}
-              {viewMode === 'custom' && customStartDate && customEndDate && 
-                `${new Date(customStartDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} - ${new Date(customEndDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
-              }
-            </DateRangeText>
-          </NavigationCenter>
         </WeekNavigation>
       </Header>
 

@@ -22,14 +22,14 @@ const ChartContainer = styled.div<{ height: number }>`
   min-height: ${props => props.height}px;
 `;
 
-export const BarChartWrapper: React.FC<BarChartWrapperProps> = ({ 
+export const BarChartWrapper = ({ 
   data, 
   dataKeys,
   height = 300,
   xAxisKey = 'name',
   title = 'Bar Chart',
   description,
-}) => {
+}: BarChartWrapperProps) => {
   const ariaLabel = description || `${title} showing data distribution across categories`;
   
   return (

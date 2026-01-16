@@ -85,10 +85,10 @@ interface CreateTaskGroupModalProps {
   onSuccess: () => void;
 }
 
-export const CreateTaskGroupModal: React.FC<CreateTaskGroupModalProps> = ({
+export const CreateTaskGroupModal = ({
   onClose,
   onSuccess
-}) => {
+}: CreateTaskGroupModalProps) => {
   const toast = useToast();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');

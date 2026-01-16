@@ -51,12 +51,12 @@ interface ErrorDisplayProps {
   icon?: string;
 }
 
-export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
+export const ErrorDisplay = ({
   message,
   onRetry,
   title = 'Error Loading Data',
   icon = '⚠️',
-}) => {
+}: ErrorDisplayProps) => {
   return (
     <ErrorContainer>
       <ErrorTitle>

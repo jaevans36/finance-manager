@@ -44,7 +44,7 @@ const KeyBadge = styled.kbd`
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 `;
 
-export const KeyboardShortcutsHint: React.FC = () => {
+export const KeyboardShortcutsHint = () => {
   return (
     <HintContainer>
       <HintTitle>Keyboard Shortcuts</HintTitle>

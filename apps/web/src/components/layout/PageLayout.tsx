@@ -89,7 +89,7 @@ const ErrorMessage = styled.div`
  * </PageLayout>
  * ```
  */
-export const PageLayout: React.FC<PageLayoutProps> = ({
+export const PageLayout = ({
   title,
   showBackButton = false,
   backButtonText = 'Back to Dashboard',
@@ -97,10 +97,10 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   headerActions,
   children,
   loading = false,
-  error = null,
+  error,
   loadingComponent,
   errorComponent,
-}) => {
+}: PageLayoutProps) => {
   const navigate = useNavigate();
 
   if (loading) {

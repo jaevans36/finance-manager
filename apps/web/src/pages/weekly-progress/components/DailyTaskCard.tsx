@@ -204,14 +204,14 @@ interface DailyTaskCardProps {
   onToggleTask: (taskId: string, completed: boolean) => void;
 }
 
-export const DailyTaskCard: React.FC<DailyTaskCardProps> = ({
+export const DailyTaskCard = ({
   date,
   totalTasks,
   completedTasks,
   completionRate,
   tasks,
   onToggleTask,
-}) => {
+}: DailyTaskCardProps) => {
   const dayDate = new Date(date);
   const dayName = dayDate.toLocaleDateString('en-GB', { weekday: 'long' });
   const dayNumber = dayDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });

@@ -5,7 +5,6 @@ const WeekNavigation = styled.div`
   display: flex;
   align-items: center;
   gap: 15px;
-  margin-top: 15px;
 
   @media (max-width: 768px) {
     flex-wrap: wrap;
@@ -13,6 +12,7 @@ const WeekNavigation = styled.div`
 `;
 
 const WeekDisplay = styled(Text)`
+  margin: 0;
   font-weight: 500;
 `;
 
@@ -24,13 +24,13 @@ interface DateNavigationProps {
   formatDateRange: (date: Date) => string;
 }
 
-export const DateNavigation: React.FC<DateNavigationProps> = ({
+export const DateNavigation = ({
   currentStartDate,
   viewMode,
   onNavigate,
   onToday,
   formatDateRange,
-}) => {
+}: DateNavigationProps) => {
   const todayLabel = viewMode === 'month' ? 'This Month' : 'Today';
 
   return (

@@ -27,7 +27,7 @@ interface EmptyCalendarStateProps {
   hasActiveFilters: boolean;
 }
 
-export const EmptyCalendarState: React.FC<EmptyCalendarStateProps> = ({ month, hasActiveFilters }) => {
+export const EmptyCalendarState = ({ month, hasActiveFilters }: EmptyCalendarStateProps) => {
   return (
     <EmptyStateContainer>
       <h3>No Tasks {hasActiveFilters ? 'Match Your Filters' : 'This Month'}</h3>

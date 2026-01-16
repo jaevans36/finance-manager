@@ -32,10 +32,10 @@ interface ViewModeSelectorProps {
   onModeChange: (mode: ViewMode) => void;
 }
 
-export const ViewModeSelector: React.FC<ViewModeSelectorProps> = ({
+export const ViewModeSelector = ({
   currentMode,
   onModeChange,
-}) => {
+}: ViewModeSelectorProps) => {
   return (
     <ViewToggle>
       <ViewButton 
