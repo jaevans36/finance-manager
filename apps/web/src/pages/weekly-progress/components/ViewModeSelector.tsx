@@ -7,7 +7,7 @@ const ViewToggle = styled.div`
 `;
 
 const ViewButton = styled.button<{ $active: boolean }>`
-  padding: 6px 16px;
+  padding: 6px 12px;
   border: none;
   border-radius: 6px;
   background: ${({ theme, $active }) => 
