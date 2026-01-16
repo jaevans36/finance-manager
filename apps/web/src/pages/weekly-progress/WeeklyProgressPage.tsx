@@ -60,12 +60,36 @@ const HeaderTop = styled.div`
 const WeekNavigation = styled.div`
   display: flex;
   align-items: center;
-  gap: 15px;
-  margin-top: 15px;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 20px;
+  flex-wrap: wrap;
 
   @media (max-width: 768px) {
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
   }
+`;
+
+const NavigationLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+`;
+
+const NavigationCenter = styled.div`
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  min-width: 150px;
+`;
+
+const DateRangeText = styled(Text)`
+  font-size: 16px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  text-align: center;
 `;
 
 const LoadingSkeleton = styled.div`
@@ -83,6 +107,10 @@ const CustomDateSelector = styled.div`
   gap: 10px;
   align-items: center;
   flex-wrap: wrap;
+`;
+
+const FilterContainer = styled.div`
+  margin-bottom: 25px;
 `;
 
 const ApplyButton = styled.button`
@@ -528,71 +556,85 @@ const WeeklyProgressPage: React.FC = () => {
         </HeaderTop>
         <Heading1 style={{ margin: 0 }}>Weekly Progress Dashboard</Heading1>
         <WeekNavigation>
-          <ViewModeSelector
-            currentMode={viewMode}
-            onModeChange={handleViewModeChange}
-          />
-
-          {viewMode === 'week' && (
-            <DateNavigation
-              currentStartDate={currentWeekStart}
-              viewMode={viewMode}
-              onNavigate={navigateWeek}
-              onToday={() => setCurrentWeekStart(getWeekStart(new Date()))}
-              formatDateRange={formatWeekRange}
+          <NavigationLeft>
+            <ViewModeSelector
+              currentMode={viewMode}
+              onModeChange={handleViewModeChange}
             />
-          )}
 
-          {viewMode === 'month' && (
-            <DateNavigation
-              currentStartDate={currentWeekStart}
-              viewMode={viewMode}
-              onNavigate={navigateMonth}
-              onToday={() => setCurrentWeekStart(getMonthStart(new Date()))}
-              formatDateRange={formatMonthRange}
-            />
-          )}
+            {viewMode === 'week' && (
+              <DateNavigation
+                currentStartDate={currentWeekStart}
+                viewMode={viewMode}
+                onNavigate={navigateWeek}
+                onToday={() => setCurrentWeekStart(getWeekStart(new Date()))}
+                formatDateRange={formatWeekRange}
+              />
+            )}
 
-          {viewMode === 'custom' && (
-            <CustomDateSelector>
-              <InputField
-                type="date"
-                value={customStartDate}
-                onChange={(e) => setCustomStartDate(e.target.value)}
-                placeholder="Start date"
+            {viewMode === 'month' && (
+              <DateNavigation
+                currentStartDate={currentWeekStart}
+                viewMode={viewMode}
+                onNavigate={navigateMonth}
+                onToday={() => setCurrentWeekStart(getMonthStart(new Date()))}
+                formatDateRange={formatMonthRange}
               />
-              <Text>to</Text>
-              <InputField
-                type="date"
-                value={customEndDate}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomEndDate(e.target.value)}
-                placeholder="End date"
-              />
-              <ApplyButton 
-                onClick={applyCustomDateRange}
-                disabled={!customStartDate || !customEndDate}
-              >
-                Apply
-              </ApplyButton>
-            </CustomDateSelector>
-          )}
+            )}
+
+            {viewMode === 'custom' && (
+              <CustomDateSelector>
+                <InputField
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  placeholder="Start date"
+                />
+                <Text>to</Text>
+                <InputField
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomEndDate(e.target.value)}
+                  placeholder="End date"
+                />
+                <ApplyButton 
+                  onClick={applyCustomDateRange}
+                  disabled={!customStartDate || !customEndDate}
+                >
+                  Apply
+                </ApplyButton>
+              </CustomDateSelector>
+            )}
+          </NavigationLeft>
+
+          <NavigationCenter>
+            <DateRangeText>
+              {viewMode === 'week' && formatWeekRange(currentWeekStart)}
+              {viewMode === 'month' && formatMonthRange(currentWeekStart)}
+              {viewMode === 'custom' && customStartDate && customEndDate && 
+                `${new Date(customStartDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} - ${new Date(customEndDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
+              }
+            </DateRangeText>
+          </NavigationCenter>
         </WeekNavigation>
       </Header>
 
       {/* Group Filter Section */}
       {groups.length > 0 && (
-        <GroupFilter
-          groups={groups.map(g => g.name)}
-          selectedGroup={selectedGroupId ? groups.find(g => g.id === selectedGroupId)?.name || null : null}
-          onGroupChange={(groupName) => {
-            if (groupName === null) {
-              setSelectedGroupId(null);
-            } else {
-              const group = groups.find(g => g.name === groupName);
-              setSelectedGroupId(group?.id || null);
-            }
-          }}
-        />
+        <FilterContainer>
+          <GroupFilter
+            groups={groups.map(g => g.name)}
+            selectedGroup={selectedGroupId ? groups.find(g => g.id === selectedGroupId)?.name || null : null}
+            onGroupChange={(groupName) => {
+              if (groupName === null) {
+                setSelectedGroupId(null);
+              } else {
+                const group = groups.find(g => g.name === groupName);
+                setSelectedGroupId(group?.id || null);
+              }
+            }}
+          />
+        </FilterContainer>
       )}
 
       {/* Weekly Goal and Most Productive Day */}
