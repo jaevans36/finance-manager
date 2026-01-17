@@ -442,11 +442,31 @@ description: "Task list for To Do App implementation"
 - [x] T228 [P] [US8] Add month view option in addition to week view
 - [x] T229 [US8] Implement productivity trends (comparison with previous week)
 - [x] T230 [US8] Add streak counter (consecutive days with completed tasks)
-- [ ] T231 [US8] Create completion rate history chart (last 4-8 weeks line graph) **[DEFERRED: Requires new backend endpoint GET /api/v1/statistics/history - see spec.md changelog 2026-01-05 for implementation notes]**
 - [x] T232 [US8] Implement "Best Day" and "Most Productive Day" badges
 - [x] T233 [US8] Add group filtering to weekly stats (view progress by specific group)
 - [x] T234 [US8] Implement task count goals with progress indicators
 - [x] T235 [US8] Add "Unscheduled Tasks" section for tasks without due dates
+
+### Historical Completion Rate Chart (Previously T231)
+
+- [ ] T231.1 [P] [US8] Create HistoricalStatisticsDto in Features/Statistics/DTOs/ (weekStart, weekEnd, completionRate, totalTasks, completedTasks)
+- [ ] T231.2 [P] [US8] Create HistoricalStatistics interface in apps/web/src/types/statistics.ts
+- [ ] T231.3 [US8] Add GetHistoricalStatistics method to StatisticsService (calculate weekly stats for past N weeks)
+- [ ] T231.4 [US8] Implement GET /api/v1/statistics/history endpoint in StatisticsController (query param: weeks, default 8)
+- [ ] T231.5 [US8] Add validation for weeks parameter (min 1, max 52)
+- [ ] T231.6 [US8] Add database query optimization for historical data (use existing indexes)
+- [ ] T231.7 [P] [US8] Update statisticsService.ts to add getHistoricalStatistics method
+- [ ] T231.8 [P] [US8] Create LineChart wrapper component in components/charts/ (or extend existing chart components)
+- [ ] T231.9 [US8] Create HistoricalCompletionChart component for WeeklyProgressPage
+- [ ] T231.10 [US8] Add historical chart to WeeklyProgressPage with configurable week range (4, 8, 12 weeks)
+- [ ] T231.11 [US8] Implement loading skeleton for historical chart
+- [ ] T231.12 [US8] Add error handling with retry for historical chart data
+- [ ] T231.13 [US8] Add tooltips showing week dates and completion percentage on hover
+- [ ] T231.14 [US8] Add chart legend and axis labels (weeks on X, completion rate % on Y)
+- [ ] T231.15 [P] [US8] Create unit tests for GetHistoricalStatistics in StatisticsServiceTests
+- [ ] T231.16 [P] [US8] Create integration tests for GET /api/v1/statistics/history endpoint
+- [ ] T231.17 [US8] Create component tests for HistoricalCompletionChart with Jest/Testing Library
+- [ ] T231.18 [US8] End-to-end test: navigate to weekly progress → view historical chart → verify data accuracy
 
 ### Testing & Optimization
 
