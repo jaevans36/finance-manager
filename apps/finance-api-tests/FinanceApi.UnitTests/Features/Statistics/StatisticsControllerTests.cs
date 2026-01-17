@@ -275,4 +275,218 @@ public class StatisticsControllerTests
         Assert.Equal(expectedMonday, result);
         Assert.Equal(DayOfWeek.Monday, result.DayOfWeek);
     }
+
+    // T231.16: Integration tests for historical statistics endpoint
+    [Fact]
+    public async Task GetHistoricalStatistics_WithDefaultWeeks_ReturnsOkWithStatistics()
+    {
+        // Arrange
+        var expectedStats = new List<HistoricalStatisticsDto>
+        {
+            new HistoricalStatisticsDto
+            {
+                WeekStart = new DateTime(2026, 1, 5),
+                WeekEnd = new DateTime(2026, 1, 12),
+                TotalTasks = 10,
+                CompletedTasks = 7,
+                CompletionRate = 70.0m
+            },
+            new HistoricalStatisticsDto
+            {
+                WeekStart = new DateTime(2026, 1, 12),
+                WeekEnd = new DateTime(2026, 1, 19),
+                TotalTasks = 8,
+                CompletedTasks = 6,
+                CompletionRate = 75.0m
+            }
+        };
+
+        _mockStatisticsService
+            .Setup(s => s.GetHistoricalStatisticsAsync(_userId, 8))
+            .ReturnsAsync(expectedStats);
+
+        // Act
+        var result = await _controller.GetHistoricalStatistics(null);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var returnedStats = Assert.IsType<List<HistoricalStatisticsDto>>(okResult.Value);
+        Assert.Equal(2, returnedStats.Count);
+        _mockStatisticsService.Verify(s => s.GetHistoricalStatisticsAsync(_userId, 8), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(4)]
+    [InlineData(8)]
+    [InlineData(12)]
+    [InlineData(52)]
+    public async Task GetHistoricalStatistics_WithValidWeeks_ReturnsOkWithStatistics(int weeks)
+    {
+        // Arrange
+        var expectedStats = new List<HistoricalStatisticsDto>();
+        for (int i = 0; i < weeks; i++)
+        {
+            expectedStats.Add(new HistoricalStatisticsDto
+            {
+                WeekStart = new DateTime(2026, 1, 5).AddDays(-7 * i),
+                WeekEnd = new DateTime(2026, 1, 12).AddDays(-7 * i),
+                TotalTasks = 10,
+                CompletedTasks = 7,
+                CompletionRate = 70.0m
+            });
+        }
+
+        _mockStatisticsService
+            .Setup(s => s.GetHistoricalStatisticsAsync(_userId, weeks))
+            .ReturnsAsync(expectedStats);
+
+        // Act
+        var result = await _controller.GetHistoricalStatistics(weeks);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var returnedStats = Assert.IsType<List<HistoricalStatisticsDto>>(okResult.Value);
+        Assert.Equal(weeks, returnedStats.Count);
+        _mockStatisticsService.Verify(s => s.GetHistoricalStatisticsAsync(_userId, weeks), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(-10)]
+    public async Task GetHistoricalStatistics_WithWeeksLessThanOne_ReturnsBadRequest(int weeks)
+    {
+        // Act
+        var result = await _controller.GetHistoricalStatistics(weeks);
+
+        // Assert
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal("Weeks parameter must be between 1 and 52", badRequestResult.Value);
+        _mockStatisticsService.Verify(
+            s => s.GetHistoricalStatisticsAsync(It.IsAny<Guid>(), It.IsAny<int>()),
+            Times.Never);
+    }
+
+    [Theory]
+    [InlineData(53)]
+    [InlineData(100)]
+    [InlineData(500)]
+    public async Task GetHistoricalStatistics_WithWeeksGreaterThan52_ReturnsBadRequest(int weeks)
+    {
+        // Act
+        var result = await _controller.GetHistoricalStatistics(weeks);
+
+        // Assert
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal("Weeks parameter must be between 1 and 52", badRequestResult.Value);
+        _mockStatisticsService.Verify(
+            s => s.GetHistoricalStatisticsAsync(It.IsAny<Guid>(), It.IsAny<int>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task GetHistoricalStatistics_EmptyHistory_ReturnsOkWithEmptyList()
+    {
+        // Arrange
+        var emptyStats = new List<HistoricalStatisticsDto>();
+
+        _mockStatisticsService
+            .Setup(s => s.GetHistoricalStatisticsAsync(_userId, 4))
+            .ReturnsAsync(emptyStats);
+
+        // Act
+        var result = await _controller.GetHistoricalStatistics(4);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var returnedStats = Assert.IsType<List<HistoricalStatisticsDto>>(okResult.Value);
+        Assert.Empty(returnedStats);
+    }
+
+    [Fact]
+    public async Task GetHistoricalStatistics_ServiceReturnsData_ReturnsCorrectStructure()
+    {
+        // Arrange
+        var expectedStats = new List<HistoricalStatisticsDto>
+        {
+            new HistoricalStatisticsDto
+            {
+                WeekStart = new DateTime(2026, 1, 5),
+                WeekEnd = new DateTime(2026, 1, 12),
+                TotalTasks = 15,
+                CompletedTasks = 10,
+                CompletionRate = 66.67m
+            },
+            new HistoricalStatisticsDto
+            {
+                WeekStart = new DateTime(2025, 12, 29),
+                WeekEnd = new DateTime(2026, 1, 5),
+                TotalTasks = 0,
+                CompletedTasks = 0,
+                CompletionRate = 0m
+            }
+        };
+
+        _mockStatisticsService
+            .Setup(s => s.GetHistoricalStatisticsAsync(_userId, 2))
+            .ReturnsAsync(expectedStats);
+
+        // Act
+        var result = await _controller.GetHistoricalStatistics(2);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var returnedStats = Assert.IsType<List<HistoricalStatisticsDto>>(okResult.Value);
+        Assert.Equal(2, returnedStats.Count);
+        
+        // Verify first week data
+        Assert.Equal(new DateTime(2026, 1, 5), returnedStats[0].WeekStart);
+        Assert.Equal(15, returnedStats[0].TotalTasks);
+        Assert.Equal(10, returnedStats[0].CompletedTasks);
+        Assert.Equal(66.67m, returnedStats[0].CompletionRate);
+        
+        // Verify second week data (empty week)
+        Assert.Equal(0, returnedStats[1].TotalTasks);
+        Assert.Equal(0, returnedStats[1].CompletedTasks);
+        Assert.Equal(0m, returnedStats[1].CompletionRate);
+    }
+
+    [Fact]
+    public async Task GetHistoricalStatistics_YearBoundary_HandlesCorrectly()
+    {
+        // Arrange - Weeks spanning year boundary
+        var expectedStats = new List<HistoricalStatisticsDto>
+        {
+            new HistoricalStatisticsDto
+            {
+                WeekStart = new DateTime(2026, 1, 5),
+                WeekEnd = new DateTime(2026, 1, 12),
+                TotalTasks = 5,
+                CompletedTasks = 3,
+                CompletionRate = 60.0m
+            },
+            new HistoricalStatisticsDto
+            {
+                WeekStart = new DateTime(2025, 12, 29),
+                WeekEnd = new DateTime(2026, 1, 5),
+                TotalTasks = 8,
+                CompletedTasks = 8,
+                CompletionRate = 100.0m
+            }
+        };
+
+        _mockStatisticsService
+            .Setup(s => s.GetHistoricalStatisticsAsync(_userId, 2))
+            .ReturnsAsync(expectedStats);
+
+        // Act
+        var result = await _controller.GetHistoricalStatistics(2);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var returnedStats = Assert.IsType<List<HistoricalStatisticsDto>>(okResult.Value);
+        Assert.Equal(2, returnedStats.Count);
+        Assert.Equal(2026, returnedStats[0].WeekStart.Year);
+        Assert.Equal(2025, returnedStats[1].WeekStart.Year);
+    }
 }
