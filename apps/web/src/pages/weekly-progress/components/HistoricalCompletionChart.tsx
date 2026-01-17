@@ -13,7 +13,7 @@ const formatWeekLabel = (weekStart: string) => {
 };
 
 const ChartCard = styled.div`
-  background: white;
+  background: ${(props) => props.theme.colors.cardBackground};
   border-radius: 8px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -45,7 +45,7 @@ const RangeButton = styled.button<{ $active?: boolean }>`
   padding: 6px 12px;
   border: 1px solid ${(props) => props.theme.colors.border};
   border-radius: 6px;
-  background: ${(props) => props.$active ? props.theme.colors.primary : 'white'};
+  background: ${(props) => props.$active ? props.theme.colors.primary : props.theme.colors.cardBackground};
   color: ${(props) => props.$active ? 'white' : props.theme.colors.text};
   font-size: 0.875rem;
   cursor: pointer;
