@@ -50,6 +50,96 @@ This project uses PowerShell scripts in the `scripts/` directory for all develop
 
 When testing builds or starting services, use `.\scripts\start-dev.ps1` or `.\scripts\restart-dev.ps1` instead of direct npm/dotnet commands. This ensures consistent environment setup and proper service orchestration.
 
+## Modern React/TypeScript Standards
+
+This project uses the latest React (18.3+) and TypeScript (5.7+) standards. **Always follow these patterns:**
+
+### Component Definitions
+
+**NEVER use `React.FC` or `React.FunctionComponent`** - This is deprecated and not recommended by React/TypeScript communities.
+
+❌ **WRONG:**
+```typescript
+export const MyComponent: React.FC<MyComponentProps> = ({ prop1, prop2 }) => {
+  // component code
+};
+```
+
+✅ **CORRECT:**
+```typescript
+export const MyComponent = ({ prop1, prop2 }: MyComponentProps) => {
+  // component code
+};
+
+// Or with function keyword
+export function MyComponent({ prop1, prop2 }: MyComponentProps) {
+  // component code
+}
+```
+
+**Why React.FC is avoided:**
+- Implicitly includes `children` prop which can cause bugs
+- Less flexible with generics
+- More verbose without benefits
+- React team moved away from recommending it
+
+### Error Handling
+
+**NEVER use `any` type** - Always use `unknown` for error handling:
+
+❌ **WRONG:**
+```typescript
+try {
+  // code
+} catch (error: any) {
+  console.error(error.message);
+}
+```
+
+✅ **CORRECT:**
+```typescript
+try {
+  // code
+} catch (error: unknown) {
+  const message = error instanceof Error ? error.message : 'An error occurred';
+  console.error(message);
+}
+```
+
+### Component Props with Defaults
+
+When components have optional props with defaults, include them in the destructuring:
+
+```typescript
+export const MyComponent = ({
+  title,
+  subtitle = 'Default subtitle',
+  showIcon = true,
+}: MyComponentProps) => {
+  // component code
+};
+```
+
+### Children Props
+
+For components that need children, explicitly type them:
+
+```typescript
+export const Container = ({ children }: { children: React.ReactNode }) => {
+  return <div>{children}</div>;
+};
+
+// Or in props interface
+interface ContainerProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const Container = ({ children, className }: ContainerProps) => {
+  return <div className={className}>{children}</div>;
+};
+```
+
 ## Code Integration Guidelines
 
 Before creating new files or components, always check existing patterns in the codebase:
