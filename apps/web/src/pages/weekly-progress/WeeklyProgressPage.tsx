@@ -36,6 +36,7 @@ import {
   WeeklyGoalCard,
   DailyTaskCard,
 } from './components';
+import { HistoricalCompletionChart } from './components/HistoricalCompletionChart';
 
 // Helper function to get border color for priority cards
 const getPriorityColor = (priority: string): string => {
@@ -735,6 +736,9 @@ const WeeklyProgressPage = () => {
           </Card>
         )}
       </InsightsSection>
+
+      {/* Historical Completion Rate Chart */}
+      <HistoricalCompletionChart />
 
       <DailyBreakdownSection>
         <Heading3 style={{ margin: '0 0 15px 0' }}>Daily Task Breakdown</Heading3>

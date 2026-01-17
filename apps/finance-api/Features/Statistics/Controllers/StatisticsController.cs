@@ -62,6 +62,25 @@ public class StatisticsController : ControllerBase
         return Ok(urgentTasks);
     }
 
+    /// <summary>
+    /// Get historical completion rate statistics for the past N weeks.
+    /// </summary>
+    /// <param name="weeks">Number of weeks to retrieve (1-52, defaults to 8)</param>
+    [HttpGet("history")]
+    public async Task<IActionResult> GetHistoricalStatistics([FromQuery] int weeks = 8)
+    {
+        // Validate weeks parameter
+        if (weeks < 1 || weeks > 52)
+        {
+            return BadRequest(new { error = "Weeks parameter must be between 1 and 52" });
+        }
+
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var historicalStats = await _statisticsService.GetHistoricalStatisticsAsync(userId, weeks);
+        
+        return Ok(historicalStats);
+    }
+
     private static DateTime GetWeekStart(DateTime date)
     {
         var dayOfWeek = (int)date.DayOfWeek;

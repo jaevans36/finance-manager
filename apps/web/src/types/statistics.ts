@@ -26,3 +26,11 @@ export interface UrgentTask {
   daysUntilDue?: number;
   groupId?: string;
 }
+
+export interface HistoricalStatistics {
+  weekStart: string;
+  weekEnd: string;
+  totalTasks: number;
+  completedTasks: number;
+  completionRate: number;
+}

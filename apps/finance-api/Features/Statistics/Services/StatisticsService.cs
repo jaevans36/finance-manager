@@ -12,6 +12,7 @@ public interface IStatisticsService
     Task<WeeklyStatisticsDto> GetWeeklyStatisticsAsync(Guid userId, DateTime weekStart);
     Task<DailyStatisticsDto> GetDailyStatisticsAsync(Guid userId, DateTime date);
     Task<List<UrgentTaskDto>> GetUrgentTasksAsync(Guid userId, DateTime weekStart);
+    Task<List<HistoricalStatisticsDto>> GetHistoricalStatisticsAsync(Guid userId, int weeks);
 }
 
 public class StatisticsService : IStatisticsService
@@ -143,5 +144,46 @@ public class StatisticsService : IStatisticsService
             .ToListAsync();
 
         return urgentTasks;
+    }
+
+    public async Task<List<HistoricalStatisticsDto>> GetHistoricalStatisticsAsync(Guid userId, int weeks)
+    {
+        var historicalStats = new List<HistoricalStatisticsDto>();
+        var today = DateTime.UtcNow.Date;
+        
+        // Calculate the start of the current week (Monday)
+        var currentWeekStart = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
+        if (today.DayOfWeek == DayOfWeek.Sunday)
+        {
+            currentWeekStart = currentWeekStart.AddDays(-7);
+        }
+
+        // Go back the specified number of weeks
+        for (int i = weeks - 1; i >= 0; i--)
+        {
+            var weekStart = DateTime.SpecifyKind(currentWeekStart.AddDays(-7 * i), DateTimeKind.Utc);
+            var weekEnd = weekStart.AddDays(7);
+
+            var weekTasks = await _context.Tasks
+                .Where(t => t.UserId == userId &&
+                            t.DueDate != null &&
+                            t.DueDate >= weekStart &&
+                            t.DueDate < weekEnd)
+                .ToListAsync();
+
+            var totalTasks = weekTasks.Count;
+            var completedTasks = weekTasks.Count(t => t.Completed);
+
+            historicalStats.Add(new HistoricalStatisticsDto
+            {
+                WeekStart = weekStart,
+                WeekEnd = weekEnd,
+                TotalTasks = totalTasks,
+                CompletedTasks = completedTasks,
+                CompletionRate = totalTasks > 0 ? (decimal)completedTasks / totalTasks * 100 : 0
+            });
+        }
+
+        return historicalStats;
     }
 }

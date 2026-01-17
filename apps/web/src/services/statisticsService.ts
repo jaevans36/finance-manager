@@ -1,5 +1,5 @@
 import { apiClient } from './api-client';
-import type { WeeklyStatistics, DailyStatistics, UrgentTask } from '../types/statistics';
+import type { WeeklyStatistics, DailyStatistics, UrgentTask, HistoricalStatistics } from '../types/statistics';
 import { queryCache } from '../utils/queryCache';
 
 export const statisticsService = {
@@ -60,11 +60,31 @@ export const statisticsService = {
     return response.data;
   },
 
+  async getHistoricalStatistics(weeks: number = 8): Promise<HistoricalStatistics[]> {
+    const cacheKey = `historical-stats-${weeks}`;
+    
+    // Check cache first
+    const cached = queryCache.get<HistoricalStatistics[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // Fetch from API
+    const response = await apiClient.get<HistoricalStatistics[]>('/statistics/history', { 
+      params: { weeks } 
+    });
+    
+    // Cache the result (10 minutes TTL - historical data changes less frequently)
+    queryCache.set(cacheKey, response.data, 10 * 60 * 1000);
+    
+    return response.data;
+  },
+
   /**
    * Invalidate all statistics caches
    * Call this when tasks are updated to ensure fresh data
    */
   invalidateCache(): void {
-    queryCache.invalidatePattern(/^(weekly-stats|daily-stats|urgent-tasks)-/);
+    queryCache.invalidatePattern(/^(weekly-stats|daily-stats|urgent-tasks|historical-stats)-/);
   },
 };
