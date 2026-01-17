@@ -688,10 +688,59 @@ With multiple developers after Foundation phase completes:
 
 ---
 
+## Phase 13-22: Future Feature Development 🚀
+
+**Status**: Tasks documented, not yet started  
+**Total Effort**: ~460 tasks over 27 weeks (6-7 months)  
+**Source**: See `specs/applications/todo/events-feature.md` and `specs/applications/todo/enhancements.md`
+
+### Summary of Future Phases
+
+| Phase | Feature | Tasks | Effort | Priority | Status |
+|-------|---------|-------|--------|----------|--------|
+| 13 | Events (scheduled occurrences) | T328-T427 | 5 weeks | P2 | Documented |
+| 18 | Security & Foundation | T428-T497 | 4 weeks | P1 | Documented |
+| 19 | Organization & Productivity | T498-T587 | 5 weeks | P2 | Documented |
+| 20 | Design & UX | T588-T657 | 4 weeks | P2 | Documented |
+| 21 | Advanced Features | T658-T747 | 6 weeks | P3 | Documented |
+| 22 | Collaboration & Linking | T748-T787 | 3 weeks | P2 | Documented |
+
+**Quick Win Path** (for immediate priorities):
+1. Phase 13 (Events) - 5 weeks - Task/event distinction
+2. Phase 22 (Collaboration) - 3 weeks - Task-event linking system
+3. Phase 18 (Security) - 4 weeks - Production-ready security
+
+**Total**: 12 weeks for event features + task-event linking + security
+
+### Detailed Task Breakdowns
+
+All 460 tasks (T328-T787) are fully detailed in the spec files:
+- **Events**: `specs/applications/todo/events-feature.md` (T328-T427)
+- **v2 Enhancements**: `specs/applications/todo/enhancements.md` (T428-T787)
+
+Each task includes:
+- Exact file paths for implementation
+- Time estimates (hours)
+- Dependencies and parallel opportunities
+- Testing requirements
+- Acceptance criteria
+
+### How to Start a New Phase
+
+1. Review the spec file for the phase
+2. Check all dependencies are complete
+3. Create feature branch from `001-todo-app`
+4. Mark tasks in-progress in this file as you work
+5. Reference task IDs in commit messages (`feat: implement events (T328)`)
+6. Update documentation as features complete
+
+---
+
 ## Notes
 
 - **[P]** indicates tasks that can run in parallel (different files, no shared dependencies)
 - **[Story]** label maps each task to its user story for traceability
+- **[Events]**, **[Security]**, **[Org]**, **[A11y]**, **[UX]**, etc. = feature tags for quick filtering
 - Each user story should be independently completable and testable
 - Commit after completing each task or logical group of related tasks
 - Stop at any checkpoint to validate story independently before proceeding
@@ -699,3 +748,4 @@ With multiple developers after Foundation phase completes:
 - Follow TDD where practical - write tests before implementation
 - Use TypeScript strict mode throughout - no `any` types allowed
 - All API responses must follow OpenAPI specification in contracts/api-spec.yaml
+- **NEW FEATURES**: Always create detailed task breakdowns with estimates (see copilot-instructions.md)

@@ -36,6 +36,97 @@ When making code changes or suggestions, please make sure you're using the most 
 
 When I say 'add this to the spec' or something similar, please add the relevant information and features to the specification documents using speckit conventions.
 
+## Feature Specification & Task Management
+
+**CRITICAL**: When adding new features to specifications, ALWAYS create comprehensive task breakdowns with estimates:
+
+### Requirements for New Features
+
+When a new feature is added to any spec file (`specs/applications/todo/`), you MUST:
+
+1. **Create User Stories** following SpecKit format:
+   - Title with priority (P1-P5)
+   - Why this priority (business justification)
+   - Independent test description
+   - 5+ acceptance scenarios (Given/When/Then format)
+
+2. **Break Down Into Tasks** in `specs/001-todo-app/tasks.md`:
+   - Assign task IDs continuing the sequence (T001, T002, etc.)
+   - Group tasks by phase with clear purpose statement
+   - Mark parallel tasks with [P] prefix
+   - Include exact file paths in task descriptions
+   - Separate backend, frontend, and testing tasks
+
+3. **Provide Effort Estimates**:
+   - **High-level**: Phase-level estimates in weeks (e.g., "Phase 13: Events Foundation (Week 1)")
+   - **Task-level**: Individual task complexity indicators:
+     * Simple (1-2 hours): Basic CRUD, simple components
+     * Medium (3-6 hours): Complex logic, integrations, multiple files
+     * Complex (1-2 days): Architecture changes, migrations, comprehensive testing
+   - **Dependencies**: Note which tasks must complete before others can start
+
+4. **Update Task Inventory**:
+   - Add tasks to the appropriate phase in tasks.md
+   - Update phase dependencies section
+   - Add to "Future Enhancements" if deferred
+   - Include in success criteria and acceptance requirements
+
+### Task Breakdown Template
+
+```markdown
+## Phase X: [Feature Name] (Priority: PX)
+
+**Purpose**: [Clear description of what this phase delivers]
+
+**Estimated Effort**: X weeks (Y tasks total)
+
+**Dependencies**: Phase Z must be complete
+
+### Backend: [Component Name] (Week 1, Days 1-3)
+
+- [ ] TXXX [P] [Feature] Create [Entity] in database (Prisma schema, migration) - 2h
+- [ ] TXXX [Feature] Implement [Service] with CRUD operations - 4h
+- [ ] TXXX [Feature] Add [Controller] endpoints (GET, POST, PUT, DELETE) - 3h
+- [ ] TXXX [Feature] Write unit tests for [Service] - 2h
+- [ ] TXXX [Feature] Write integration tests for [Controller] - 3h
+
+### Frontend: [Component Name] (Week 1, Days 4-5)
+
+- [ ] TXXX [P] [Feature] Create TypeScript interfaces in types/ - 1h
+- [ ] TXXX [P] [Feature] Create [service] API methods - 2h
+- [ ] TXXX [Feature] Create [Component] with form/display - 4h
+- [ ] TXXX [Feature] Add component tests with Jest/Testing Library - 2h
+- [ ] TXXX [Feature] Create E2E test for [workflow] - 3h
+
+**Checkpoint**: [What should be working at phase completion]
+```
+
+### Example Estimates by Task Type
+
+| Task Type | Typical Time | Example |
+|-----------|-------------|---------|
+| Entity/Model Creation | 1-2h | Create TaskGroup entity with relationships |
+| Service Layer CRUD | 3-4h | Implement TaskService with all CRUD methods |
+| Controller Endpoints | 2-3h | Add 5 REST endpoints with validation |
+| Database Migration | 1-2h | Create and apply EF Core migration |
+| React Component | 3-6h | Build TaskList component with state management |
+| API Integration | 2-3h | Add service methods calling API endpoints |
+| Unit Tests | 2-3h | Write 10-15 unit tests for service layer |
+| Integration Tests | 3-4h | Write API endpoint integration tests |
+| E2E Tests | 3-5h | Create Playwright test for full workflow |
+| Documentation | 1-2h | Update API docs, README, user guide |
+
+### Continuous Tracking
+
+After creating task breakdowns:
+- Update project README with phase status
+- Add to project board/tracking tool
+- Reference tasks in commit messages (`feat: implement login (T035)`)
+- Mark tasks complete in tasks.md as work finishes
+- Update estimates based on actual time spent
+
+This ensures the project roadmap is always current and stakeholders can see progress at a glance.
+
 ## Development Scripts
 
 This project uses PowerShell scripts in the `scripts/` directory for all development operations. Always use these scripts instead of running commands directly:
