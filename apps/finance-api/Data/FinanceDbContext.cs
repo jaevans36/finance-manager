@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using FinanceApi.Features.Auth.Models;
 using FinanceApi.Features.Tasks.Models;
+using FinanceApi.Features.Events.Models;
 using FinanceApi.Features.Finance.Models;
 using FinanceApi.Features.Common.Sessions.Models;
 using FinanceApi.Features.Common.ActivityLogs.Models;
@@ -24,6 +25,7 @@ public class FinanceDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<FinanceApi.Features.Tasks.Models.Task> Tasks { get; set; }
     public DbSet<TaskGroup> TaskGroups { get; set; }
+    public DbSet<Event> Events { get; set; }
     public DbSet<Session> Sessions { get; set; }
     public DbSet<EmailToken> EmailTokens { get; set; }
     public DbSet<ActivityLog> ActivityLogs { get; set; }
@@ -229,6 +231,31 @@ public class FinanceDbContext : DbContext
 
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.CreatedAt);
+        });
+
+        // Event configuration
+        modelBuilder.Entity<Event>(entity =>
+        {
+            entity.ToTable("events");
+            entity.HasKey(e => e.Id);
+            
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Group)
+                  .WithMany()
+                  .HasForeignKey(e => e.GroupId)
+                  .OnDelete(DeleteBehavior.SetNull);
+
+            // Indexes for query performance
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.StartDate);
+            entity.HasIndex(e => new { e.UserId, e.StartDate });
+            
+            // Check constraint: EndDate >= StartDate (PostgreSQL syntax)
+            entity.ToTable(t => t.HasCheckConstraint("CK_Events_EndDate_After_StartDate", "end_date >= start_date"));
         });
     }
 }
