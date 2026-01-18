@@ -2,8 +2,8 @@
 
 This document tracks all automated tests in the Finance Manager project. It serves as a reference for what's tested, coverage gaps, and maintenance responsibilities.
 
-**Last Updated**: 2026-01-13  
-**Total Tests**: 235 (Phase 12 complete with all tests passing)
+**Last Updated**: 2026-01-18  
+**Total Tests**: 303 (Phase 13 complete: Events feature with 68 new tests)
 
 ---
 
@@ -11,12 +11,13 @@ This document tracks all automated tests in the Finance Manager project. It serv
 
 | Type | Count | Run On | Duration | Location |
 |------|-------|--------|----------|----------|
-| Backend Unit | 44 | Every PR | ~30s | `apps/finance-api-tests/` |
-| Frontend Unit | 71 | Every PR | ~45s | `apps/web/tests/` |
+| Backend Unit | 62 (+18) | Every PR | ~45s | `apps/finance-api-tests/` |
+| Frontend Unit | 96 (+25) | Every PR | ~60s | `apps/web/tests/` |
 | Frontend Integration | 77 | Every PR | ~2.5min | `apps/web/tests/integration/` |
-| E2E (Playwright) | 28 | Every PR | ~5min | `apps/web/e2e/` |
+| E2E (Playwright) | 37 (+9) | Every PR | ~6min | `apps/web/e2e/` |
+| Backend Integration | 16 (+16) | Every PR | ~1min | `apps/finance-api-tests/` |
 | Performance | 15 | Manual/Nightly | ~1min | `apps/web/tests/performance/` |
-| **Total** | **235** | | **~9min** | |
+| **Total** | **303** | | **~11min** | |
 
 ---
 
@@ -74,12 +75,28 @@ This document tracks all automated tests in the Finance Manager project. It serv
 | Accessibility | ❌ | ✅ (2) | ❌ | 75% |
 | Tooltips | ❌ | ❌ | ❌ | 80% |
 
+### Phase 13: Events Feature (US10)
+| Feature | Unit Tests | Integration Tests | E2E Tests | Coverage |
+|---------|------------|-------------------|-----------|----------|
+| Event CRUD API | ✅ Backend (18) | ✅ Backend (16) | ✅ (1) | 100% |
+| Event Creation | ❌ | ✅ Component (5) | ✅ (2) | 95% |
+| Event Viewing/Listing | ❌ | ✅ Component (13) | ✅ (1) | 95% |
+| Event Editing | ❌ | ✅ Component (4) | ✅ (1) | 95% |
+| Event Deletion | ❌ | ✅ Component (3) | ✅ (1) | 95% |
+| All-Day Events | ✅ Backend (2) | ✅ Component (3) | ✅ (1) | 100% |
+| Date/Time Validation | ✅ Backend (3) | ✅ Component (2) | ✅ (1) | 100% |
+| Event Filtering | ✅ Backend (2) | ❌ | ✅ (1) | 90% |
+| Calendar Integration | ❌ | ❌ | ✅ (9) | 90% |
+| Event Badges | ❌ | ❌ | ✅ (1) | 85% |
+| Event Reminders | ✅ Backend (1) | ✅ Component (2) | ❌ | 75% |
+| Location Field | ✅ Backend (1) | ✅ Component (3) | ❌ | 80% |
+
 ---
 
 ## Coverage Gaps & Priorities
 
 ### High Priority (Implement within 1 month)
-1. **Task Search E2E Test** - No browser-level testing of search functionality - **ADDRESSED**
+1. ~~**Task Search E2E Test**~~ - ✅ **ADDRESSED** (Phase 12)
 2. **Password Reset Flow** - Missing E2E test for email-based password reset
 3. **Error Boundary Tests** - No tests for React error boundaries
 4. **API Error Handling** - Limited tests for 500/503 errors

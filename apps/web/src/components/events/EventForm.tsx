@@ -12,7 +12,7 @@ import {
   Flex
 } from '../ui';
 import { XCircle } from 'lucide-react';
-import type { Event, CreateEventRequest, REMINDER_OPTIONS } from '../../types/event';
+import type { Event, CreateEventRequest } from '../../types/event';
 import type { TaskGroup } from '../../types/taskGroup';
 
 const Subheading = styled.h2`
