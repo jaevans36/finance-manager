@@ -314,7 +314,7 @@ const DashboardPage = () => {
 
       <WelcomeSection>
         <WelcomeTitle>{getGreeting()}, {user?.username}!</WelcomeTitle>
-        <WelcomeSubtitle>Here's your overview for today</WelcomeSubtitle>
+        <WelcomeSubtitle>Here&apos;s your overview for today</WelcomeSubtitle>
       </WelcomeSection>
 
       <DashboardGrid>

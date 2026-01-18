@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
@@ -7,6 +7,8 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ThemeToggle } from './components/ThemeToggle';
 import { LoadingSpinner } from './components/ui';
+import { WhatsNewModal } from './components/WhatsNewModal';
+import versionData from '../VERSION.json';
 
 // Lazy load pages for code splitting
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
@@ -20,8 +22,27 @@ const VerifyEmailPage = lazy(() => import('./pages/auth/VerifyEmailPage'));
 const ResendVerificationPage = lazy(() => import('./pages/auth/ResendVerificationPage'));
 const WeeklyProgressPage = lazy(() => import('./pages/weekly-progress/WeeklyProgressPage'));
 const CalendarPage = lazy(() => import('./pages/calendar/CalendarPage'));
+const VersionHistoryPage = lazy(() => import('./pages/version/VersionHistoryPage'));
 
 function App() {
+  const [showWhatsNew, setShowWhatsNew] = useState(false);
+
+  useEffect(() => {
+    // Check if user has seen this version's "What's New" modal
+    const lastSeenVersion = localStorage.getItem('lastSeenVersion');
+    if (lastSeenVersion !== versionData.version) {
+      // Show modal after a short delay to allow auth to complete
+      const timer = setTimeout(() => {
+        setShowWhatsNew(true);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleCloseWhatsNew = () => {
+    setShowWhatsNew(false);
+    localStorage.setItem('lastSeenVersion', versionData.version);
+  };
   return (
     <ErrorBoundary>
       <ThemeProvider>
@@ -29,6 +50,7 @@ function App() {
           <AuthProvider>
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <ThemeToggle />
+              {showWhatsNew && <WhatsNewModal onClose={handleCloseWhatsNew} />}
               <Suspense fallback={<LoadingSpinner />}>
                 <Routes>
                 <Route path="/login" element={<LoginPage />} />
@@ -74,6 +96,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <CalendarPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/version-history"
+                  element={
+                    <ProtectedRoute>
+                      <VersionHistoryPage />
                     </ProtectedRoute>
                   }
                 />

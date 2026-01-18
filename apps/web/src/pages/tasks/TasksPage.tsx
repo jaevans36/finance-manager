@@ -19,7 +19,7 @@ import { XCircle, ChevronDown } from 'lucide-react';
 import { TaskGroup } from '../../types/taskGroup';
 import { DashboardHeader, DashboardLayout } from '../dashboard/components';
 import styled from 'styled-components';
-import type { Event, CreateEventRequest } from '../../types/event';
+import type { CreateEventRequest } from '../../types/event';
 
 const PageTitle = styled.h1`
   font-size: 28px;
