@@ -2,6 +2,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { X } from 'lucide-react';
 import { Button, Input, FormGroup, Label, Alert } from '../ui';
+import type { CreateEventRequest } from '../../types/event';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -74,16 +75,51 @@ const ButtonGroup = styled.div`
   margin-top: 24px;
 `;
 
+const TypeSelector = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border-radius: 8px;
+  padding: 4px;
+`;
+
+const TypeButton = styled.button<{ $active: boolean }>`
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: ${({ $active, theme }) => $active ? theme.colors.primary : 'transparent'};
+  color: ${({ $active, theme }) => $active ? 'white' : theme.colors.text};
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  &:hover {
+    background: ${({ $active, theme }) => $active ? theme.colors.primaryHover : theme.colors.cardBackground};
+  }
+`;
+
 interface QuickAddTaskModalProps {
   date: Date;
-  onSubmit: (data: { title: string; priority: string; dueDate: string; groupId?: string }) => Promise<void>;
+  onSubmitTask: (data: { title: string; priority: string; dueDate: string; groupId?: string }) => Promise<void>;
+  onSubmitEvent: (data: CreateEventRequest) => Promise<void>;
   onCancel: () => void;
 }
 
-export const QuickAddTaskModal = ({ date, onSubmit, onCancel }: QuickAddTaskModalProps) => {
+export const QuickAddTaskModal = ({ date, onSubmitTask, onSubmitEvent, onCancel }: QuickAddTaskModalProps) => {
+  const [type, setType] = useState<'task' | 'event'>('task');
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<'Low' | 'Medium' | 'High' | 'Critical'>('Medium');
   const [dueDate, setDueDate] = useState(date.toISOString().split('T')[0]);
+  const [startTime, setStartTime] = useState('09:00');
+  const [endTime, setEndTime] = useState('10:00');
+  const [isAllDay, setIsAllDay] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -99,14 +135,31 @@ export const QuickAddTaskModal = ({ date, onSubmit, onCancel }: QuickAddTaskModa
     setIsSubmitting(true);
 
     try {
-      await onSubmit({
-        title: title.trim(),
-        priority,
-        dueDate,
-      });
+      if (type === 'task') {
+        await onSubmitTask({
+          title: title.trim(),
+          priority,
+          dueDate,
+        });
+      } else {
+        // Event submission
+        const startDate = isAllDay 
+          ? `${dueDate}T00:00:00Z`
+          : `${dueDate}T${startTime}:00Z`;
+        const endDate = isAllDay
+          ? `${dueDate}T23:59:59Z`
+          : `${dueDate}T${endTime}:00Z`;
+
+        await onSubmitEvent({
+          title: title.trim(),
+          startDate,
+          endDate,
+          isAllDay,
+        });
+      }
       onCancel();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to create task');
+      setError(err instanceof Error ? err.message : `Failed to create ${type}`);
       setIsSubmitting(false);
     }
   };
@@ -119,11 +172,20 @@ export const QuickAddTaskModal = ({ date, onSubmit, onCancel }: QuickAddTaskModa
     <ModalOverlay onClick={onCancel} role="dialog" aria-modal="true">
       <ModalContent onClick={handleModalClick}>
         <ModalHeader>
-          <ModalTitle>Quick Add Task</ModalTitle>
+          <ModalTitle>Quick Add</ModalTitle>
           <CloseButton onClick={onCancel} aria-label="Close modal">
             <X />
           </CloseButton>
         </ModalHeader>
+
+        <TypeSelector>
+          <TypeButton $active={type === 'task'} onClick={() => setType('task')} type="button">
+            📋 Task
+          </TypeButton>
+          <TypeButton $active={type === 'event'} onClick={() => setType('event')} type="button">
+            📅 Event
+          </TypeButton>
+        </TypeSelector>
 
         {error && (
           <Alert variant="error" style={{ marginBottom: '16px' }}>
@@ -133,45 +195,101 @@ export const QuickAddTaskModal = ({ date, onSubmit, onCancel }: QuickAddTaskModa
 
         <form onSubmit={handleSubmit}>
           <FormGroup>
-            <Label htmlFor="task-title">Task Title *</Label>
+            <Label htmlFor="item-title">{type === 'task' ? 'Task' : 'Event'} Title *</Label>
             <Input
-              id="task-title"
+              id="item-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="What needs to be done?"
+              placeholder={type === 'task' ? 'What needs to be done?' : 'Event name?'}
               maxLength={200}
               disabled={isSubmitting}
               autoFocus
             />
           </FormGroup>
 
-          <FormGroup>
-            <Label htmlFor="task-priority">Priority</Label>
-            <Input
-              as="select"
-              id="task-priority"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value as 'Low' | 'Medium' | 'High' | 'Critical')}
-              disabled={isSubmitting}
-            >
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
-              <option value="Critical">Critical</option>
-            </Input>
-          </FormGroup>
+          {type === 'task' ? (
+            <>
+              <FormGroup>
+                <Label htmlFor="task-priority">Priority</Label>
+                <Input
+                  as="select"
+                  id="task-priority"
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value as 'Low' | 'Medium' | 'High' | 'Critical')}
+                  disabled={isSubmitting}
+                >
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                  <option value="Critical">Critical</option>
+                </Input>
+              </FormGroup>
 
-          <FormGroup>
-            <Label htmlFor="task-due-date">Due Date</Label>
-            <Input
-              id="task-due-date"
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              disabled={isSubmitting}
-            />
-          </FormGroup>
+              <FormGroup>
+                <Label htmlFor="task-due-date">Due Date</Label>
+                <Input
+                  id="task-due-date"
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  disabled={isSubmitting}
+                />
+              </FormGroup>
+            </>
+          ) : (
+            <>
+              <FormGroup>
+                <Label htmlFor="event-date">Date</Label>
+                <Input
+                  id="event-date"
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  disabled={isSubmitting}
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <Label>
+                  <input
+                    type="checkbox"
+                    checked={isAllDay}
+                    onChange={(e) => setIsAllDay(e.target.checked)}
+                    disabled={isSubmitting}
+                    style={{ marginRight: '8px' }}
+                  />
+                  All Day Event
+                </Label>
+              </FormGroup>
+
+              {!isAllDay && (
+                <>
+                  <FormGroup>
+                    <Label htmlFor="start-time">Start Time</Label>
+                    <Input
+                      id="start-time"
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      disabled={isSubmitting}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label htmlFor="end-time">End Time</Label>
+                    <Input
+                      id="end-time"
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      disabled={isSubmitting}
+                    />
+                  </FormGroup>
+                </>
+              )}
+            </>
+          )}
 
           <ButtonGroup>
             <Button 
@@ -181,7 +299,7 @@ export const QuickAddTaskModal = ({ date, onSubmit, onCancel }: QuickAddTaskModa
               disabled={isSubmitting}
               style={{ flex: 1 }}
             >
-              {isSubmitting ? 'Adding...' : 'Add Task'}
+              {isSubmitting ? 'Adding...' : `Add ${type === 'task' ? 'Task' : 'Event'}`}
             </Button>
             <Button 
               type="button" 

@@ -287,6 +287,20 @@ const CalendarPage = () => {
     }
   };
 
+  const handleAddEvent = async (data: { title: string; startDate: string; endDate: string; isAllDay?: boolean }) => {
+    try {
+      const newEvent = await eventService.createEvent(data);
+      setEvents((prev) => [...prev, newEvent]);
+      showToast('success', 'Event added successfully');
+      setShowQuickAdd(false);
+      setSelectedDate(null);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to create event';
+      showToast('error', message);
+      throw err;
+    }
+  };
+
   const handleUpdateTask = async (
     id: string,
     data: {
@@ -506,7 +520,8 @@ const CalendarPage = () => {
       {showQuickAdd && selectedDate && (
         <QuickAddTaskModal
           date={selectedDate}
-          onSubmit={handleAddTask}
+          onSubmitTask={handleAddTask}
+          onSubmitEvent={handleAddEvent}
           onCancel={() => {
             setShowQuickAdd(false);
             setSelectedDate(null);
