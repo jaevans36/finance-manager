@@ -9,7 +9,7 @@ export const StyledCalendar = styled(Calendar)`
   min-height: 600px;
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 8px;
-  background: ${({ theme }) => theme.colors.background};
+  background: ${({ theme }) => theme.colors.cardBackground};
   font-family: ${({ theme }) => theme.fonts.body};
   padding: 16px;
   box-sizing: border-box;
@@ -21,8 +21,8 @@ export const StyledCalendar = styled(Calendar)`
     margin-bottom: 16px;
 
     button {
-      background: transparent;
-      border: none;
+      background: ${({ theme }) => theme.colors.backgroundSecondary};
+      border: 1px solid ${({ theme }) => theme.colors.border};
       color: ${({ theme }) => theme.colors.text};
       font-size: 16px;
       font-weight: 600;
@@ -32,7 +32,8 @@ export const StyledCalendar = styled(Calendar)`
       transition: all 0.2s ease;
 
       &:hover:not(:disabled) {
-        background: ${({ theme }) => theme.colors.backgroundSecondary};
+        background: ${({ theme }) => theme.colors.backgroundTertiary};
+        border-color: ${({ theme }) => theme.colors.primary};
       }
 
       &:disabled {
@@ -55,6 +56,9 @@ export const StyledCalendar = styled(Calendar)`
     font-weight: 600;
     color: ${({ theme }) => theme.colors.textSecondary};
     margin-bottom: 8px;
+    background: ${({ theme }) => theme.colors.backgroundSecondary};
+    padding: 8px 0;
+    border-radius: 6px;
 
     abbr {
       text-decoration: none;
@@ -69,7 +73,7 @@ export const StyledCalendar = styled(Calendar)`
     align-items: center;
     justify-content: flex-start;
     padding: 8px 4px;
-    background: ${({ theme }) => theme.colors.background};
+    background: ${({ theme }) => theme.colors.backgroundSecondary};
     border: 1px solid ${({ theme }) => theme.colors.border};
     border-radius: 6px;
     cursor: pointer;
@@ -83,8 +87,9 @@ export const StyledCalendar = styled(Calendar)`
     }
 
     &:hover:not(:disabled) {
-      background: ${({ theme }) => theme.colors.backgroundSecondary};
+      background: ${({ theme }) => theme.colors.backgroundTertiary};
       border-color: ${({ theme }) => theme.colors.primary};
+      box-shadow: 0 2px 8px ${({ theme }) => theme.colors.shadow};
     }
 
     &:disabled {
@@ -101,9 +106,10 @@ export const StyledCalendar = styled(Calendar)`
 
   /* Today's date */
   .react-calendar__tile--now {
-    background: ${({ theme }) => theme.colors.primaryLight};
+    background: ${({ theme }) => theme.colors.backgroundTertiary};
     border: 2px solid ${({ theme }) => theme.colors.primary};
     font-weight: 700;
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primary}20;
 
     abbr {
       color: ${({ theme }) => theme.colors.primary};
@@ -118,16 +124,24 @@ export const StyledCalendar = styled(Calendar)`
     abbr {
       color: white;
     }
+
+    &:hover {
+      background: ${({ theme }) => theme.colors.primaryHover};
+    }
   }
 
   /* Weekend days */
   .react-calendar__month-view__days__day--weekend {
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
+    background: ${({ theme }) => theme.colors.backgroundTertiary};
   }
 
   /* Neighboring month days */
   .react-calendar__month-view__days__day--neighboringMonth {
     opacity: 0.3;
+
+    abbr {
+      color: ${({ theme }) => theme.colors.textSecondary};
+    }
   }
 
   /* Month view grid */
