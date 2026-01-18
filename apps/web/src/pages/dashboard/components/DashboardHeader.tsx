@@ -1,7 +1,7 @@
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button, Flex, Heading1, TextSecondary } from '../../../components/ui';
-import { Calendar, BarChart3, UserIcon } from 'lucide-react';
+import { LayoutDashboard, ListTodo, Calendar, BarChart3, UserIcon } from 'lucide-react';
 
 const HeaderContainer = styled(Flex)`
   margin-bottom: 30px;
@@ -24,6 +24,21 @@ const HeaderContainer = styled(Flex)`
   }
 `;
 
+const NavButton = styled(Button)<{ $isActive?: boolean }>`
+  background: ${({ $isActive, theme }) => 
+    $isActive ? theme.colors.primary : 'transparent'};
+  color: ${({ $isActive, theme }) => 
+    $isActive ? '#fff' : theme.colors.text};
+  border-color: ${({ $isActive, theme }) => 
+    $isActive ? theme.colors.primary : theme.colors.border};
+
+  &:hover {
+    background: ${({ $isActive, theme }) => 
+      $isActive ? theme.colors.primary : theme.colors.backgroundSecondary};
+    color: ${({ $isActive }) => $isActive ? '#fff' : 'inherit'};
+  }
+`;
+
 interface DashboardHeaderProps {
   username: string;
   onLogout: () => void;
@@ -31,26 +46,60 @@ interface DashboardHeaderProps {
 
 export const DashboardHeader = ({ username, onLogout }: DashboardHeaderProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   return (
     <HeaderContainer justify="space-between" align="center" as="header" role="banner">
       <div>
-        <Heading1 style={{ margin: 0 }}>Dashboard</Heading1>
+        <Heading1 style={{ margin: 0 }}>To Do Manager</Heading1>
         <TextSecondary style={{ margin: '5px 0 0' }}>Welcome back, @{username}</TextSecondary>
       </div>
       <Flex gap={12} as="nav" aria-label="User navigation">
-        <Button variant="outline" onClick={() => navigate('/calendar')} aria-label="View calendar">
+        <NavButton 
+          variant="outline" 
+          onClick={() => navigate('/dashboard')} 
+          aria-label="View dashboard"
+          $isActive={location.pathname === '/dashboard'}
+        >
+          <LayoutDashboard size={18} aria-hidden="true" style={{ marginRight: 4 }} />
+          Dashboard
+        </NavButton>
+        <NavButton 
+          variant="outline" 
+          onClick={() => navigate('/tasks')} 
+          aria-label="View tasks"
+          $isActive={location.pathname === '/tasks'}
+        >
+          <ListTodo size={18} aria-hidden="true" style={{ marginRight: 4 }} />
+          Tasks
+        </NavButton>
+        <NavButton 
+          variant="outline" 
+          onClick={() => navigate('/calendar')} 
+          aria-label="View calendar"
+          $isActive={location.pathname === '/calendar'}
+        >
           <Calendar size={18} aria-hidden="true" style={{ marginRight: 4 }} />
           Calendar
-        </Button>
-        <Button variant="outline" onClick={() => navigate('/weekly-progress')} aria-label="View weekly progress dashboard">
+        </NavButton>
+        <NavButton 
+          variant="outline" 
+          onClick={() => navigate('/weekly-progress')} 
+          aria-label="View weekly progress"
+          $isActive={location.pathname === '/weekly-progress'}
+        >
           <BarChart3 size={18} aria-hidden="true" style={{ marginRight: 4 }} />
-          Weekly Progress
-        </Button>
-        <Button variant="outline" onClick={() => navigate('/profile')} aria-label="Go to profile page">
+          Progress
+        </NavButton>
+        <NavButton 
+          variant="outline" 
+          onClick={() => navigate('/profile')} 
+          aria-label="Go to profile page"
+          $isActive={location.pathname === '/profile'}
+        >
           <UserIcon size={18} aria-hidden="true" />
           Profile
-        </Button>
+        </NavButton>
         <Button variant="danger" onClick={onLogout} aria-label="Logout from account">
           Logout
         </Button>

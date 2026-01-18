@@ -12,6 +12,7 @@ import { LoadingSpinner } from './components/ui';
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
 const DashboardPage = lazy(() => import('./pages/dashboard/DashboardPage'));
+const TasksPage = lazy(() => import('./pages/tasks/TasksPage'));
 const ProfilePage = lazy(() => import('./pages/profile/ProfilePage'));
 const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'));
@@ -41,6 +42,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <DashboardPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/tasks"
+                  element={
+                    <ProtectedRoute>
+                      <TasksPage />
                     </ProtectedRoute>
                   }
                 />

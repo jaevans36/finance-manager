@@ -1,376 +1,420 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { useToast } from '../../contexts/ToastContext';
-import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { taskService } from '../../services/taskService';
 import { eventService } from '../../services/eventService';
 import { taskGroupService } from '../../services/taskGroupService';
-import { CreateTaskForm } from '../../components/tasks/CreateTaskForm';
-import { EventForm } from '../../components/events/EventForm';
-import { EditTaskModal } from '../../components/tasks/EditTaskModal';
-import { TaskList } from '../../components/tasks/TaskList';
-import { TaskGroupList } from '../../components/task-groups/TaskGroupList';
-import { TaskStatistics } from '../../components/dashboard/TaskStatistics';
-import { TaskSkeleton } from '../../components/dashboard/TaskSkeleton';
-import { TaskSearch } from '../../components/dashboard/TaskSearch';
-import { Button, Alert, Container } from '../../components/ui';
-import { XCircle, ChevronDown } from 'lucide-react';
-import { TaskGroup } from '../../types/taskGroup';
-import { DashboardHeader, DashboardLayout } from './components';
+import { Container } from '../../components/ui';
+import { DashboardHeader } from './components';
+import { 
+  CheckCircle, 
+  Calendar, 
+  FolderKanban, 
+  ListTodo, 
+  TrendingUp,
+  Clock,
+  AlertCircle
+} from 'lucide-react';
 import styled from 'styled-components';
-import type { Event, CreateEventRequest } from '../../types/event';
+import type { Event } from '../../types/event';
 
-const AddButtonContainer = styled.div`
-  position: relative;
-  display: inline-block;
-  margin-bottom: 20px;
+
+const WelcomeSection = styled.div`
+  margin-bottom: 32px;
 `;
 
-const AddButton = styled(Button)`
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const DropdownMenu = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 8px;
-  background: ${({ theme }) => theme.colors.background};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  min-width: 200px;
-  overflow: hidden;
-`;
-
-const DropdownItem = styled.button`
-  width: 100%;
-  padding: 12px 16px;
-  background: none;
-  border: none;
-  text-align: left;
-  font-size: 14px;
+const WelcomeTitle = styled.h1`
+  font-size: 32px;
+  font-weight: 700;
   color: ${({ theme }) => theme.colors.text};
-  cursor: pointer;
-  transition: background 0.2s ease;
+  margin: 0 0 8px 0;
+`;
+
+const WelcomeSubtitle = styled.p`
+  font-size: 16px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin: 0;
+`;
+
+const DashboardGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+`;
+
+const StatCard = styled.div`
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 12px;
+  padding: 24px;
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.2s ease;
+  cursor: pointer;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+const StatHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const StatIcon = styled.div`
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: ${({ theme, color }) => `${theme.colors[color || 'primary']}15`};
+  color: ${({ theme, color }) => theme.colors[color || 'primary']};
+`;
+
+const StatValue = styled.div`
+  font-size: 32px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const StatLabel = styled.div`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-weight: 500;
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 20px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  margin: 0 0 16px 0;
+`;
+
+const QuickActionsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+`;
+
+const QuickActionCard = styled.button`
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primary}15;
+    border-color: ${({ theme }) => theme.colors.primary};
+    transform: translateX(4px);
   }
 
-  &:not(:last-child) {
-    border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  span {
+    font-size: 15px;
+    font-weight: 500;
+    color: ${({ theme }) => theme.colors.text};
   }
+`;
+
+const UpcomingSection = styled.div`
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+`;
+
+const EventItem = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-radius: 8px;
+  background: ${({ theme }) => theme.colors.background};
+  margin-bottom: 8px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const EventDetails = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const EventDate = styled.div`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-weight: 500;
+`;
+
+const EventTitle = styled.div`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.text};
+  font-weight: 500;
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 24px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: 14px;
 `;
 
 interface Task {
   id: string;
   title: string;
-  description: string | null;
-  priority: 'Low' | 'Medium' | 'High' | 'Critical';
+  priority: string;
   dueDate: string | null;
   completed: boolean;
-  completedAt: string | null;
-  userId: string;
-  groupId: string | null;
-  groupName: string | null;
-  groupColour: string | null;
-  createdAt: string;
-  updatedAt: string;
 }
 
 const DashboardPage = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const toast = useToast();
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [groups, setGroups] = useState<TaskGroup[]>([]);
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [stats, setStats] = useState({
+    totalTasks: 0,
+    completedTasks: 0,
+    upcomingEvents: 0,
+    taskGroups: 0,
+    dueTodayCount: 0,
+    overdueCount: 0
+  });
+  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+  const [recentTasks, setRecentTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [groupsLoading, setGroupsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [createType, setCreateType] = useState<'task' | 'event'>('task');
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Keyboard shortcuts: N = new item, / = search, Esc = close modals/unfocus search
-  useKeyboardShortcuts({
-    'n': () => {
-      if (!showCreateForm && !editingTask) {
-        setShowCreateForm(true);
-      }
-    },
-    '/': (event) => {
-      event.preventDefault();
-      searchInputRef.current?.focus();
-    },
-    'Escape': () => {
-      if (showCreateForm) {
-        setShowCreateForm(false);
-      } else if (editingTask) {
-        setEditingTask(null);
-      } else if (document.activeElement === searchInputRef.current) {
-        searchInputRef.current?.blur();
-      }
-    }
-  }, [showCreateForm, editingTask]);
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
 
-  const loadTasks = async () => {
+  const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const tasks = await taskService.getTasks();
-      setTasks(tasks);
-      setError('');
-    } catch (err) {
-      toast.error('Failed to load tasks');
-      setError('Failed to load tasks');
-      console.error(err);
+      
+      // Load all data in parallel
+      const [tasks, events, groups] = await Promise.all([
+        taskService.getTasks(),
+        eventService.getEvents(),
+        taskGroupService.getGroups()
+      ]);
+
+      // Calculate stats
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const todayEnd = new Date(today);
+      todayEnd.setHours(23, 59, 59, 999);
+
+      const completedTasks = tasks.filter(t => t.completed).length;
+      const dueTodayCount = tasks.filter(t => {
+        if (!t.dueDate || t.completed) return false;
+        const dueDate = new Date(t.dueDate);
+        return dueDate >= today && dueDate <= todayEnd;
+      }).length;
+
+      const overdueCount = tasks.filter(t => {
+        if (!t.dueDate || t.completed) return false;
+        return new Date(t.dueDate) < today;
+      }).length;
+
+      // Get upcoming events (next 7 days)
+      const nextWeek = new Date(now);
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      
+      const upcoming = events
+        .filter(e => {
+          const eventStart = new Date(e.startTime);
+          return eventStart >= now && eventStart <= nextWeek;
+        })
+        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+        .slice(0, 5);
+
+      // Get recent incomplete tasks
+      const recent = tasks
+        .filter(t => !t.completed)
+        .sort((a, b) => {
+          // Sort by priority then due date
+          const priorityOrder = { Critical: 0, High: 1, Medium: 2, Low: 3 };
+          const priorityDiff = priorityOrder[a.priority as keyof typeof priorityOrder] - priorityOrder[b.priority as keyof typeof priorityOrder];
+          if (priorityDiff !== 0) return priorityDiff;
+          if (!a.dueDate) return 1;
+          if (!b.dueDate) return -1;
+          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+        })
+        .slice(0, 5);
+
+      setStats({
+        totalTasks: tasks.length,
+        completedTasks,
+        upcomingEvents: upcoming.length,
+        taskGroups: groups.length,
+        dueTodayCount,
+        overdueCount
+      });
+
+      setUpcomingEvents(upcoming);
+      setRecentTasks(recent);
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const loadGroups = async () => {
-    try {
-      setGroupsLoading(true);
-      const groups = await taskGroupService.getGroups();
-      setGroups(groups);
-    } catch (err) {
-      console.error('Failed to load groups:', err);
-    } finally {
-      setGroupsLoading(false);
+  const formatEventDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (date >= today && date < tomorrow) {
+      return `Today at ${date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;
+    } else if (date >= tomorrow && date < new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000)) {
+      return `Tomorrow at ${date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;
+    } else {
+      return date.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     }
   };
 
-  useEffect(() => {
-    loadTasks();
-    loadGroups();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const filteredTasks = tasks
-    .filter((task) => {
-      // Filter by group
-      if (selectedGroupId && task.groupId !== selectedGroupId) {
-        return false;
-      }
-      
-      // Filter by search query
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesTitle = task.title.toLowerCase().includes(query);
-        const matchesDescription = task.description?.toLowerCase().includes(query) ?? false;
-        return matchesTitle || matchesDescription;
-      }
-      
-      return true;
-    });
-
-  const handleSelectGroup = (groupId: string | null) => {
-    // Toggle off if clicking the same group
-    setSelectedGroupId(groupId === selectedGroupId ? null : groupId);
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
   };
 
-  const handleCreateTask = async (data: {
-    title: string;
-    description?: string;
-    priority?: 'Low' | 'Medium' | 'High' | 'Critical';
-    dueDate?: string;
-    groupId?: string;
-  }) => {
-    try {
-      const task = await taskService.createTask(data);
-      setTasks((prev) => [task, ...prev]);
-      setShowCreateForm(false);
-      toast.success('Task created successfully');
-      // Reload groups to update task counts
-      loadGroups();
-    } catch (err) {
-      console.error('Failed to create task:', err);
-      toast.error('Failed to create task');
-      // Re-throw so the form can display the error
-      throw err;
-    }
-  };
-
-  const handleCreateEvent = async (data: CreateEventRequest) => {
-    try {
-      await eventService.createEvent(data);
-      setShowCreateForm(false);
-      toast.success('Event created successfully');
-      // Navigate to calendar to see the event
-      navigate('/calendar');
-    } catch (err) {
-      console.error('Failed to create event:', err);
-      toast.error('Failed to create event');
-      // Re-throw so the form can display the error
-      throw err;
-    }
-  };
-
-  const handleUpdateTask = async (
-    id: string,
-    data: {
-      title: string;
-      description?: string;
-      priority?: 'Low' | 'Medium' | 'High' | 'Critical';
-      dueDate?: string;
-    }
-  ) => {
-    try {
-      const updatedTask = await taskService.updateTask(id, data);
-      setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
-      setEditingTask(null);
-      toast.success('Task updated successfully');
-      // Reload groups to update task counts
-      loadGroups();
-    } catch (err) {
-      console.error('Failed to update task:', err);
-      toast.error('Failed to update task');
-      throw err;
-    }
-  };
-
-  const handleToggleComplete = async (id: string) => {
-    try {
-      const task = tasks.find(t => t.id === id);
-      if (!task) return;
-      
-      const updatedTask = await taskService.updateTask(id, { completed: !task.completed });
-      setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
-      toast.success(updatedTask.completed ? 'Task completed!' : 'Task marked as incomplete');
-    } catch (err) {
-      console.error('Failed to toggle task completion:', err);
-      toast.error('Failed to update task');
-    }
-  };
-
-  const handleDeleteTask = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this task?')) {
-      try {
-        await taskService.deleteTask(id);
-        setTasks((prev) => prev.filter((task) => task.id !== id));
-        toast.success('Task deleted successfully');
-        // Reload groups to update task counts
-        loadGroups();
-      } catch (err) {
-        console.error('Failed to delete task:', err);
-        toast.error('Failed to delete task');
-      }
-    }
-  };
-
-  const handleGroupCreated = () => {
-    loadGroups();
-  };
+  if (loading) {
+    return (
+      <Container style={{ padding: '20px', maxWidth: '1200px', width: '80%' }}>
+        <DashboardHeader username={user?.username || ''} onLogout={logout} />
+        <EmptyState>Loading your dashboard...</EmptyState>
+      </Container>
+    );
+  }
 
   return (
     <Container style={{ padding: '20px', maxWidth: '1200px', width: '80%' }}>
       <DashboardHeader username={user?.username || ''} onLogout={logout} />
 
-      {error && (
-        <Alert variant="error" style={{ marginBottom: '20px' }}>
-          <XCircle size={16} />
-          <span>{error}</span>
-        </Alert>
+      <WelcomeSection>
+        <WelcomeTitle>{getGreeting()}, {user?.username}!</WelcomeTitle>
+        <WelcomeSubtitle>Here's your overview for today</WelcomeSubtitle>
+      </WelcomeSection>
+
+      <DashboardGrid>
+        <StatCard onClick={() => navigate('/tasks')}>
+          <StatHeader>
+            <StatIcon color="primary">
+              <CheckCircle size={24} />
+            </StatIcon>
+          </StatHeader>
+          <StatValue>{stats.completedTasks}/{stats.totalTasks}</StatValue>
+          <StatLabel>Tasks Completed</StatLabel>
+        </StatCard>
+
+        <StatCard onClick={() => navigate('/calendar')}>
+          <StatHeader>
+            <StatIcon color="success">
+              <Calendar size={24} />
+            </StatIcon>
+          </StatHeader>
+          <StatValue>{stats.upcomingEvents}</StatValue>
+          <StatLabel>Upcoming Events</StatLabel>
+        </StatCard>
+
+        <StatCard onClick={() => navigate('/tasks')}>
+          <StatHeader>
+            <StatIcon color="warning">
+              <Clock size={24} />
+            </StatIcon>
+          </StatHeader>
+          <StatValue>{stats.dueTodayCount}</StatValue>
+          <StatLabel>Due Today</StatLabel>
+        </StatCard>
+
+        <StatCard onClick={() => navigate('/tasks')}>
+          <StatHeader>
+            <StatIcon color="error">
+              <AlertCircle size={24} />
+            </StatIcon>
+          </StatHeader>
+          <StatValue>{stats.overdueCount}</StatValue>
+          <StatLabel>Overdue Tasks</StatLabel>
+        </StatCard>
+      </DashboardGrid>
+
+      <SectionTitle>Quick Actions</SectionTitle>
+      <QuickActionsGrid>
+        <QuickActionCard onClick={() => navigate('/tasks')}>
+          <ListTodo size={20} />
+          <span>View All Tasks</span>
+        </QuickActionCard>
+        <QuickActionCard onClick={() => navigate('/calendar')}>
+          <Calendar size={20} />
+          <span>Open Calendar</span>
+        </QuickActionCard>
+        <QuickActionCard onClick={() => navigate('/weekly-progress')}>
+          <TrendingUp size={20} />
+          <span>Weekly Progress</span>
+        </QuickActionCard>
+        <QuickActionCard onClick={() => navigate('/tasks')}>
+          <FolderKanban size={20} />
+          <span>Manage Groups</span>
+        </QuickActionCard>
+      </QuickActionsGrid>
+
+      {upcomingEvents.length > 0 && (
+        <UpcomingSection>
+          <SectionTitle>Upcoming Events</SectionTitle>
+          {upcomingEvents.map(event => (
+            <EventItem key={event.id}>
+              <EventDetails>
+                <Calendar size={16} />
+                <div>
+                  <EventTitle>{event.title}</EventTitle>
+                  <EventDate>{formatEventDate(event.startTime)}</EventDate>
+                </div>
+              </EventDetails>
+            </EventItem>
+          ))}
+        </UpcomingSection>
       )}
 
-      <DashboardLayout>
-        <TaskGroupList
-          groups={groups}
-          selectedGroupId={selectedGroupId}
-          onSelectGroup={handleSelectGroup}
-          onGroupCreated={handleGroupCreated}
-          loading={groupsLoading}
-        />
-
-        <main role="main" aria-label="Task management">
-          <TaskStatistics tasks={tasks} totalGroups={groups.length} />
-
-          <TaskSearch ref={searchInputRef} value={searchQuery} onChange={setSearchQuery} />
-
-          {showCreateForm ? (
-            createType === 'task' ? (
-              <CreateTaskForm 
-                onSubmit={handleCreateTask} 
-                onCancel={() => setShowCreateForm(false)}
-                groups={groups}
-                selectedGroupId={selectedGroupId}
-              />
-            ) : (
-              <EventForm
-                onSubmit={handleCreateEvent}
-                onCancel={() => setShowCreateForm(false)}
-                groups={groups}
-              />
-            )
-          ) : (
-            <AddButtonContainer>
-              <AddButton 
-                variant="success" 
-                onClick={() => setShowDropdown(!showDropdown)}
-                aria-label="Create new item"
-              >
-                + New <ChevronDown size={16} />
-              </AddButton>
-              {showDropdown && (
-                <DropdownMenu>
-                  <DropdownItem
-                    onClick={() => {
-                      setCreateType('task');
-                      setShowCreateForm(true);
-                      setShowDropdown(false);
-                    }}
-                  >
-                    📋 Task
-                  </DropdownItem>
-                  <DropdownItem
-                    onClick={() => {
-                      setCreateType('event');
-                      setShowCreateForm(true);
-                      setShowDropdown(false);
-                    }}
-                  >
-                    📅 Event
-                  </DropdownItem>
-                </DropdownMenu>
-              )}
-            </AddButtonContainer>
-          )}
-
-          {loading ? (
-            <div role="status" aria-label="Loading tasks">
-              <TaskSkeleton count={5} />
-            </div>
-          ) : (
-            <TaskList
-              tasks={filteredTasks}
-              isLoading={false}
-              onToggleComplete={handleToggleComplete}
-              onEdit={setEditingTask}
-              onDelete={handleDeleteTask}
-            />
-          )}
-        </main>
-      </DashboardLayout>
-
-      {editingTask && (
-        <EditTaskModal 
-          task={editingTask} 
-          onSubmit={handleUpdateTask} 
-          onCancel={() => setEditingTask(null)}
-        />
+      {recentTasks.length > 0 && (
+        <UpcomingSection>
+          <SectionTitle>Priority Tasks</SectionTitle>
+          {recentTasks.map(task => (
+            <EventItem key={task.id} onClick={() => navigate('/tasks')}>
+              <EventDetails>
+                <ListTodo size={16} />
+                <div>
+                  <EventTitle>{task.title}</EventTitle>
+                  {task.dueDate && (
+                    <EventDate>
+                      Due: {new Date(task.dueDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
+                    </EventDate>
+                  )}
+                </div>
+              </EventDetails>
+            </EventItem>
+          ))}
+        </UpcomingSection>
       )}
     </Container>
   );
