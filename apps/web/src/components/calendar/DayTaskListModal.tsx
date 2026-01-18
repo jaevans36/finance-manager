@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import { X, Check, Circle } from 'lucide-react';
+import { X, Check, Circle, Calendar as CalendarIcon } from 'lucide-react';
 import type { CalendarTask } from '../../types/calendar';
+import type { Event } from '../../types/event';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -203,19 +204,98 @@ const EmptyState = styled.div`
   }
 `;
 
+const SectionHeader = styled.h3`
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin: 24px 0 12px 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:first-of-type {
+    margin-top: 0;
+  }
+`;
+
+const EventList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const EventItem = styled.div`
+  padding: 16px;
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border-radius: 8px;
+  border-left: 4px solid ${({ theme }) => theme.colors.info};
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.backgroundTertiary};
+    transform: translateX(2px);
+  }
+`;
+
+const EventTitle = styled.h4`
+  margin: 0 0 8px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const EventTime = styled.div`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+`;
+
+const EventMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+const EventBadge = styled.span<{ $color?: string }>`
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background: ${({ $color, theme }) => $color || theme.colors.info};
+  color: white;
+`;
+
 interface DayTaskListModalProps {
   date: Date;
   tasks: CalendarTask[];
+  events: Event[];
   onToggleTask: (taskId: string, completed: boolean) => Promise<void>;
   onTaskClick: (task: CalendarTask) => void;
+  onEventClick: (event: Event) => void;
   onCancel: () => void;
 }
 
 export const DayTaskListModal = ({ 
   date, 
-  tasks, 
+  tasks,
+  events, 
   onToggleTask, 
-  onTaskClick, 
+  onTaskClick,
+  onEventClick, 
   onCancel 
 }: DayTaskListModalProps) => {
   const [togglingTasks, setTogglingTasks] = useState<Set<string>>(new Set());
@@ -227,6 +307,23 @@ export const DayTaskListModal = ({
       month: 'long',
       day: 'numeric',
     });
+  };
+
+  const formatEventTime = (event: Event): string => {
+    if (event.isAllDay) {
+      return 'All Day';
+    }
+    const start = new Date(event.startDate);
+    const end = new Date(event.endDate);
+    const startTime = start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const endTime = end.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    
+    // Same day
+    if (start.toDateString() === end.toDateString()) {
+      return `${startTime} - ${endTime}`;
+    }
+    // Multi-day
+    return `${start.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })} ${startTime} - ${end.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })} ${endTime}`;
   };
 
   const handleToggleTask = async (taskId: string, currentCompleted: boolean) => {
@@ -257,46 +354,80 @@ export const DayTaskListModal = ({
         </ModalHeader>
 
         <DateDisplay>
-          {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}
+          {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'} • {events.length} {events.length === 1 ? 'event' : 'events'}
         </DateDisplay>
 
-        {tasks.length === 0 ? (
+        {tasks.length === 0 && events.length === 0 ? (
           <EmptyState>
             <Circle />
-            <p>No tasks scheduled for this date</p>
+            <p>No tasks or events scheduled for this date</p>
           </EmptyState>
         ) : (
-          <TaskList>
-            {tasks.map((task) => (
-              <TaskItem
-                key={task.id}
-                $isCompleted={task.isCompleted}
-                onClick={() => onTaskClick(task)}
-              >
-                <TaskCheckbox
-                  $isCompleted={task.isCompleted}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleToggleTask(task.id, task.isCompleted);
-                  }}
-                  disabled={togglingTasks.has(task.id)}
-                  aria-label={task.isCompleted ? 'Mark as incomplete' : 'Mark as complete'}
-                >
-                  {task.isCompleted && <Check />}
-                </TaskCheckbox>
+          <>
+            {tasks.length > 0 && (
+              <>
+                <SectionHeader>
+                  <Check /> Tasks
+                </SectionHeader>
+                <TaskList>
+                  {tasks.map((task) => (
+                    <TaskItem
+                      key={task.id}
+                      $isCompleted={task.isCompleted}
+                      onClick={() => onTaskClick(task)}
+                    >
+                      <TaskCheckbox
+                        $isCompleted={task.isCompleted}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleTask(task.id, task.isCompleted);
+                        }}
+                        disabled={togglingTasks.has(task.id)}
+                        aria-label={task.isCompleted ? 'Mark as incomplete' : 'Mark as complete'}
+                      >
+                        {task.isCompleted && <Check />}
+                      </TaskCheckbox>
 
-                <TaskContent>
-                  <TaskTitle $isCompleted={task.isCompleted}>{task.title}</TaskTitle>
-                  <TaskMeta>
-                    <PriorityBadge $priority={task.priority}>{task.priority}</PriorityBadge>
-                    {task.groupName && (
-                      <GroupBadge $color={task.groupColor}>{task.groupName}</GroupBadge>
-                    )}
-                  </TaskMeta>
-                </TaskContent>
-              </TaskItem>
-            ))}
-          </TaskList>
+                      <TaskContent>
+                        <TaskTitle $isCompleted={task.isCompleted}>{task.title}</TaskTitle>
+                        <TaskMeta>
+                          <PriorityBadge $priority={task.priority}>{task.priority}</PriorityBadge>
+                          {task.groupName && (
+                            <GroupBadge $color={task.groupColor}>{task.groupName}</GroupBadge>
+                          )}
+                        </TaskMeta>
+                      </TaskContent>
+                    </TaskItem>
+                  ))}
+                </TaskList>
+              </>
+            )}
+
+            {events.length > 0 && (
+              <>
+                <SectionHeader>
+                  <CalendarIcon /> Events
+                </SectionHeader>
+                <EventList>
+                  {events.map((event) => (
+                    <EventItem key={event.id} onClick={() => onEventClick(event)}>
+                      <EventTitle>{event.title}</EventTitle>
+                      <EventTime>
+                        {formatEventTime(event)}
+                      </EventTime>
+                      <EventMeta>
+                        {event.isAllDay && <EventBadge>All Day</EventBadge>}
+                        {event.location && <EventBadge>📍 {event.location}</EventBadge>}
+                        {event.groupName && (
+                          <EventBadge $color={event.groupColour ?? undefined}>{event.groupName}</EventBadge>
+                        )}
+                      </EventMeta>
+                    </EventItem>
+                  ))}
+                </EventList>
+              </>
+            )}
+          </>
         )}
       </ModalContent>
     </ModalOverlay>

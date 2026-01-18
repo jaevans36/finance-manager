@@ -3,14 +3,17 @@ import styled from 'styled-components';
 import { useToast } from '../../contexts/ToastContext';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { PageLayout } from '../../components/layout/PageLayout';
-import { StyledCalendar, TaskBadge } from '../../components/calendar/StyledCalendar';
+import { StyledCalendar, TaskBadge, EventBadge, BadgeContainer } from '../../components/calendar/StyledCalendar';
 import { QuickAddTaskModal } from '../../components/calendar/QuickAddTaskModal';
 import { DayTaskListModal } from '../../components/calendar/DayTaskListModal';
 import { EditTaskModal } from '../../components/tasks/EditTaskModal';
+import { EditEventModal } from '../../components/events/EditEventModal';
 import { CalendarFilters } from '../../components/calendar/CalendarFilters';
 import { CalendarTask } from '../../types/calendar';
 import { taskService } from '../../services/taskService';
+import { eventService } from '../../services/eventService';
 import type { Task } from '../../services/taskService';
+import type { Event } from '../../types/event';
 import type { TaskGroup } from '../../types/taskGroup';
 
 const CalendarContainer = styled.div`
@@ -71,13 +74,16 @@ const CalendarPage = () => {
   const { showToast } = useToast();
   const [value, setValue] = useState<Date>(new Date());
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [showDayTasks, setShowDayTasks] = useState(false);
   const [showEditTask, setShowEditTask] = useState(false);
+  const [showEditEvent, setShowEditEvent] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [groups, setGroups] = useState<TaskGroup[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
   const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
@@ -85,21 +91,21 @@ const CalendarPage = () => {
   // Keyboard shortcuts: Left/Right arrows for month navigation, Enter to add task, Escape to close modals
   useKeyboardShortcuts({
     'ArrowLeft': () => {
-      if (!showQuickAdd && !showDayTasks && !showEditTask) {
+      if (!showQuickAdd && !showDayTasks && !showEditTask && !showEditEvent) {
         const newDate = new Date(value);
         newDate.setMonth(newDate.getMonth() - 1);
         setValue(newDate);
       }
     },
     'ArrowRight': () => {
-      if (!showQuickAdd && !showDayTasks && !showEditTask) {
+      if (!showQuickAdd && !showDayTasks && !showEditTask && !showEditEvent) {
         const newDate = new Date(value);
         newDate.setMonth(newDate.getMonth() + 1);
         setValue(newDate);
       }
     },
     'Enter': () => {
-      if (!showQuickAdd && !showDayTasks && !showEditTask) {
+      if (!showQuickAdd && !showDayTasks && !showEditTask && !showEditEvent) {
         setSelectedDate(new Date());
         setShowQuickAdd(true);
       }
@@ -114,9 +120,12 @@ const CalendarPage = () => {
       } else if (showEditTask) {
         setShowEditTask(false);
         setSelectedTask(null);
+      } else if (showEditEvent) {
+        setShowEditEvent(false);
+        setSelectedEvent(null);
       }
     }
-  }, [showQuickAdd, showDayTasks, showEditTask, value]);
+  }, [showQuickAdd, showDayTasks, showEditTask, showEditEvent, value]);
 
   // Helper to get month start and end dates
   const getMonthRange = (date: Date) => {
@@ -133,7 +142,7 @@ const CalendarPage = () => {
   };
 
   useEffect(() => {
-    loadTasksForMonth(value);
+    loadTasksAndEventsForMonth(value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
@@ -144,25 +153,32 @@ const CalendarPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tasks.length]);
 
-  const loadTasksForMonth = async (monthDate: Date) => {
+  const loadTasksAndEventsForMonth = async (monthDate: Date) => {
     try {
       setLoading(true);
       setError(null);
       
       const { startDate, endDate } = getMonthRange(monthDate);
       
-      // Fetch tasks with date range filtering
-      const fetchedTasks = await taskService.getTasks({
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-      });
+      // Fetch tasks and events in parallel
+      const [fetchedTasks, fetchedEvents] = await Promise.all([
+        taskService.getTasks({
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+        }),
+        eventService.getEvents({
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+        })
+      ]);
       
       setTasks(fetchedTasks);
+      setEvents(fetchedEvents);
     } catch (err: unknown) {
-      const message = 'Failed to load tasks';
+      const message = 'Failed to load calendar data';
       setError(message);
       showToast('error', message);
-      console.error('Error loading tasks:', err);
+      console.error('Error loading calendar data:', err);
     } finally {
       setLoading(false);
     }
@@ -231,6 +247,19 @@ const CalendarPage = () => {
       const dueDate = new Date(task.dueDate);
       return dueDate.getMonth() === currentMonth && dueDate.getFullYear() === currentYear;
     }).length;
+  };
+
+  const getMonthEventCount = (): number => {
+    const currentMonth = value.getMonth();
+    const currentYear = value.getFullYear();
+    return events.filter((event) => {
+      const startDate = new Date(event.startDate);
+      return startDate.getMonth() === currentMonth && startDate.getFullYear() === currentYear;
+    }).length;
+  };
+
+  const hasMonthContent = (): boolean => {
+    return getMonthTaskCount() > 0 || getMonthEventCount() > 0;
   };
 
   const handleAddTask = async (data: { title: string; priority: string; dueDate: string; groupId?: string }) => {
@@ -318,6 +347,19 @@ const CalendarPage = () => {
     }
   };
 
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setShowDayTasks(false);
+    setShowEditEvent(true);
+  };
+
+  const handleUpdateEvent = (updatedEvent: Event) => {
+    setEvents((prev) => prev.map((e) => (e.id === updatedEvent.id ? updatedEvent : e)));
+    showToast('success', 'Event updated successfully');
+    setShowEditEvent(false);
+    setSelectedEvent(null);
+  };
+
   const getTasksForDate = (date: Date): CalendarTask[] => {
     const filteredTasks = getFilteredTasks();
     return filteredTasks
@@ -342,9 +384,24 @@ const CalendarPage = () => {
       }));
   };
 
+  const getEventsForDate = (date: Date): Event[] => {
+    return events.filter((event) => {
+      const startDate = new Date(event.startDate);
+      const endDate = new Date(event.endDate);
+      
+      // Check if the date falls within the event's date range
+      const dateStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const dateEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59);
+      
+      return startDate <= dateEnd && endDate >= dateStart;
+    });
+  };
+
   const getTileContent = ({ date }: { date: Date }) => {
     const dayTasks = getTasksForDate(date);
-    if (dayTasks.length === 0) return null;
+    const dayEvents = getEventsForDate(date);
+    
+    if (dayTasks.length === 0 && dayEvents.length === 0) return null;
 
     const highestPriority = dayTasks.reduce((highest, task) => {
       const priorities = ['Low', 'Medium', 'High', 'Critical'];
@@ -353,17 +410,32 @@ const CalendarPage = () => {
       return currentIndex > highestIndex ? task.priority : highest;
     }, 'Low');
 
-    // Create tooltip with task titles
-    const tooltipText = dayTasks.map((task) => `• ${task.title}`).join('\n');
+    // Create tooltip with task and event titles
+    const taskTitles = dayTasks.map((task) => `📋 ${task.title}`).join('\n');
+    const eventTitles = dayEvents.map((event) => `📅 ${event.title}`).join('\n');
+    const tooltipText = [taskTitles, eventTitles].filter(Boolean).join('\n');
 
     return (
-      <TaskBadge
-        priority={highestPriority}
-        onClick={(e) => handleBadgeClick(e, date)}
-        title={tooltipText}
-      >
-        {dayTasks.length}
-      </TaskBadge>
+      <BadgeContainer>
+        {dayTasks.length > 0 && (
+          <TaskBadge
+            priority={highestPriority}
+            onClick={(e) => handleBadgeClick(e, date)}
+            title={tooltipText}
+          >
+            {dayTasks.length}
+          </TaskBadge>
+        )}
+        {dayEvents.length > 0 && (
+          <EventBadge
+            color="#3B82F6"
+            onClick={(e) => handleBadgeClick(e, date)}
+            title={tooltipText}
+          >
+            {dayEvents.length}
+          </EventBadge>
+        )}
+      </BadgeContainer>
     );
   };
 
@@ -389,10 +461,10 @@ const CalendarPage = () => {
       }
     >
       <CalendarContainer>
-        {getMonthTaskCount() === 0 && !loading && (
+        {!hasMonthContent() && !loading && (
           <EmptyState>
-            <h3>No Tasks This Month</h3>
-            <p>Click on any date to create your first task</p>
+            <h3>No Tasks or Events This Month</h3>
+            <p>Click on any date to create a task or event</p>
             <KeyboardHint>
               <kbd>←</kbd> <kbd>→</kbd> Navigate months • <kbd>Enter</kbd> Quick add task • <kbd>Esc</kbd> Close modal
             </KeyboardHint>
@@ -433,8 +505,10 @@ const CalendarPage = () => {
         <DayTaskListModal
           date={selectedDate}
           tasks={getTasksForDate(selectedDate)}
+          events={getEventsForDate(selectedDate)}
           onToggleTask={handleToggleTask}
           onTaskClick={handleTaskClick}
+          onEventClick={handleEventClick}
           onCancel={() => {
             setShowDayTasks(false);
             setSelectedDate(null);
@@ -450,6 +524,18 @@ const CalendarPage = () => {
             setShowEditTask(false);
             setSelectedTask(null);
           }}
+        />
+      )}
+
+      {showEditEvent && selectedEvent && (
+        <EditEventModal
+          event={selectedEvent}
+          onSubmit={handleUpdateEvent}
+          onCancel={() => {
+            setShowEditEvent(false);
+            setSelectedEvent(null);
+          }}
+          groups={groups}
         />
       )}
     </PageLayout>

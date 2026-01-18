@@ -206,3 +206,32 @@ export const TaskBadge = styled.div<{ priority: string }>`
     transform: scale(1.1);
   }
 `;
+
+export const EventBadge = styled.div<{ color?: string }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 20px;
+  padding: 0 6px;
+  margin-top: 4px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  background: ${({ color }) => color || '#3B82F6'};
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+`;
+
+export const BadgeContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+`;
