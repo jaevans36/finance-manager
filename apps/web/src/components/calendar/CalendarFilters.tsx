@@ -122,8 +122,13 @@ interface CalendarFiltersProps {
   selectedGroupId: string;
   selectedPriorities: string[];
   taskCount: number;
+  eventCount: number;
+  showTasks: boolean;
+  showEvents: boolean;
   onGroupChange: (groupId: string) => void;
   onPriorityChange: (priorities: string[]) => void;
+  onShowTasksChange: (show: boolean) => void;
+  onShowEventsChange: (show: boolean) => void;
   onClearFilters: () => void;
   hasActiveFilters: boolean;
 }
@@ -133,8 +138,13 @@ export const CalendarFilters = ({
   selectedGroupId,
   selectedPriorities,
   taskCount,
+  eventCount,
+  showTasks,
+  showEvents,
   onGroupChange,
   onPriorityChange,
+  onShowTasksChange,
+  onShowEventsChange,
   onClearFilters,
   hasActiveFilters,
 }: CalendarFiltersProps) => {
@@ -148,6 +158,26 @@ export const CalendarFilters = ({
 
   return (
     <FilterBar>
+      <FilterGroup>
+        <FilterLabel>Show:</FilterLabel>
+        <ToggleGroup>
+          <ToggleButton
+            $active={showTasks}
+            onClick={() => onShowTasksChange(!showTasks)}
+            type="button"
+          >
+            📋 Tasks
+          </ToggleButton>
+          <ToggleButton
+            $active={showEvents}
+            onClick={() => onShowEventsChange(!showEvents)}
+            type="button"
+          >
+            📅 Events
+          </ToggleButton>
+        </ToggleGroup>
+      </FilterGroup>
+
       <FilterGroup>
         <FilterLabel htmlFor="group-filter">Group:</FilterLabel>
         <Select
@@ -187,7 +217,15 @@ export const CalendarFilters = ({
         </ClearButton>
       )}
 
-      <SummaryText>{taskCount} tasks this month</SummaryText>
+      <SummaryText>
+        {showTasks && showEvents
+          ? `${taskCount} tasks • ${eventCount} events`
+          : showTasks
+          ? `${taskCount} tasks`
+          : showEvents
+          ? `${eventCount} events`
+          : 'No filters active'}
+      </SummaryText>
     </FilterBar>
   );
 };

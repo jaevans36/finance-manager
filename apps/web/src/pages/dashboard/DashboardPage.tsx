@@ -4,8 +4,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { taskService } from '../../services/taskService';
+import { eventService } from '../../services/eventService';
 import { taskGroupService } from '../../services/taskGroupService';
 import { CreateTaskForm } from '../../components/tasks/CreateTaskForm';
+import { EventForm } from '../../components/events/EventForm';
 import { EditTaskModal } from '../../components/tasks/EditTaskModal';
 import { TaskList } from '../../components/tasks/TaskList';
 import { TaskGroupList } from '../../components/task-groups/TaskGroupList';
@@ -13,9 +15,61 @@ import { TaskStatistics } from '../../components/dashboard/TaskStatistics';
 import { TaskSkeleton } from '../../components/dashboard/TaskSkeleton';
 import { TaskSearch } from '../../components/dashboard/TaskSearch';
 import { Button, Alert, Container } from '../../components/ui';
-import { XCircle } from 'lucide-react';
+import { XCircle, ChevronDown } from 'lucide-react';
 import { TaskGroup } from '../../types/taskGroup';
 import { DashboardHeader, DashboardLayout } from './components';
+import styled from 'styled-components';
+import type { Event, CreateEventRequest } from '../../types/event';
+
+const AddButtonContainer = styled.div`
+  position: relative;
+  display: inline-block;
+  margin-bottom: 20px;
+`;
+
+const AddButton = styled(Button)`
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const DropdownMenu = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  background: ${({ theme }) => theme.colors.background};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 200px;
+  overflow: hidden;
+`;
+
+const DropdownItem = styled.button`
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.text};
+  cursor: pointer;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.backgroundSecondary};
+  }
+
+  &:not(:last-child) {
+    border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  }
+`;
 
 interface Task {
   id: string;
@@ -45,10 +99,12 @@ const DashboardPage = () => {
   const [groupsLoading, setGroupsLoading] = useState(true);
   const [error, setError] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createType, setCreateType] = useState<'task' | 'event'>('task');
+  const [showDropdown, setShowDropdown] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Keyboard shortcuts: N = new task, / = search, Esc = close modals/unfocus search
+  // Keyboard shortcuts: N = new item, / = search, Esc = close modals/unfocus search
   useKeyboardShortcuts({
     'n': () => {
       if (!showCreateForm && !editingTask) {
@@ -148,6 +204,21 @@ const DashboardPage = () => {
     }
   };
 
+  const handleCreateEvent = async (data: CreateEventRequest) => {
+    try {
+      await eventService.createEvent(data);
+      setShowCreateForm(false);
+      toast.success('Event created successfully');
+      // Navigate to calendar to see the event
+      navigate('/calendar');
+    } catch (err) {
+      console.error('Failed to create event:', err);
+      toast.error('Failed to create event');
+      // Re-throw so the form can display the error
+      throw err;
+    }
+  };
+
   const handleUpdateTask = async (
     id: string,
     data: {
@@ -230,21 +301,52 @@ const DashboardPage = () => {
           <TaskSearch ref={searchInputRef} value={searchQuery} onChange={setSearchQuery} />
 
           {showCreateForm ? (
-            <CreateTaskForm 
-              onSubmit={handleCreateTask} 
-              onCancel={() => setShowCreateForm(false)}
-              groups={groups}
-              selectedGroupId={selectedGroupId}
-            />
+            createType === 'task' ? (
+              <CreateTaskForm 
+                onSubmit={handleCreateTask} 
+                onCancel={() => setShowCreateForm(false)}
+                groups={groups}
+                selectedGroupId={selectedGroupId}
+              />
+            ) : (
+              <EventForm
+                onSubmit={handleCreateEvent}
+                onCancel={() => setShowCreateForm(false)}
+                groups={groups}
+              />
+            )
           ) : (
-            <Button 
-              variant="success" 
-              onClick={() => setShowCreateForm(true)}
-              style={{ marginBottom: '20px', fontSize: '16px' }}
-              aria-label="Create new task"
-            >
-              + New Task
-            </Button>
+            <AddButtonContainer>
+              <AddButton 
+                variant="success" 
+                onClick={() => setShowDropdown(!showDropdown)}
+                aria-label="Create new item"
+              >
+                + New <ChevronDown size={16} />
+              </AddButton>
+              {showDropdown && (
+                <DropdownMenu>
+                  <DropdownItem
+                    onClick={() => {
+                      setCreateType('task');
+                      setShowCreateForm(true);
+                      setShowDropdown(false);
+                    }}
+                  >
+                    📋 Task
+                  </DropdownItem>
+                  <DropdownItem
+                    onClick={() => {
+                      setCreateType('event');
+                      setShowCreateForm(true);
+                      setShowDropdown(false);
+                    }}
+                  >
+                    📅 Event
+                  </DropdownItem>
+                </DropdownMenu>
+              )}
+            </AddButtonContainer>
           )}
 
           {loading ? (

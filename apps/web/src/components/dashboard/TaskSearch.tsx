@@ -67,7 +67,7 @@ export const TaskSearch = forwardRef<HTMLInputElement, TaskSearchProps>((
   {
     value,
     onChange,
-    placeholder = 'Search tasks by title or description...'
+    placeholder = 'Search by title or description...'
   },
   ref
 ) => {

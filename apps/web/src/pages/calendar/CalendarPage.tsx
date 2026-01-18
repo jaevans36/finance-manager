@@ -87,6 +87,8 @@ const CalendarPage = () => {
   const [groups, setGroups] = useState<TaskGroup[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
   const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
+  const [showTasks, setShowTasks] = useState(true);
+  const [showEvents, setShowEvents] = useState(true);
 
   // Keyboard shortcuts: Left/Right arrows for month navigation, Enter to add task, Escape to close modals
   useKeyboardShortcuts({
@@ -234,9 +236,15 @@ const CalendarPage = () => {
   const handleClearFilters = () => {
     setSelectedGroupId('');
     setSelectedPriorities([]);
+    setShowTasks(true);
+    setShowEvents(true);
   };
 
-  const hasActiveFilters = selectedGroupId !== '' || selectedPriorities.length > 0;
+  const hasActiveFilters = 
+    selectedGroupId !== '' || 
+    selectedPriorities.length > 0 || 
+    !showTasks || 
+    !showEvents;
 
   const getMonthTaskCount = (): number => {
     const filtered = getFilteredTasks();
@@ -398,8 +406,8 @@ const CalendarPage = () => {
   };
 
   const getTileContent = ({ date }: { date: Date }) => {
-    const dayTasks = getTasksForDate(date);
-    const dayEvents = getEventsForDate(date);
+    const dayTasks = showTasks ? getTasksForDate(date) : [];
+    const dayEvents = showEvents ? getEventsForDate(date) : [];
     
     if (dayTasks.length === 0 && dayEvents.length === 0) return null;
 
@@ -411,13 +419,13 @@ const CalendarPage = () => {
     }, 'Low');
 
     // Create tooltip with task and event titles
-    const taskTitles = dayTasks.map((task) => `📋 ${task.title}`).join('\n');
-    const eventTitles = dayEvents.map((event) => `📅 ${event.title}`).join('\n');
+    const taskTitles = dayTasks.length > 0 ? dayTasks.map((task) => `📋 ${task.title}`).join('\n') : '';
+    const eventTitles = dayEvents.length > 0 ? dayEvents.map((event) => `📅 ${event.title}`).join('\n') : '';
     const tooltipText = [taskTitles, eventTitles].filter(Boolean).join('\n');
 
     return (
       <BadgeContainer>
-        {dayTasks.length > 0 && (
+        {showTasks && dayTasks.length > 0 && (
           <TaskBadge
             priority={highestPriority}
             onClick={(e) => handleBadgeClick(e, date)}
@@ -426,7 +434,7 @@ const CalendarPage = () => {
             {dayTasks.length}
           </TaskBadge>
         )}
-        {dayEvents.length > 0 && (
+        {showEvents && dayEvents.length > 0 && (
           <EventBadge
             color="#3B82F6"
             onClick={(e) => handleBadgeClick(e, date)}
@@ -453,8 +461,13 @@ const CalendarPage = () => {
           selectedGroupId={selectedGroupId}
           selectedPriorities={selectedPriorities}
           taskCount={getMonthTaskCount()}
+          eventCount={getMonthEventCount()}
+          showTasks={showTasks}
+          showEvents={showEvents}
           onGroupChange={setSelectedGroupId}
           onPriorityChange={setSelectedPriorities}
+          onShowTasksChange={setShowTasks}
+          onShowEventsChange={setShowEvents}
           onClearFilters={handleClearFilters}
           hasActiveFilters={hasActiveFilters}
         />
@@ -504,8 +517,8 @@ const CalendarPage = () => {
       {showDayTasks && selectedDate && (
         <DayTaskListModal
           date={selectedDate}
-          tasks={getTasksForDate(selectedDate)}
-          events={getEventsForDate(selectedDate)}
+          tasks={showTasks ? getTasksForDate(selectedDate) : []}
+          events={showEvents ? getEventsForDate(selectedDate) : []}
           onToggleTask={handleToggleTask}
           onTaskClick={handleTaskClick}
           onEventClick={handleEventClick}
