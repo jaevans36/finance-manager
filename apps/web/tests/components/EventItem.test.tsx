@@ -3,7 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import { EventItem } from '../../src/components/events/EventItem';
 import { Event } from '../../src/types/event';
-import { lightTheme } from '../../src/theme';
+import { lightTheme } from '../../src/styles/theme';
 
 const renderWithProviders = (component: React.ReactElement) => {
   return render(
@@ -27,6 +27,8 @@ describe('EventItem', () => {
     reminderMinutes: 15,
     userId: 'user1',
     groupId: null,
+    groupName: null,
+    groupColour: null,
     createdAt: '2026-01-18T12:00:00.000Z',
     updatedAt: '2026-01-18T12:00:00.000Z',
   };

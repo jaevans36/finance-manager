@@ -4,10 +4,14 @@ import userEvent from '@testing-library/user-event';
 import { ThemeProvider } from 'styled-components';
 import { lightTheme } from '../../src/styles/theme';
 import { HistoricalCompletionChart } from '../../src/pages/weekly-progress/components/HistoricalCompletionChart';
-import * as statisticsService from '../../src/services/statisticsService';
+import { statisticsService } from '../../src/services/statisticsService';
 
 // Mock the statisticsService
-jest.mock('../../src/services/statisticsService');
+jest.mock('../../src/services/statisticsService', () => ({
+  statisticsService: {
+    getHistoricalStatistics: jest.fn(),
+  },
+}));
 
 describe('HistoricalCompletionChart - T231.17', () => {
   const mockHistoricalData = [

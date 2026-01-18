@@ -3,7 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import { EventList } from '../../src/components/events/EventList';
 import { Event } from '../../src/types/event';
-import { lightTheme } from '../../src/theme';
+import { lightTheme } from '../../src/styles/theme';
 
 const renderWithProviders = (component: React.ReactElement) => {
   return render(
@@ -28,6 +28,8 @@ describe('EventList', () => {
       reminderMinutes: null,
       userId: 'user1',
       groupId: null,
+      groupName: null,
+      groupColour: null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -42,6 +44,8 @@ describe('EventList', () => {
       reminderMinutes: 30,
       userId: 'user1',
       groupId: null,
+      groupName: null,
+      groupColour: null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -56,6 +60,8 @@ describe('EventList', () => {
       reminderMinutes: null,
       userId: 'user1',
       groupId: null,
+      groupName: null,
+      groupColour: null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },
@@ -64,6 +70,7 @@ describe('EventList', () => {
   const mockHandlers = {
     onEdit: jest.fn(),
     onDelete: jest.fn(),
+    isLoading: false,
   };
 
   beforeEach(() => {
