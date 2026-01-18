@@ -59,5 +59,8 @@ public enum ActivityType
     TaskCreated,
     TaskUpdated,
     TaskDeleted,
-    TaskCompleted
+    TaskCompleted,
+    EventCreated,
+    EventUpdated,
+    EventDeleted
 }
