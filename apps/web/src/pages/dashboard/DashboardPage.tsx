@@ -67,15 +67,19 @@ const StatHeader = styled.div`
   justify-content: space-between;
 `;
 
-const StatIcon = styled.div`
+interface StatIconProps {
+  color?: 'primary' | 'success' | 'warning' | 'error' | 'info';
+}
+
+const StatIcon = styled.div<StatIconProps>`
   width: 48px;
   height: 48px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: ${({ theme, color }) => `${theme.colors[color || 'primary']}15`};
-  color: ${({ theme, color }) => theme.colors[color || 'primary']};
+  background: ${({ theme, color = 'primary' }) => `${theme.colors[color]}15`};
+  color: ${({ theme, color = 'primary' }) => theme.colors[color]};
 `;
 
 const StatValue = styled.div`
