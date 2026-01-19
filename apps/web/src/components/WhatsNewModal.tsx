@@ -251,7 +251,7 @@ export const WhatsNewModal = ({ onClose }: WhatsNewModalProps) => {
           <HeaderIcon>
             <Sparkles size={32} />
           </HeaderIcon>
-          <HeaderTitle id="whats-new-title">What's New in v{versionData.version}</HeaderTitle>
+          <HeaderTitle id="whats-new-title">What&apos;s New in v{versionData.version}</HeaderTitle>
           <HeaderSubtitle id="whats-new-description">
             <Calendar size={14} />
             Released {formatDate(versionData.releaseDate)}
