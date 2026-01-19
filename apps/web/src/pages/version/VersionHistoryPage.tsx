@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
 import { Container } from '../../components/ui';
-import { DashboardHeader } from '../dashboard/components';
 import { Package, Calendar, Info, ChevronDown, ChevronUp, CheckCircle2, AlertCircle, Zap, Bug, FileText } from 'lucide-react';
 import styled from 'styled-components';
-import versionData from '../../../../VERSION.json';
+import versionData from '@workspace/VERSION.json';
 
 const PageTitle = styled.h1`
   font-size: 32px;
@@ -251,7 +249,6 @@ const getChangeIcon = (type: string) => {
 };
 
 const VersionHistoryPage = () => {
-  const { user, logout } = useAuth();
   const [expandedVersions, setExpandedVersions] = useState<Set<string>>(new Set(['0.13.0']));
 
   const toggleVersion = (version: string) => {
@@ -273,8 +270,6 @@ const VersionHistoryPage = () => {
 
   return (
     <Container style={{ padding: '20px', maxWidth: '1000px', width: '80%' }}>
-      <DashboardHeader username={user?.username || ''} onLogout={logout} />
-
       <PageTitle>Version History</PageTitle>
       <PageSubtitle>Explore the evolution of To Do Manager and see what&apos;s been added in each release</PageSubtitle>
 

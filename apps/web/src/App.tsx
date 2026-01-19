@@ -8,7 +8,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoadingSpinner } from './components/ui';
 import { WhatsNewModal } from './components/WhatsNewModal';
 import { AppHeader } from './components/AppHeader';
-import versionData from '../../../VERSION.json';
+import versionData from '@workspace/VERSION.json';
 
 // Lazy load pages for code splitting
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
