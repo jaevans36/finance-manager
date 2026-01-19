@@ -242,10 +242,10 @@ const DashboardPage = () => {
       
       const upcoming = events
         .filter(e => {
-          const eventStart = new Date(e.startTime);
+          const eventStart = new Date(e.startDate);
           return eventStart >= now && eventStart <= nextWeek;
         })
-        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+        .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
         .slice(0, 5);
 
       // Get recent incomplete tasks
@@ -392,7 +392,7 @@ const DashboardPage = () => {
                 <Calendar size={16} />
                 <div>
                   <EventTitle>{event.title}</EventTitle>
-                  <EventDate>{formatEventDate(event.startTime)}</EventDate>
+                  <EventDate>{formatEventDate(event.startDate)}</EventDate>
                 </div>
               </EventDetails>
             </EventItem>
