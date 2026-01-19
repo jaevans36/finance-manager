@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ThemeToggle } from './ThemeToggle';
+import { useTheme } from '../contexts/ThemeContext';
 import { 
   LayoutDashboard, 
   ListTodo, 
@@ -13,7 +13,9 @@ import {
   ChevronDown,
   Clock,
   History,
-  CalendarClock
+  CalendarClock,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 const HeaderContainer = styled.header`
@@ -249,10 +251,43 @@ const UserDropdown = styled(DropdownMenu)`
   min-width: 200px;
 `;
 
+const ThemeButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background-color: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.text};
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.surfaceHover};
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  svg {
+    transition: transform 0.3s ease;
+  }
+
+  @media (max-width: 768px) {
+    width: 32px;
+    height: 32px;
+  }
+`;
+
 export const AppHeader = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { isDarkMode, toggleTheme } = useTheme();
   const [navOpen, setNavOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -368,7 +403,13 @@ export const AppHeader = () => {
           {formatTime()} • {formatDate()}
         </TimeDisplay>
 
-        <ThemeToggle />
+        <ThemeButton 
+          onClick={toggleTheme}
+          aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+        </ThemeButton>
 
         <NavDropdown data-dropdown>
           <UserSection onClick={() => setUserMenuOpen(!userMenuOpen)}>
