@@ -4,7 +4,7 @@ import { Container } from '../../components/ui';
 import { DashboardHeader } from '../dashboard/components';
 import { Package, Calendar, Info, ChevronDown, ChevronUp, CheckCircle2, AlertCircle, Zap, Bug, FileText } from 'lucide-react';
 import styled from 'styled-components';
-import versionData from '../../../VERSION.json';
+import versionData from '../../../../VERSION.json';
 
 const PageTitle = styled.h1`
   font-size: 32px;
