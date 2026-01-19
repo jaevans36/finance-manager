@@ -2,6 +2,13 @@ import { X, Sparkles, CheckCircle2, Calendar } from 'lucide-react';
 import styled from 'styled-components';
 import versionData from '../../../VERSION.json';
 
+interface ChangelogEntry {
+  type: string;
+  category: string;
+  description: string;
+  impact: string;
+}
+
 const Overlay = styled.div`
   position: fixed;
   top: 0;
@@ -273,7 +280,7 @@ export const WhatsNewModal = ({ onClose }: WhatsNewModalProps) => {
                 New Features & Improvements
               </SectionTitle>
               <FeatureList>
-                {versionData.changelog.map((change, index) => (
+                {versionData.changelog.map((change: ChangelogEntry, index: number) => (
                   <FeatureItem key={index}>
                     <FeatureIcon>
                       <CheckCircle2 size={14} />
