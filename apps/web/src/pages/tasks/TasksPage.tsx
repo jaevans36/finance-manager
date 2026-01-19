@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { taskService } from '../../services/taskService';
@@ -95,7 +94,6 @@ interface Task {
 }
 
 const TasksPage = () => {
-  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
   const [tasks, setTasks] = useState<Task[]>([]);

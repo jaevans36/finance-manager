@@ -188,7 +188,7 @@ interface Task {
 }
 
 const DashboardPage = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalTasks: 0,
