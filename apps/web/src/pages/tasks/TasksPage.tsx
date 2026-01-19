@@ -17,7 +17,7 @@ import { TaskSearch } from '../../components/dashboard/TaskSearch';
 import { Button, Alert, Container } from '../../components/ui';
 import { XCircle, ChevronDown } from 'lucide-react';
 import { TaskGroup } from '../../types/taskGroup';
-import { DashboardHeader, DashboardLayout } from '../dashboard/components';
+import { DashboardLayout } from '../dashboard/components';
 import styled from 'styled-components';
 import type { CreateEventRequest } from '../../types/event';
 
@@ -284,8 +284,6 @@ const TasksPage = () => {
 
   return (
     <Container style={{ padding: '20px', maxWidth: '1200px', width: '80%' }}>
-      <DashboardHeader username={user?.username || ''} onLogout={logout} />
-
       <PageTitle>Tasks</PageTitle>
 
       {error && (

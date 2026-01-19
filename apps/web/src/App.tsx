@@ -8,6 +8,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { ThemeToggle } from './components/ThemeToggle';
 import { LoadingSpinner } from './components/ui';
 import { WhatsNewModal } from './components/WhatsNewModal';
+import { AppHeader } from './components/AppHeader';
 import versionData from '../../../VERSION.json';
 
 // Lazy load pages for code splitting
@@ -50,6 +51,7 @@ function App() {
           <AuthProvider>
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <ThemeToggle />
+              <AppHeader />
               {showWhatsNew && <WhatsNewModal onClose={handleCloseWhatsNew} />}
               <Suspense fallback={<LoadingSpinner />}>
                 <Routes>

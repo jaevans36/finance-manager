@@ -5,7 +5,6 @@ import { taskService } from '../../services/taskService';
 import { eventService } from '../../services/eventService';
 import { taskGroupService } from '../../services/taskGroupService';
 import { Container } from '../../components/ui';
-import { DashboardHeader } from './components';
 import { 
   CheckCircle, 
   Calendar, 
@@ -306,7 +305,6 @@ const DashboardPage = () => {
   if (loading) {
     return (
       <Container style={{ padding: '20px', maxWidth: '1200px', width: '80%' }}>
-        <DashboardHeader username={user?.username || ''} onLogout={logout} />
         <EmptyState>Loading your dashboard...</EmptyState>
       </Container>
     );
@@ -314,8 +312,6 @@ const DashboardPage = () => {
 
   return (
     <Container style={{ padding: '20px', maxWidth: '1200px', width: '80%' }}>
-      <DashboardHeader username={user?.username || ''} onLogout={logout} />
-
       <WelcomeSection>
         <WelcomeTitle>{getGreeting()}, {user?.username}!</WelcomeTitle>
         <WelcomeSubtitle>Here&apos;s your overview for today</WelcomeSubtitle>
