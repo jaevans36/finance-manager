@@ -257,15 +257,17 @@ const ThemeButton = styled.button`
   justify-content: center;
   width: 36px;
   height: 36px;
-  border: none;
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 8px;
-  background-color: ${({ theme }) => theme.colors.surface};
+  background-color: ${({ theme }) => theme.colors.cardBackground};
   color: ${({ theme }) => theme.colors.text};
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 1px 3px ${({ theme }) => theme.colors.shadow};
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.surfaceHover};
+    background-color: ${({ theme }) => theme.colors.backgroundSecondary};
+    border-color: ${({ theme }) => theme.colors.primary};
     transform: scale(1.05);
   }
 
@@ -273,8 +275,17 @@ const ThemeButton = styled.button`
     transform: scale(0.95);
   }
 
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
+  }
+
   svg {
     transition: transform 0.3s ease;
+  }
+
+  &:hover svg {
+    transform: rotate(15deg);
   }
 
   @media (max-width: 768px) {
