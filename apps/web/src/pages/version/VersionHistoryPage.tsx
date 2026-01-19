@@ -307,7 +307,7 @@ const VersionHistoryPage = () => {
         <VersionHeader $expanded={expandedVersions.has(versionData.version)} onClick={() => toggleVersion(versionData.version)}>
           <VersionTitle>
             <VersionNum>v{versionData.version}</VersionNum>
-            {versionData.codename && <span style={{ fontSize: '14px', color: '#888' }}>"{versionData.codename}"</span>}
+            {versionData.codename && <span style={{ fontSize: '14px', color: '#888' }}>&quot;{versionData.codename}&quot;</span>}
           </VersionTitle>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <VersionDate>

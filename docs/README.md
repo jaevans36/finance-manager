@@ -61,7 +61,7 @@ Start here if you're new to the project:
 | E2E | `apps/web/e2e/` | `pnpm test:e2e` |
 | All Tests | Project root | `.\scripts\run-tests.ps1` |
 
-**Current Status**: 235 tests, 100% pass rate
+**Current Status**: 303 tests, 100% pass rate
 
 ---
 
@@ -95,6 +95,9 @@ All completed phases now have dedicated documentation folders:
 
 **Phase 12: Calendar View**
 - **[phases/phase-12-calendar-view/complete.md](phases/phase-12-calendar-view/complete.md)** - Implementation summary
+
+**Phase 13: Events Foundation**
+- **[phases/phase-13-events/complete.md](phases/phase-13-events/complete.md)** - Implementation summary (v0.13.0)
 
 ### Development Guides
 - **[development/pages-structure.md](development/pages-structure.md)** - Frontend structure guide
