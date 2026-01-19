@@ -23,6 +23,7 @@ const VerifyEmailPage = lazy(() => import('./pages/auth/VerifyEmailPage'));
 const ResendVerificationPage = lazy(() => import('./pages/auth/ResendVerificationPage'));
 const WeeklyProgressPage = lazy(() => import('./pages/weekly-progress/WeeklyProgressPage'));
 const CalendarPage = lazy(() => import('./pages/calendar/CalendarPage'));
+const EventsPage = lazy(() => import('./pages/events/EventsPage'));
 const VersionHistoryPage = lazy(() => import('./pages/version/VersionHistoryPage'));
 
 function App() {
@@ -98,6 +99,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <CalendarPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/events"
+                  element={
+                    <ProtectedRoute>
+                      <EventsPage />
                     </ProtectedRoute>
                   }
                 />
