@@ -87,19 +87,26 @@ This is the **single source of truth** for the current application version.
 
 **Change Types**:
 
+**USER-FACING (include in changelog)**:
 - `feat` - New feature
 - `fix` - Bug fix
 - `perf` - Performance improvement
-- `docs` - Documentation only
+- `ui` - UI/UX improvements
+- `api` - API changes that enable integrations
+
+**DEVELOPER-ONLY (exclude from user-facing changelog)**:
 - `test` - Test additions or fixes
 - `refactor` - Code refactoring
 - `chore` - Maintenance tasks
+- `docs` - Internal documentation
 
-**Impact Levels**:
+**Impact Levels** (user-centric):
 
-- `high` - Significant user-facing changes
-- `medium` - Moderate improvements
-- `low` - Minor tweaks or fixes
+- `major` - Major feature additions or breaking changes that significantly affect user workflows
+- `minor` - Incremental features, enhancements, or notable UI improvements
+- `patch` - Bug fixes, small UI tweaks, and minor improvements
+
+**Note**: Focus on changes that matter to users. Avoid including developer-only changes like "Added tests" unless they represent API openings for integrations.
 
 ### 2. CHANGELOG.md
 
@@ -179,18 +186,31 @@ Does this release include breaking changes?
       "type": "feat",
       "category": "Tasks",
       "description": "File upload support with drag-and-drop",
-      "impact": "high"
+      "impact": "major"
     },
     {
-      "type": "feat",
+      "type": "ui",
       "category": "Tasks",
       "description": "Image preview functionality",
-      "impact": "medium"
+      "impact": "minor"
+    },
+    {
+      "type": "api",
+      "category": "Integration",
+      "description": "REST API endpoints for file attachments",
+      "impact": "minor"
     }
   ],
   "previousVersion": "0.13.0"
 }
 ```
+
+**User-Focused Changelog Principles**:
+
+1. **Include**: Features, bug fixes, UI improvements, API changes enabling integrations, performance improvements
+2. **Exclude**: Test additions, refactoring, developer tooling, internal documentation
+3. **Use descriptive language**: Write for end users, not developers
+4. **Group related changes**: Combine similar small changes into one entry when appropriate
 
 #### 4. Update CHANGELOG.md
 
