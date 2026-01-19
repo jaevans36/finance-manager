@@ -15,8 +15,10 @@ import {
   History,
   CalendarClock,
   Sun,
-  Moon
+  Moon,
+  Calculator
 } from 'lucide-react';
+import CalculatorModal from './CalculatorModal';
 
 const HeaderContainer = styled.header`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
@@ -297,6 +299,16 @@ const ThemeButton = styled.button`
   }
 `;
 
+const IconButton = styled(ThemeButton)`
+  svg {
+    transition: none;
+  }
+  
+  &:hover svg {
+    transform: none;
+  }
+`;
+
 export const AppHeader = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -305,6 +317,7 @@ export const AppHeader = () => {
   const [navOpen, setNavOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [showCalculator, setShowCalculator] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -418,6 +431,14 @@ export const AppHeader = () => {
           {formatTime()} • {formatDate()}
         </TimeDisplay>
 
+        <IconButton 
+          onClick={() => setShowCalculator(true)} 
+          title="Calculator"
+          aria-label="Open calculator"
+        >
+          <Calculator size={20} />
+        </IconButton>
+
         <ThemeButton 
           onClick={toggleTheme}
           aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -445,6 +466,8 @@ export const AppHeader = () => {
               <UserIcon size={18} />
               Profile Settings
             </DropdownItem>
+
+      {showCalculator && <CalculatorModal onClose={() => setShowCalculator(false)} />}
             <DropdownDivider />
             <DropdownItem onClick={handleLogout}>
               <LogOut size={18} />
