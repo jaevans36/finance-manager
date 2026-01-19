@@ -1,6 +1,6 @@
 import { X, Sparkles, CheckCircle2, Calendar } from 'lucide-react';
 import styled from 'styled-components';
-import versionData from '../../../VERSION.json';
+import versionData from '../../../../VERSION.json';
 
 interface ChangelogEntry {
   type: string;
