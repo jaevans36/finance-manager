@@ -464,9 +464,6 @@ const CalendarPage = () => {
   return (
     <PageLayout
       title="Task Calendar"
-      showBackButton
-      backButtonPath="/dashboard"
-      backButtonText="Back to Dashboard"
       loading={loading}
       error={error}
       headerActions={
