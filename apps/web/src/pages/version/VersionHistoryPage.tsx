@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Container } from '../../components/ui';
 import { DashboardHeader } from '../dashboard/components';
@@ -75,7 +75,11 @@ const VersionCard = styled.div`
   }
 `;
 
-const VersionHeader = styled.div`
+interface VersionHeaderProps {
+  $expanded: boolean;
+}
+
+const VersionHeader = styled.div<VersionHeaderProps>`
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -119,7 +123,11 @@ const ExpandButton = styled.button`
   }
 `;
 
-const ChangelogContent = styled.div`
+interface ChangelogContentProps {
+  $expanded: boolean;
+}
+
+const ChangelogContent = styled.div<ChangelogContentProps>`
   display: ${({ $expanded }) => ($expanded ? 'block' : 'none')};
 `;
 
@@ -156,7 +164,11 @@ const ChangeItem = styled.li`
   }
 `;
 
-const ChangeIcon = styled.span`
+interface ChangeIconProps {
+  $type: string;
+}
+
+const ChangeIcon = styled.span<ChangeIconProps>`
   flex-shrink: 0;
   margin-top: 2px;
   color: ${({ theme, $type }) => {
@@ -169,7 +181,11 @@ const ChangeIcon = styled.span`
   }};
 `;
 
-const ImpactBadge = styled.span`
+interface ImpactBadgeProps {
+  $impact: string;
+}
+
+const ImpactBadge = styled.span<ImpactBadgeProps>`
   font-size: 11px;
   font-weight: 600;
   padding: 2px 8px;
@@ -260,7 +276,7 @@ const VersionHistoryPage = () => {
       <DashboardHeader username={user?.username || ''} onLogout={logout} />
 
       <PageTitle>Version History</PageTitle>
-      <PageSubtitle>Explore the evolution of To Do Manager and see what's been added in each release</PageSubtitle>
+      <PageSubtitle>Explore the evolution of To Do Manager and see what&apos;s been added in each release</PageSubtitle>
 
       <CurrentVersionCard>
         <VersionNumber>
@@ -268,7 +284,7 @@ const VersionHistoryPage = () => {
           v{versionData.version}
           <VersionBadge>CURRENT</VersionBadge>
         </VersionNumber>
-        {versionData.codename && <VersionCodename>"{versionData.codename}"</VersionCodename>}
+        {versionData.codename && <VersionCodename>&quot;{versionData.codename}&quot;</VersionCodename>}
         <VersionInfo>
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Calendar size={16} />
@@ -335,7 +351,7 @@ const VersionHistoryPage = () => {
           <VersionHeader $expanded={expandedVersions.has(version.version)} onClick={() => toggleVersion(version.version)}>
             <VersionTitle>
               <VersionNum>v{version.version}</VersionNum>
-              {version.codename && <span style={{ fontSize: '14px', color: '#888' }}>"{version.codename}"</span>}
+              {version.codename && <span style={{ fontSize: '14px', color: '#888' }}>&quot;{version.codename}&quot;</span>}
             </VersionTitle>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <VersionDate>
