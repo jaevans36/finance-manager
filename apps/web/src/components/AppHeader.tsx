@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { ThemeToggle } from './ThemeToggle';
 import { 
   LayoutDashboard, 
   ListTodo, 
@@ -366,6 +367,8 @@ export const AppHeader = () => {
           <Clock size={16} />
           {formatTime()} • {formatDate()}
         </TimeDisplay>
+
+        <ThemeToggle />
 
         <NavDropdown data-dropdown>
           <UserSection onClick={() => setUserMenuOpen(!userMenuOpen)}>
