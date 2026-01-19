@@ -434,12 +434,6 @@ const WeeklyProgressPage = () => {
     return (
       <ContentContainer>
         <Header>
-          <HeaderTop>
-            <IconButton onClick={() => navigate('/dashboard')}>
-              <ArrowLeft size={18} />
-              Back to Dashboard
-            </IconButton>
-          </HeaderTop>
           <Heading1 style={{ margin: 0 }}>Weekly Progress Dashboard</Heading1>
         </Header>
         <ErrorDisplay 
@@ -535,12 +529,6 @@ const WeeklyProgressPage = () => {
   return (
     <ContentContainer>
       <Header>
-        <HeaderTop>
-          <IconButton onClick={() => navigate('/dashboard')}>
-            <ArrowLeft size={18} />
-            Back to Dashboard
-          </IconButton>
-        </HeaderTop>
         <Heading1 style={{ margin: 0 }}>Weekly Progress Dashboard</Heading1>
         <WeekNavigation>
           <NavigationLeft>
