@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useState, useEffect, useCallback } from 'react';
 import { eventService } from '../../services/eventService';
 import { taskGroupService } from '../../services/taskGroupService';
 import { Container, Button, Alert } from '../../components/ui';
@@ -121,13 +120,12 @@ const EmptyState = styled.div`
 `;
 
 export const EventsPage = () => {
-  const { user, logout } = useAuth();
   const [events, setEvents] = useState<Event[]>([]);
   const [groups, setGroups] = useState<TaskGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [editingEvent, setEditingEvent] = useState<Event | undefined>(undefined);
   const [showFilters, setShowFilters] = useState(false);
 
   // Filter state
@@ -135,16 +133,7 @@ export const EventsPage = () => {
   const [endDateFilter, setEndDateFilter] = useState('');
   const [groupFilter, setGroupFilter] = useState('');
 
-  useEffect(() => {
-    loadEvents();
-    loadGroups();
-  }, []);
-
-  useEffect(() => {
-    loadEvents();
-  }, [startDateFilter, endDateFilter, groupFilter]);
-
-  const loadEvents = async () => {
+  const loadEvents = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -163,7 +152,12 @@ export const EventsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [startDateFilter, endDateFilter, groupFilter]);
+
+  useEffect(() => {
+    loadEvents();
+    loadGroups();
+  }, [loadEvents]);
 
   const loadGroups = async () => {
     try {
@@ -192,7 +186,7 @@ export const EventsPage = () => {
       setError(null);
       await eventService.updateEvent(id, data);
       await loadEvents();
-      setEditingEvent(null);
+      setEditingEvent(undefined);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update event';
       setError(message);
@@ -222,7 +216,7 @@ export const EventsPage = () => {
 
   const handleCancelForm = () => {
     setShowForm(false);
-    setEditingEvent(null);
+    setEditingEvent(undefined);
   };
 
   const clearFilters = () => {
@@ -261,7 +255,7 @@ export const EventsPage = () => {
           </Button>
           <Button
             onClick={() => {
-              setEditingEvent(null);
+              setEditingEvent(undefined);
               setShowForm(true);
             }}
             style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
@@ -343,7 +337,7 @@ export const EventsPage = () => {
           </p>
           <Button
             onClick={() => {
-              setEditingEvent(null);
+              setEditingEvent(undefined);
               setShowForm(true);
             }}
             style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
