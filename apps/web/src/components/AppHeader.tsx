@@ -281,7 +281,7 @@ const ThemeButton = styled.button`
   }
 
   svg {
-    color: ${({ theme }) => theme.colors.text};
+    color: ${({ theme }) => theme.colors.primary};
     width: 20px;
     height: 20px;
     transition: transform 0.3s ease;
