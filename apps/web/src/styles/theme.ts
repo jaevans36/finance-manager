@@ -43,6 +43,8 @@ export interface Theme {
     cardBackground: string;
     cardBorder: string;
     shadow: string;
+    buttonBackground: string;
+    buttonHoverBackground: string;
   };
 }
 
@@ -91,6 +93,8 @@ export const lightTheme: Theme = {
     cardBackground: '#ffffff',
     cardBorder: '#dee2e6',
     shadow: 'rgba(0, 0, 0, 0.1)',
+    buttonBackground: '#007bff',
+    buttonHoverBackground: '#0056b3',
   },
 };
 
@@ -139,5 +143,7 @@ export const darkTheme: Theme = {
     cardBackground: '#242424',
     cardBorder: '#3d3d3d',
     shadow: 'rgba(0, 0, 0, 0.3)',
+    buttonBackground: '#4dabf7',
+    buttonHoverBackground: '#339af0',
   },
 };

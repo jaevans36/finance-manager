@@ -1,4 +1,3 @@
-import { Plus, Minus, Divide, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
@@ -76,9 +75,9 @@ const ButtonGrid = styled.div`
 const CalcButton = styled.button<{ $variant?: 'number' | 'operator' | 'equals' | 'clear' | 'copy' }>`
   background: ${({ theme, $variant }) => {
     if ($variant === 'operator') return theme.colors.primary;
-    if ($variant === 'equals') return theme.colors.success || theme.colors.primary;
-    if ($variant === 'clear') return theme.colors.danger;
-    if ($variant === 'copy') return theme.colors.info || theme.colors.primary;
+    if ($variant === 'equals') return theme.colors.success;
+    if ($variant === 'clear') return theme.colors.error;
+    if ($variant === 'copy') return theme.colors.info;
     return theme.colors.cardBackground;
   }};
   color: ${({ theme, $variant }) => 
@@ -110,146 +109,140 @@ interface CalculatorModalProps {
 }
 
 const CalculatorModal = ({ onClose }: CalculatorModalProps) => {
-    const [display, setDisplay] = useState('0');
-    const [previousValue, setPreviousValue] = useState<number | null>(null);
-    const [operation, setOperation] = useState<string | null>(null);
-    const [waitingForOperand, setWaitingForOperand] = useState(false);
+  const [display, setDisplay] = useState('0');
+  const [previousValue, setPreviousValue] = useState<number | null>(null);
+  const [operation, setOperation] = useState<string | null>(null);
+  const [waitingForOperand, setWaitingForOperand] = useState(false);
 
-    function calculate(a: number, b: number, op: string) {
-      switch (op) {
-        case '+':
-          return a + b;
-        case '-':
-          return a - b;
-        case '×':
-          return a * b;
-        case '÷':
-          return b !== 0 ? a / b : 0;
-        default:
-          return b;
-      }
+  function calculate(a: number, b: number, op: string) {
+    switch (op) {
+      case '+':
+        return a + b;
+      case '-':
+        return a - b;
+      case '×':
+        return a * b;
+      case '÷':
+        return b !== 0 ? a / b : 0;
+      default:
+        return b;
     }
+  }
 
-    function handleNumber(value: string) {
-      // When number clicked:
-      if (waitingForOperand) {
-        setDisplay(value);
-        setWaitingForOperand(false);
-      } else {
-        setDisplay(display === '0' ? value : display + value);
-      }
+  function handleNumber(value: string) {
+    if (waitingForOperand) {
+      setDisplay(value);
+      setWaitingForOperand(false);
+    } else {
+      setDisplay(display === '0' ? value : display + value);
     }
+  }
 
-    function handleOperator(op: string) {
-      // When operator clicked:
-      if (previousValue && operation && !waitingForOperand) {
-        // Calculate first
-        const result = calculate(previousValue, parseFloat(display), operation);
-        setDisplay(String(result));
-        setPreviousValue(result);
-      } else {
-        setPreviousValue(parseFloat(display));
-      }
-      setOperation(op);
-      setWaitingForOperand(true);
+  function handleOperator(op: string) {
+    if (previousValue && operation && !waitingForOperand) {
+      const result = calculate(previousValue, parseFloat(display), operation);
+      setDisplay(String(result));
+      setPreviousValue(result);
+    } else {
+      setPreviousValue(parseFloat(display));
     }
+    setOperation(op);
+    setWaitingForOperand(true);
+  }
 
-    function handleEquals() {
-      // Handle equals input
-      if (previousValue !== null && operation) {
-        const result = calculate(previousValue, parseFloat(display), operation);
-        setDisplay(String(result));
-        setPreviousValue(null);
-        setOperation(null);
-        setWaitingForOperand(true);
-      }
-    }
-
-    function handleClear() {
-      // Handle clear input
-      setDisplay('0');
+  function handleEquals() {
+    if (previousValue !== null && operation) {
+      const result = calculate(previousValue, parseFloat(display), operation);
+      setDisplay(String(result));
       setPreviousValue(null);
       setOperation(null);
+      setWaitingForOperand(true);
+    }
+  }
+
+  function handleClear() {
+    setDisplay('0');
+    setPreviousValue(null);
+    setOperation(null);
+    setWaitingForOperand(false);
+  }
+
+  function handleDecimal() {
+    if (waitingForOperand) {
+      setDisplay('0.');
       setWaitingForOperand(false);
+    } else if (!display.includes('.')) {
+      setDisplay(display + '.');
     }
+  }
 
-    function handleDecimal() {
-      // Handle decimal input
-      if (waitingForOperand) {
-        setDisplay('0.');
-        setWaitingForOperand(false);
-      } else if (!display.includes('.')) {
-        setDihandleCopy() {
-      navigator.clipboard.writeText(display);
-    }
+  function handleCopy() {
+    navigator.clipboard.writeText(display);
+  }
 
-    function onClose() {
-      // Handle modal close
-    }
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key >= '0' && e.key <= '9') handleNumber(e.key);
+      if (e.key === '.') handleDecimal();
+      if (e.key === '+' || e.key === '-') handleOperator(e.key);
+      if (e.key === '*') handleOperator('×');
+      if (e.key === '/') { e.preventDefault(); handleOperator('÷'); }
+      if (e.key === 'Enter') handleEquals();
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'c' || e.key === 'C') handleClear();
+    };
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [display, operation, previousValue, waitingForOperand, onClose]);
 
-    useEffect(() => {
-      const handleKeyPress = (e: KeyboardEvent) => {
-        if (e.key >= '0' && e.key <= '9') handleNumber(e.key);
-        if (e.key === '.') handleDecimal();
-        if (e.key === '+' || e.key === '-') handleOperator(e.key);
-        if (e.key === '*') handleOperator('×');
-        if (e.key === '/') { e.preventDefault(); handleOperator('÷'); }
-        if (e.key === 'Enter') handleEquals();
-        if (e.key === 'Escape') onClose();
-        if (e.key === 'c' || e.key === 'C') handleClear();
-      };
-      window.addEventListener('keydown', handleKeyPress);
-      return () =>  onClick={onClose}>
-        <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>
-              <ModalTitle>Calculator</ModalTitle>
-              <CloseButton onClick={onClose}>&times;</CloseButton>
-            </ModalHeader>
-            <ModalBody>
-              <Display>{display}</Display>
-              <ButtonGrid>
-                {/* Row 1: 7 8 9 ÷ */}
-                <CalcButton $variant="number" onClick={() => handleNumber('7')}>7</CalcButton>
-                <CalcButton $variant="number" onClick={() => handleNumber('8')}>8</CalcButton>
-                <CalcButton $variant="number" onClick={() => handleNumber('9')}>9</CalcButton>
-                <CalcButton $variant="operator" onClick={() => handleOperator('÷')}>÷</CalcButton>
+  return (
+    <ModalOverlay onClick={onClose}>
+      <ModalContent onClick={(e) => e.stopPropagation()}>
+        <ModalHeader>
+          <ModalTitle>Calculator</ModalTitle>
+          <CloseButton onClick={onClose}>&times;</CloseButton>
+        </ModalHeader>
+        <ModalBody>
+          <Display>{display}</Display>
+          <ButtonGrid>
+            {/* Row 1: 7 8 9 ÷ */}
+            <CalcButton $variant="number" onClick={() => handleNumber('7')}>7</CalcButton>
+            <CalcButton $variant="number" onClick={() => handleNumber('8')}>8</CalcButton>
+            <CalcButton $variant="number" onClick={() => handleNumber('9')}>9</CalcButton>
+            <CalcButton $variant="operator" onClick={() => handleOperator('÷')}>÷</CalcButton>
 
-                {/* Row 2: 4 5 6 × */}
-                <CalcButton $variant="number" onClick={() => handleNumber('4')}>4</CalcButton>
-                <CalcButton $variant="number" onClick={() => handleNumber('5')}>5</CalcButton>
-                <CalcButton $variant="number" onClick={() => handleNumber('6')}>6</CalcButton>
-                <CalcButton $variant="operator" onClick={() => handleOperator('×')}>×</CalcButton>
+            {/* Row 2: 4 5 6 × */}
+            <CalcButton $variant="number" onClick={() => handleNumber('4')}>4</CalcButton>
+            <CalcButton $variant="number" onClick={() => handleNumber('5')}>5</CalcButton>
+            <CalcButton $variant="number" onClick={() => handleNumber('6')}>6</CalcButton>
+            <CalcButton $variant="operator" onClick={() => handleOperator('×')}>×</CalcButton>
 
-                {/* Row 3: 1 2 3 - */}
-                <CalcButton $variant="number" onClick={() => handleNumber('1')}>1</CalcButton>
-                <CalcButton $variant="number" onClick={() => handleNumber('2')}>2</CalcButton>
-                <CalcButton $variant="number" onClick={() => handleNumber('3')}>3</CalcButton>
-                <CalcButton $variant="operator" onClick={() => handleOperator('-')}>−</CalcButton>
+            {/* Row 3: 1 2 3 - */}
+            <CalcButton $variant="number" onClick={() => handleNumber('1')}>1</CalcButton>
+            <CalcButton $variant="number" onClick={() => handleNumber('2')}>2</CalcButton>
+            <CalcButton $variant="number" onClick={() => handleNumber('3')}>3</CalcButton>
+            <CalcButton $variant="operator" onClick={() => handleOperator('-')}>−</CalcButton>
 
-                {/* Row 4: 0 . C + */}
-                <CalcButton $variant="number" onClick={() => handleNumber('0')}>0</CalcButton>
-                <CalcButton $variant="number" onClick={handleDecimal}>.</CalcButton>
-                <CalcButton $variant="clear" onClick={handleClear}>C</CalcButton>
-                <CalcButton $variant="operator" onClick={() => handleOperator('+')}>+</CalcButton>
+            {/* Row 4: 0 . C + */}
+            <CalcButton $variant="number" onClick={() => handleNumber('0')}>0</CalcButton>
+            <CalcButton $variant="number" onClick={handleDecimal}>.</CalcButton>
+            <CalcButton $variant="clear" onClick={handleClear}>C</CalcButton>
+            <CalcButton $variant="operator" onClick={() => handleOperator('+')}>+</CalcButton>
 
-                {/* Row 5: = (span 3) Copy */}
-                <CalcButton 
-                  $variant="equals" 
-                  onClick={handleEquals}
-                  style={{ gridColumn: 'span 3' }}
-                >
-                  =
-                </CalcButton>
-                <CalcButton $variant="copy" onClick={handleCopy}>📋</CalcButton>
-                <CalcButton onClick={() => handleNumber('7')}>7</CalcButton>
-                <CalcButton onClick={() => handleNumber('8')}>8</CalcButton>
-                <CalcButton onClick={() => handleNumber('9')}>9</CalcButton>
-                <CalcButton onClick={() => handleNumber('0')}>0</CalcButton>
-              </ButtonGrid>
-            </ModalBody>
-        </ModalContent>
-      </ModalOverlay>
-    );
+            {/* Row 5: = (span 3) Copy */}
+            <CalcButton 
+              $variant="equals" 
+              onClick={handleEquals}
+              style={{ gridColumn: 'span 3' }}
+            >
+              =
+            </CalcButton>
+            <CalcButton $variant="copy" onClick={handleCopy}>📋</CalcButton>
+          </ButtonGrid>
+        </ModalBody>
+      </ModalContent>
+    </ModalOverlay>
+  );
 };
 
 export default CalculatorModal;

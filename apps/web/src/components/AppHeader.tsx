@@ -466,8 +466,6 @@ export const AppHeader = () => {
               <UserIcon size={18} />
               Profile Settings
             </DropdownItem>
-
-      {showCalculator && <CalculatorModal onClose={() => setShowCalculator(false)} />}
             <DropdownDivider />
             <DropdownItem onClick={handleLogout}>
               <LogOut size={18} />
@@ -476,6 +474,8 @@ export const AppHeader = () => {
           </UserDropdown>
         </NavDropdown>
       </RightSection>
+
+      {showCalculator && <CalculatorModal onClose={() => setShowCalculator(false)} />}
     </HeaderContainer>
   );
 };
