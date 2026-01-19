@@ -475,6 +475,113 @@ Avoid the use of 'any' type in TypeScript to ensure type safety and maintainabil
 
 Any written content should be in British English, not American English. If there are any non British English terms, please convert them accordingly.
 
+## Version Management
+
+**CRITICAL**: After completing any development phase or making significant changes, ALWAYS update version information.
+
+### When to Update Version
+
+**After completing a phase**:
+- Increment version in VERSION.json following semantic versioning
+- Add detailed entry to CHANGELOG.md
+- Update package.json (frontend) and .csproj (backend) versions
+- Create phase completion documentation in docs/phases/
+- Mark tasks complete in specs/001-todo-app/tasks.md
+- Update TEST-INVENTORY.md with new test counts
+- Create git tag: `git tag -a vX.Y.Z -m "Release vX.Y.Z: Feature Name"`
+
+### Version Incrementing Rules
+
+```
+Breaking changes? → MAJOR (X.0.0)
+  ├─ API endpoint changes requiring client updates
+  ├─ Database schema changes requiring migrations
+  ├─ Removing deprecated features
+  └─ Significant UI/UX overhaul
+
+New features (backward compatible)? → MINOR (0.X.0)
+  ├─ New pages or components
+  ├─ Additional API endpoints
+  ├─ Feature enhancements
+  └─ Performance improvements
+
+Bug fixes only? → PATCH (0.0.X)
+  ├─ Bug corrections
+  ├─ Typo fixes
+  ├─ Minor UI adjustments
+  └─ Documentation updates
+```
+
+### Required Files to Update
+
+1. **VERSION.json** - Single source of truth:
+   ```json
+   {
+     "version": "0.X.0",
+     "releaseDate": "YYYY-MM-DD",
+     "codename": "Feature Name",
+     "description": "Brief overview",
+     "breaking": false,
+     "changelog": [
+       {
+         "type": "feat|fix|perf|docs|test",
+         "category": "Component",
+         "description": "What changed",
+         "impact": "high|medium|low"
+       }
+     ],
+     "previousVersion": "0.Y.0"
+   }
+   ```
+
+2. **CHANGELOG.md** - Add new section:
+   ```markdown
+   ## [0.X.0] - YYYY-MM-DD "Codename"
+   
+   ### Added
+   - New features
+   
+   ### Changed
+   - Modifications
+   
+   ### Fixed
+   - Bug fixes
+   ```
+
+3. **apps/web/package.json** - Update version field
+
+4. **apps/finance-api/FinanceApi.csproj** - Update `<Version>` tag
+
+5. **docs/phases/phase-XX-name/complete.md** - Create completion doc
+
+6. **specs/001-todo-app/tasks.md** - Mark tasks `[x]` complete
+
+7. **docs/testing/TEST-INVENTORY.md** - Update test counts
+
+8. **Git tag**: `git tag -a vX.Y.Z -m "Message"`
+
+### Changelog Entry Guidelines
+
+**Good Examples**:
+- ✅ "Added file upload support with drag-and-drop interface"
+- ✅ "Fixed task completion not updating statistics in real-time"
+- ✅ "Improved calendar performance for months with 100+ tasks"
+
+**Bad Examples**:
+- ❌ "Added new feature"
+- ❌ "Fixed bug"
+- ❌ "Various improvements"
+
+### Testing "What's New" Modal
+
+After version update:
+1. Clear localStorage: `localStorage.removeItem('lastSeenVersion')`
+2. Refresh application
+3. Verify modal appears with correct version and changelog
+4. Dismiss and verify it doesn't show again
+
+For complete guidelines, see `docs/VERSION-MANAGEMENT.md`
+
 ## Quickstart Guide
 
 This quickstart guide provides example API requests and expected responses for the To Do application. It covers user registration, authentication, and basic task management operations.
