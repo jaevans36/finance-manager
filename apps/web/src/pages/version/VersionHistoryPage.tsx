@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container } from '../../components/ui';
+import { Container } from '@finance-manager/ui';
 import { Package, Calendar, Info, ChevronDown, ChevronUp, CheckCircle2, AlertCircle, Zap, Bug, FileText } from 'lucide-react';
 import styled from 'styled-components';
 import versionData from '@workspace/VERSION.json';

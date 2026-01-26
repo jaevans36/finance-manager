@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '@finance-manager/ui';
 import { 
   LayoutDashboard, 
   ListTodo, 
@@ -16,7 +16,8 @@ import {
   CalendarClock,
   Sun,
   Moon,
-  Calculator
+  Calculator,
+  Palette
 } from 'lucide-react';
 import CalculatorModal from './CalculatorModal';
 
@@ -369,6 +370,7 @@ export const AppHeader = () => {
     { path: '/events', icon: CalendarClock, label: 'Events' },
     { path: '/calendar', icon: Calendar, label: 'Calendar' },
     { path: '/weekly-progress', icon: BarChart3, label: 'Progress' },
+    { path: '/design-system', icon: Palette, label: 'Design System' },
   ];
 
   const handleNavigate = (path: string) => {

@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Button, Flex, Heading1, TextSecondary } from '../../../components/ui';
+import { Button, Flex, Heading1, TextSecondary } from '@finance-manager/ui';
 import { LayoutDashboard, ListTodo, Calendar, BarChart3, UserIcon } from 'lucide-react';
 
 const HeaderContainer = styled(Flex)`

@@ -1,11 +1,10 @@
 import { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider } from './contexts/ThemeContext';
+import { ThemeProvider, LoadingSpinner } from '@finance-manager/ui';
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { LoadingSpinner } from './components/ui';
 import { WhatsNewModal } from './components/WhatsNewModal';
 import { AppHeader } from './components/AppHeader';
 import versionData from '@workspace/VERSION.json';
@@ -24,6 +23,7 @@ const WeeklyProgressPage = lazy(() => import('./pages/weekly-progress/WeeklyProg
 const CalendarPage = lazy(() => import('./pages/calendar/CalendarPage'));
 const EventsPage = lazy(() => import('./pages/events/EventsPage'));
 const VersionHistoryPage = lazy(() => import('./pages/version/VersionHistoryPage'));
+const DesignSystemPage = lazy(() => import('./pages/design-system/DesignSystemPage'));
 
 function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(false);
@@ -113,6 +113,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <VersionHistoryPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/design-system"
+                  element={
+                    <ProtectedRoute>
+                      <DesignSystemPage />
                     </ProtectedRoute>
                   }
                 />

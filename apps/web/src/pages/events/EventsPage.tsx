@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { eventService } from '../../services/eventService';
 import { taskGroupService } from '../../services/taskGroupService';
-import { Container, Button, Alert } from '../../components/ui';
+import { Container, Button, Alert } from '@finance-manager/ui';
 import { EventList } from '../../components/events/EventList';
 import { EventForm } from '../../components/events/EventForm';
 import { Plus, XCircle, Filter, Calendar } from 'lucide-react';

@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Heading3, InputField, Text } from '../../../components/ui';
+import { Heading3, InputField, Text } from '@finance-manager/ui';
 import { chartColors } from '../../../components/charts/chartTheme';
 
 const GoalSection = styled.div`

@@ -13,7 +13,7 @@ import { TaskGroupList } from '../../components/task-groups/TaskGroupList';
 import { TaskStatistics } from '../../components/dashboard/TaskStatistics';
 import { TaskSkeleton } from '../../components/dashboard/TaskSkeleton';
 import { TaskSearch } from '../../components/dashboard/TaskSearch';
-import { Button, Alert, Container } from '../../components/ui';
+import { Button, Alert, Container } from '@finance-manager/ui';
 import { XCircle, ChevronDown } from 'lucide-react';
 import { TaskGroup } from '../../types/taskGroup';
 import { DashboardLayout } from '../dashboard/components';

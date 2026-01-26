@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { TextSmall } from '../../../components/ui';
+import { TextSmall } from '@finance-manager/ui';
 
 const FilterContainer = styled.div`
   display: flex;

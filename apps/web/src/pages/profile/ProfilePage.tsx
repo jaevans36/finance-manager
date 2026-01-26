@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { authService } from '../../services/authService';
-import { Container, Card, Heading1, Text, TextSecondary, Button, Flex, Input } from '../../components/ui';
+import { Container, Card, Heading1, Text, TextSecondary, Button, Flex, Input } from '@finance-manager/ui';
 import { UserIcon, MailIcon, CalendarIcon, LogOutIcon, ArrowLeftIcon, EditIcon, CheckIcon, XIcon } from 'lucide-react';
 
 const ProfileHeader = styled.div`

@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { taskService } from '../../services/taskService';
 import { eventService } from '../../services/eventService';
 import { taskGroupService } from '../../services/taskGroupService';
-import { Container } from '../../components/ui';
+import { Container } from '@finance-manager/ui';
 import { 
   CheckCircle, 
   Calendar, 

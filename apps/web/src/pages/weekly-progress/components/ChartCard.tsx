@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Card, TextSmall } from '../../../components/ui';
+import { Card, TextSmall } from '@finance-manager/ui';
 
 const ChartSection = styled(Card)`
   padding: 20px;

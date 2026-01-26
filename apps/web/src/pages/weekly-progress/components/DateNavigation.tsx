@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Button, Text } from '../../../components/ui';
+import { Button, Text } from '@finance-manager/ui';
 
 const WeekNavigation = styled.div`
   display: flex;

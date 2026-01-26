@@ -25,7 +25,7 @@ import {
   TextSecondary,
   SmallBadge,
   Card
-} from '../../components/ui';
+} from '@finance-manager/ui';
 import {
   ChartCard,
   ErrorDisplay,

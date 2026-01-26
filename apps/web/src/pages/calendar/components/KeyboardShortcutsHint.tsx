@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { TextSmall } from '../../../components/ui';
+import { TextSmall } from '@finance-manager/ui';
 
 const HintContainer = styled.div`
   margin-top: 16px;

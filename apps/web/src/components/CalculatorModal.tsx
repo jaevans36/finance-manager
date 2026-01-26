@@ -1,5 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import { Copy } from 'lucide-react';
 import styled from 'styled-components';
+import { spacing, typography } from '@finance-manager/ui/styles';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -11,7 +14,9 @@ const ModalOverlay = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: 9999;
+  padding: ${spacing.lg};
+  overflow-y: auto;
 `;
 
 const ModalContent = styled.div`
@@ -19,29 +24,32 @@ const ModalContent = styled.div`
   border-radius: 8px;
   width: 400px;
   max-width: 90vw;
-  box-shadow: 0 4px 12px ${({ theme }) => theme.colors.shadow};
+  max-height: 90vh;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  margin: auto;
 `;
 
 const ModalHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: ${spacing.lg};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
 const ModalTitle = styled.h2`
   margin: 0;
-  font-size: 20px;
+  ${typography.sectionHeading}
   color: ${({ theme }) => theme.colors.text};
 `;
 
 const CloseButton = styled.button`
   background: none;
   border: none;
-  font-size: 24px;
+  ${typography.displayMedium}
   cursor: pointer;
   color: ${({ theme }) => theme.colors.textSecondary};
+  transition: color 0.2s;
 
   &:hover {
     color: ${({ theme }) => theme.colors.text};
@@ -49,18 +57,18 @@ const CloseButton = styled.button`
 `;
 
 const ModalBody = styled.div`
-  padding: 16px;
+  padding: ${spacing.lg};
 `;
 
 const Display = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   color: ${({ theme }) => theme.colors.text};
-  font-size: 32px;
+  ${typography.displayLarge}
   font-family: 'Courier New', monospace;
   text-align: right;
-  padding: 16px;
+  padding: ${spacing.lg};
   border-radius: 6px;
-  margin-bottom: 16px;
+  margin-bottom: ${spacing.lg};
   min-height: 60px;
   overflow-x: auto;
   word-break: break-all;
@@ -69,7 +77,7 @@ const Display = styled.div`
 const ButtonGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: ${spacing.sm};
 `;
 
 const CalcButton = styled.button<{ $variant?: 'number' | 'operator' | 'equals' | 'clear' | 'copy' }>`
@@ -85,9 +93,8 @@ const CalcButton = styled.button<{ $variant?: 'number' | 'operator' | 'equals' |
   };
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: 6px;
-  font-size: 18px;
-  font-weight: 600;
-  padding: 16px;
+  ${typography.sectionHeading}
+  padding: ${spacing.lg};
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
@@ -114,7 +121,7 @@ const CalculatorModal = ({ onClose }: CalculatorModalProps) => {
   const [operation, setOperation] = useState<string | null>(null);
   const [waitingForOperand, setWaitingForOperand] = useState(false);
 
-  function calculate(a: number, b: number, op: string) {
+  const calculate = useCallback((a: number, b: number, op: string) => {
     switch (op) {
       case '+':
         return a + b;
@@ -127,18 +134,18 @@ const CalculatorModal = ({ onClose }: CalculatorModalProps) => {
       default:
         return b;
     }
-  }
+  }, []);
 
-  function handleNumber(value: string) {
+  const handleNumber = useCallback((value: string) => {
     if (waitingForOperand) {
       setDisplay(value);
       setWaitingForOperand(false);
     } else {
       setDisplay(display === '0' ? value : display + value);
     }
-  }
+  }, [display, waitingForOperand]);
 
-  function handleOperator(op: string) {
+  const handleOperator = useCallback((op: string) => {
     if (previousValue && operation && !waitingForOperand) {
       const result = calculate(previousValue, parseFloat(display), operation);
       setDisplay(String(result));
@@ -148,9 +155,9 @@ const CalculatorModal = ({ onClose }: CalculatorModalProps) => {
     }
     setOperation(op);
     setWaitingForOperand(true);
-  }
+  }, [previousValue, operation, waitingForOperand, display, calculate]);
 
-  function handleEquals() {
+  const handleEquals = useCallback(() => {
     if (previousValue !== null && operation) {
       const result = calculate(previousValue, parseFloat(display), operation);
       setDisplay(String(result));
@@ -158,27 +165,27 @@ const CalculatorModal = ({ onClose }: CalculatorModalProps) => {
       setOperation(null);
       setWaitingForOperand(true);
     }
-  }
+  }, [previousValue, operation, display, calculate]);
 
-  function handleClear() {
+  const handleClear = useCallback(() => {
     setDisplay('0');
     setPreviousValue(null);
     setOperation(null);
     setWaitingForOperand(false);
-  }
+  }, []);
 
-  function handleDecimal() {
+  const handleDecimal = useCallback(() => {
     if (waitingForOperand) {
       setDisplay('0.');
       setWaitingForOperand(false);
     } else if (!display.includes('.')) {
       setDisplay(display + '.');
     }
-  }
+  }, [display, waitingForOperand]);
 
-  function handleCopy() {
+  const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(display);
-  }
+  }, [display]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -193,9 +200,9 @@ const CalculatorModal = ({ onClose }: CalculatorModalProps) => {
     };
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [display, operation, previousValue, waitingForOperand, onClose]);
+  }, [handleNumber, handleDecimal, handleOperator, handleEquals, handleClear, onClose]);
 
-  return (
+  return createPortal(
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
         <ModalHeader>
@@ -237,11 +244,12 @@ const CalculatorModal = ({ onClose }: CalculatorModalProps) => {
             >
               =
             </CalcButton>
-            <CalcButton $variant="copy" onClick={handleCopy}>📋</CalcButton>
+            <CalcButton $variant="copy" onClick={handleCopy}><Copy size={16} /></CalcButton>
           </ButtonGrid>
         </ModalBody>
       </ModalContent>
-    </ModalOverlay>
+    </ModalOverlay>,
+    document.body
   );
 };
 

@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Card, SmallBadge, TextSmall, ScrollableContainer } from '../../../components/ui';
+import { Card, SmallBadge, TextSmall, ScrollableContainer } from '@finance-manager/ui';
 import type { Task } from '../../../services/taskService';
 import { chartColors } from '../../../components/charts/chartTheme';
 

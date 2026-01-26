@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Card, Text } from '../../../components/ui';
+import { Card, Text } from '@finance-manager/ui';
 
 const ErrorContainer = styled(Card)`
   padding: 20px;
