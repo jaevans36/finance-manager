@@ -475,6 +475,112 @@ Avoid the use of 'any' type in TypeScript to ensure type safety and maintainabil
 
 Any written content should be in British English, not American English. If there are any non British English terms, please convert them accordingly.
 
+## Design System & Shared UI Package
+
+**CRITICAL**: All applications must use the `@finance-manager/ui` shared package for UI components and design tokens.
+
+### Package Location
+- **Shared Package**: `packages/ui/`
+- **Documentation**: `docs/guides/DESIGN_SYSTEM_USAGE.md` (comprehensive guide)
+- **Live Examples**: Navigate to `/design-system` in any app
+
+### Mandatory Standards
+
+1. **Always use design tokens** - Never hardcode values:
+   ```typescript
+   // ❌ WRONG
+   const Container = styled.div`
+     padding: 16px;
+     font-size: 18px;
+     margin-bottom: 24px;
+   `;
+   
+   // ✅ CORRECT
+   import { spacing, typography } from '@finance-manager/ui/styles';
+   const Container = styled.div`
+     padding: ${spacing.lg};
+     ${typography.sectionHeading}
+     margin-bottom: ${spacing['2xl']};
+   `;
+   ```
+
+2. **Import from shared package** - Never use relative paths for design system:
+   ```typescript
+   // ❌ WRONG
+   import { Button } from '../../../components/ui';
+   import { spacing } from '../../../styles/layout';
+   
+   // ✅ CORRECT
+   import { Button } from '@finance-manager/ui';
+   import { spacing, typography } from '@finance-manager/ui/styles';
+   ```
+
+3. **Use pre-built components** - Check shared package first:
+   ```typescript
+   // Available components:
+   Button, Card, Input, Modal, Badge, Alert, Heading1-3, etc.
+   
+   // Check packages/ui/src/components/README.md before creating new ones
+   ```
+
+4. **Test in light & dark mode** - All components must work in both themes:
+   ```typescript
+   // Use theme colors, not hardcoded values
+   color: ${({ theme }) => theme.colors.text};  // ✅
+   color: #333;  // ❌
+   ```
+
+### Typography Tokens
+
+```typescript
+import { typography } from '@finance-manager/ui/styles';
+
+${typography.pageTitle}        // 24px, weight 600
+${typography.sectionHeading}   // 18px, weight 600
+${typography.cardTitle}        // 16px, weight 600
+${typography.body}             // 14px
+${typography.bodySmall}        // 12px
+${typography.label}            // 14px, weight 500
+${typography.badge}            // 11px, weight 500
+${typography.displayLarge}     // 32px, weight 700
+```
+
+### Spacing Tokens (4px-based scale)
+
+```typescript
+import { spacing } from '@finance-manager/ui/styles';
+
+${spacing.xs}    // 4px
+${spacing.sm}    // 8px
+${spacing.md}    // 12px
+${spacing.lg}    // 16px
+${spacing.xl}    // 20px
+${spacing['2xl']} // 24px
+${spacing['3xl']} // 32px
+${spacing['4xl']} // 40px
+${spacing['5xl']} // 48px
+```
+
+### When Creating New Components
+
+**Create in app** when:
+- Used only in this specific app
+- Has specialized business logic
+- Rapid prototyping
+
+**Add to shared package** when:
+- Used in 2+ applications
+- Generic, reusable pattern
+- No business logic (pure UI)
+- See `docs/guides/DESIGN_SYSTEM_USAGE.md` for contribution guidelines
+
+### Quick Reference
+
+- **Full Documentation**: `docs/guides/DESIGN_SYSTEM_USAGE.md`
+- **Package README**: `packages/ui/README.md`
+- **Component Library**: `packages/ui/src/components/README.md`
+- **Live Examples**: `/design-system` route in any app
+
 ## Version Management
 
 **CRITICAL**: After completing any development phase or making significant changes, ALWAYS update version information.

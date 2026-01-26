@@ -150,12 +150,20 @@ All completed phases now have dedicated documentation folders:
 
 ## 🎨 Design & UI
 
-### Design System
-- **[design-system-summary.md](design-system-summary.md)** - Design system overview
-- **[reference/design-system-summary.md](reference/design-system-summary.md)** - Design system overview
-- **[guides/THEME_IMPLEMENTATION.md](guides/THEME_IMPLEMENTATION.md)** - Theme implementation
-- **[guides/THEME_MANAGEMENT.md](guides/THEME_MANAGEMENT.md)** - Theme management
-- **[guides/ICON_GUIDE.md](guides/ICON_GUIDE.md)** - Icon usage guide
+### Design System & Shared UI Package
+- **[guides/DESIGN_SYSTEM_USAGE.md](guides/DESIGN_SYSTEM_USAGE.md)** - **📘 Complete guide** for using `@finance-manager/ui`
+- **[packages/ui/README.md](../packages/ui/README.md)** - Package documentation
+- **[packages/ui/src/components/README.md](../packages/ui/src/components/README.md)** - Component library reference
+- **Live Examples** - Navigate to `/design-system` in any app
+
+### Theme System
+- **[guides/THEME_IMPLEMENTATION.md](guides/THEME_IMPLEMENTATION.md)** - Theme implementation details
+- **[guides/THEME_MANAGEMENT.md](guides/THEME_MANAGEMENT.md)** - Theme management guide
+- **[guides/ICON_GUIDE.md](guides/ICON_GUIDE.md)** - Icon usage with Lucide React
+
+### Historical Reference
+- **[reference/design-system-summary.md](reference/design-system-summary.md)** - Original design system (deprecated paths)
+- **[development/design-system-audit.md](development/design-system-audit.md)** - Design system migration audit
 
 ---
 
