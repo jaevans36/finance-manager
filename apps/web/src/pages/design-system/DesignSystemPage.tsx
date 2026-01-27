@@ -17,12 +17,11 @@ import {
   Input,
   Label,
   FormGroup,
-  Alert,
-  Flex
+  Alert
 } from '@finance-manager/ui';
 import { spacing, typography } from '@finance-manager/ui/styles';
 import { useTheme } from '@finance-manager/ui';
-import { Palette, Type, Layers, Spacing, CheckCircle } from 'lucide-react';
+import { Palette, Type, Layers, Space, CheckCircle } from 'lucide-react';
 
 const PageContainer = styled(Container)`
   padding-top: ${spacing.xl};
@@ -250,7 +249,7 @@ const DesignSystemPage = () => {
       {/* Spacing Section */}
       <Section>
         <SectionHeader>
-          <Spacing size={24} />
+          <Space size={28} />
           <Heading2>Spacing Scale</Heading2>
         </SectionHeader>
         <Text>4px-based spacing system:</Text>
@@ -298,19 +297,19 @@ const DesignSystemPage = () => {
           <ComponentGroup>
             <Heading3>Badges</Heading3>
             <ComponentRow>
-              <Badge $variant="default">Default</Badge>
-              <Badge $variant="success">Success</Badge>
-              <Badge $variant="error">Error</Badge>
-              <Badge $variant="warning">Warning</Badge>
-              <Badge $variant="info">Info</Badge>
+              <Badge variant="primary">Primary</Badge>
+              <Badge variant="success">Success</Badge>
+              <Badge variant="error">Error</Badge>
+              <Badge variant="warning">Warning</Badge>
+              <Badge variant="info">Info</Badge>
+              <Badge variant="outline">Outline</Badge>
             </ComponentRow>
             <ComponentRow>
-              <SmallBadge $variant="default">Small</SmallBadge>
-              <SmallBadge $variant="success">Success</SmallBadge>
-              <SmallBadge $variant="error">Error</SmallBadge>
+              <SmallBadge>Small Badge</SmallBadge>
             </ComponentRow>
-            <CodeBlock>{`<Badge $variant="success">Success</Badge>
-<SmallBadge $variant="error">Error</SmallBadge>`}</CodeBlock>
+            <CodeBlock>{`<Badge variant="success">Success</Badge>
+<Badge variant="outline">Outline</Badge>
+<SmallBadge>Small Badge</SmallBadge>`}</CodeBlock>
           </ComponentGroup>
 
           {/* Cards */}
@@ -338,22 +337,22 @@ const DesignSystemPage = () => {
           <ComponentGroup>
             <Heading3>Alerts</Heading3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-              <Alert type="success">
+              <Alert variant="success">
                 <CheckCircle size={16} />
                 <span>Success! Your changes have been saved.</span>
               </Alert>
-              <Alert type="error">
+              <Alert variant="error">
                 <span>Error! Something went wrong.</span>
               </Alert>
-              <Alert type="warning">
+              <Alert variant="warning">
                 <span>Warning! Please review your input.</span>
               </Alert>
-              <Alert type="info">
+              <Alert variant="info">
                 <span>Info: This is an informational message.</span>
               </Alert>
             </div>
-            <CodeBlock>{`<Alert type="success">Success message</Alert>
-<Alert type="error">Error message</Alert>`}</CodeBlock>
+            <CodeBlock>{`<Alert variant="success">Success message</Alert>
+<Alert variant="error">Error message</Alert>`}</CodeBlock>
           </ComponentGroup>
 
           {/* Form Inputs */}
