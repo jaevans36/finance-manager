@@ -11,7 +11,14 @@
     "test": "pnpm --recursive run test",
     "lint": "pnpm --recursive run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "typecheck": "pnpm --recursive run typecheck"
+    "typecheck": "pnpm --recursive run typecheck",
+    "start": "powershell -ExecutionPolicy Bypass -File ./scripts/start-dev.ps1",
+    "stop": "powershell -ExecutionPolicy Bypass -File ./scripts/stop-dev.ps1",
+    "restart": "powershell -ExecutionPolicy Bypass -File ./scripts/restart-dev.ps1",
+    "db:reset": "powershell -ExecutionPolicy Bypass -File ./scripts/reset-db.ps1",
+    "db:reset-test": "powershell -ExecutionPolicy Bypass -File ./scripts/reset-test-db.ps1",
+    "logs": "powershell -ExecutionPolicy Bypass -File ./scripts/view-logs.ps1",
+    "test:all": "powershell -ExecutionPolicy Bypass -File ./scripts/run-tests.ps1"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
