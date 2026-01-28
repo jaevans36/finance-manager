@@ -249,15 +249,17 @@ const UserName = styled.div`
 const AdminBadge = styled.span`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 6px;
+  justify-content: center;
+  padding: 4px;
   background: ${({ theme }) => theme.colors.warning};
   color: ${({ theme }) => theme.colors.buttonText};
   border-radius: 4px;
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  cursor: help;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
 `;
 
 const UserGreeting = styled.div`
@@ -476,9 +478,8 @@ export const AppHeader = () => {
               <UserName>
                 @{user.username}
                 {user.isAdmin && (
-                  <AdminBadge>
-                    <Shield size={10} />
-                    Admin
+                  <AdminBadge title="Administrator">
+                    <Shield size={14} />
                   </AdminBadge>
                 )}
               </UserName>
