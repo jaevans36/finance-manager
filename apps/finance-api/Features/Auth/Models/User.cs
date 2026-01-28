@@ -46,6 +46,9 @@ public class User
     [Column("account_locked_until")]
     public DateTime? AccountLockedUntil { get; set; }
 
+    [Column("is_admin")]
+    public bool IsAdmin { get; set; } = false;
+
     // Navigation properties
     public ICollection<FinanceApi.Features.Tasks.Models.Task> Tasks { get; set; } = new List<FinanceApi.Features.Tasks.Models.Task>();
     public ICollection<FinanceApi.Features.Tasks.Models.TaskGroup> TaskGroups { get; set; } = new List<FinanceApi.Features.Tasks.Models.TaskGroup>();

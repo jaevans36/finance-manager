@@ -81,7 +81,7 @@ public class AuthService : IAuthService
         await _activityLogService.LogAsync(user.Id, ActivityType.Login, "User registered", ipAddress, userAgent);
 
         // Generate JWT token
-        var jwtToken = _tokenService.GenerateAccessToken(user.Id, user.Email);
+        var jwtToken = _tokenService.GenerateAccessToken(user.Id, user.Email, user.IsAdmin);
 
         // Create session
         var session = new Session
@@ -145,7 +145,7 @@ public class AuthService : IAuthService
         user.UpdatedAt = DateTime.UtcNow;
 
         // Generate JWT token
-        var jwtToken = _tokenService.GenerateAccessToken(user.Id, user.Email);
+        var jwtToken = _tokenService.GenerateAccessToken(user.Id, user.Email, user.IsAdmin);
 
         // Create session
         var session = new Session
@@ -199,6 +199,7 @@ public class AuthService : IAuthService
             Email = user.Email,
             Username = user.Username,
             EmailVerified = user.EmailVerified,
+            IsAdmin = user.IsAdmin,
             CreatedAt = user.CreatedAt
         };
     }

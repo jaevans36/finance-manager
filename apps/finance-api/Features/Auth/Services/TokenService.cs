@@ -7,7 +7,7 @@ namespace FinanceApi.Features.Auth.Services;
 
 public interface ITokenService
 {
-    string GenerateAccessToken(Guid userId, string email);
+    string GenerateAccessToken(Guid userId, string email, bool isAdmin = false);
     string GenerateRefreshToken();
     ClaimsPrincipal? ValidateToken(string token);
 }
@@ -21,18 +21,23 @@ public class TokenService : ITokenService
         _configuration = configuration;
     }
 
-    public string GenerateAccessToken(Guid userId, string email)
+    public string GenerateAccessToken(Guid userId, string email, bool isAdmin = false)
     {
         var secret = _configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT secret not configured");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
+
+        if (isAdmin)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, "Admin"));
+        }
 
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],

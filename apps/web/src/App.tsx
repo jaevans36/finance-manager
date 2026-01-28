@@ -5,6 +5,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { AdminRoute } from './components/AdminRoute';
 import { WhatsNewModal } from './components/WhatsNewModal';
 import { AppHeader } from './components/AppHeader';
 import versionData from '@workspace/VERSION.json';
@@ -119,9 +120,9 @@ function App() {
                 <Route
                   path="/design-system"
                   element={
-                    <ProtectedRoute>
+                    <AdminRoute>
                       <DesignSystemPage />
-                    </ProtectedRoute>
+                    </AdminRoute>
                   }
                 />
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
