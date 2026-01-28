@@ -13,6 +13,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.14.0] - 2026-01-28 "Admin & Design System"
+
+### Added
+- **Admin System**
+  - IsAdmin boolean field added to User model with database migration
+  - JWT tokens now include "Admin" role claim for authorization
+  - AdminOnlyAttribute for protecting backend admin endpoints
+  - AdminRoute component for frontend route protection
+  - Admin badge with shield icon (🛡️) and tooltip in navigation header
+  - Non-admin users redirected to dashboard when accessing admin routes
+  - Design System page now admin-only access
+
+- **Design System Package**
+  - Created @finance-manager/ui shared package in packages/ui/
+  - Migrated all design tokens (typography, spacing, theme, colors)
+  - Migrated all UI components (Button, Card, Input, Badge, Alert, etc.)
+  - Migrated ThemeContext and theme provider
+  - Updated 20+ files to use new import pattern from shared package
+  - Calculator modal refactored to use design tokens
+  - Design System showcase page at /design-system route
+
+- **Documentation**
+  - Comprehensive design system usage guide (docs/guides/DESIGN_SYSTEM_USAGE.md)
+  - Updated Copilot instructions with mandatory design system standards
+  - Package READMEs for @finance-manager/ui
+  - Documentation index reorganized with design system section
+
+- **Developer Experience**
+  - npm script shortcuts (pnpm start, stop, restart, db:reset, logs, test:all)
+  - Fixed VS Code tasks configuration for script execution
+  - Scripts can now be run from any directory
+
+### Changed
+- Design System link in navigation now conditionally displayed (admin only)
+- Calculator modal now uses spacing and typography tokens instead of hardcoded values
+
+### Fixed
+- Badge and Alert component prop errors in Design System page (variant usage)
+- VS Code tasks now properly execute PowerShell scripts with spaces in paths
+
+---
+
 ## [0.13.0] - 2026-01-18 "Events Foundation"
 
 ### Added

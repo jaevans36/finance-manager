@@ -1,40 +1,46 @@
 {
-  "version": "0.13.0",
-  "releaseDate": "2026-01-18",
-  "codename": "Events Foundation",
-  "description": "Major milestone: Event management system, calendar integration, and dashboard restructure",
+  "version": "0.14.0",
+  "releaseDate": "2026-01-28",
+  "codename": "Admin & Design System",
+  "description": "Admin system implementation and design system centralization with shared UI package",
   "breaking": false,
   "changelog": [
     {
       "type": "feat",
-      "category": "Events",
-      "description": "Complete event management system with CRUD operations",
+      "category": "Admin System",
+      "description": "Complete admin system with role-based access control for design system",
       "impact": "high"
     },
     {
       "type": "feat",
-      "category": "Dashboard",
-      "description": "Redesigned dashboard as overview hub with widgets and quick stats",
+      "category": "Design System",
+      "description": "Migrated design system to shared @finance-manager/ui package",
       "impact": "high"
     },
     {
       "type": "feat",
-      "category": "Navigation",
-      "description": "Dedicated Tasks page separating overview from task management",
+      "category": "Admin UI",
+      "description": "Admin badge with shield icon and tooltip in navigation header",
       "impact": "medium"
     },
     {
       "type": "feat",
-      "category": "Calendar",
-      "description": "Event badges on calendar dates with all-day event support",
-      "impact": "medium"
+      "category": "Security",
+      "description": "JWT tokens include admin role claim, AdminRoute component for protected routes",
+      "impact": "high"
     },
     {
-      "type": "test",
-      "category": "Quality",
-      "description": "Added 68 comprehensive tests (backend + frontend + E2E)",
+      "type": "feat",
+      "category": "DX",
+      "description": "Added npm script shortcuts (pnpm start, stop, restart, etc.) for easier development",
+      "impact": "low"
+    },
+    {
+      "type": "docs",
+      "category": "Documentation",
+      "description": "Comprehensive design system usage guide and Copilot instructions updates",
       "impact": "medium"
     }
   ],
-  "previousVersion": "0.12.0"
+  "previousVersion": "0.13.0"
 }
