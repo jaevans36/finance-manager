@@ -698,12 +698,13 @@ With multiple developers after Foundation phase completes:
 
 | Phase | Feature | Tasks | Effort | Priority | Status |
 |-------|---------|-------|--------|----------|--------|
-| 13 | Events (scheduled occurrences) | T328-T427 | 5 weeks | P2 | Documented |
+| 13 | Events (scheduled occurrences) | T328-T427 | 5 weeks | P2 | ✅ Complete |
 | 18 | Security & Foundation | T428-T497 | 4 weeks | P1 | Documented |
 | 19 | Organization & Productivity | T498-T587 | 5 weeks | P2 | Documented |
 | 20 | Design & UX | T588-T657 | 4 weeks | P2 | Documented |
 | 21 | Advanced Features | T658-T747 | 6 weeks | P3 | Documented |
 | 22 | Collaboration & Linking | T748-T787 | 3 weeks | P2 | Documented |
+| 23 | Version History API | T788-T795 | 1 week | P3 | Documented |
 
 **Quick Win Path** (for immediate priorities):
 1. Phase 13 (Events) - 5 weeks - Task/event distinction
@@ -717,6 +718,7 @@ With multiple developers after Foundation phase completes:
 All 460 tasks (T328-T787) are fully detailed in the spec files:
 - **Events**: `specs/applications/todo/events-feature.md` (T328-T427)
 - **v2 Enhancements**: `specs/applications/todo/enhancements.md` (T428-T787)
+- **Version History API**: `specs/applications/todo/version-history-api.md` (T788-T795)
 
 Each task includes:
 - Exact file paths for implementation
@@ -749,3 +751,56 @@ Each task includes:
 - Use TypeScript strict mode throughout - no `any` types allowed
 - All API responses must follow OpenAPI specification in contracts/api-spec.yaml
 - **NEW FEATURES**: Always create detailed task breakdowns with estimates (see copilot-instructions.md)
+
+---
+
+## Phase 23: Version History API (Priority: P3)
+
+**Purpose**: Replace hardcoded mockChangelog with API-driven version history from CHANGELOG.md
+
+**Estimated Effort**: 1 week (8 tasks total)
+
+**Dependencies**: None (can be implemented independently)
+
+**Spec**: `specs/applications/todo/version-history-api.md`
+
+### Backend: Version API (Week 1, Days 1-3)
+
+- [ ] T788 [P] [API] Create VersionInfo and ChangelogSection models in apps/finance-api/Features/Version/Models/ - 1h
+- [ ] T789 [P] [API] Create VersionDto, ChangelogEntryDto, VersionHistoryDto in Features/Version/DTOs/ - 1h
+- [ ] T790 [API] Implement ChangelogParser service to parse CHANGELOG.md (ParseChangelogAsync, ParseVersionSection, ParseChangelogItems) - 4h
+- [ ] T791 [API] Implement VersionService with GetCurrentVersionAsync, GetVersionHistoryAsync, GetVersionByNumberAsync methods - 3h
+- [ ] T792 [API] Create VersionController with GET /api/version/current, /history, /history/:version endpoints - 2h
+- [ ] T793 [API] Add in-memory caching (5 min TTL) for parsed CHANGELOG.md to VersionService - 2h
+- [ ] T794 [API] Write unit tests for ChangelogParser (15+ tests covering all parsing scenarios) - 3h
+- [ ] T795 [API] Write integration tests for VersionController endpoints (10+ tests) - 3h
+
+### Frontend: API Integration (Week 1, Days 4-5)
+
+- [ ] T796 [P] [Frontend] Create versionService with getCurrentVersion, getVersionHistory, getVersionByNumber methods in apps/web/src/services/ - 2h
+- [ ] T797 [P] [Frontend] Create VersionInfo, ChangelogEntry, VersionHistory TypeScript interfaces in apps/web/src/types/ - 1h
+- [ ] T798 [Frontend] Update VersionHistoryPage.tsx to fetch from API (add useEffect, loading/error states, remove mockChangelog) - 3h
+- [ ] T799 [Frontend] Write E2E test for version history page loading from API (e2e/version-history.spec.ts) - 2h
+
+**Checkpoint**: Version History page displays all versions from CHANGELOG.md automatically without hardcoded data
+
+### Success Criteria
+
+- All 3 API endpoints return correct data matching CHANGELOG.md format
+- VersionHistoryPage automatically displays new versions when CHANGELOG.md updated
+- Loading and error states provide good UX
+- API response time <100ms (cached), <500ms (uncached)
+- All tests pass (19 unit/integration, 1 E2E)
+
+### Time Estimate Breakdown
+
+| Category | Tasks | Total Time |
+|----------|-------|------------|
+| Backend Models/DTOs | T788, T789 | 2h |
+| Backend Services | T790, T791, T793 | 9h |
+| Backend Controller | T792 | 2h |
+| Backend Tests | T794, T795 | 6h |
+| Frontend Service/Types | T796, T797 | 3h |
+| Frontend Component | T798 | 3h |
+| Frontend Tests | T799 | 2h |
+| **Total** | **8 tasks** | **27h (~1 week)** |

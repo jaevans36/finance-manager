@@ -208,6 +208,19 @@ const ImpactBadge = styled.span<ImpactBadgeProps>`
 // Mock changelog data - in production, this would come from an API or imported JSON
 const mockChangelog = [
   {
+    version: '0.13.0',
+    releaseDate: '2026-01-18',
+    codename: 'Events Foundation',
+    changelog: [
+      { type: 'feat', category: 'Events', description: 'Complete event management system with CRUD operations', impact: 'high' },
+      { type: 'feat', category: 'Events', description: 'Event form with title, description, start/end times, location, reminders', impact: 'high' },
+      { type: 'feat', category: 'Events', description: 'Event list with Today/Tomorrow/This Week grouping and all-day event badges', impact: 'medium' },
+      { type: 'feat', category: 'Dashboard', description: 'Restructured dashboard with Quick Stats, Quick Actions, and Upcoming Events', impact: 'high' },
+      { type: 'feat', category: 'Dashboard', description: 'Personalized greeting and priority tasks section', impact: 'medium' },
+      { type: 'feat', category: 'Testing', description: '68 comprehensive tests (18 backend unit, 16 integration, 25 frontend, 9 E2E)', impact: 'high' }
+    ]
+  },
+  {
     version: '0.12.0',
     releaseDate: '2025-12-20',
     codename: 'Calendar View',
