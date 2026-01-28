@@ -17,7 +17,8 @@ import {
   Sun,
   Moon,
   Calculator,
-  Palette
+  Palette,
+  Shield
 } from 'lucide-react';
 import CalculatorModal from './CalculatorModal';
 
@@ -240,6 +241,23 @@ const UserName = styled.div`
   font-weight: 600;
   color: ${({ theme }) => theme.colors.text};
   line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const AdminBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  background: ${({ theme }) => theme.colors.warning};
+  color: ${({ theme }) => theme.colors.buttonText};
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 `;
 
 const UserGreeting = styled.div`
@@ -455,7 +473,15 @@ export const AppHeader = () => {
               {user.username.charAt(0).toUpperCase()}
             </UserAvatar>
             <UserInfo>
-              <UserName>@{user.username}</UserName>
+              <UserName>
+                @{user.username}
+                {user.isAdmin && (
+                  <AdminBadge>
+                    <Shield size={10} />
+                    Admin
+                  </AdminBadge>
+                )}
+              </UserName>
               <UserGreeting>{getGreeting()}</UserGreeting>
             </UserInfo>
             <ChevronDown size={16} />
