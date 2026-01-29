@@ -13,6 +13,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.15.0] - 2026-01-29 "Quick Wins: APIs, Admin & Security"
+
+### Added
+- **Version History API** (Phase 23, T788-T795)
+  - Created VersionInfo, ChangelogSection, ChangelogItem models
+  - Implemented ChangelogParser service to parse CHANGELOG.md (Keep a Changelog format)
+  - VersionService with GET /api/version/current, /history, /history/:version endpoints
+  - In-memory caching (5 min TTL, disabled in development)
+  - Frontend versionService with TypeScript interfaces (VersionInfo, VersionHistory)
+  - VersionHistoryPage now fetches from API with loading/error states
+  - Removed hardcoded mockChangelog
+  - Automatic version display when CHANGELOG.md updated
+
+- **Admin Dashboard**
+  - Created AdminDashboard page at /admin route
+  - System statistics: Total Users, Active Users, Total Tasks, Total Events
+  - Quick Actions: Manage Users, Design System, Version History
+  - Recent Activity log (ready for API integration)
+  - Shield icon link in navigation (admin-only)
+
+- **User Management UI**
+  - Created UserManagement page at /admin/users
+  - User table with search by email/username
+  - Filter by all, admin, verified, unverified status
+  - Stats cards for user metrics
+  - Promote/demote admin privileges with confirmation
+  - View user details: email, username, admin status, verification, join date
+  - Badges for admin and verification status
+  - Responsive table design
+
+- **Security: Rate Limiting**
+  - RateLimitMiddleware with sliding window algorithm
+  - Configurable limits: 60 requests/minute, 1000 requests/hour
+  - Returns 429 Too Many Requests with Retry-After header
+  - X-RateLimit headers (Limit, Remaining, Reset)
+  - Skips health checks and Swagger endpoints
+  - Handles X-Forwarded-For and X-Real-IP (proxy support)
+  - Automatic cleanup of old entries
+  - Thread-safe ConcurrentDictionary implementation
+
+- **Security: Security Headers**
+  - SecurityHeadersMiddleware following OWASP best practices
+  - X-Content-Type-Options: nosniff (prevent MIME sniffing)
+  - X-Frame-Options: DENY (prevent clickjacking)
+  - X-XSS-Protection: 1; mode=block
+  - Referrer-Policy: strict-origin-when-cross-origin
+  - Permissions-Policy: disable geolocation, microphone, camera, payment
+  - Content-Security-Policy (strict in production, relaxed in dev)
+  - Strict-Transport-Security (HSTS) in production with HTTPS
+  - Removes Server, X-Powered-By headers
+
+- **Configuration**
+  - RateLimit section in appsettings.json (Enabled, MaxRequestsPerMinute, MaxRequestsPerHour)
+
+### Changed
+- VersionHistoryPage now uses API instead of hardcoded data
+- Middleware execution order: SecurityHeaders → RateLimit → ErrorLogging
+
+### Performance
+- Version history caching reduces file I/O by 5 minutes between CHANGELOG.md reads
+
+---
+
 ## [0.14.0] - 2026-01-28 "Admin & Design System"
 
 ### Added

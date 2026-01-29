@@ -1,46 +1,46 @@
 {
-  "version": "0.14.0",
-  "releaseDate": "2026-01-28",
-  "codename": "Admin & Design System",
-  "description": "Admin system implementation and design system centralization with shared UI package",
+  "version": "0.15.0",
+  "releaseDate": "2026-01-29",
+  "codename": "Quick Wins: APIs, Admin & Security",
+  "description": "Version History API, Admin Dashboard, User Management UI, and comprehensive security hardening",
   "breaking": false,
   "changelog": [
     {
       "type": "feat",
-      "category": "Admin System",
-      "description": "Complete admin system with role-based access control for design system",
+      "category": "Version History API",
+      "description": "API-driven version history from CHANGELOG.md with 3 REST endpoints and caching",
       "impact": "high"
     },
     {
       "type": "feat",
-      "category": "Design System",
-      "description": "Migrated design system to shared @finance-manager/ui package",
+      "category": "Admin Dashboard",
+      "description": "Complete admin dashboard with system statistics, quick actions, and activity log",
       "impact": "high"
     },
     {
       "type": "feat",
-      "category": "Admin UI",
-      "description": "Admin badge with shield icon and tooltip in navigation header",
-      "impact": "medium"
+      "category": "User Management",
+      "description": "Admin UI for managing users with search, filters, and permission controls",
+      "impact": "high"
     },
     {
       "type": "feat",
       "category": "Security",
-      "description": "JWT tokens include admin role claim, AdminRoute component for protected routes",
+      "description": "Rate limiting middleware (60/min, 1000/hour) with sliding window algorithm",
       "impact": "high"
     },
     {
       "type": "feat",
-      "category": "DX",
-      "description": "Added npm script shortcuts (pnpm start, stop, restart, etc.) for easier development",
-      "impact": "low"
+      "category": "Security",
+      "description": "Security headers middleware (CSP, HSTS, X-Frame-Options, etc.) following OWASP best practices",
+      "impact": "high"
     },
     {
-      "type": "docs",
-      "category": "Documentation",
-      "description": "Comprehensive design system usage guide and Copilot instructions updates",
+      "type": "perf",
+      "category": "Caching",
+      "description": "Version history cached for 5 minutes to reduce file I/O",
       "impact": "medium"
     }
   ],
-  "previousVersion": "0.13.0"
+  "previousVersion": "0.14.0"
 }
