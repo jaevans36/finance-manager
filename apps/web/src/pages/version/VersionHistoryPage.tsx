@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Container } from '@finance-manager/ui';
-import { Package, Calendar, Info, ChevronDown, ChevronUp, CheckCircle2, AlertCircle, Zap, Bug, FileText } from 'lucide-react';
+import { Package, Calendar, Info, ChevronDown, ChevronUp, CheckCircle2, AlertCircle, Zap, Bug, FileText, Loader2, RefreshCcw } from 'lucide-react';
 import styled from 'styled-components';
 import versionData from '@workspace/VERSION.json';
+import { versionService, type VersionHistory } from '../../services/versionService';
 
 const PageTitle = styled.h1`
   font-size: 32px;
@@ -261,8 +262,93 @@ const getChangeIcon = (type: string) => {
   }
 };
 
+const LoadingContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const LoadingSpinner = styled(Loader2)`
+  animation: spin 1s linear infinite;
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+`;
+
+const ErrorContainer = styled.div`
+  background: ${({ theme }) => theme.colors.error}10;
+  border: 1px solid ${({ theme }) => theme.colors.error}40;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 32px 0;
+  text-align: center;
+`;
+
+const ErrorTitle = styled.h3`
+  color: ${({ theme }) => theme.colors.error};
+  margin: 0 0 8px 0;
+  font-size: 18px;
+`;
+
+const ErrorMessage = styled.p`
+  color: ${({ theme }) => theme.colors.text};
+  margin: 0 0 16px 0;
+`;
+
+const RetryButton = styled.button`
+  background: ${({ theme }) => theme.colors.primary};
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primaryDark};
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
 const VersionHistoryPage = () => {
-  const [expandedVersions, setExpandedVersions] = useState<Set<string>>(new Set(['0.13.0']));
+  const [expandedVersions, setExpandedVersions] = useState<Set<string>>(new Set([versionData.version]));
+  const [historyData, setHistoryData] = useState<VersionHistory | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchVersionHistory = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const data = await versionService.getVersionHistory();
+      setHistoryData(data);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load version history';
+      setError(message);
+      console.error('Error fetching version history:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVersionHistory();
+  }, []);
 
   const toggleVersion = (version: string) => {
     setExpandedVersions(prev => {
@@ -310,93 +396,73 @@ const VersionHistoryPage = () => {
         </p>
       </CurrentVersionCard>
 
-      {/* Current Version Changelog */}
-      <VersionCard>
-        <VersionHeader $expanded={expandedVersions.has(versionData.version)} onClick={() => toggleVersion(versionData.version)}>
-          <VersionTitle>
-            <VersionNum>v{versionData.version}</VersionNum>
-            {versionData.codename && <span style={{ fontSize: '14px', color: '#888' }}>&quot;{versionData.codename}&quot;</span>}
-          </VersionTitle>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <VersionDate>
-              <Calendar size={14} />
-              {formatDate(versionData.releaseDate)}
-            </VersionDate>
-            <ExpandButton>
-              {expandedVersions.has(versionData.version) ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-            </ExpandButton>
-          </div>
-        </VersionHeader>
+      {/* Loading State */}
+      {isLoading && (
+        <LoadingContainer>
+          <LoadingSpinner size={40} />
+          <p style={{ marginTop: '16px' }}>Loading version history...</p>
+        </LoadingContainer>
+      )}
 
-        <ChangelogContent $expanded={expandedVersions.has(versionData.version)}>
-          {versionData.changelog.length > 0 && (
-            <ChangeSection>
-              <ChangeSectionTitle>
-                <Info size={16} />
-                Changes
-              </ChangeSectionTitle>
-              <ul style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
-                {versionData.changelog.map((change, idx) => (
-                  <ChangeItem key={idx}>
-                    <ChangeIcon $type={change.type}>
-                      {getChangeIcon(change.type)}
-                    </ChangeIcon>
-                    <span>
-                      <strong>{change.category}:</strong> {change.description}
-                      {change.impact && <ImpactBadge $impact={change.impact}>{change.impact}</ImpactBadge>}
-                    </span>
-                  </ChangeItem>
+      {/* Error State */}
+      {error && !isLoading && (
+        <ErrorContainer>
+          <ErrorTitle>Failed to Load Version History</ErrorTitle>
+          <ErrorMessage>{error}</ErrorMessage>
+          <RetryButton onClick={fetchVersionHistory}>
+            <RefreshCcw size={16} />
+            Retry
+          </RetryButton>
+        </ErrorContainer>
+      )}
+
+      {/* Version History */}
+      {!isLoading && !error && historyData && (
+        <>
+          {historyData.versions.map(version => (
+            <VersionCard key={version.version}>
+              <VersionHeader $expanded={expandedVersions.has(version.version)} onClick={() => toggleVersion(version.version)}>
+                <VersionTitle>
+                  <VersionNum>v{version.version}</VersionNum>
+                  {version.codename && <span style={{ fontSize: '14px', color: '#888' }}>&quot;{version.codename}&quot;</span>}
+                </VersionTitle>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <VersionDate>
+                    <Calendar size={14} />
+                    {formatDate(version.releaseDate)}
+                  </VersionDate>
+                  <ExpandButton>
+                    {expandedVersions.has(version.version) ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  </ExpandButton>
+                </div>
+              </VersionHeader>
+
+              <ChangelogContent $expanded={expandedVersions.has(version.version)}>
+                {version.changelog.map((section, sectionIdx) => (
+                  <ChangeSection key={sectionIdx}>
+                    <ChangeSectionTitle>
+                      <Info size={16} />
+                      {section.section}
+                    </ChangeSectionTitle>
+                    <ul style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
+                      {section.items.map((item, itemIdx) => (
+                        <ChangeItem key={itemIdx}>
+                          <ChangeIcon $type={item.type}>
+                            {getChangeIcon(item.type)}
+                          </ChangeIcon>
+                          <span>
+                            <strong>{item.category}:</strong> {item.description}
+                          </span>
+                        </ChangeItem>
+                      ))}
+                    </ul>
+                  </ChangeSection>
                 ))}
-              </ul>
-            </ChangeSection>
-          )}
-        </ChangelogContent>
-      </VersionCard>
-
-      {/* Previous Versions */}
-      {mockChangelog.map(version => (
-        <VersionCard key={version.version}>
-          <VersionHeader $expanded={expandedVersions.has(version.version)} onClick={() => toggleVersion(version.version)}>
-            <VersionTitle>
-              <VersionNum>v{version.version}</VersionNum>
-              {version.codename && <span style={{ fontSize: '14px', color: '#888' }}>&quot;{version.codename}&quot;</span>}
-            </VersionTitle>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <VersionDate>
-                <Calendar size={14} />
-                {formatDate(version.releaseDate)}
-              </VersionDate>
-              <ExpandButton>
-                {expandedVersions.has(version.version) ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </ExpandButton>
-            </div>
-          </VersionHeader>
-
-          <ChangelogContent $expanded={expandedVersions.has(version.version)}>
-            {version.changelog.length > 0 && (
-              <ChangeSection>
-                <ChangeSectionTitle>
-                  <Info size={16} />
-                  Changes
-                </ChangeSectionTitle>
-                <ul style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
-                  {version.changelog.map((change, idx) => (
-                    <ChangeItem key={idx}>
-                      <ChangeIcon $type={change.type}>
-                        {getChangeIcon(change.type)}
-                      </ChangeIcon>
-                      <span>
-                        <strong>{change.category}:</strong> {change.description}
-                        {change.impact && <ImpactBadge $impact={change.impact}>{change.impact}</ImpactBadge>}
-                      </span>
-                    </ChangeItem>
-                  ))}
-                </ul>
-              </ChangeSection>
-            )}
-          </ChangelogContent>
-        </VersionCard>
-      ))}
+              </ChangelogContent>
+            </VersionCard>
+          ))}
+        </>
+      )}
 
       <p style={{ textAlign: 'center', color: '#888', fontSize: '14px', marginTop: '32px' }}>
         For complete version history, see <a href="https://github.com/jaevans36/finance-manager/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer" style={{ color: '#4CAF50' }}>CHANGELOG.md</a>

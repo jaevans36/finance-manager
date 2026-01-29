@@ -390,7 +390,10 @@ export const AppHeader = () => {
     { path: '/events', icon: CalendarClock, label: 'Events' },
     { path: '/calendar', icon: Calendar, label: 'Calendar' },
     { path: '/weekly-progress', icon: BarChart3, label: 'Progress' },
-    ...(user?.isAdmin ? [{ path: '/design-system', icon: Palette, label: 'Design System' }] : []),
+    ...(user?.isAdmin ? [
+      { path: '/admin', icon: Shield, label: 'Admin' },
+      { path: '/design-system', icon: Palette, label: 'Design System' }
+    ] : []),
   ];
 
   const handleNavigate = (path: string) => {

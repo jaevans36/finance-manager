@@ -25,6 +25,7 @@ const CalendarPage = lazy(() => import('./pages/calendar/CalendarPage'));
 const EventsPage = lazy(() => import('./pages/events/EventsPage'));
 const VersionHistoryPage = lazy(() => import('./pages/version/VersionHistoryPage'));
 const DesignSystemPage = lazy(() => import('./pages/design-system/DesignSystemPage'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 
 function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(false);
@@ -122,6 +123,14 @@ function App() {
                   element={
                     <AdminRoute>
                       <DesignSystemPage />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin"
+                  element={
+                    <AdminRoute>
+                      <AdminDashboard />
                     </AdminRoute>
                   }
                 />
