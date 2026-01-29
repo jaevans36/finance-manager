@@ -26,6 +26,7 @@ const EventsPage = lazy(() => import('./pages/events/EventsPage'));
 const VersionHistoryPage = lazy(() => import('./pages/version/VersionHistoryPage'));
 const DesignSystemPage = lazy(() => import('./pages/design-system/DesignSystemPage'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const UserManagement = lazy(() => import('./pages/admin/UserManagement'));
 
 function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(false);
@@ -131,6 +132,14 @@ function App() {
                   element={
                     <AdminRoute>
                       <AdminDashboard />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/users"
+                  element={
+                    <AdminRoute>
+                      <UserManagement />
                     </AdminRoute>
                   }
                 />

@@ -153,6 +153,14 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
+
+// Security headers should be added first
+app.UseMiddleware<SecurityHeadersMiddleware>();
+
+// Rate limiting should be applied early
+app.UseMiddleware<RateLimitMiddleware>();
+
+// Error logging middleware
 app.UseMiddleware<ErrorLoggingMiddleware>();
 
 // Log HTTP requests
