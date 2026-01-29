@@ -33,8 +33,7 @@ const AddButtonContainer = styled.div`
   margin-bottom: 20px;
 `;
 
-const AddButton = styled(Button)`
-  font-size: 16px;
+const AddButton = styled(Button).attrs({ size: 'small' })`
   display: flex;
   align-items: center;
   gap: 8px;

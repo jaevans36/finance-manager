@@ -246,21 +246,23 @@ export const EventsPage = () => {
         </div>
         <Actions>
           <Button
+            size="small"
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
             style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
           >
-            <Filter size={18} />
+            <Filter size={16} />
             {showFilters ? 'Hide Filters' : 'Show Filters'}
           </Button>
           <Button
+            size="small"
             onClick={() => {
               setEditingEvent(undefined);
               setShowForm(true);
             }}
             style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
           >
-            <Plus size={18} />
+            <Plus size={16} />
             New Event
           </Button>
         </Actions>
@@ -304,7 +306,7 @@ export const EventsPage = () => {
             </FilterGroup>
             {hasActiveFilters && (
               <div style={{ display: 'flex', alignItems: 'end' }}>
-                <Button variant="outline" onClick={clearFilters}>
+                <Button size="small" variant="outline" onClick={clearFilters}>
                   Clear Filters
                 </Button>
               </div>

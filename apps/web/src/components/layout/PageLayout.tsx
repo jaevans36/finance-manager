@@ -14,6 +14,12 @@ const HeaderTop = styled.div`
   margin-bottom: 10px;
 `;
 
+const Subtitle = styled.p`
+  font-size: 16px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin: 8px 0 0 0;
+`;
+
 const HeaderActions = styled.div`
   display: flex;
   align-items: center;
@@ -32,6 +38,8 @@ const Content = styled.div`
 interface PageLayoutProps {
   /** Page title displayed as H1 */
   title: string;
+  /** Optional subtitle displayed below the title */
+  subtitle?: string;
   /** Whether to show the back button */
   showBackButton?: boolean;
   /** Text for the back button */
@@ -91,6 +99,7 @@ const ErrorMessage = styled.div`
  */
 export const PageLayout = ({
   title,
+  subtitle,
   showBackButton = false,
   backButtonText = 'Back to Dashboard',
   backButtonPath = '/dashboard',
@@ -131,6 +140,7 @@ export const PageLayout = ({
           </HeaderTop>
         )}
         <Heading1 style={{ margin: 0 }}>{title}</Heading1>
+        {subtitle && <Subtitle>{subtitle}</Subtitle>}
         {headerActions && <HeaderActions>{headerActions}</HeaderActions>}
       </Header>
       <Content>{children}</Content>

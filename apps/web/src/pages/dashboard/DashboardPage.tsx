@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { taskService } from '../../services/taskService';
 import { eventService } from '../../services/eventService';
 import { taskGroupService } from '../../services/taskGroupService';
-import { Container } from '@finance-manager/ui';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { 
   CheckCircle, 
   Calendar, 
@@ -17,23 +17,6 @@ import {
 import styled from 'styled-components';
 import type { Event } from '../../types/event';
 
-
-const WelcomeSection = styled.div`
-  margin-bottom: 32px;
-`;
-
-const WelcomeTitle = styled.h1`
-  font-size: 32px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0 0 8px 0;
-`;
-
-const WelcomeSubtitle = styled.p`
-  font-size: 16px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin: 0;
-`;
 
 const DashboardGrid = styled.div`
   display: grid;
@@ -302,21 +285,13 @@ const DashboardPage = () => {
     return 'Good evening';
   };
 
-  if (loading) {
-    return (
-      <Container style={{ padding: '20px', maxWidth: '1200px', width: '80%' }}>
-        <EmptyState>Loading your dashboard...</EmptyState>
-      </Container>
-    );
-  }
-
   return (
-    <Container style={{ padding: '20px', maxWidth: '1200px', width: '80%' }}>
-      <WelcomeSection>
-        <WelcomeTitle>{getGreeting()}, {user?.username}!</WelcomeTitle>
-        <WelcomeSubtitle>Here&apos;s your overview for today</WelcomeSubtitle>
-      </WelcomeSection>
-
+    <PageLayout 
+      title={`${getGreeting()}, ${user?.username}!`}
+      subtitle="Here's your overview for today"
+      loading={loading}
+      loadingComponent={<EmptyState>Loading your dashboard...</EmptyState>}
+    >
       <DashboardGrid>
         <StatCard onClick={() => navigate('/tasks')}>
           <StatHeader>
@@ -416,7 +391,7 @@ const DashboardPage = () => {
           ))}
         </UpcomingSection>
       )}
-    </Container>
+    </PageLayout>
   );
 };
 
