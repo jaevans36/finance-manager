@@ -27,6 +27,7 @@ const VersionHistoryPage = lazy(() => import('./pages/version/VersionHistoryPage
 const DesignSystemPage = lazy(() => import('./pages/design-system/DesignSystemPage'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const UserManagement = lazy(() => import('./pages/admin/UserManagement'));
+const SystemSettings = lazy(() => import('./pages/admin/SystemSettings'));
 
 function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(false);
@@ -140,6 +141,14 @@ function App() {
                   element={
                     <AdminRoute>
                       <UserManagement />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/settings"
+                  element={
+                    <AdminRoute>
+                      <SystemSettings />
                     </AdminRoute>
                   }
                 />

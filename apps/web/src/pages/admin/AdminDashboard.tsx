@@ -3,7 +3,8 @@ import { Container } from '@finance-manager/ui';
 import { Users, Activity, BarChart3, Shield, UserCog, Settings } from 'lucide-react';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { userManagementService, type UserStats } from '../../services/userManagementService';
 
 const PageTitle = styled.h1`
   font-size: 32px;
@@ -176,38 +177,24 @@ const ActivityTime = styled.span`
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
-interface Stats {
-  totalUsers: number;
-  activeUsers: number;
-  totalTasks: number;
-  totalEvents: number;
-  adminUsers: number;
-}
-
 const AdminDashboard = () => {
   const { user } = useAuth();
-  const [stats, setStats] = useState<Stats>({
-    totalUsers: 0,
-    activeUsers: 0,
-    totalTasks: 0,
-    totalEvents: 0,
-    adminUsers: 0
-  });
+  const navigate = useNavigate();
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: Fetch actual stats from API
-    // For now, using mock data
-    setTimeout(() => {
-      setStats({
-        totalUsers: 156,
-        activeUsers: 87,
-        totalTasks: 2340,
-        totalEvents: 458,
-        adminUsers: 3
-      });
-      setIsLoading(false);
-    }, 500);
+    const fetchStats = async () => {
+      try {
+        const stats = await userManagementService.getUserStats();
+        setUserStats(stats);
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchStats();
   }, []);
 
   if (!user?.isAdmin) {
@@ -230,8 +217,8 @@ const AdminDashboard = () => {
             </StatsIcon>
             <StatsTitle>Total Users</StatsTitle>
           </StatsHeader>
-          <StatsValue>{isLoading ? '---' : stats.totalUsers}</StatsValue>
-          <StatsChange $positive>{stats.adminUsers} administrators</StatsChange>
+          <StatsValue>{isLoading ? '---' : userStats?.totalUsers || 0}</StatsValue>
+          <StatsChange $positive>{userStats?.adminUsers || 0} administrators</StatsChange>
         </StatsCard>
 
         <StatsCard>
@@ -239,11 +226,11 @@ const AdminDashboard = () => {
             <StatsIcon $color="#2196F3">
               <Activity size={24} />
             </StatsIcon>
-            <StatsTitle>Active Users</StatsTitle>
+            <StatsTitle>Verified Users</StatsTitle>
           </StatsHeader>
-          <StatsValue>{isLoading ? '---' : stats.activeUsers}</StatsValue>
+          <StatsValue>{isLoading ? '---' : userStats?.verifiedUsers || 0}</StatsValue>
           <StatsChange $positive>
-            {isLoading ? '---' : `${Math.round((stats.activeUsers / stats.totalUsers) * 100)}%`} of total
+            {isLoading || !userStats ? '---' : `${Math.round((userStats.verifiedUsers / userStats.totalUsers) * 100)}%`} of total
           </StatsChange>
         </StatsCard>
 
@@ -252,21 +239,21 @@ const AdminDashboard = () => {
             <StatsIcon $color="#FF9800">
               <BarChart3 size={24} />
             </StatsIcon>
-            <StatsTitle>Total Tasks</StatsTitle>
+            <StatsTitle>Unverified</StatsTitle>
           </StatsHeader>
-          <StatsValue>{isLoading ? '---' : stats.totalTasks.toLocaleString()}</StatsValue>
-          <StatsChange $positive>Across all users</StatsChange>
+          <StatsValue>{isLoading ? '---' : userStats?.unverifiedUsers || 0}</StatsValue>
+          <StatsChange $positive={false}>Awaiting verification</StatsChange>
         </StatsCard>
 
         <StatsCard>
           <StatsHeader>
             <StatsIcon $color="#9C27B0">
-              <Activity size={24} />
+              <Shield size={24} />
             </StatsIcon>
-            <StatsTitle>Total Events</StatsTitle>
+            <StatsTitle>Admin Users</StatsTitle>
           </StatsHeader>
-          <StatsValue>{isLoading ? '---' : stats.totalEvents.toLocaleString()}</StatsValue>
-          <StatsChange $positive>Scheduled events</StatsChange>
+          <StatsValue>{isLoading ? '---' : userStats?.adminUsers || 0}</StatsValue>
+          <StatsChange $positive>With elevated privileges</StatsChange>
         </StatsCard>
       </DashboardGrid>
 
@@ -276,21 +263,28 @@ const AdminDashboard = () => {
           Quick Actions
         </SectionTitle>
         <QuickActionsGrid>
-          <QuickActionButton onClick={() => window.location.href = '/admin/users'}>
+          <QuickActionButton onClick={() => navigate('/admin/users')}>
             <ActionIcon>
               <UserCog size={24} />
             </ActionIcon>
             <ActionLabel>Manage Users</ActionLabel>
           </QuickActionButton>
 
-          <QuickActionButton onClick={() => window.location.href = '/design-system'}>
+          <QuickActionButton onClick={() => navigate('/admin/settings')}>
+            <ActionIcon>
+              <Settings size={24} />
+            </ActionIcon>
+            <ActionLabel>System Settings</ActionLabel>
+          </QuickActionButton>
+
+          <QuickActionButton onClick={() => navigate('/design-system')}>
             <ActionIcon>
               <Settings size={24} />
             </ActionIcon>
             <ActionLabel>Design System</ActionLabel>
           </QuickActionButton>
 
-          <QuickActionButton onClick={() => window.location.href = '/version-history'}>
+          <QuickActionButton onClick={() => navigate('/version-history')}>
             <ActionIcon>
               <Activity size={24} />
             </ActionIcon>

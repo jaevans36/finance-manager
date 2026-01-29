@@ -27,7 +27,12 @@ public class VersionService : IVersionService
         _logger = logger;
         _cache = cache;
         _env = env;
-        _versionJsonPath = Path.Combine(env.ContentRootPath, "..", "..", "VERSION.json");
+        
+        // Navigate from apps/finance-api to project root
+        var projectRoot = Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", ".."));
+        _versionJsonPath = Path.Combine(projectRoot, "VERSION.json");
+        
+        _logger.LogInformation("VERSION.json path: {Path}", _versionJsonPath);
     }
 
     public async Task<VersionDto?> GetCurrentVersionAsync()

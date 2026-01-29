@@ -723,3 +723,9 @@ export const ScrollableContainer = styled.div`
     background: ${({ theme }) => theme.colors.textSecondary};
   }
 `;
+
+// ============================================================================
+// MODAL
+// ============================================================================
+
+export { Modal } from './Modal';

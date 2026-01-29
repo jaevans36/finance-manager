@@ -390,10 +390,6 @@ export const AppHeader = () => {
     { path: '/events', icon: CalendarClock, label: 'Events' },
     { path: '/calendar', icon: Calendar, label: 'Calendar' },
     { path: '/weekly-progress', icon: BarChart3, label: 'Progress' },
-    ...(user?.isAdmin ? [
-      { path: '/admin', icon: Shield, label: 'Admin' },
-      { path: '/design-system', icon: Palette, label: 'Design System' }
-    ] : []),
   ];
 
   const handleNavigate = (path: string) => {
@@ -498,6 +494,25 @@ export const AppHeader = () => {
               <UserIcon size={18} />
               Profile Settings
             </DropdownItem>
+            {user.isAdmin && (
+              <>
+                <DropdownDivider />
+                <DropdownItem onClick={() => {
+                  handleNavigate('/admin');
+                  setUserMenuOpen(false);
+                }}>
+                  <Shield size={18} />
+                  Admin Dashboard
+                </DropdownItem>
+                <DropdownItem onClick={() => {
+                  handleNavigate('/design-system');
+                  setUserMenuOpen(false);
+                }}>
+                  <Palette size={18} />
+                  Design System
+                </DropdownItem>
+              </>
+            )}
             <DropdownDivider />
             <DropdownItem onClick={handleLogout}>
               <LogOut size={18} />

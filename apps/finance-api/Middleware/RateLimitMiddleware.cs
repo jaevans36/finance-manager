@@ -55,6 +55,10 @@ public class RateLimitMiddleware
         // Get or create request log for this IP
         var timestamps = RequestLog.GetOrAdd(ipAddress, _ => new Queue<DateTime>());
 
+        bool shouldRateLimitHourly = false;
+        bool shouldRateLimitMinute = false;
+        int requestsInLastMinute = 0;
+
         lock (timestamps)
         {
             // Remove timestamps older than 1 hour
@@ -66,54 +70,67 @@ public class RateLimitMiddleware
             // Check hourly limit
             if (timestamps.Count >= _options.MaxRequestsPerHour)
             {
-                _logger.LogWarning(
-                    "Rate limit exceeded for IP {IpAddress}. {Count} requests in the last hour (limit: {Limit})",
-                    ipAddress,
-                    timestamps.Count,
-                    _options.MaxRequestsPerHour);
-
-                context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
-                context.Response.Headers.Add("Retry-After", "3600"); // 1 hour
-                await context.Response.WriteAsJsonAsync(new
-                {
-                    error = "Rate limit exceeded",
-                    message = "Too many requests. Please try again later.",
-                    retryAfter = 3600
-                });
-                return;
+                shouldRateLimitHourly = true;
             }
-
-            // Check per-minute limit
-            var requestsInLastMinute = timestamps.Count(t => (now - t).TotalMinutes < 1);
-            if (requestsInLastMinute >= _options.MaxRequestsPerMinute)
+            else
             {
-                _logger.LogWarning(
-                    "Rate limit exceeded for IP {IpAddress}. {Count} requests in the last minute (limit: {Limit})",
-                    ipAddress,
-                    requestsInLastMinute,
-                    _options.MaxRequestsPerMinute);
-
-                context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
-                context.Response.Headers.Add("Retry-After", "60"); // 1 minute
-                await context.Response.WriteAsJsonAsync(new
+                // Check per-minute limit
+                requestsInLastMinute = timestamps.Count(t => (now - t).TotalMinutes < 1);
+                if (requestsInLastMinute >= _options.MaxRequestsPerMinute)
                 {
-                    error = "Rate limit exceeded",
-                    message = "Too many requests. Please slow down.",
-                    retryAfter = 60
-                });
-                return;
+                    shouldRateLimitMinute = true;
+                }
+                else
+                {
+                    // Add current request timestamp
+                    timestamps.Enqueue(now);
+                }
             }
-
-            // Add current request timestamp
-            timestamps.Enqueue(now);
-
-            // Add rate limit headers
-            context.Response.Headers.Add("X-RateLimit-Limit", _options.MaxRequestsPerMinute.ToString());
-            context.Response.Headers.Add("X-RateLimit-Remaining", 
-                Math.Max(0, _options.MaxRequestsPerMinute - requestsInLastMinute - 1).ToString());
-            context.Response.Headers.Add("X-RateLimit-Reset", 
-                new DateTimeOffset(now.AddMinutes(1)).ToUnixTimeSeconds().ToString());
         }
+
+        // Handle rate limiting outside the lock
+        if (shouldRateLimitHourly)
+        {
+            _logger.LogWarning(
+                "Rate limit exceeded for IP {IpAddress}. Hourly limit reached (limit: {Limit})",
+                ipAddress,
+                _options.MaxRequestsPerHour);
+
+            context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
+            context.Response.Headers.Append("Retry-After", "3600");
+            await context.Response.WriteAsJsonAsync(new
+            {
+                error = "Rate limit exceeded",
+                message = "Too many requests. Please try again later.",
+                retryAfter = 3600
+            });
+            return;
+        }
+
+        if (shouldRateLimitMinute)
+        {
+            _logger.LogWarning(
+                "Rate limit exceeded for IP {IpAddress}. Per-minute limit reached (limit: {Limit})",
+                ipAddress,
+                _options.MaxRequestsPerMinute);
+
+            context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
+            context.Response.Headers.Append("Retry-After", "60");
+            await context.Response.WriteAsJsonAsync(new
+            {
+                error = "Rate limit exceeded",
+                message = "Too many requests. Please slow down.",
+                retryAfter = 60
+            });
+            return;
+        }
+
+        // Add rate limit headers
+        context.Response.Headers.Append("X-RateLimit-Limit", _options.MaxRequestsPerMinute.ToString());
+        context.Response.Headers.Append("X-RateLimit-Remaining",
+            Math.Max(0, _options.MaxRequestsPerMinute - requestsInLastMinute - 1).ToString());
+        context.Response.Headers.Append("X-RateLimit-Reset",
+            new DateTimeOffset(now.AddMinutes(1)).ToUnixTimeSeconds().ToString());
 
         // Clean up old entries periodically
         if (Random.Shared.Next(100) == 0) // 1% chance

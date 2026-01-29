@@ -15,7 +15,12 @@ public class ChangelogParser : IChangelogParser
     public ChangelogParser(ILogger<ChangelogParser> logger, IWebHostEnvironment env)
     {
         _logger = logger;
-        _changelogPath = Path.Combine(env.ContentRootPath, "..", "..", "CHANGELOG.md");
+        
+        // Navigate from apps/finance-api to project root
+        var projectRoot = Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", ".."));
+        _changelogPath = Path.Combine(projectRoot, "CHANGELOG.md");
+        
+        _logger.LogInformation("CHANGELOG.md path: {Path}", _changelogPath);
     }
 
     public async Task<List<VersionInfo>> ParseChangelogAsync()

@@ -7,7 +7,7 @@
  * @module services/versionService
  */
 
-import { apiClient } from './api-client';
+import { apiClient, getFullApiUrl } from './api-client';
 
 export interface VersionInfo {
   version: string;
@@ -59,7 +59,7 @@ export const versionService = {
    * Get current version information from VERSION.json
    */
   getCurrentVersion: async (): Promise<VersionInfo> => {
-    const { data } = await apiClient.get<VersionInfo>('/api/version/current');
+    const { data } = await apiClient.get<VersionInfo>(getFullApiUrl('/api/version/current'));
     return data;
   },
 
@@ -67,7 +67,7 @@ export const versionService = {
    * Get all version history from CHANGELOG.md
    */
   getVersionHistory: async (): Promise<VersionHistory> => {
-    const { data } = await apiClient.get<VersionHistory>('/api/version/history');
+    const { data } = await apiClient.get<VersionHistory>(getFullApiUrl('/api/version/history'));
     return data;
   },
 
@@ -76,7 +76,7 @@ export const versionService = {
    * @param version - Version number (e.g., "0.14.0")
    */
   getVersionByNumber: async (version: string): Promise<VersionHistoryItem> => {
-    const { data} = await apiClient.get<VersionHistoryItem>(`/api/version/history/${version}`);
+    const { data} = await apiClient.get<VersionHistoryItem>(getFullApiUrl(`/api/version/history/${version}`));
     return data;
   }
 };

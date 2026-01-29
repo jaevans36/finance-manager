@@ -155,3 +155,12 @@ const createApiClient = (): AxiosInstance => {
 };
 
 export const apiClient = createApiClient();
+
+/**
+ * Helper to create full URL for endpoints that don't use /api/v1 prefix
+ * (e.g., /api/admin/*, /api/version/*)
+ */
+export const getFullApiUrl = (path: string): string => {
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  return `${baseUrl}${path}`;
+};
