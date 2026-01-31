@@ -338,13 +338,14 @@ export const EventsPage = () => {
             }
           </p>
           <Button
+            size="small"
             onClick={() => {
               setEditingEvent(undefined);
               setShowForm(true);
             }}
             style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
           >
-            <Plus size={18} />
+            <Plus size={16} />
             Create Your First Event
           </Button>
         </EmptyState>
