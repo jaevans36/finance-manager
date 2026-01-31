@@ -101,9 +101,13 @@ const EmptyState = styled.div`
   padding: 60px 20px;
   color: ${({ theme }) => theme.colors.textSecondary};
 
-  svg {
+  > svg {
     margin-bottom: 16px;
     opacity: 0.5;
+  }
+
+  button {
+    margin-top: 8px;
   }
 
   h3 {
