@@ -766,21 +766,21 @@ Each task includes:
 
 ### Backend: Version API (Week 1, Days 1-3)
 
-- [ ] T788 [P] [API] Create VersionInfo and ChangelogSection models in apps/finance-api/Features/Version/Models/ - 1h
-- [ ] T789 [P] [API] Create VersionDto, ChangelogEntryDto, VersionHistoryDto in Features/Version/DTOs/ - 1h
-- [ ] T790 [API] Implement ChangelogParser service to parse CHANGELOG.md (ParseChangelogAsync, ParseVersionSection, ParseChangelogItems) - 4h
-- [ ] T791 [API] Implement VersionService with GetCurrentVersionAsync, GetVersionHistoryAsync, GetVersionByNumberAsync methods - 3h
-- [ ] T792 [API] Create VersionController with GET /api/version/current, /history, /history/:version endpoints - 2h
-- [ ] T793 [API] Add in-memory caching (5 min TTL) for parsed CHANGELOG.md to VersionService - 2h
-- [ ] T794 [API] Write unit tests for ChangelogParser (15+ tests covering all parsing scenarios) - 3h
-- [ ] T795 [API] Write integration tests for VersionController endpoints (10+ tests) - 3h
+- [x] T788 [P] [API] Create VersionInfo and ChangelogSection models in apps/finance-api/Features/Version/Models/ - 1h
+- [x] T789 [P] [API] Create VersionDto, ChangelogEntryDto, VersionHistoryDto in Features/Version/DTOs/ - 1h
+- [x] T790 [API] Implement ChangelogParser service to parse CHANGELOG.md (ParseChangelogAsync, ParseVersionSection, ParseChangelogItems) - 4h
+- [x] T791 [API] Implement VersionService with GetCurrentVersionAsync, GetVersionHistoryAsync, GetVersionByNumberAsync methods - 3h
+- [x] T792 [API] Create VersionController with GET /api/version/current, /history, /history/:version endpoints - 2h
+- [x] T793 [API] Add in-memory caching (5 min TTL) for parsed CHANGELOG.md to VersionService - 2h
+- [x] T794 [API] Write unit tests for ChangelogParser (15+ tests covering all parsing scenarios) - 3h
+- [x] T795 [API] Write integration tests for VersionController endpoints (10+ tests) - 3h
 
 ### Frontend: API Integration (Week 1, Days 4-5)
 
-- [ ] T796 [P] [Frontend] Create versionService with getCurrentVersion, getVersionHistory, getVersionByNumber methods in apps/web/src/services/ - 2h
-- [ ] T797 [P] [Frontend] Create VersionInfo, ChangelogEntry, VersionHistory TypeScript interfaces in apps/web/src/types/ - 1h
-- [ ] T798 [Frontend] Update VersionHistoryPage.tsx to fetch from API (add useEffect, loading/error states, remove mockChangelog) - 3h
-- [ ] T799 [Frontend] Write E2E test for version history page loading from API (e2e/version-history.spec.ts) - 2h
+- [x] T796 [P] [Frontend] Create versionService with getCurrentVersion, getVersionHistory, getVersionByNumber methods in apps/web/src/services/ - 2h
+- [x] T797 [P] [Frontend] Create VersionInfo, ChangelogEntry, VersionHistory TypeScript interfaces in apps/web/src/types/ - 1h
+- [x] T798 [Frontend] Update VersionHistoryPage.tsx to fetch from API (add useEffect, loading/error states, remove mockChangelog) - 3h
+- [x] T799 [Frontend] Write E2E test for version history page loading from API (e2e/version-history.spec.ts) - 2h
 
 **Checkpoint**: Version History page displays all versions from CHANGELOG.md automatically without hardcoded data
 
