@@ -249,7 +249,6 @@ export const EventsPage = () => {
             size="small"
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
           >
             <Filter size={16} />
             {showFilters ? 'Hide Filters' : 'Show Filters'}
@@ -260,7 +259,6 @@ export const EventsPage = () => {
               setEditingEvent(undefined);
               setShowForm(true);
             }}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
           >
             <Plus size={16} />
             New Event
@@ -343,7 +341,6 @@ export const EventsPage = () => {
               setEditingEvent(undefined);
               setShowForm(true);
             }}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
           >
             <Plus size={16} />
             Create Your First Event
