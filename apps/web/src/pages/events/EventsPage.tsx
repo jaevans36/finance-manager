@@ -1,33 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { eventService } from '../../services/eventService';
 import { taskGroupService } from '../../services/taskGroupService';
-import { Container, Button, Alert } from '@finance-manager/ui';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { Button } from '@finance-manager/ui';
 import { EventList } from '../../components/events/EventList';
 import { EventForm } from '../../components/events/EventForm';
-import { Plus, XCircle, Filter, Calendar } from 'lucide-react';
+import { Plus, Filter, Calendar } from 'lucide-react';
 import styled from 'styled-components';
 import type { Event, CreateEventRequest, UpdateEventRequest } from '../../types/event';
 import type { TaskGroup } from '../../types/taskGroup';
-
-const PageTitle = styled.h1`
-  font-size: 28px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0 0 24px 0;
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  gap: 16px;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
-`;
 
 const Actions = styled.div`
   display: flex;
@@ -127,7 +108,6 @@ export const EventsPage = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [groups, setGroups] = useState<TaskGroup[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | undefined>(undefined);
   const [showFilters, setShowFilters] = useState(false);
@@ -140,7 +120,6 @@ export const EventsPage = () => {
   const loadEvents = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
       const params: Record<string, string> = {};
       
       if (startDateFilter) params.startDate = startDateFilter;
@@ -150,8 +129,6 @@ export const EventsPage = () => {
       const data = await eventService.getEvents(params);
       setEvents(data);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load events';
-      setError(message);
       console.error('Error loading events:', err);
     } finally {
       setLoading(false);
@@ -174,26 +151,22 @@ export const EventsPage = () => {
 
   const handleCreateEvent = async (data: CreateEventRequest) => {
     try {
-      setError(null);
       await eventService.createEvent(data);
       await loadEvents();
       setShowForm(false);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to create event';
-      setError(message);
+      console.error('Error creating event:', err);
       throw err;
     }
   };
 
   const handleUpdateEvent = async (id: string, data: UpdateEventRequest) => {
     try {
-      setError(null);
       await eventService.updateEvent(id, data);
       await loadEvents();
       setEditingEvent(undefined);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to update event';
-      setError(message);
+      console.error('Error updating event:', err);
       throw err;
     }
   };
@@ -204,12 +177,10 @@ export const EventsPage = () => {
     }
 
     try {
-      setError(null);
       await eventService.deleteEvent(id);
       await loadEvents();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to delete event';
-      setError(message);
+      console.error('Error deleting event:', err);
     }
   };
 
@@ -232,22 +203,11 @@ export const EventsPage = () => {
   const hasActiveFilters = startDateFilter || endDateFilter || groupFilter;
 
   return (
-    <Container style={{ padding: '20px', maxWidth: '1200px', width: '80%' }}>
-      <PageTitle>Events</PageTitle>
-
-      {error && (
-        <Alert variant="error" style={{ marginBottom: '20px' }}>
-          <XCircle size={16} />
-          <span>{error}</span>
-        </Alert>
-      )}
-
-      <Header>
-        <div>
-          <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px' }}>
-            Manage your scheduled events and appointments
-          </p>
-        </div>
+    <PageLayout 
+      title="Events"
+      subtitle="Manage your scheduled events and appointments"
+      loading={loading}
+      headerActions={
         <Actions>
           <Button
             size="small"
@@ -268,7 +228,8 @@ export const EventsPage = () => {
             New Event
           </Button>
         </Actions>
-      </Header>
+      }
+    >
 
       {showFilters && (
         <FilterSection>
@@ -360,7 +321,7 @@ export const EventsPage = () => {
           onDelete={handleDeleteEvent}
         />
       )}
-    </Container>
+    </PageLayout>
   );
 };
 

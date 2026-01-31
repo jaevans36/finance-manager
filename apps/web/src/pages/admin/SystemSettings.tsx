@@ -1,26 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Container } from '@finance-manager/ui';
-import { Settings, Shield, Activity, AlertCircle } from 'lucide-react';
+import { Shield, Activity, AlertCircle } from 'lucide-react';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { systemConfigurationService, type SystemConfiguration } from '../../services/systemConfigurationService';
-
-const PageTitle = styled.h1`
-  font-size: 32px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0 0 8px 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const PageSubtitle = styled.p`
-  font-size: 16px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin: 0 0 32px 0;
-`;
+import { PageLayout } from '../../components/layout/PageLayout';
 
 const SettingsGrid = styled.div`
   display: grid;
@@ -191,20 +175,18 @@ const SystemSettings = () => {
 
   if (isLoading) {
     return (
-      <Container style={{ padding: '20px', maxWidth: '1400px', width: '95%' }}>
+      <PageLayout title="System Settings" loading={true}>
         <LoadingMessage>Loading configuration...</LoadingMessage>
-      </Container>
+      </PageLayout>
     );
   }
 
   return (
-    <Container style={{ padding: '20px', maxWidth: '1400px', width: '95%' }}>
-      <PageTitle>
-        <Settings size={36} />
-        System Settings
-      </PageTitle>
-      <PageSubtitle>View and manage system configuration settings</PageSubtitle>
-
+    <PageLayout 
+      title="System Settings"
+      subtitle="View and manage system configuration settings"
+      loading={false}
+    >
       {error && <ErrorMessage>{error}</ErrorMessage>}
 
       {config && (
@@ -290,7 +272,7 @@ const SystemSettings = () => {
           </SettingsGrid>
         </>
       )}
-    </Container>
+    </PageLayout>
   );
 };
 

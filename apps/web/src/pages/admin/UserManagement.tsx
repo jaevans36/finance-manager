@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Container, Button } from '@finance-manager/ui';
+import { Button } from '@finance-manager/ui';
 import { Modal } from '../../components/ui/Modal';
-import { Users, Search, Shield, ShieldOff, Trash2, RefreshCcw, Plus, Edit, Key } from 'lucide-react';
+import { Search, Shield, ShieldOff, Trash2, RefreshCcw, Plus, Edit, Key } from 'lucide-react';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
@@ -12,22 +12,7 @@ import {
   type CreateUserRequest,
   type UpdateUserRequest 
 } from '../../services/userManagementService';
-
-const PageTitle = styled.h1`
-  font-size: 32px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0 0 8px 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const PageSubtitle = styled.p`
-  font-size: 16px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin: 0 0 32px 0;
-`;
+import { PageLayout } from '../../components/layout/PageLayout';
 
 const ControlsContainer = styled.div`
   display: flex;
@@ -89,26 +74,6 @@ const FilterButton = styled.button<{ $active?: boolean }>`
   &:hover {
     border-color: ${({ theme, $active }) => 
       $active ? theme.colors.primary : theme.colors.textSecondary};
-  }
-`;
-
-const CreateButton = styled.button`
-  padding: 10px 20px;
-  border: 1px solid ${({ theme }) => theme.colors.success};
-  border-radius: 8px;
-  background: ${({ theme }) => theme.colors.success};
-  color: white;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.success}dd;
-    border-color: ${({ theme }) => theme.colors.success}dd;
   }
 `;
 
@@ -459,15 +424,22 @@ const UserManagement = () => {
   }
 
   return (
-    <Container style={{ padding: '20px', maxWidth: '1400px', width: '95%' }}>
-      <PageTitle>
-        <Users size={32} />
-        User Management
-      </PageTitle>
-      <PageSubtitle>
-        Manage user accounts, permissions, and access controls
-      </PageSubtitle>
-
+    <PageLayout 
+      title="User Management"
+      subtitle="Manage user accounts, permissions, and access controls"
+      loading={isLoading}
+      headerActions={
+        <>
+          <Button size="small" variant="outline" onClick={fetchData}>
+            <RefreshCcw size={16} />
+          </Button>
+          <Button size="small" onClick={() => setShowCreateModal(true)}>
+            <Plus size={16} />
+            Create User
+          </Button>
+        </>
+      }
+    >
       {stats && (
         <StatsGrid>
           <StatCard>
@@ -522,13 +494,6 @@ const UserManagement = () => {
           onClick={() => setFilter('unverified')}
         >
           Unverified
-        </FilterButton>
-        <CreateButton onClick={() => setShowCreateModal(true)}>
-          <Plus size={16} />
-          Create User
-        </CreateButton>
-        <FilterButton onClick={fetchData}>
-          <RefreshCcw size={16} />
         </FilterButton>
       </ControlsContainer>
 
@@ -801,7 +766,7 @@ const UserManagement = () => {
           </Button>
         </ModalActions>
       </Modal>
-    </Container>
+    </PageLayout>
   );
 };
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Container } from '@finance-manager/ui';
-import { Package, Calendar, Info, ChevronDown, ChevronUp, CheckCircle2, AlertCircle, Zap, Bug, FileText, Loader2, RefreshCcw } from 'lucide-react';
+import { Package, Calendar, Info, ChevronDown, ChevronUp, CheckCircle2, AlertCircle, Zap, Bug, FileText, Loader2, RefreshCcw, Shield } from 'lucide-react';
 import styled from 'styled-components';
 import versionData from '@workspace/VERSION.json';
 import { versionService, type VersionHistory } from '../../services/versionService';
@@ -175,89 +175,18 @@ const ChangeIcon = styled.span<ChangeIconProps>`
       case 'feat': return theme.colors.success;
       case 'fix': return theme.colors.error;
       case 'perf': return theme.colors.warning;
+      case 'security': return theme.colors.info;
       default: return theme.colors.textSecondary;
     }
   }};
 `;
-
-interface ImpactBadgeProps {
-  $impact: string;
-}
-
-const ImpactBadge = styled.span<ImpactBadgeProps>`
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 10px;
-  background: ${({ theme, $impact }) => {
-    switch ($impact) {
-      case 'high': return `${theme.colors.error}20`;
-      case 'medium': return `${theme.colors.warning}20`;
-      default: return `${theme.colors.textSecondary}20`;
-    }
-  }};
-  color: ${({ theme, $impact }) => {
-    switch ($impact) {
-      case 'high': return theme.colors.error;
-      case 'medium': return theme.colors.warning;
-      default: return theme.colors.textSecondary;
-    }
-  }};
-  margin-left: 8px;
-`;
-
-// Mock changelog data - in production, this would come from an API or imported JSON
-const mockChangelog = [
-  {
-    version: '0.13.0',
-    releaseDate: '2026-01-18',
-    codename: 'Events Foundation',
-    changelog: [
-      { type: 'feat', category: 'Events', description: 'Complete event management system with CRUD operations', impact: 'high' },
-      { type: 'feat', category: 'Events', description: 'Event form with title, description, start/end times, location, reminders', impact: 'high' },
-      { type: 'feat', category: 'Events', description: 'Event list with Today/Tomorrow/This Week grouping and all-day event badges', impact: 'medium' },
-      { type: 'feat', category: 'Dashboard', description: 'Restructured dashboard with Quick Stats, Quick Actions, and Upcoming Events', impact: 'high' },
-      { type: 'feat', category: 'Dashboard', description: 'Personalized greeting and priority tasks section', impact: 'medium' },
-      { type: 'feat', category: 'Testing', description: '68 comprehensive tests (18 backend unit, 16 integration, 25 frontend, 9 E2E)', impact: 'high' }
-    ]
-  },
-  {
-    version: '0.12.0',
-    releaseDate: '2025-12-20',
-    codename: 'Calendar View',
-    changelog: [
-      { type: 'feat', category: 'Calendar', description: 'Monthly calendar interface for visualizing tasks', impact: 'high' },
-      { type: 'feat', category: 'Calendar', description: 'Day cells with task count badges and color-coded priorities', impact: 'medium' },
-      { type: 'feat', category: 'UX', description: 'Responsive design with mobile swipe gestures', impact: 'low' }
-    ]
-  },
-  {
-    version: '0.11.0',
-    releaseDate: '2025-12-15',
-    codename: 'Weekly Progress Dashboard',
-    changelog: [
-      { type: 'feat', category: 'Analytics', description: 'Comprehensive weekly analytics with visualization', impact: 'high' },
-      { type: 'feat', category: 'Charts', description: 'Bar charts and pie charts using Recharts library', impact: 'high' },
-      { type: 'feat', category: 'Statistics', description: 'Historical completion rate chart (8-week trend)', impact: 'medium' }
-    ]
-  },
-  {
-    version: '0.10.0',
-    releaseDate: '2025-12-01',
-    codename: 'Username System',
-    changelog: [
-      { type: 'feat', category: 'Auth', description: 'Unique username field for user accounts', impact: 'medium' },
-      { type: 'feat', category: 'Auth', description: 'Real-time username availability checking', impact: 'low' },
-      { type: 'feat', category: 'Auth', description: 'Login with username or email', impact: 'medium' }
-    ]
-  }
-];
 
 const getChangeIcon = (type: string) => {
   switch (type) {
     case 'feat': return <CheckCircle2 size={16} />;
     case 'fix': return <Bug size={16} />;
     case 'perf': return <Zap size={16} />;
+    case 'security': return <Shield size={16} />;
     default: return <FileText size={16} />;
   }
 };
@@ -315,7 +244,7 @@ const RetryButton = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.primaryDark};
+    background: ${({ theme }) => theme.colors.primaryHover};
     transform: translateY(-1px);
   }
 
@@ -440,10 +369,12 @@ const VersionHistoryPage = () => {
               <ChangelogContent $expanded={expandedVersions.has(version.version)}>
                 {version.changelog.map((section, sectionIdx) => (
                   <ChangeSection key={sectionIdx}>
-                    <ChangeSectionTitle>
-                      <Info size={16} />
-                      {section.section}
-                    </ChangeSectionTitle>
+                    {section.section && section.section.trim() !== 'General' && (
+                      <ChangeSectionTitle>
+                        <Info size={16} />
+                        {section.section}
+                      </ChangeSectionTitle>
+                    )}
                     <ul style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
                       {section.items.map((item, itemIdx) => (
                         <ChangeItem key={itemIdx}>

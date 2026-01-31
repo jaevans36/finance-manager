@@ -1,26 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Container } from '@finance-manager/ui';
 import { Users, Activity, BarChart3, Shield, UserCog, Settings } from 'lucide-react';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { userManagementService, type UserStats } from '../../services/userManagementService';
-
-const PageTitle = styled.h1`
-  font-size: 32px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0 0 8px 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const PageSubtitle = styled.p`
-  font-size: 16px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin: 0 0 32px 0;
-`;
+import { PageLayout } from '../../components/layout/PageLayout';
 
 const DashboardGrid = styled.div`
   display: grid;
@@ -202,13 +186,11 @@ const AdminDashboard = () => {
   }
 
   return (
-    <Container style={{ padding: '20px', maxWidth: '1400px', width: '95%' }}>
-      <PageTitle>
-        <Shield size={36} />
-        Admin Dashboard
-      </PageTitle>
-      <PageSubtitle>System overview and administrative controls</PageSubtitle>
-
+    <PageLayout 
+      title="Admin Dashboard"
+      subtitle="System overview and administrative controls"
+      loading={isLoading}
+    >
       <DashboardGrid>
         <StatsCard>
           <StatsHeader>
@@ -317,7 +299,7 @@ const AdminDashboard = () => {
           </ActivityItem>
         </ActivityList>
       </Section>
-    </Container>
+    </PageLayout>
   );
 };
 

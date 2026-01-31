@@ -161,7 +161,7 @@ public class ChangelogParser : IChangelogParser
             "Added" => "feat",
             "Fixed" => "fix",
             "Changed" => "feat",
-            "Security" => "feat",
+            "Security" => "security",
             "Performance" or "Perf" => "perf",
             "Deprecated" or "Removed" => "docs",
             _ => "feat"

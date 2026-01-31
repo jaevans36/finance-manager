@@ -13,19 +13,13 @@ import { TaskGroupList } from '../../components/task-groups/TaskGroupList';
 import { TaskStatistics } from '../../components/dashboard/TaskStatistics';
 import { TaskSkeleton } from '../../components/dashboard/TaskSkeleton';
 import { TaskSearch } from '../../components/dashboard/TaskSearch';
-import { Button, Alert, Container } from '@finance-manager/ui';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { Alert, Button } from '@finance-manager/ui';
 import { XCircle, ChevronDown } from 'lucide-react';
 import { TaskGroup } from '../../types/taskGroup';
 import { DashboardLayout } from '../dashboard/components';
 import styled from 'styled-components';
 import type { CreateEventRequest } from '../../types/event';
-
-const PageTitle = styled.h1`
-  font-size: 28px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0 0 24px 0;
-`;
 
 const AddButtonContainer = styled.div`
   position: relative;
@@ -280,9 +274,11 @@ const TasksPage = () => {
   };
 
   return (
-    <Container style={{ padding: '20px', maxWidth: '1200px', width: '80%' }}>
-      <PageTitle>Tasks</PageTitle>
-
+    <PageLayout 
+      title="Tasks"
+      loading={loading}
+      loadingComponent={<TaskSkeleton />}
+    >
       {error && (
         <Alert variant="error" style={{ marginBottom: '20px' }}>
           <XCircle size={16} />
@@ -376,7 +372,7 @@ const TasksPage = () => {
           onCancel={() => setEditingTask(null)}
         />
       )}
-    </Container>
+    </PageLayout>
   );
 };
 
