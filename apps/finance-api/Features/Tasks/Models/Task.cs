@@ -18,6 +18,15 @@ public class Task
     [Column("group_id")]
     public Guid? GroupId { get; set; }
 
+    [Column("parent_task_id")]
+    public Guid? ParentTaskId { get; set; }
+
+    [Column("depth")]
+    public int Depth { get; set; } = 0;
+
+    [Column("sort_order")]
+    public int SortOrder { get; set; } = 0;
+
     [Required]
     [Column("title")]
     [MaxLength(500)]
@@ -51,6 +60,11 @@ public class Task
 
     [ForeignKey(nameof(GroupId))]
     public TaskGroup? Group { get; set; }
+
+    [ForeignKey(nameof(ParentTaskId))]
+    public Task? ParentTask { get; set; }
+
+    public ICollection<Task> Subtasks { get; set; } = new List<Task>();
 }
 
 public enum Priority

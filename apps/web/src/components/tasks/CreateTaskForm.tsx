@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 import { 
   Card, 
@@ -11,7 +11,8 @@ import {
   Alert,
   Flex
 } from '../ui';
-import { XCircle } from 'lucide-react';
+import { XCircle, Plus, X } from 'lucide-react';
+import { spacing, borderRadius } from '@finance-manager/ui/styles';
 
 const Subheading = styled.h2`
   color: ${({ theme }) => theme.colors.text};
@@ -27,13 +28,111 @@ interface CreateTaskFormProps {
     priority?: 'Low' | 'Medium' | 'High' | 'Critical';
     dueDate?: string;
     groupId?: string;
+    subtaskTitles?: string[];
   }) => Promise<void>;
   onCancel: () => void;
   groups?: TaskGroup[];
   selectedGroupId?: string | null;
+  onSubtasksCreated?: (taskId: string, titles: string[]) => Promise<void>;
 }
 
-export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupId }: CreateTaskFormProps) => {
+// ---------------------------------------------------------------------------
+// Subtasks section styled components
+// ---------------------------------------------------------------------------
+
+const SubtasksSection = styled.div`
+  margin-bottom: 15px;
+`;
+
+const SubtasksSectionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: ${spacing.sm};
+`;
+
+const SubtaskList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${spacing.xs};
+  margin-bottom: ${spacing.sm};
+`;
+
+const SubtaskRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${spacing.sm};
+  padding: ${spacing.xs} ${spacing.sm};
+  background: ${({ theme }) => theme.colors.backgroundSecondary};
+  border-radius: ${borderRadius.md};
+`;
+
+const SubtaskTitle = styled.span`
+  flex: 1;
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.text};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const RemoveButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: ${borderRadius.sm};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  transition: color 150ms ease;
+  flex-shrink: 0;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.error};
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
+const InlineSubtaskInput = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${spacing.sm};
+`;
+
+const SubtaskInput = styled(Input)`
+  flex: 1;
+  font-size: 14px;
+`;
+
+const AddSubtaskButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: ${spacing.xs};
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: 13px;
+  padding: ${spacing.xs} 0;
+  transition: color 150ms ease;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.primary};
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
+export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupId, onSubtasksCreated }: CreateTaskFormProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'Low' | 'Medium' | 'High' | 'Critical'>('Medium');
@@ -41,6 +140,36 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
   const [groupId, setGroupId] = useState<string>(selectedGroupId || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [subtaskTitles, setSubtaskTitles] = useState<string[]>([]);
+  const [subtaskInput, setSubtaskInput] = useState('');
+  const [isAddingSubtask, setIsAddingSubtask] = useState(false);
+  const subtaskInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAddSubtask = useCallback(() => {
+    const trimmed = subtaskInput.trim();
+    if (!trimmed) return;
+    setSubtaskTitles((prev) => [...prev, trimmed]);
+    setSubtaskInput('');
+    subtaskInputRef.current?.focus();
+  }, [subtaskInput]);
+
+  const handleRemoveSubtask = useCallback((index: number) => {
+    setSubtaskTitles((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleSubtaskKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleAddSubtask();
+      }
+      if (e.key === 'Escape') {
+        setIsAddingSubtask(false);
+        setSubtaskInput('');
+      }
+    },
+    [handleAddSubtask],
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +189,7 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
         priority,
         dueDate: dueDate || undefined,
         groupId: groupId || undefined,
+        subtaskTitles: subtaskTitles.length > 0 ? subtaskTitles : undefined,
       });
       // Reset form
       setTitle('');
@@ -67,6 +197,9 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
       setPriority('Medium');
       setDueDate('');
       setGroupId(selectedGroupId || '');
+      setSubtaskTitles([]);
+      setSubtaskInput('');
+      setIsAddingSubtask(false);
     } catch (err) {
       console.error('Task creation error:', err);
       if (err instanceof Error) {
@@ -170,6 +303,61 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
             />
           </FormGroup>
         </div>
+
+        {/* Subtasks section */}
+        <SubtasksSection>
+          <SubtasksSectionHeader>
+            <Label style={{ margin: 0 }}>Subtasks</Label>
+          </SubtasksSectionHeader>
+
+          {subtaskTitles.length > 0 && (
+            <SubtaskList>
+              {subtaskTitles.map((st, index) => (
+                <SubtaskRow key={index}>
+                  <SubtaskTitle>{st}</SubtaskTitle>
+                  <RemoveButton
+                    type="button"
+                    onClick={() => handleRemoveSubtask(index)}
+                    aria-label={`Remove subtask "${st}"`}
+                    disabled={isSubmitting}
+                  >
+                    <X />
+                  </RemoveButton>
+                </SubtaskRow>
+              ))}
+            </SubtaskList>
+          )}
+
+          {isAddingSubtask ? (
+            <InlineSubtaskInput>
+              <SubtaskInput
+                ref={subtaskInputRef}
+                type="text"
+                placeholder="Type a subtask and press Enter..."
+                value={subtaskInput}
+                onChange={(e) => setSubtaskInput(e.target.value)}
+                onKeyDown={handleSubtaskKeyDown}
+                onBlur={() => {
+                  if (!subtaskInput.trim()) {
+                    setIsAddingSubtask(false);
+                  }
+                }}
+                disabled={isSubmitting}
+                aria-label="New subtask title"
+                autoFocus
+              />
+            </InlineSubtaskInput>
+          ) : (
+            <AddSubtaskButton
+              type="button"
+              onClick={() => setIsAddingSubtask(true)}
+              disabled={isSubmitting}
+            >
+              <Plus />
+              Add subtask
+            </AddSubtaskButton>
+          )}
+        </SubtasksSection>
 
         <Flex gap={10}>
           <Button type="submit" variant="success" $isLoading={isSubmitting}>

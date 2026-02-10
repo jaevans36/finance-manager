@@ -13,6 +13,12 @@ export interface Task {
   groupId: string | null;
   groupName: string | null;
   groupColour: string | null;
+  parentTaskId: string | null;
+  hasSubtasks: boolean;
+  subtaskCount: number;
+  completedSubtaskCount: number;
+  progressPercentage: number;
+  subtasks?: Task[];
   createdAt: string;
   updatedAt: string;
 }

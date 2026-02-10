@@ -103,6 +103,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<ISubtaskService, SubtaskService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<TaskGroupService>();
 builder.Services.AddScoped<ISessionService, SessionService>();

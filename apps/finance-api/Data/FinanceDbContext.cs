@@ -178,8 +178,16 @@ public class FinanceDbContext : DbContext
                   .HasForeignKey(t => t.GroupId)
                   .OnDelete(DeleteBehavior.SetNull);
 
+            entity.HasOne(t => t.ParentTask)
+                  .WithMany(t => t.Subtasks)
+                  .HasForeignKey(t => t.ParentTaskId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.GroupId);
+            entity.HasIndex(e => e.ParentTaskId);
+            entity.HasIndex(e => new { e.ParentTaskId, e.SortOrder });
+            entity.HasIndex(e => new { e.ParentTaskId, e.Completed });
             entity.HasIndex(e => new { e.UserId, e.GroupId, e.Completed });
             entity.HasIndex(e => new { e.UserId, e.DueDate });
             entity.HasIndex(e => new { e.UserId, e.Priority });

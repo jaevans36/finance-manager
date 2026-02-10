@@ -18,24 +18,33 @@ public class TasksController : ControllerBase
         _taskService = taskService;
     }
 
+    /// <summary>
+    /// Lists tasks. By default returns only root-level tasks (no parents). Pass rootOnly=false to include subtasks.
+    /// </summary>
     [HttpGet]
     public async System.Threading.Tasks.Task<ActionResult<List<TaskDto>>> GetTasks(
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
         [FromQuery] string? priority,
         [FromQuery] Guid? groupId,
-        [FromQuery] bool? completed)
+        [FromQuery] bool? completed,
+        [FromQuery] bool? rootOnly)
     {
         var userId = GetUserId();
-        var tasks = await _taskService.GetTasksAsync(userId, startDate, endDate, priority, groupId, completed);
+        var tasks = await _taskService.GetTasksAsync(userId, startDate, endDate, priority, groupId, completed, rootOnly);
         return Ok(tasks);
     }
 
+    /// <summary>
+    /// Gets a single task by ID. Use ?includeSubtasks=true to include the full subtask tree.
+    /// </summary>
     [HttpGet("{id}")]
-    public async System.Threading.Tasks.Task<ActionResult<TaskDto>> GetTask(Guid id)
+    public async System.Threading.Tasks.Task<ActionResult<TaskDto>> GetTask(
+        Guid id,
+        [FromQuery] bool includeSubtasks = false)
     {
         var userId = GetUserId();
-        var task = await _taskService.GetTaskByIdAsync(userId, id);
+        var task = await _taskService.GetTaskByIdAsync(userId, id, includeSubtasks);
 
         if (task == null)
         {

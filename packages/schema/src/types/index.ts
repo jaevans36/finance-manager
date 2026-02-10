@@ -21,6 +21,15 @@ export interface Task {
   dueDate: Date | null;
   completed: boolean;
   completedAt: Date | null;
+  groupId: string | null;
+  groupName: string | null;
+  groupColour: string | null;
+  parentTaskId: string | null;
+  hasSubtasks: boolean;
+  subtaskCount: number;
+  completedSubtaskCount: number;
+  progressPercentage: number;
+  subtasks?: Task[];
   createdAt: Date;
   updatedAt: Date;
 }

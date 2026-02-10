@@ -12,6 +12,10 @@ import {
   Flex
 } from '../ui';
 import { XCircle } from 'lucide-react';
+import { spacing, mediaQueries } from '@finance-manager/ui/styles';
+import { useSubtasks } from '../../hooks/useSubtasks';
+import { SubtaskList } from './SubtaskList';
+import type { Task as FullTask } from '../../services/taskService';
 
 const Subheading = styled.h2`
   color: ${({ theme }) => theme.colors.text};
@@ -33,16 +37,29 @@ const ModalOverlay = styled.div`
 
 const ModalContent = styled(Card)`
   padding: 20px;
-  max-width: 500px;
+  max-width: 600px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     width: 95%;
     padding: 16px;
     max-height: 95vh;
   }
+`;
+
+const SubtaskSection = styled.div`
+  margin-top: ${spacing.lg};
+  padding-top: ${spacing.lg};
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const SectionLabel = styled.h3`
+  font-size: 14px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  margin: 0 0 ${spacing.sm} 0;
 `;
 
 interface Task {
@@ -81,6 +98,24 @@ export const EditTaskModal = ({ task, onSubmit, onCancel }: EditTaskModalProps) 
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  // Subtask management
+  const {
+    subtasks,
+    isLoading: subtasksLoading,
+    error: subtasksError,
+    createSubtask,
+    bulkCreateSubtasks,
+    toggleSubtask,
+    renameSubtask,
+    deleteSubtask,
+    reorderSubtasks,
+    bulkComplete,
+    selectedIds,
+    toggleSelected,
+    selectAll,
+    deselectAll,
+  } = useSubtasks(task.id);
 
   // Close modal on Escape key
   useEffect(() => {
@@ -215,6 +250,28 @@ export const EditTaskModal = ({ task, onSubmit, onCancel }: EditTaskModalProps) 
             </Button>
           </Flex>
         </form>
+
+        {/* Subtask management section */}
+        <SubtaskSection>
+          <SectionLabel>Subtasks</SectionLabel>
+          <SubtaskList
+            parentTask={task as unknown as FullTask}
+            subtasks={subtasks}
+            isLoading={subtasksLoading}
+            error={subtasksError}
+            onCreateSubtask={createSubtask}
+            onBulkCreate={bulkCreateSubtasks}
+            onToggleComplete={toggleSubtask}
+            onRename={renameSubtask}
+            onDelete={deleteSubtask}
+            onReorder={reorderSubtasks}
+            onBulkComplete={bulkComplete}
+            selectedIds={selectedIds}
+            onToggleSelected={toggleSelected}
+            onSelectAll={selectAll}
+            onDeselectAll={deselectAll}
+          />
+        </SubtaskSection>
       </ModalContent>
     </ModalOverlay>
   );

@@ -12,14 +12,15 @@ public interface ITaskService
     System.Threading.Tasks.Task<TaskDto> CreateTaskAsync(Guid userId, CreateTaskRequest request);
     System.Threading.Tasks.Task<TaskDto> UpdateTaskAsync(Guid userId, Guid taskId, UpdateTaskRequest request);
     System.Threading.Tasks.Task DeleteTaskAsync(Guid userId, Guid taskId);
-    System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid userId, Guid taskId);
+    System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid userId, Guid taskId, bool includeSubtasks = false);
     System.Threading.Tasks.Task<List<TaskDto>> GetTasksAsync(
         Guid userId, 
         DateTime? startDate = null, 
         DateTime? endDate = null,
         string? priority = null,
         Guid? groupId = null,
-        bool? completed = null);
+        bool? completed = null,
+        bool? rootOnly = null);
     System.Threading.Tasks.Task<List<TaskDto>> GetTasksByDateRangeAsync(Guid userId, DateTime startDate, DateTime endDate);
 }
 
@@ -122,19 +123,31 @@ public class TaskService : ITaskService
             throw new KeyNotFoundException("Task not found");
         }
 
+        // Cascade delete all descendant subtasks (deepest first to respect FK constraints)
+        await DeleteDescendantsAsync(taskId);
+
         _context.Tasks.Remove(task);
         await _context.SaveChangesAsync();
 
         await _activityLogService.LogAsync(userId, ActivityType.TaskDeleted, $"Deleted task: {task.Title}", null, null);
     }
 
-    public async System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid userId, Guid taskId)
+    public async System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid userId, Guid taskId, bool includeSubtasks = false)
     {
         var task = await _context.Tasks
             .Include(t => t.Group)
             .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
 
-        return task == null ? null : await MapToTaskDtoAsync(task);
+        if (task == null) return null;
+
+        var dto = await MapToTaskDtoAsync(task);
+
+        if (includeSubtasks && dto.HasSubtasks)
+        {
+            dto.Subtasks = await BuildSubtreeAsync(userId, taskId);
+        }
+
+        return dto;
     }
 
     public async System.Threading.Tasks.Task<List<TaskDto>> GetTasksAsync(
@@ -143,11 +156,18 @@ public class TaskService : ITaskService
         DateTime? endDate = null,
         string? priority = null,
         Guid? groupId = null,
-        bool? completed = null)
+        bool? completed = null,
+        bool? rootOnly = null)
     {
         var query = _context.Tasks
             .Include(t => t.Group)
             .Where(t => t.UserId == userId);
+
+        // By default, filter to root-level tasks only (no parent)
+        if (rootOnly != false)
+        {
+            query = query.Where(t => t.ParentTaskId == null);
+        }
 
         // Apply date range filter
         if (startDate.HasValue && endDate.HasValue)
@@ -217,6 +237,10 @@ public class TaskService : ITaskService
 
     private async System.Threading.Tasks.Task<TaskDto> MapToTaskDtoAsync(Models.Task task)
     {
+        // Count direct subtasks
+        var subtaskCount = await _context.Tasks.CountAsync(t => t.ParentTaskId == task.Id);
+        var completedSubtaskCount = await _context.Tasks.CountAsync(t => t.ParentTaskId == task.Id && t.Completed);
+
         return new TaskDto
         {
             Id = task.Id,
@@ -229,8 +253,56 @@ public class TaskService : ITaskService
             GroupId = task.GroupId,
             GroupName = task.Group?.Name,
             GroupColour = task.Group?.Colour,
+            ParentTaskId = task.ParentTaskId,
+            HasSubtasks = subtaskCount > 0,
+            SubtaskCount = subtaskCount,
+            CompletedSubtaskCount = completedSubtaskCount,
+            ProgressPercentage = subtaskCount > 0
+                ? Math.Round((decimal)completedSubtaskCount / subtaskCount * 100, 1)
+                : 0,
             CreatedAt = task.CreatedAt,
             UpdatedAt = task.UpdatedAt
         };
+    }
+
+    /// <summary>
+    /// Recursively deletes all descendants of a task (deepest first).
+    /// </summary>
+    private async System.Threading.Tasks.Task DeleteDescendantsAsync(Guid taskId)
+    {
+        var children = await _context.Tasks
+            .Where(t => t.ParentTaskId == taskId)
+            .ToListAsync();
+
+        foreach (var child in children)
+        {
+            await DeleteDescendantsAsync(child.Id);
+            _context.Tasks.Remove(child);
+        }
+    }
+
+    /// <summary>
+    /// Builds a full nested subtree for a parent task.
+    /// </summary>
+    private async System.Threading.Tasks.Task<List<TaskDto>> BuildSubtreeAsync(Guid userId, Guid parentId)
+    {
+        var directChildren = await _context.Tasks
+            .Include(t => t.Group)
+            .Where(t => t.ParentTaskId == parentId && t.UserId == userId)
+            .OrderBy(t => t.SortOrder)
+            .ToListAsync();
+
+        var result = new List<TaskDto>();
+        foreach (var child in directChildren)
+        {
+            var dto = await MapToTaskDtoAsync(child);
+
+            var nestedSubtasks = await BuildSubtreeAsync(userId, child.Id);
+            dto.Subtasks = nestedSubtasks.Count > 0 ? nestedSubtasks : null;
+
+            result.Add(dto);
+        }
+
+        return result;
     }
 }

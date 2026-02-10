@@ -49,6 +49,12 @@ public class TaskDto
     public Guid? GroupId { get; set; }
     public string? GroupName { get; set; }
     public string? GroupColour { get; set; }
+    public Guid? ParentTaskId { get; set; }
+    public bool HasSubtasks { get; set; }
+    public int SubtaskCount { get; set; }
+    public int CompletedSubtaskCount { get; set; }
+    public decimal ProgressPercentage { get; set; }
+    public List<TaskDto>? Subtasks { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }

@@ -7,6 +7,10 @@ export interface CalendarTask {
   groupId?: string;
   groupName?: string;
   groupColor?: string;
+  hasSubtasks?: boolean;
+  subtaskCount?: number;
+  completedSubtaskCount?: number;
+  progressPercentage?: number;
 }
 
 export interface DayData {
