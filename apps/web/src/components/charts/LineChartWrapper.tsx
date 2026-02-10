@@ -1,11 +1,12 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
+import { mediaQueries } from '@finance-manager/ui/styles';
 
 const ChartContainer = styled.div`
   width: 100%;
   height: 300px;
   
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     height: 250px;
   }
 `;
@@ -22,6 +23,7 @@ interface LineChartWrapperProps {
 }
 
 export const LineChartWrapper = ({ data, xAxisKey, lines, yAxisLabel }: LineChartWrapperProps) => {
+  const theme = useTheme();
   return (
     <ChartContainer>
       <ResponsiveContainer width="100%" height="100%">
@@ -40,8 +42,8 @@ export const LineChartWrapper = ({ data, xAxisKey, lines, yAxisLabel }: LineChar
           />
           <Tooltip 
             contentStyle={{ 
-              backgroundColor: '#fff', 
-              border: '1px solid #ccc',
+              backgroundColor: theme.colors.cardBackground, 
+              border: `1px solid ${theme.colors.border}`,
               borderRadius: '4px'
             }}
           />

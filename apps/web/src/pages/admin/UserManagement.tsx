@@ -3,6 +3,7 @@ import { Button } from '@finance-manager/ui';
 import { Modal } from '../../components/ui/Modal';
 import { Search, Shield, ShieldOff, Trash2, RefreshCcw, Plus, Edit, Key } from 'lucide-react';
 import styled from 'styled-components';
+import { borderRadius } from '@finance-manager/ui/styles';
 import { useAuth } from '../../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { 
@@ -32,7 +33,7 @@ const SearchInput = styled.input`
   width: 100%;
   padding: 12px 12px 12px 44px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.text};
   font-size: 14px;
@@ -58,7 +59,7 @@ const FilterButton = styled.button<{ $active?: boolean }>`
   padding: 10px 20px;
   border: 1px solid ${({ theme, $active }) => 
     $active ? theme.colors.primary : theme.colors.border};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   background: ${({ theme, $active }) => 
     $active ? theme.colors.primary : theme.colors.background};
   color: ${({ theme, $active }) => 
@@ -82,7 +83,7 @@ const UsersTable = styled.table`
   border-collapse: collapse;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   overflow: hidden;
 `;
 
@@ -136,7 +137,7 @@ const Badge = styled.span<{ $variant: 'admin' | 'verified' | 'unverified' }>`
   justify-content: center;
   gap: 4px;
   padding: 4px 12px;
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   font-size: 11px;
   font-weight: 600;
   line-height: 1.2;
@@ -159,7 +160,7 @@ const Badge = styled.span<{ $variant: 'admin' | 'verified' | 'unverified' }>`
 const ActionButton = styled.button`
   padding: 6px 12px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 6px;
+  border-radius: ${borderRadius.md};
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.text};
   font-size: 12px;
@@ -196,7 +197,7 @@ const StatsGrid = styled.div`
 const StatCard = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   padding: 20px;
 `;
 
@@ -228,7 +229,7 @@ const Input = styled.input`
   width: 100%;
   padding: 10px 14px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.text};
   font-size: 14px;

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import styled from 'styled-components';
+import { borderRadius, focusRing, shadows, mediaQueries } from '@finance-manager/ui/styles';
 import { useToast } from '../../contexts/ToastContext';
 import { taskGroupService } from '../../services/taskGroupService';
 import { Button, Input, TextArea, FormGroup, Label, Alert, Flex } from '../ui';
@@ -21,14 +22,14 @@ const ModalOverlay = styled.div`
 const ModalContent = styled.div`
   background-color: ${({ theme }) => theme.colors.background};
   padding: 24px;
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl}px;
   max-width: 500px;
   width: 90%;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: ${shadows.xl};
   max-height: 90vh;
   overflow-y: auto;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     width: 95%;
     padding: 16px;
     max-height: 95vh;
@@ -52,7 +53,7 @@ const ColourOptions = styled.div`
 const ColourOption = styled.button<{ $colour: string; $selected: boolean }>`
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   background-color: ${({ $colour }) => $colour};
   border: 3px solid ${({ $selected, theme }) =>
     $selected ? theme.colors.text : 'transparent'};
@@ -63,10 +64,12 @@ const ColourOption = styled.button<{ $colour: string; $selected: boolean }>`
     transform: scale(1.1);
   }
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     width: 48px;
     height: 48px;
   }
+
+  ${focusRing}
 `;
 
 const COLOUR_OPTIONS = [

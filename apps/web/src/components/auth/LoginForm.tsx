@@ -13,6 +13,7 @@ import {
   Heading2,
 } from '../ui';
 import styled from 'styled-components';
+import { focusRing } from '@finance-manager/ui/styles';
 
 const FormContainer = styled.div`
   max-width: 400px;
@@ -28,6 +29,7 @@ const LinkContainer = styled.div`
 const StyledLink = styled(Link)`
   font-size: 14px;
   color: ${({ theme }) => theme.colors.primary};
+  ${focusRing}
 
   &:hover {
     color: ${({ theme }) => theme.colors.primaryHover};

@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { borderRadius, shadows, mediaQueries } from '../../styles/layout';
 import { EventForm } from './EventForm';
 import { eventService } from '../../services/eventService';
 import type { Event, CreateEventRequest } from '../../types/event';
@@ -20,14 +21,14 @@ const ModalOverlay = styled.div`
 
 const ModalContent = styled.div`
   background: ${({ theme }) => theme.colors.background};
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl}px;
   max-width: 600px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: ${shadows.xl};
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     max-width: 95%;
   }
 `;

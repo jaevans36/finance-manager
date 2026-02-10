@@ -1,5 +1,6 @@
 import React, { Component, ReactNode } from 'react';
 import styled from 'styled-components';
+import { borderRadius } from '@finance-manager/ui/styles';
 
 interface ChartContainerProps {
   children: ReactNode;
@@ -34,7 +35,7 @@ const LoadingOverlay = styled.div`
   align-items: center;
   justify-content: center;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
 `;
 
 const LoadingSpinner = styled.div`
@@ -64,7 +65,7 @@ const ErrorContainer = styled.div`
   align-items: center;
   justify-content: center;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   padding: 20px;
   text-align: center;
 `;
@@ -92,7 +93,7 @@ const RetryButton = styled.button`
   background: ${({ theme }) => theme.colors.primary};
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm};
   cursor: pointer;
   font-size: 14px;
   transition: background 0.2s;

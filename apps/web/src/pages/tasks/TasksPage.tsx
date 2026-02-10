@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
-import { taskService } from '../../services/taskService';
+import { taskService, type Task } from '../../services/taskService';
 import { eventService } from '../../services/eventService';
 import { taskGroupService } from '../../services/taskGroupService';
+import { subtaskService } from '../../services/subtaskService';
 import { CreateTaskForm } from '../../components/tasks/CreateTaskForm';
 import { EventForm } from '../../components/events/EventForm';
 import { EditTaskModal } from '../../components/tasks/EditTaskModal';
@@ -19,6 +20,7 @@ import { XCircle, ChevronDown } from 'lucide-react';
 import { TaskGroup } from '../../types/taskGroup';
 import { DashboardLayout } from '../dashboard/components';
 import styled from 'styled-components';
+import { borderRadius } from '@finance-manager/ui/styles';
 import type { CreateEventRequest } from '../../types/event';
 
 const AddButtonContainer = styled.div`
@@ -40,7 +42,7 @@ const DropdownMenu = styled.div`
   margin-top: 8px;
   background: ${({ theme }) => theme.colors.background};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 1000;
   min-width: 200px;
@@ -69,22 +71,6 @@ const DropdownItem = styled.button`
     border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   }
 `;
-
-interface Task {
-  id: string;
-  title: string;
-  description: string | null;
-  priority: 'Low' | 'Medium' | 'High' | 'Critical';
-  dueDate: string | null;
-  completed: boolean;
-  completedAt: string | null;
-  userId: string;
-  groupId: string | null;
-  groupName: string | null;
-  groupColour: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
 
 const TasksPage = () => {
   const navigate = useNavigate();
@@ -186,9 +172,22 @@ const TasksPage = () => {
     priority?: 'Low' | 'Medium' | 'High' | 'Critical';
     dueDate?: string;
     groupId?: string;
+    subtaskTitles?: string[];
   }) => {
     try {
-      const task = await taskService.createTask(data);
+      const { subtaskTitles, ...taskData } = data;
+      const task = await taskService.createTask(taskData);
+
+      // Create subtasks if provided
+      if (subtaskTitles && subtaskTitles.length > 0) {
+        try {
+          await subtaskService.bulkCreateSubtasks(task.id, subtaskTitles);
+        } catch (subtaskErr) {
+          console.error('Failed to create subtasks:', subtaskErr);
+          toast.error('Task created but some subtasks failed');
+        }
+      }
+
       setTasks((prev) => [task, ...prev]);
       setShowCreateForm(false);
       toast.success('Task created successfully');

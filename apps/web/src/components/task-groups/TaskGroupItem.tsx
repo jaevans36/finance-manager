@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { borderRadius } from '@finance-manager/ui/styles';
 import { TaskGroup } from '../../types/taskGroup';
 import { Text, Badge } from '../ui';
 import { FolderIcon } from 'lucide-react';
@@ -8,7 +9,7 @@ const GroupItemContainer = styled.div<{ $isActive: boolean }>`
   align-items: center;
   gap: 12px;
   padding: 12px;
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   cursor: pointer;
   transition: background-color 0.2s;
   background-color: ${({ $isActive, theme }) =>

@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '@finance-manager/ui';
+import { borderRadius, focusRing, mediaQueries } from '@finance-manager/ui/styles';
 import { 
   LayoutDashboard, 
   ListTodo, 
@@ -35,7 +36,7 @@ const HeaderContainer = styled.header`
   backdrop-filter: blur(8px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     padding: 12px 16px;
   }
 `;
@@ -45,7 +46,7 @@ const LeftSection = styled.div`
   align-items: center;
   gap: 24px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     gap: 12px;
   }
 `;
@@ -64,7 +65,7 @@ const Logo = styled.div`
     color: ${({ theme }) => theme.colors.success};
   }
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     font-size: 18px;
   }
 `;
@@ -76,7 +77,7 @@ const NavDropdown = styled.div`
 const NavButton = styled.button`
   background: ${({ theme }) => theme.colors.background};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   padding: 8px 16px;
   color: ${({ theme }) => theme.colors.text};
   font-size: 14px;
@@ -100,10 +101,12 @@ const NavButton = styled.button`
     transform: rotate(180deg);
   }
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     padding: 6px 12px;
     font-size: 13px;
   }
+
+  ${focusRing}
 `;
 
 const DropdownMenu = styled.div<{ $isOpen: boolean }>`
@@ -112,7 +115,7 @@ const DropdownMenu = styled.div<{ $isOpen: boolean }>`
   left: 0;
   background: ${({ theme }) => theme.colors.background};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   min-width: 220px;
   opacity: ${({ $isOpen }) => ($isOpen ? 1 : 0)};
@@ -145,16 +148,18 @@ const DropdownItem = styled.button<{ $isActive?: boolean }>`
   }
 
   &:first-child {
-    border-radius: 12px 12px 0 0;
+    border-radius: ${borderRadius.xl} ${borderRadius.xl} 0 0;
   }
 
   &:last-child {
-    border-radius: 0 0 12px 12px;
+    border-radius: 0 0 ${borderRadius.xl} ${borderRadius.xl};
   }
 
   svg {
     flex-shrink: 0;
   }
+
+  ${focusRing}
 `;
 
 const DropdownDivider = styled.div`
@@ -168,7 +173,7 @@ const RightSection = styled.div`
   align-items: center;
   gap: 20px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     gap: 12px;
   }
 `;
@@ -181,7 +186,7 @@ const TimeDisplay = styled.div`
   font-size: 14px;
   font-weight: 500;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     display: none;
   }
 `;
@@ -193,7 +198,7 @@ const UserSection = styled.div`
   padding: 6px 12px;
   background: ${({ theme }) => theme.colors.background};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   cursor: pointer;
   transition: all 0.2s ease;
 
@@ -202,9 +207,11 @@ const UserSection = styled.div`
     background: ${({ theme }) => theme.colors.backgroundSecondary};
   }
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     padding: 6px 8px;
   }
+
+  ${focusRing}
 `;
 
 const UserAvatar = styled.div`
@@ -219,7 +226,7 @@ const UserAvatar = styled.div`
   font-weight: 600;
   font-size: 14px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     width: 28px;
     height: 28px;
     font-size: 12px;
@@ -231,7 +238,7 @@ const UserInfo = styled.div`
   flex-direction: column;
   gap: 2px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     display: none;
   }
 `;
@@ -253,7 +260,7 @@ const AdminBadge = styled.span`
   padding: 4px;
   background: ${({ theme }) => theme.colors.warning};
   color: ${({ theme }) => theme.colors.buttonText};
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm};
   cursor: help;
   transition: transform 0.2s ease;
 
@@ -281,7 +288,7 @@ const ThemeButton = styled.button`
   width: 36px;
   height: 36px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   background-color: ${({ theme }) => theme.colors.cardBackground};
   color: ${({ theme }) => theme.colors.text};
   cursor: pointer;
@@ -314,7 +321,7 @@ const ThemeButton = styled.button`
     transform: rotate(15deg);
   }
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     width: 32px;
     height: 32px;
   }

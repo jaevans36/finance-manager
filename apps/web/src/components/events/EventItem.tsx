@@ -1,7 +1,8 @@
 import { memo } from 'react';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import type { Event } from '../../types/event';
 import { Card, Button, Text, TextSmall, Badge, Flex } from '../ui';
+import { mediaQueries } from '@finance-manager/ui/styles';
 import { REMINDER_OPTIONS } from '../../types/event';
 
 interface EventItemProps {
@@ -17,7 +18,7 @@ const EventCard = styled(Card)`
   align-items: center;
   gap: 15px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
@@ -28,11 +29,11 @@ const EventCard = styled(Card)`
 const EventIndicator = styled.div<{ $color?: string }>`
   width: 4px;
   height: 60px;
-  background-color: ${({ $color }) => $color || '#3B82F6'};
+  background-color: ${({ $color, theme }) => $color || theme.colors.info};
   border-radius: 2px;
   flex-shrink: 0;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     width: 100%;
     height: 4px;
   }
@@ -84,6 +85,7 @@ export const EventItem = memo(({
   onEdit,
   onDelete,
 }: EventItemProps) => {
+  const theme = useTheme();
   const isPast = new Date(event.endDate) < new Date();
   const reminderText = getReminderLabel(event.reminderMinutes);
 
@@ -98,8 +100,8 @@ export const EventItem = memo(({
             <Badge 
               variant="outline" 
               style={{ 
-                borderColor: event.groupColour || '#6B7280',
-                color: event.groupColour || '#6B7280'
+                borderColor: event.groupColour || theme.colors.textSecondary,
+                color: event.groupColour || theme.colors.textSecondary
               }}
             >
               {event.groupName}

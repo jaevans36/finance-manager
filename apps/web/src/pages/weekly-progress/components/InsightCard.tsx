@@ -3,8 +3,8 @@ import { Card, TextSmall } from '@finance-manager/ui';
 
 const InsightSection = styled(Card)`
   padding: 20px;
-  background: linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(76, 175, 80, 0.02) 100%);
-  border: 1px solid rgba(76, 175, 80, 0.2);
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.successBackground} 0%, ${({ theme }) => theme.colors.cardBackground} 100%);
+  border: 1px solid ${({ theme }) => theme.colors.success}33;
   animation: fadeIn 0.5s ease-in;
 
   @keyframes fadeIn {

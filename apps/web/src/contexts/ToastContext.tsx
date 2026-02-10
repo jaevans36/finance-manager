@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import styled from 'styled-components';
 import { CheckCircleIcon, XCircleIcon, AlertCircleIcon, InfoIcon, XIcon } from 'lucide-react';
+import { borderRadius, focusRing } from '@finance-manager/ui/styles';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -47,7 +48,7 @@ const ToastItem = styled.div<{ $type: ToastType }>`
       default: return theme.colors.border;
     }
   }};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg}px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   animation: slideIn 0.3s ease-out;
   min-width: 300px;
@@ -94,13 +95,15 @@ const CloseButton = styled.button`
   color: ${({ theme }) => theme.colors.textSecondary};
   cursor: pointer;
   padding: 4px;
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm}px;
   transition: all 0.2s;
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.backgroundSecondary};
     color: ${({ theme }) => theme.colors.text};
   }
+
+  ${focusRing}
 `;
 
 const getIcon = (type: ToastType) => {

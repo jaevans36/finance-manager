@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import styled from 'styled-components';
+import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
 import { TaskGroup } from '../../types/taskGroup';
 import { TaskGroupItem } from './TaskGroupItem';
 import { GroupSkeleton } from './GroupSkeleton';
@@ -13,10 +14,10 @@ const GroupListContainer = styled.div`
   gap: 4px;
   padding: 16px;
   background-color: ${({ theme }) => theme.colors.background};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   border: 1px solid ${({ theme }) => theme.colors.border};
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     padding: 12px;
   }
 `;
@@ -32,7 +33,7 @@ const AllTasksButton = styled.div<{ $isActive: boolean }>`
   align-items: center;
   gap: 12px;
   padding: 12px;
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   cursor: pointer;
   transition: background-color 0.2s;
   background-color: ${({ $isActive, theme }) =>
@@ -43,7 +44,7 @@ const AllTasksButton = styled.div<{ $isActive: boolean }>`
     background-color: ${({ theme }) => theme.colors.backgroundSecondary};
   }
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     padding: 14px;
     min-height: 48px;
   }

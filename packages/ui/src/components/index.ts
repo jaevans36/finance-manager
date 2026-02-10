@@ -1,4 +1,5 @@
 import styled, { css } from 'styled-components';
+import { borderRadius, focusRing, shadows } from '../styles/layout';
 
 // ============================================================================
 // BUTTON COMPONENTS
@@ -101,7 +102,7 @@ export const Button = styled.button<ButtonProps>`
   ${({ variant = 'primary' }) => buttonVariantStyles[variant]}
   
   width: ${({ fullWidth }) => (fullWidth ? '100%' : 'auto')};
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm}px;
   font-weight: 500;
   cursor: ${({ $isLoading }) => ($isLoading ? 'wait' : 'pointer')};
   transition: all 0.2s ease;
@@ -140,7 +141,7 @@ export const Input = styled.input<InputProps>`
   padding: 8px 12px;
   font-size: 14px;
   border: 1px solid ${({ theme, hasError }) => (hasError ? theme.colors.error : theme.colors.inputBorder)};
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm}px;
   background-color: ${({ theme }) => theme.colors.inputBackground};
   color: ${({ theme }) => theme.colors.text};
   transition: border-color 0.2s ease;
@@ -173,7 +174,7 @@ export const TextArea = styled.textarea<InputProps>`
   padding: 8px 12px;
   font-size: 14px;
   border: 1px solid ${({ theme, hasError }) => (hasError ? theme.colors.error : theme.colors.inputBorder)};
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm}px;
   background-color: ${({ theme }) => theme.colors.inputBackground};
   color: ${({ theme }) => theme.colors.text};
   transition: border-color 0.2s ease;
@@ -240,8 +241,9 @@ export const HelperText = styled.span`
 export const Card = styled.div`
   background-color: ${({ theme }) => theme.colors.cardBackground};
   border: 1px solid ${({ theme }) => theme.colors.cardBorder};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg}px;
   padding: 20px;
+  box-shadow: ${shadows.sm};
 `;
 
 export const CardHeader = styled.div`
@@ -295,7 +297,7 @@ const alertVariantStyles = {
 export const Alert = styled.div<AlertProps>`
   ${({ variant = 'info' }) => alertVariantStyles[variant]}
   padding: 12px 16px;
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm}px;
   border: 1px solid;
   margin-bottom: 16px;
   display: flex;
@@ -482,7 +484,7 @@ export const Badge = styled.span<BadgeProps>`
   padding: 4px 8px;
   font-size: 12px;
   font-weight: 500;
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl}px;
   line-height: 1;
 `;
 
@@ -524,7 +526,7 @@ export const IconButton = styled.button`
   padding: 8px 16px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 6px;
+  border-radius: ${borderRadius.md}px;
   color: ${({ theme }) => theme.colors.text};
   cursor: pointer;
   transition: all 0.2s;
@@ -540,6 +542,8 @@ export const IconButton = styled.button`
     cursor: not-allowed;
   }
 
+  ${focusRing}
+
   @media (max-width: 768px) {
     min-height: 44px;
   }
@@ -549,7 +553,7 @@ export const SmallButton = styled.button`
   padding: 6px 12px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm}px;
   color: ${({ theme }) => theme.colors.text};
   cursor: pointer;
   font-size: 12px;
@@ -567,6 +571,8 @@ export const SmallButton = styled.button`
     opacity: 0.5;
     cursor: not-allowed;
   }
+
+  ${focusRing}
 `;
 
 // Add SmallBadge component for smaller badges
@@ -631,7 +637,7 @@ export const ResponsiveDailyGrid = styled.div<{ gap?: number }>`
 export const InputField = styled.input`
   padding: 8px 12px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 6px;
+  border-radius: ${borderRadius.md}px;
   background: ${({ theme }) => theme.colors.cardBackground};
   color: ${({ theme }) => theme.colors.text};
   font-size: 14px;
@@ -651,7 +657,7 @@ export const InputField = styled.input`
 export const Select = styled.select`
   padding: 8px 12px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 6px;
+  border-radius: ${borderRadius.md}px;
   background: ${({ theme }) => theme.colors.cardBackground};
   color: ${({ theme }) => theme.colors.text};
   font-size: 14px;
@@ -677,14 +683,14 @@ export const ToggleGroup = styled.div`
   display: flex;
   gap: 8px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 6px;
+  border-radius: ${borderRadius.md}px;
   padding: 4px;
 `;
 
 export const ToggleButton = styled.button<{ $active: boolean }>`
   padding: 6px 12px;
   border: none;
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm}px;
   background: ${({ $active, theme }) => $active ? theme.colors.primary : 'transparent'};
   color: ${({ $active, theme }) => $active ? 'white' : theme.colors.text};
   cursor: pointer;

@@ -1,7 +1,58 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { focusRing } from '@finance-manager/ui/styles';
+import { CheckCircle, XCircle } from 'lucide-react';
 import { authService } from '../../services/authService';
 import { getErrorMessage } from '../../utils/errorHelpers';
+import {
+  CenteredContainer,
+  FormCard,
+  Heading2,
+  Text,
+  Button,
+  Alert,
+  LoadingSpinner,
+} from '../../components/ui';
+
+const StyledLink = styled(Link)`
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: 500;
+  text-decoration: none;
+  ${focusRing}
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.primaryHover};
+    text-decoration: underline;
+  }
+`;
+
+const CenteredText = styled(Text)`
+  text-align: center;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const IconWrapper = styled.div<{ $variant: 'success' | 'error' }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  background-color: ${({ $variant, theme }) =>
+    $variant === 'success' ? theme.colors.successBackground : theme.colors.errorBackground};
+  color: ${({ $variant, theme }) =>
+    $variant === 'success' ? theme.colors.success : theme.colors.error};
+`;
+
+const LinkContainer = styled.div`
+  text-align: center;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
 
 const VerifyEmailPage = () => {
   const { token } = useParams<{ token: string }>();
@@ -33,110 +84,51 @@ const VerifyEmailPage = () => {
 
   if (isVerifying) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-          <p className="mt-4 text-lg text-gray-600">Verifying your email...</p>
-        </div>
-      </div>
+      <CenteredContainer>
+        <LoadingSpinner />
+        <CenteredText>Verifying your email...</CenteredText>
+      </CenteredContainer>
     );
   }
 
   if (verified) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div className="text-center">
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100">
-              <svg
-                className="h-10 w-10 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              Email Verified!
-            </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              Your email has been successfully verified. You can now access all features of your account.
-            </p>
-          </div>
-          <div className="rounded-md bg-green-50 p-4">
-            <div className="flex">
-              <div className="ml-3">
-                <p className="text-sm font-medium text-green-800">
-                  Your account is now fully activated. You can log in and start using the application.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="text-center">
-            <button
-              onClick={() => navigate('/login')}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
+      <CenteredContainer>
+        <FormCard>
+          <IconWrapper $variant="success">
+            <CheckCircle size={40} />
+          </IconWrapper>
+          <Heading2 style={{ textAlign: 'center' }}>Email Verified!</Heading2>
+          <CenteredText>
+            Your email has been successfully verified. You can now access all features of your account.
+          </CenteredText>
+          <Alert variant="success">
+            Your account is now fully activated. You can log in and start using the application.
+          </Alert>
+          <LinkContainer>
+            <Button onClick={() => navigate('/login')} fullWidth>
               Go to Login
-            </button>
-          </div>
-        </div>
-      </div>
+            </Button>
+          </LinkContainer>
+        </FormCard>
+      </CenteredContainer>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100">
-            <svg
-              className="h-10 w-10 text-red-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Verification Failed
-          </h2>
-        </div>
-        <div className="rounded-md bg-red-50 p-4">
-          <div className="flex">
-            <div className="ml-3">
-              <p className="text-sm font-medium text-red-800">{error}</p>
-            </div>
-          </div>
-        </div>
-        <div className="text-center space-y-4">
-          <Link
-            to="/resend-verification"
-            className="font-medium text-indigo-600 hover:text-indigo-500 block"
-          >
-            Resend verification email
-          </Link>
-          <Link
-            to="/login"
-            className="font-medium text-gray-600 hover:text-gray-500 block"
-          >
-            Return to login
-          </Link>
-        </div>
-      </div>
-    </div>
+    <CenteredContainer>
+      <FormCard>
+        <IconWrapper $variant="error">
+          <XCircle size={40} />
+        </IconWrapper>
+        <Heading2 style={{ textAlign: 'center' }}>Verification Failed</Heading2>
+        <Alert variant="error">{error}</Alert>
+        <LinkContainer>
+          <StyledLink to="/resend-verification">Resend verification email</StyledLink>
+          <StyledLink to="/login">Return to login</StyledLink>
+        </LinkContainer>
+      </FormCard>
+    </CenteredContainer>
   );
 };
 

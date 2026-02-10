@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { X, Check, Circle, Calendar as CalendarIcon } from 'lucide-react';
 import type { CalendarTask } from '../../types/calendar';
 import type { Event } from '../../types/event';
+import { spacing, borderRadius, shadows, mediaQueries, focusRing } from '@finance-manager/ui/styles';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -20,15 +21,15 @@ const ModalOverlay = styled.div`
 
 const ModalContent = styled.div`
   background: ${({ theme }) => theme.colors.background};
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl}px;
   padding: 24px;
   max-width: 600px;
   width: 100%;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: ${shadows.xl};
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     padding: 20px;
     max-height: 90vh;
   }
@@ -56,7 +57,7 @@ const CloseButton = styled.button`
   height: 32px;
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-radius: ${borderRadius.md}px;
   color: ${({ theme }) => theme.colors.textSecondary};
   cursor: pointer;
   transition: all 0.2s ease;
@@ -70,12 +71,14 @@ const CloseButton = styled.button`
     width: 20px;
     height: 20px;
   }
+
+  ${focusRing}
 `;
 
 const DateDisplay = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg}px;
   margin-bottom: 20px;
   font-size: 14px;
   color: ${({ theme }) => theme.colors.textSecondary};
@@ -94,7 +97,7 @@ const TaskItem = styled.div<{ $isCompleted: boolean }>`
   gap: 12px;
   padding: 16px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg}px;
   cursor: pointer;
   transition: all 0.2s ease;
   opacity: ${({ $isCompleted }) => ($isCompleted ? 0.6 : 1)};
@@ -157,7 +160,7 @@ const PriorityBadge = styled.span<{ $priority: string }>`
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl}px;
   font-size: 12px;
   font-weight: 600;
   background: ${({ $priority, theme }) => {
@@ -179,11 +182,45 @@ const GroupBadge = styled.span<{ $color?: string }>`
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl}px;
   font-size: 12px;
   font-weight: 500;
-  background: ${({ $color }) => $color || '#cccccc'};
+  background: ${({ $color, theme }) => $color || theme.colors.textSecondary};
   color: white;
+`;
+
+const SubtaskProgressRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${spacing.sm};
+  margin-top: ${spacing.xs};
+`;
+
+const SubtaskProgressTrack = styled.div`
+  flex: 1;
+  height: 4px;
+  background-color: ${({ theme }) => theme.colors.backgroundTertiary};
+  border-radius: ${borderRadius.full};
+  overflow: hidden;
+  max-width: 120px;
+`;
+
+const SubtaskProgressFill = styled.div<{ $pct: number }>`
+  height: 100%;
+  width: ${({ $pct }) => $pct}%;
+  border-radius: ${borderRadius.full};
+  transition: width 300ms ease-out;
+  background-color: ${({ $pct, theme }) => {
+    if ($pct >= 66) return theme.colors.success;
+    if ($pct >= 33) return theme.colors.warning;
+    return theme.colors.error;
+  }};
+`;
+
+const SubtaskLabel = styled.span`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  white-space: nowrap;
 `;
 
 const EmptyState = styled.div`
@@ -234,7 +271,7 @@ const EventList = styled.div`
 const EventItem = styled.div`
   padding: 16px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg}px;
   border-left: 4px solid ${({ theme }) => theme.colors.info};
   cursor: pointer;
   transition: all 0.2s ease;
@@ -272,7 +309,7 @@ const EventBadge = styled.span<{ $color?: string }>`
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl}px;
   font-size: 12px;
   font-weight: 500;
   background: ${({ $color, theme }) => $color || theme.colors.info};
@@ -396,6 +433,16 @@ export const DayTaskListModal = ({
                             <GroupBadge $color={task.groupColor}>{task.groupName}</GroupBadge>
                           )}
                         </TaskMeta>
+                        {task.hasSubtasks && task.subtaskCount && task.subtaskCount > 0 && (
+                          <SubtaskProgressRow>
+                            <SubtaskProgressTrack>
+                              <SubtaskProgressFill $pct={task.progressPercentage ?? 0} />
+                            </SubtaskProgressTrack>
+                            <SubtaskLabel>
+                              {task.completedSubtaskCount}/{task.subtaskCount} subtasks
+                            </SubtaskLabel>
+                          </SubtaskProgressRow>
+                        )}
                       </TaskContent>
                     </TaskItem>
                   ))}

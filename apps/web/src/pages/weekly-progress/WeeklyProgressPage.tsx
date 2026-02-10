@@ -37,6 +37,7 @@ import {
   DailyTaskCard,
 } from './components';
 import { HistoricalCompletionChart } from './components/HistoricalCompletionChart';
+import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
 
 // Helper function to get border color for priority cards
 const getPriorityColor = (priority: string): string => {
@@ -66,7 +67,7 @@ const WeekNavigation = styled.div`
   margin-top: 20px;
   flex-wrap: wrap;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     flex-direction: column;
     align-items: flex-start;
   }
@@ -81,7 +82,7 @@ const NavigationLeft = styled.div`
 
 const LoadingSkeleton = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   padding: 20px;
   min-height: 200px;
   display: flex;
@@ -105,7 +106,7 @@ const ApplyButton = styled.button`
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.text};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 6px;
+  border-radius: ${borderRadius.md};
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s;
@@ -143,7 +144,7 @@ const GoalAndInsightGrid = styled.div`
   gap: 20px;
   margin-bottom: 25px;
 
-  @media (max-width: 968px) {
+  ${mediaQueries.desktop} {
     grid-template-columns: 1fr;
   }
 

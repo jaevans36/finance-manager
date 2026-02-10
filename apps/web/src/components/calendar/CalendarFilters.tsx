@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { X } from 'lucide-react';
+import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
 
 const FilterBar = styled.div`
   display: flex;
@@ -8,7 +9,7 @@ const FilterBar = styled.div`
   margin-bottom: 24px;
   flex-wrap: wrap;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
@@ -31,7 +32,7 @@ const Select = styled.select`
   padding: 8px 12px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 6px;
+  border-radius: ${borderRadius.md};
   color: ${({ theme }) => theme.colors.text};
   font-size: 14px;
   cursor: pointer;
@@ -51,14 +52,14 @@ const ToggleGroup = styled.div`
   display: flex;
   gap: 8px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 6px;
+  border-radius: ${borderRadius.md};
   padding: 4px;
 `;
 
 const ToggleButton = styled.button<{ $active: boolean }>`
   padding: 6px 12px;
   border: none;
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm};
   background: ${({ $active, theme }) => $active ? theme.colors.primary : 'transparent'};
   color: ${({ $active, theme }) => $active ? 'white' : theme.colors.text};
   cursor: pointer;
@@ -78,7 +79,7 @@ const ClearButton = styled.button`
   padding: 8px 12px;
   background: transparent;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 6px;
+  border-radius: ${borderRadius.md};
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: 14px;
   cursor: pointer;
@@ -102,12 +103,12 @@ const SummaryText = styled.div`
   font-weight: 600;
   color: ${({ theme }) => theme.colors.primary};
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     margin-left: 0;
     text-align: center;
     padding: 8px;
     background: ${({ theme }) => theme.colors.backgroundSecondary};
-    border-radius: 6px;
+    border-radius: ${borderRadius.md};
   }
 `;
 

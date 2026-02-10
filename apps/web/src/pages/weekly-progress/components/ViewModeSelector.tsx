@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { borderRadius } from '@finance-manager/ui/styles';
 
 const ViewToggle = styled.div`
   display: flex;
@@ -9,11 +10,11 @@ const ViewToggle = styled.div`
 const ViewButton = styled.button<{ $active: boolean }>`
   padding: 6px 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: ${borderRadius.md};
   background: ${({ theme, $active }) => 
     $active ? theme.colors.primary : theme.colors.backgroundSecondary};
   color: ${({ theme, $active }) => 
-    $active ? '#fff' : theme.colors.text};
+    $active ? theme.colors.buttonText : theme.colors.text};
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;

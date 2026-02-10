@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { mediaQueries } from '@finance-manager/ui/styles';
 
 export const DashboardLayout = styled.div`
   display: grid;
@@ -6,7 +7,7 @@ export const DashboardLayout = styled.div`
   gap: 24px;
   align-items: start;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     grid-template-columns: 1fr;
     gap: 16px;
   }

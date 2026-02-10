@@ -1,6 +1,7 @@
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { Card, Text } from '../ui';
 import { CheckCircleIcon, CircleIcon, AlertCircleIcon, FolderIcon } from 'lucide-react';
+import { borderRadius, mediaQueries, shadows } from '../../styles/layout';
 
 const StatsGrid = styled.div`
   display: grid;
@@ -8,7 +9,7 @@ const StatsGrid = styled.div`
   gap: 16px;
   margin-bottom: 24px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 12px;
     margin-bottom: 20px;
@@ -25,10 +26,10 @@ const StatCard = styled(Card)<{ $color?: string }>`
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px ${({ theme }) => theme.colors.shadow};
+    box-shadow: ${shadows.md};
   }
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     padding: 14px;
     gap: 12px;
   }
@@ -40,7 +41,7 @@ const StatIcon = styled.div<{ $color: string }>`
   justify-content: center;
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   background-color: ${({ $color }) => $color}15;
   color: ${({ $color }) => $color};
   flex-shrink: 0;
@@ -49,7 +50,7 @@ const StatIcon = styled.div<{ $color: string }>`
     pointer-events: none;
   }
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     width: 40px;
     height: 40px;
   }
@@ -93,7 +94,8 @@ interface TaskStatisticsProps {
   totalGroups: number;
 }
 
-export const TaskStatistics: React.FC<TaskStatisticsProps> = ({ tasks, totalGroups }) => {
+export const TaskStatistics = ({ tasks, totalGroups }: TaskStatisticsProps) => {
+  const theme = useTheme();
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(t => t.completed).length;
   
@@ -108,8 +110,8 @@ export const TaskStatistics: React.FC<TaskStatisticsProps> = ({ tasks, totalGrou
 
   return (
     <StatsGrid role="region" aria-label="Task statistics">
-      <StatCard $color="#3B82F6" aria-label={`Total tasks: ${totalTasks}`}>
-        <StatIcon $color="#3B82F6" aria-hidden="true">
+      <StatCard $color={theme.colors.info} aria-label={`Total tasks: ${totalTasks}`}>
+        <StatIcon $color={theme.colors.info} aria-hidden="true">
           <CircleIcon size={24} />
         </StatIcon>
         <StatContent>
@@ -118,8 +120,8 @@ export const TaskStatistics: React.FC<TaskStatisticsProps> = ({ tasks, totalGrou
         </StatContent>
       </StatCard>
 
-      <StatCard $color="#10B981" aria-label={`Completed tasks: ${completedTasks} of ${totalTasks}, ${completionRate}%`}>
-        <StatIcon $color="#10B981" aria-hidden="true">
+      <StatCard $color={theme.colors.success} aria-label={`Completed tasks: ${completedTasks} of ${totalTasks}, ${completionRate}%`}>
+        <StatIcon $color={theme.colors.success} aria-hidden="true">
           <CheckCircleIcon size={24} />
         </StatIcon>
         <StatContent>
@@ -133,8 +135,8 @@ export const TaskStatistics: React.FC<TaskStatisticsProps> = ({ tasks, totalGrou
         </StatContent>
       </StatCard>
 
-      <StatCard $color="#F59E0B" aria-label={`Overdue tasks: ${overdueTasks}`}>
-        <StatIcon $color="#F59E0B" aria-hidden="true">
+      <StatCard $color={theme.colors.warning} aria-label={`Overdue tasks: ${overdueTasks}`}>
+        <StatIcon $color={theme.colors.warning} aria-hidden="true">
           <AlertCircleIcon size={24} />
         </StatIcon>
         <StatContent>
@@ -143,8 +145,8 @@ export const TaskStatistics: React.FC<TaskStatisticsProps> = ({ tasks, totalGrou
         </StatContent>
       </StatCard>
 
-      <StatCard $color="#8B5CF6" aria-label={`Task groups: ${totalGroups}`}>
-        <StatIcon $color="#8B5CF6" aria-hidden="true">
+      <StatCard $color={theme.colors.primary} aria-label={`Task groups: ${totalGroups}`}>
+        <StatIcon $color={theme.colors.primary} aria-hidden="true">
           <FolderIcon size={24} />
         </StatIcon>
         <StatContent>

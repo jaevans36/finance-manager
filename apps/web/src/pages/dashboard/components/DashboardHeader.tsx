@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { mediaQueries } from '@finance-manager/ui/styles';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button, Flex, Heading1, TextSecondary } from '@finance-manager/ui';
 import { LayoutDashboard, ListTodo, Calendar, BarChart3, UserIcon } from 'lucide-react';
@@ -6,14 +7,14 @@ import { LayoutDashboard, ListTodo, Calendar, BarChart3, UserIcon } from 'lucide
 const HeaderContainer = styled(Flex)`
   margin-bottom: 30px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     flex-direction: column;
     align-items: flex-start !important;
     gap: 16px;
   }
 
   > div:last-child {
-    @media (max-width: 768px) {
+    ${mediaQueries.tablet} {
       width: 100%;
       justify-content: stretch;
 
@@ -28,14 +29,14 @@ const NavButton = styled(Button)<{ $isActive?: boolean }>`
   background: ${({ $isActive, theme }) => 
     $isActive ? theme.colors.primary : 'transparent'};
   color: ${({ $isActive, theme }) => 
-    $isActive ? '#fff' : theme.colors.text};
+    $isActive ? theme.colors.buttonText : theme.colors.text};
   border-color: ${({ $isActive, theme }) => 
     $isActive ? theme.colors.primary : theme.colors.border};
 
   &:hover {
     background: ${({ $isActive, theme }) => 
       $isActive ? theme.colors.primary : theme.colors.backgroundSecondary};
-    color: ${({ $isActive }) => $isActive ? '#fff' : 'inherit'};
+    color: ${({ $isActive, theme }) => $isActive ? theme.colors.buttonText : 'inherit'};
   }
 `;
 

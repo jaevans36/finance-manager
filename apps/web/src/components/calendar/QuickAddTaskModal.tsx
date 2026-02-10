@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import { X } from 'lucide-react';
+import { borderRadius, shadows, mediaQueries, focusRing } from '../../styles/layout';
 import { Button, Input, FormGroup, Label, Alert } from '../ui';
 import type { CreateEventRequest } from '../../types/event';
 
@@ -20,13 +21,13 @@ const ModalOverlay = styled.div`
 
 const ModalContent = styled.div`
   background: ${({ theme }) => theme.colors.background};
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl}px;
   padding: 24px;
   max-width: 500px;
   width: 100%;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: ${shadows.xl};
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     padding: 20px;
   }
 `;
@@ -53,7 +54,7 @@ const CloseButton = styled.button`
   height: 32px;
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-radius: ${borderRadius.md}px;
   color: ${({ theme }) => theme.colors.textSecondary};
   cursor: pointer;
   transition: all 0.2s ease;
@@ -67,6 +68,8 @@ const CloseButton = styled.button`
     width: 20px;
     height: 20px;
   }
+
+  ${focusRing}
 `;
 
 const ButtonGroup = styled.div`
@@ -80,7 +83,7 @@ const TypeSelector = styled.div`
   gap: 8px;
   margin-bottom: 24px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg}px;
   padding: 4px;
 `;
 
@@ -88,7 +91,7 @@ const TypeButton = styled.button<{ $active: boolean }>`
   flex: 1;
   padding: 8px 16px;
   border: none;
-  border-radius: 6px;
+  border-radius: ${borderRadius.md}px;
   background: ${({ $active, theme }) => $active ? theme.colors.primary : 'transparent'};
   color: ${({ $active, theme }) => $active ? 'white' : theme.colors.text};
   cursor: pointer;

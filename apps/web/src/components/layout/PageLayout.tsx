@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { mediaQueries } from '@finance-manager/ui/styles';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { ContentContainer, IconButton, Heading1 } from '../ui';
@@ -26,7 +27,7 @@ const HeaderActions = styled.div`
   gap: 12px;
   margin-top: 16px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     flex-wrap: wrap;
   }
 `;

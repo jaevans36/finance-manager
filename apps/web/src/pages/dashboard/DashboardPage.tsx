@@ -15,6 +15,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import styled from 'styled-components';
+import { borderRadius } from '@finance-manager/ui/styles';
 import type { Event } from '../../types/event';
 
 
@@ -28,7 +29,7 @@ const DashboardGrid = styled.div`
 const StatCard = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -56,7 +57,7 @@ interface StatIconProps {
 const StatIcon = styled.div<StatIconProps>`
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -93,7 +94,7 @@ const QuickActionsGrid = styled.div`
 const QuickActionCard = styled.button`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   padding: 20px;
   display: flex;
   align-items: center;
@@ -118,7 +119,7 @@ const QuickActionCard = styled.button`
 const UpcomingSection = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   padding: 24px;
   margin-bottom: 32px;
 `;
@@ -128,7 +129,7 @@ const EventItem = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 12px;
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   background: ${({ theme }) => theme.colors.background};
   margin-bottom: 8px;
 

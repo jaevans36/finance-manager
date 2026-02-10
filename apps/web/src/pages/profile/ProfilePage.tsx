@@ -6,6 +6,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { authService } from '../../services/authService';
 import { Container, Card, Heading1, Text, TextSecondary, Button, Flex, Input } from '@finance-manager/ui';
 import { UserIcon, MailIcon, CalendarIcon, LogOutIcon, ArrowLeftIcon, EditIcon, CheckIcon, XIcon } from 'lucide-react';
+import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
 
 const ProfileHeader = styled.div`
   margin-bottom: 30px;
@@ -15,7 +16,7 @@ const ProfileCard = styled(Card)`
   padding: 30px;
   margin-bottom: 20px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     padding: 20px 16px;
   }
 `;
@@ -35,7 +36,7 @@ const ProfileLabel = styled(TextSecondary)`
   margin-bottom: 8px;
   font-size: 14px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     font-size: 13px;
   }
 `;
@@ -45,7 +46,7 @@ const ProfileValue = styled(Text)`
   font-weight: 500;
   padding-left: 28px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     padding-left: 0;
     font-size: 15px;
   }
@@ -57,7 +58,7 @@ const UsernameContainer = styled.div`
   gap: 12px;
   padding-left: 28px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     flex-wrap: wrap;
     padding-left: 0;
     gap: 8px;
@@ -71,7 +72,7 @@ const UsernameEditButton = styled.button`
   padding: 6px 12px;
   background-color: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm};
   cursor: pointer;
   transition: all 0.2s;
   color: ${({ theme }) => theme.colors.textSecondary};
@@ -95,7 +96,7 @@ const UsernameInputContainer = styled.div`
   padding-left: 28px;
   align-items: center;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     flex-wrap: wrap;
     padding-left: 0;
 
@@ -116,7 +117,7 @@ const UsernameHint = styled.div<{ $available: boolean }>`
   margin-left: 28px;
   color: ${({ $available, theme }) => $available ? theme.colors.success : theme.colors.error};
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     margin-left: 0;
   }
 `;
@@ -125,7 +126,7 @@ const ActionButtons = styled(Flex)`
   gap: 12px;
   margin-top: 30px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     flex-direction: column;
   }
 `;

@@ -7,6 +7,7 @@ import { EventList } from '../../components/events/EventList';
 import { EventForm } from '../../components/events/EventForm';
 import { Plus, Filter, Calendar } from 'lucide-react';
 import styled from 'styled-components';
+import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
 import type { Event, CreateEventRequest, UpdateEventRequest } from '../../types/event';
 import type { TaskGroup } from '../../types/taskGroup';
 
@@ -14,7 +15,7 @@ const Actions = styled.div`
   display: flex;
   gap: 12px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     flex-direction: column;
   }
 `;
@@ -22,7 +23,7 @@ const Actions = styled.div`
 const FilterSection = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   padding: 20px;
   margin-bottom: 24px;
 `;
@@ -49,7 +50,7 @@ const FilterLabel = styled.label`
 const FilterInput = styled.input`
   padding: 8px 12px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.text};
   font-size: 14px;
@@ -64,7 +65,7 @@ const FilterInput = styled.input`
 const FilterSelect = styled.select`
   padding: 8px 12px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.text};
   font-size: 14px;

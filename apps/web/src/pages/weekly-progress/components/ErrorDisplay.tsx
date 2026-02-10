@@ -1,16 +1,17 @@
 import styled from 'styled-components';
 import { Card, Text } from '@finance-manager/ui';
+import { borderRadius, shadows } from '../../../styles/layout';
 
 const ErrorContainer = styled(Card)`
   padding: 20px;
-  background: rgba(220, 38, 38, 0.05);
-  border: 1px solid rgba(220, 38, 38, 0.2);
+  background: ${({ theme }) => theme.colors.errorBackground};
+  border: 1px solid ${({ theme }) => theme.colors.error}33;
 `;
 
 const ErrorTitle = styled.h3`
   font-size: 18px;
   font-weight: 600;
-  color: #dc2626;
+  color: ${({ theme }) => theme.colors.error};
   margin: 0 0 8px 0;
   display: flex;
   align-items: center;
@@ -30,9 +31,9 @@ const RetryButton = styled.button`
   margin-top: 16px;
   padding: 8px 20px;
   background: ${({ theme }) => theme.colors.primary};
-  color: #fff;
+  color: ${({ theme }) => theme.colors.buttonText};
   border: none;
-  border-radius: 6px;
+  border-radius: ${borderRadius.md}px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -40,7 +41,12 @@ const RetryButton = styled.button`
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: ${shadows.md};
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
   }
 `;
 

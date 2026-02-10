@@ -1,7 +1,41 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import styled from 'styled-components';
+import { focusRing } from '@finance-manager/ui/styles';
 import { authService } from '../../services/authService';
 import { getErrorMessage } from '../../utils/errorHelpers';
+import {
+  CenteredContainer,
+  FormCard,
+  Heading2,
+  Text,
+  FormGroup,
+  Input,
+  Button,
+  Alert,
+} from '../../components/ui';
+
+const StyledLink = styled(Link)`
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: 500;
+  text-decoration: none;
+  ${focusRing}
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.primaryHover};
+    text-decoration: underline;
+  }
+`;
+
+const CenteredText = styled(Text)`
+  text-align: center;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const LinkContainer = styled.div`
+  text-align: center;
+  margin-top: 16px;
+`;
 
 const ResendVerificationPage = () => {
   const [email, setEmail] = useState('');
@@ -26,100 +60,54 @@ const ResendVerificationPage = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              Check your email
-            </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              We&apos;ve sent a new verification email to <strong>{email}</strong>
-            </p>
-          </div>
-          <div className="rounded-md bg-green-50 p-4">
-            <div className="flex">
-              <div className="ml-3">
-                <p className="text-sm font-medium text-green-800">
-                  Please check your inbox and click the verification link. The link will expire in 24 hours.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="text-center">
-            <Link
-              to="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              Return to login
-            </Link>
-          </div>
-        </div>
-      </div>
+      <CenteredContainer>
+        <FormCard>
+          <Heading2 style={{ textAlign: 'center' }}>Check your email</Heading2>
+          <CenteredText>
+            We&apos;ve sent a new verification email to <strong>{email}</strong>
+          </CenteredText>
+          <Alert variant="success">
+            Please check your inbox and click the verification link. The link will expire in 24 hours.
+          </Alert>
+          <LinkContainer>
+            <StyledLink to="/login">Return to login</StyledLink>
+          </LinkContainer>
+        </FormCard>
+      </CenteredContainer>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Resend Verification Email
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Enter your email address and we&apos;ll send you a new verification link.
-          </p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-red-800">{error}</p>
-                </div>
-              </div>
-            </div>
-          )}
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email-address" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isSubmitting}
-              />
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
+    <CenteredContainer>
+      <FormCard>
+        <Heading2 style={{ textAlign: 'center' }}>Resend Verification Email</Heading2>
+        <CenteredText>
+          Enter your email address and we&apos;ll send you a new verification link.
+        </CenteredText>
+        <form onSubmit={handleSubmit}>
+          {error && <Alert variant="error">{error}</Alert>}
+          <FormGroup>
+            <Input
+              id="email-address"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               disabled={isSubmitting}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? 'Sending...' : 'Resend verification email'}
-            </button>
-          </div>
-
-          <div className="text-center">
-            <Link
-              to="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              Back to login
-            </Link>
-          </div>
+            />
+          </FormGroup>
+          <Button type="submit" disabled={isSubmitting} fullWidth>
+            {isSubmitting ? 'Sending...' : 'Resend verification email'}
+          </Button>
+          <LinkContainer>
+            <StyledLink to="/login">Back to login</StyledLink>
+          </LinkContainer>
         </form>
-      </div>
-    </div>
+      </FormCard>
+    </CenteredContainer>
   );
 };
 

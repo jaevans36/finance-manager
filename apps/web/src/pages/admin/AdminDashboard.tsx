@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Users, Activity, BarChart3, Shield, UserCog, Settings } from 'lucide-react';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { userManagementService, type UserStats } from '../../services/userManagementService';
+import { borderRadius } from '@finance-manager/ui/styles';
 import { PageLayout } from '../../components/layout/PageLayout';
 
 const DashboardGrid = styled.div`
@@ -16,7 +17,7 @@ const DashboardGrid = styled.div`
 const StatsCard = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   padding: 24px;
   transition: all 0.2s ease;
 
@@ -41,7 +42,7 @@ interface StatsIconProps {
 const StatsIcon = styled.div<StatsIconProps>`
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   background: ${({ $color }) => $color}20;
   color: ${({ $color }) => $color};
   display: flex;
@@ -95,7 +96,7 @@ const QuickActionsGrid = styled.div`
 const QuickActionButton = styled.button`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -120,7 +121,7 @@ const QuickActionButton = styled.button`
 const ActionIcon = styled.div`
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   background: ${({ theme }) => theme.colors.primary}20;
   color: ${({ theme }) => theme.colors.primary};
   display: flex;
@@ -137,7 +138,7 @@ const ActionLabel = styled.span`
 const ActivityList = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   padding: 20px;
 `;
 
@@ -164,6 +165,7 @@ const ActivityTime = styled.span`
 const AdminDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -194,7 +196,7 @@ const AdminDashboard = () => {
       <DashboardGrid>
         <StatsCard>
           <StatsHeader>
-            <StatsIcon $color="#4CAF50">
+            <StatsIcon $color={theme.colors.success}>
               <Users size={24} />
             </StatsIcon>
             <StatsTitle>Total Users</StatsTitle>
@@ -205,7 +207,7 @@ const AdminDashboard = () => {
 
         <StatsCard>
           <StatsHeader>
-            <StatsIcon $color="#2196F3">
+            <StatsIcon $color={theme.colors.info}>
               <Activity size={24} />
             </StatsIcon>
             <StatsTitle>Verified Users</StatsTitle>
@@ -218,7 +220,7 @@ const AdminDashboard = () => {
 
         <StatsCard>
           <StatsHeader>
-            <StatsIcon $color="#FF9800">
+            <StatsIcon $color={theme.colors.warning}>
               <BarChart3 size={24} />
             </StatsIcon>
             <StatsTitle>Unverified</StatsTitle>
@@ -229,7 +231,7 @@ const AdminDashboard = () => {
 
         <StatsCard>
           <StatsHeader>
-            <StatsIcon $color="#9C27B0">
+            <StatsIcon $color={theme.colors.primary}>
               <Shield size={24} />
             </StatsIcon>
             <StatsTitle>Admin Users</StatsTitle>

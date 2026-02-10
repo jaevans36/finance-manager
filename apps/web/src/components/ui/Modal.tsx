@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import styled from 'styled-components';
 import { X } from 'lucide-react';
+import { borderRadius, focusRing, mediaQueries, shadows } from '../../styles/layout';
 
 const Overlay = styled.div`
   position: fixed;
@@ -19,15 +20,15 @@ const Overlay = styled.div`
 const ModalContainer = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl}px;
   padding: 24px;
   max-width: 500px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: ${shadows.xl};
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     width: 95%;
     padding: 20px;
     max-height: 95vh;
@@ -57,13 +58,15 @@ const CloseButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm}px;
   transition: all 0.2s ease;
 
   &:hover {
     background: ${({ theme }) => theme.colors.background};
     color: ${({ theme }) => theme.colors.text};
   }
+
+  ${focusRing}
 `;
 
 const ModalBody = styled.div`

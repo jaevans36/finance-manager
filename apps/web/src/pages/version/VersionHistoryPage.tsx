@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Container } from '@finance-manager/ui';
 import { Package, Calendar, Info, ChevronDown, ChevronUp, CheckCircle2, AlertCircle, Zap, Bug, FileText, Loader2, RefreshCcw, Shield } from 'lucide-react';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
+import { borderRadius } from '@finance-manager/ui/styles';
 import versionData from '@workspace/VERSION.json';
 import { versionService, type VersionHistory } from '../../services/versionService';
 
@@ -20,7 +21,7 @@ const PageSubtitle = styled.p`
 
 const CurrentVersionCard = styled.div`
   background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary} 0%, ${({ theme }) => theme.colors.success} 100%);
-  border-radius: 16px;
+  border-radius: ${borderRadius['2xl']};
   padding: 32px;
   color: white;
   margin-bottom: 32px;
@@ -41,7 +42,7 @@ const VersionBadge = styled.span`
   font-weight: 600;
   background: rgba(255, 255, 255, 0.2);
   padding: 6px 12px;
-  border-radius: 20px;
+  border-radius: ${borderRadius['2xl']};
   backdrop-filter: blur(10px);
 `;
 
@@ -63,7 +64,7 @@ const VersionInfo = styled.div`
 const VersionCard = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   padding: 24px;
   margin-bottom: 16px;
   transition: all 0.2s ease;
@@ -212,7 +213,7 @@ const LoadingSpinner = styled(Loader2)`
 const ErrorContainer = styled.div`
   background: ${({ theme }) => theme.colors.error}10;
   border: 1px solid ${({ theme }) => theme.colors.error}40;
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   padding: 24px;
   margin: 32px 0;
   text-align: center;
@@ -234,7 +235,7 @@ const RetryButton = styled.button`
   color: white;
   border: none;
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -254,6 +255,7 @@ const RetryButton = styled.button`
 `;
 
 const VersionHistoryPage = () => {
+  const theme = useTheme();
   const [expandedVersions, setExpandedVersions] = useState<Set<string>>(new Set([versionData.version]));
   const [historyData, setHistoryData] = useState<VersionHistory | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -353,7 +355,7 @@ const VersionHistoryPage = () => {
               <VersionHeader $expanded={expandedVersions.has(version.version)} onClick={() => toggleVersion(version.version)}>
                 <VersionTitle>
                   <VersionNum>v{version.version}</VersionNum>
-                  {version.codename && <span style={{ fontSize: '14px', color: '#888' }}>&quot;{version.codename}&quot;</span>}
+                  {version.codename && <span style={{ fontSize: '14px', color: theme.colors.textSecondary }}>&quot;{version.codename}&quot;</span>}
                 </VersionTitle>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <VersionDate>
@@ -395,8 +397,8 @@ const VersionHistoryPage = () => {
         </>
       )}
 
-      <p style={{ textAlign: 'center', color: '#888', fontSize: '14px', marginTop: '32px' }}>
-        For complete version history, see <a href="https://github.com/jaevans36/finance-manager/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer" style={{ color: '#4CAF50' }}>CHANGELOG.md</a>
+      <p style={{ textAlign: 'center', color: theme.colors.textSecondary, fontSize: '14px', marginTop: '32px' }}>
+        For complete version history, see <a href="https://github.com/jaevans36/finance-manager/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer" style={{ color: theme.colors.success }}>CHANGELOG.md</a>
       </p>
     </Container>
   );

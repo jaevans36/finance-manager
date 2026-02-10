@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { TextSmall } from '@finance-manager/ui';
+import { borderRadius } from '@finance-manager/ui/styles';
 
 const FilterContainer = styled.div`
   display: flex;
@@ -16,11 +17,11 @@ const FilterChip = styled.button<{ $active: boolean }>`
   padding: 6px 12px;
   border: 1px solid ${({ theme, $active }) => 
     $active ? theme.colors.primary : theme.colors.border};
-  border-radius: 16px;
+  border-radius: ${borderRadius['2xl']};
   background: ${({ theme, $active }) => 
     $active ? theme.colors.primary : 'transparent'};
   color: ${({ theme, $active }) => 
-    $active ? '#fff' : theme.colors.text};
+    $active ? theme.colors.buttonText : theme.colors.text};
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;

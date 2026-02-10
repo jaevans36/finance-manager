@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
+import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
 
 export const StyledCalendar = styled(Calendar)`
   width: 100% !important;
@@ -8,7 +9,7 @@ export const StyledCalendar = styled(Calendar)`
   height: 100%;
   min-height: 600px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   background: ${({ theme }) => theme.colors.cardBackground};
   font-family: ${({ theme }) => theme.fonts.body};
   padding: 16px;
@@ -28,7 +29,7 @@ export const StyledCalendar = styled(Calendar)`
       font-weight: 600;
       cursor: pointer;
       padding: 8px 12px;
-      border-radius: 6px;
+      border-radius: ${borderRadius.md};
       transition: all 0.2s ease;
 
       &:hover:not(:disabled) {
@@ -58,7 +59,7 @@ export const StyledCalendar = styled(Calendar)`
     margin-bottom: 8px;
     background: ${({ theme }) => theme.colors.backgroundSecondary};
     padding: 8px 0;
-    border-radius: 6px;
+    border-radius: ${borderRadius.md};
 
     abbr {
       text-decoration: none;
@@ -75,13 +76,13 @@ export const StyledCalendar = styled(Calendar)`
     padding: 8px 4px;
     background: ${({ theme }) => theme.colors.backgroundSecondary};
     border: 1px solid ${({ theme }) => theme.colors.border};
-    border-radius: 6px;
+    border-radius: ${borderRadius.md};
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
     min-height: 100px;
 
-    @media (max-width: 768px) {
+    ${mediaQueries.tablet} {
       min-height: 70px;
       padding: 6px 2px;
     }
@@ -152,7 +153,7 @@ export const StyledCalendar = styled(Calendar)`
   }
 
   /* Responsive design */
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     padding: 12px;
     min-height: 500px;
 
@@ -197,7 +198,7 @@ export const TaskBadge = styled.div<{ priority: string }>`
   height: 20px;
   padding: 0 6px;
   margin-top: 4px;
-  border-radius: 10px;
+  border-radius: ${borderRadius.xl};
   font-size: 11px;
   font-weight: 600;
   background: ${({ priority, theme }) => {
@@ -229,10 +230,10 @@ export const EventBadge = styled.div<{ color?: string }>`
   height: 20px;
   padding: 0 6px;
   margin-top: 4px;
-  border-radius: 10px;
+  border-radius: ${borderRadius.xl};
   font-size: 11px;
   font-weight: 600;
-  background: ${({ color }) => color || '#3B82F6'};
+  background: ${({ color, theme }) => color || theme.colors.info};
   color: white;
   cursor: pointer;
   transition: transform 0.2s ease;

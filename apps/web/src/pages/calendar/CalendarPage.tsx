@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { useToast } from '../../contexts/ToastContext';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { PageLayout } from '../../components/layout/PageLayout';
@@ -15,14 +15,15 @@ import { eventService } from '../../services/eventService';
 import type { Task } from '../../services/taskService';
 import type { Event } from '../../types/event';
 import type { TaskGroup } from '../../types/taskGroup';
+import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
 
 const CalendarContainer = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     padding: 16px;
   }
 `;
@@ -53,7 +54,7 @@ const KeyboardHint = styled.div`
   margin-top: 16px;
   padding: 12px 16px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 6px;
+  border-radius: ${borderRadius.md};
   font-size: 13px;
   color: ${({ theme }) => theme.colors.textSecondary};
 
@@ -63,7 +64,7 @@ const KeyboardHint = styled.div`
     margin: 0 2px;
     background: ${({ theme }) => theme.colors.background};
     border: 1px solid ${({ theme }) => theme.colors.border};
-    border-radius: 4px;
+    border-radius: ${borderRadius.sm};
     font-family: monospace;
     font-size: 12px;
     font-weight: 600;
@@ -71,6 +72,7 @@ const KeyboardHint = styled.div`
 `;
 
 const CalendarPage = () => {
+  const theme = useTheme();
   const { showToast } = useToast();
   const [value, setValue] = useState<Date>(new Date());
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -196,7 +198,7 @@ const CalendarPage = () => {
             acc.push({
               id: task.groupId!,
               name: task.groupName!,
-              colour: task.groupColour || '#cccccc',
+              colour: task.groupColour || theme.colors.textSecondary,
               isDefault: false,
               taskCount: 0,
               createdAt: '',
@@ -403,6 +405,10 @@ const CalendarPage = () => {
         groupId: task.groupId || undefined,
         groupName: task.groupName || undefined,
         groupColor: task.groupColour || undefined,
+        hasSubtasks: task.hasSubtasks || false,
+        subtaskCount: task.subtaskCount || 0,
+        completedSubtaskCount: task.completedSubtaskCount || 0,
+        progressPercentage: task.progressPercentage || 0,
       }));
   };
 
@@ -450,7 +456,7 @@ const CalendarPage = () => {
         )}
         {showEvents && dayEvents.length > 0 && (
           <EventBadge
-            color="#3B82F6"
+            color={theme.colors.info}
             onClick={(e) => handleBadgeClick(e, date)}
             title={tooltipText}
           >

@@ -81,14 +81,10 @@ test.describe('Version History API E2E (T799)', () => {
 
   test('should show loading state while fetching data', async ({ page }) => {
     // Start navigation
-    const navigationPromise = page.goto('/version-history');
-
-    // Check for loading indicator immediately
-    const loadingIndicator = page.locator('text=/loading/i, [data-testid="loading"], .loading');
+    await page.goto('/version-history');
     
-    // Loading indicator should appear briefly
-    // Note: This might be very fast, so we'll just verify the page loads successfully
-    await navigationPromise;
+    // Loading indicator might appear briefly but is typically very fast
+    // Wait for network to settle
     await page.waitForLoadState('networkidle');
 
     // Verify content eventually loads

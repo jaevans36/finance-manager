@@ -1,12 +1,13 @@
 import styled from 'styled-components';
 import { Button, Text } from '@finance-manager/ui';
+import { mediaQueries } from '@finance-manager/ui/styles';
 
 const WeekNavigation = styled.div`
   display: flex;
   align-items: center;
   gap: 15px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     flex-wrap: wrap;
   }
 `;

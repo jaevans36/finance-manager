@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Shield, Activity, AlertCircle } from 'lucide-react';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { systemConfigurationService, type SystemConfiguration } from '../../services/systemConfigurationService';
 import { PageLayout } from '../../components/layout/PageLayout';
+import { borderRadius } from '@finance-manager/ui/styles';
 
 const SettingsGrid = styled.div`
   display: grid;
@@ -15,7 +16,7 @@ const SettingsGrid = styled.div`
 const SettingSection = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   padding: 24px;
 `;
 
@@ -31,7 +32,7 @@ const SectionHeader = styled.div`
 const SectionIcon = styled.div<{ $color: string }>`
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: ${borderRadius.xl};
   background: ${({ $color }) => $color}20;
   color: ${({ $color }) => $color};
   display: flex;
@@ -83,7 +84,7 @@ const SettingValue = styled.div<{ $type?: 'success' | 'warning' | 'error' }>`
   font-size: 14px;
   font-weight: 600;
   padding: 6px 16px;
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   background: ${({ theme, $type }) => {
     if ($type === 'success') return theme.colors.success + '20';
     if ($type === 'warning') return theme.colors.warning + '20';
@@ -105,7 +106,7 @@ const WarningBanner = styled.div`
   padding: 16px;
   background: ${({ theme }) => theme.colors.warning}15;
   border: 1px solid ${({ theme }) => theme.colors.warning}40;
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   margin-bottom: 24px;
 `;
 
@@ -142,13 +143,14 @@ const ErrorMessage = styled.div`
   padding: 16px;
   background: ${({ theme }) => theme.colors.error}20;
   border: 1px solid ${({ theme }) => theme.colors.error};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   color: ${({ theme }) => theme.colors.error};
   margin-bottom: 24px;
 `;
 
 const SystemSettings = () => {
   const { user } = useAuth();
+  const theme = useTheme();
   const [config, setConfig] = useState<SystemConfiguration | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -209,7 +211,7 @@ const SystemSettings = () => {
             {/* Environment Information */}
             <SettingSection>
               <SectionHeader>
-                <SectionIcon $color="#2196F3">
+                <SectionIcon $color={theme.colors.info}>
                   <Shield size={20} />
                 </SectionIcon>
                 <SectionTitle>Environment</SectionTitle>
@@ -230,7 +232,7 @@ const SystemSettings = () => {
             {/* Rate Limiting Configuration */}
             <SettingSection>
               <SectionHeader>
-                <SectionIcon $color="#FF9800">
+                <SectionIcon $color={theme.colors.warning}>
                   <Activity size={20} />
                 </SectionIcon>
                 <SectionTitle>Rate Limiting</SectionTitle>

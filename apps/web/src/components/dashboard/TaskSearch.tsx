@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
 import styled from 'styled-components';
+import { borderRadius } from '@finance-manager/ui/styles';
 import { Search, X } from 'lucide-react';
 
 const SearchContainer = styled.div`
@@ -11,7 +12,7 @@ const SearchInput = styled.input`
   width: 100%;
   padding: 12px 40px 12px 40px;
   border: 1px solid ${props => props.theme.colors.inputBorder};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   font-size: 14px;
   background-color: ${props => props.theme.colors.cardBackground};
   color: ${props => props.theme.colors.text};

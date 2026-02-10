@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { Card, SmallBadge, TextSmall, ScrollableContainer } from '@finance-manager/ui';
+import { borderRadius } from '@finance-manager/ui/styles';
 import type { Task } from '../../../services/taskService';
 import { chartColors } from '../../../components/charts/chartTheme';
 
@@ -11,7 +12,7 @@ const TaskItem = styled.div<{ $completed: boolean }>`
   background: ${({ theme, $completed }) => 
     $completed ? theme.colors.backgroundSecondary : theme.colors.cardBackground};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm};
   font-size: 14px;
   transition: all 0.2s;
   cursor: pointer;
@@ -53,14 +54,14 @@ const TaskMeta = styled.div`
 
 const TaskGroup = styled(TextSmall)`
   padding: 2px 6px;
-  border-radius: 3px;
+  border-radius: ${borderRadius.sm};
   background-color: ${({ theme }) => theme.colors.backgroundSecondary};
 `;
 
 const TaskDueDate = styled(TextSmall)<{ $overdue: boolean }>`
   padding: 2px 6px;
-  border-radius: 3px;
-  background-color: ${({ $overdue }) => $overdue ? 'rgba(220, 38, 38, 0.15)' : 'transparent'};
+  border-radius: ${borderRadius.sm};
+  background-color: ${({ theme, $overdue }) => $overdue ? theme.colors.errorBackground : 'transparent'};
   color: ${({ theme, $overdue }) => $overdue ? chartColors.critical : theme.colors.textSecondary};
   font-weight: ${({ $overdue }) => $overdue ? '600' : '400'};
 `;

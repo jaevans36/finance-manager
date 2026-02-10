@@ -1,4 +1,5 @@
 import styled, { css } from 'styled-components';
+import { borderRadius, focusRing, mediaQueries, shadows } from '../../styles/layout';
 
 // ============================================================================
 // BUTTON COMPONENTS
@@ -16,7 +17,7 @@ const buttonSizeStyles = {
     padding: 6px 12px;
     font-size: 14px;
 
-    @media (max-width: 768px) {
+    ${mediaQueries.tablet} {
       padding: 10px 14px;
       font-size: 14px;
       min-height: 44px;
@@ -26,7 +27,7 @@ const buttonSizeStyles = {
     padding: 10px 16px;
     font-size: 16px;
 
-    @media (max-width: 768px) {
+    ${mediaQueries.tablet} {
       padding: 12px 18px;
       min-height: 48px;
     }
@@ -35,7 +36,7 @@ const buttonSizeStyles = {
     padding: 14px 20px;
     font-size: 18px;
 
-    @media (max-width: 768px) {
+    ${mediaQueries.tablet} {
       padding: 16px 22px;
       min-height: 52px;
     }
@@ -101,7 +102,7 @@ export const Button = styled.button<ButtonProps>`
   ${({ variant = 'primary' }) => buttonVariantStyles[variant]}
   
   width: ${({ fullWidth }) => (fullWidth ? '100%' : 'auto')};
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm}px;
   font-weight: 500;
   cursor: ${({ $isLoading }) => ($isLoading ? 'wait' : 'pointer')};
   transition: all 0.2s ease;
@@ -140,13 +141,13 @@ export const Input = styled.input<InputProps>`
   padding: 8px 12px;
   font-size: 14px;
   border: 1px solid ${({ theme, hasError }) => (hasError ? theme.colors.error : theme.colors.inputBorder)};
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm}px;
   background-color: ${({ theme }) => theme.colors.inputBackground};
   color: ${({ theme }) => theme.colors.text};
   transition: border-color 0.2s ease;
   font-family: inherit;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     padding: 12px 14px;
     font-size: 16px;
     min-height: 44px;
@@ -173,7 +174,7 @@ export const TextArea = styled.textarea<InputProps>`
   padding: 8px 12px;
   font-size: 14px;
   border: 1px solid ${({ theme, hasError }) => (hasError ? theme.colors.error : theme.colors.inputBorder)};
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm}px;
   background-color: ${({ theme }) => theme.colors.inputBackground};
   color: ${({ theme }) => theme.colors.text};
   transition: border-color 0.2s ease;
@@ -181,7 +182,7 @@ export const TextArea = styled.textarea<InputProps>`
   resize: vertical;
   min-height: 80px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     padding: 12px 14px;
     font-size: 16px;
     min-height: 100px;
@@ -240,8 +241,9 @@ export const HelperText = styled.span`
 export const Card = styled.div`
   background-color: ${({ theme }) => theme.colors.cardBackground};
   border: 1px solid ${({ theme }) => theme.colors.cardBorder};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg}px;
   padding: 20px;
+  box-shadow: ${shadows.sm};
 `;
 
 export const CardHeader = styled.div`
@@ -295,7 +297,7 @@ const alertVariantStyles = {
 export const Alert = styled.div<AlertProps>`
   ${({ variant = 'info' }) => alertVariantStyles[variant]}
   padding: 12px 16px;
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm}px;
   border: 1px solid;
   margin-bottom: 16px;
   display: flex;
@@ -361,7 +363,7 @@ export const Container = styled.div`
   margin: 0 auto;
   padding: 0 20px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     padding: 0 16px;
   }
 `;
@@ -372,7 +374,7 @@ export const ContentContainer = styled.div`
   margin: 0 auto;
   padding: 20px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     padding: 10px;
     width: 95%;
   }
@@ -424,7 +426,7 @@ export const Grid = styled.div<{
   grid-template-columns: repeat(${({ columns = 1 }) => columns}, 1fr);
   gap: ${({ gap = 16 }) => gap}px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     grid-template-columns: 1fr;
   }
 `;
@@ -482,7 +484,7 @@ export const Badge = styled.span<BadgeProps>`
   padding: 4px 8px;
   font-size: 12px;
   font-weight: 500;
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl}px;
   line-height: 1;
 `;
 
@@ -524,7 +526,7 @@ export const IconButton = styled.button`
   padding: 8px 16px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 6px;
+  border-radius: ${borderRadius.md}px;
   color: ${({ theme }) => theme.colors.text};
   cursor: pointer;
   transition: all 0.2s;
@@ -540,7 +542,9 @@ export const IconButton = styled.button`
     cursor: not-allowed;
   }
 
-  @media (max-width: 768px) {
+  ${focusRing}
+
+  ${mediaQueries.tablet} {
     min-height: 44px;
   }
 `;
@@ -549,7 +553,7 @@ export const SmallButton = styled.button`
   padding: 6px 12px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm}px;
   color: ${({ theme }) => theme.colors.text};
   cursor: pointer;
   font-size: 12px;
@@ -567,6 +571,8 @@ export const SmallButton = styled.button`
     opacity: 0.5;
     cursor: not-allowed;
   }
+
+  ${focusRing}
 `;
 
 // Add SmallBadge component for smaller badges
@@ -591,7 +597,7 @@ export const ResponsiveGrid = styled.div<{
   grid-template-columns: repeat(auto-fit, minmax(${({ minWidth = '200px' }) => minWidth}, 1fr));
   gap: ${({ gap = 20 }) => gap}px;
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     grid-template-columns: 1fr;
   }
 `;
@@ -601,7 +607,7 @@ export const TwoColumnGrid = styled.div<{ gap?: number }>`
   grid-template-columns: 1fr 1fr;
   gap: ${({ gap = 20 }) => gap}px;
 
-  @media (max-width: 968px) {
+  ${mediaQueries.desktop} {
     grid-template-columns: 1fr;
   }
 `;
@@ -611,7 +617,7 @@ export const ResponsiveDailyGrid = styled.div<{ gap?: number }>`
   grid-template-columns: repeat(4, 1fr);
   gap: ${({ gap = 20 }) => gap}px;
 
-  @media (max-width: 1200px) {
+  ${mediaQueries.wide} {
     grid-template-columns: repeat(3, 1fr);
   }
 
@@ -619,7 +625,7 @@ export const ResponsiveDailyGrid = styled.div<{ gap?: number }>`
     grid-template-columns: repeat(2, 1fr);
   }
 
-  @media (max-width: 600px) {
+  ${mediaQueries.mobile} {
     grid-template-columns: 1fr;
   }
 `;
@@ -631,7 +637,7 @@ export const ResponsiveDailyGrid = styled.div<{ gap?: number }>`
 export const InputField = styled.input`
   padding: 8px 12px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 6px;
+  border-radius: ${borderRadius.md}px;
   background: ${({ theme }) => theme.colors.cardBackground};
   color: ${({ theme }) => theme.colors.text};
   font-size: 14px;
@@ -651,7 +657,7 @@ export const InputField = styled.input`
 export const Select = styled.select`
   padding: 8px 12px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 6px;
+  border-radius: ${borderRadius.md}px;
   background: ${({ theme }) => theme.colors.cardBackground};
   color: ${({ theme }) => theme.colors.text};
   font-size: 14px;
@@ -677,14 +683,14 @@ export const ToggleGroup = styled.div`
   display: flex;
   gap: 8px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 6px;
+  border-radius: ${borderRadius.md}px;
   padding: 4px;
 `;
 
 export const ToggleButton = styled.button<{ $active: boolean }>`
   padding: 6px 12px;
   border: none;
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm}px;
   background: ${({ $active, theme }) => $active ? theme.colors.primary : 'transparent'};
   color: ${({ $active, theme }) => $active ? 'white' : theme.colors.text};
   cursor: pointer;

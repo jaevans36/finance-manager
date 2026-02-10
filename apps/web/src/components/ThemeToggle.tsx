@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import { Sun, Moon } from 'lucide-react';
 import { useTheme } from '@finance-manager/ui';
+import { borderRadius } from '@finance-manager/ui/styles';
 
 const ToggleButton = styled.button`
   position: fixed;
@@ -8,7 +9,7 @@ const ToggleButton = styled.button`
   right: 20px;
   width: 44px;
   height: 44px;
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg}px;
   border: 1px solid ${({ theme }) => theme.colors.border};
   background-color: ${({ theme }) => theme.colors.cardBackground};
   color: ${({ theme }) => theme.colors.text};

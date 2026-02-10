@@ -19,7 +19,7 @@ import {
   FormGroup,
   Alert
 } from '@finance-manager/ui';
-import { spacing, typography } from '@finance-manager/ui/styles';
+import { spacing, typography, borderRadius } from '@finance-manager/ui/styles';
 import { useTheme } from '@finance-manager/ui';
 import { Palette, Type, Layers, Space, CheckCircle } from 'lucide-react';
 
@@ -50,7 +50,7 @@ const ColorGrid = styled.div`
 const ColorSwatch = styled.div<{ $color: string }>`
   background: ${({ $color }) => $color};
   height: 100px;
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   border: 1px solid ${({ theme }) => theme.colors.border};
   display: flex;
   align-items: flex-end;
@@ -62,7 +62,7 @@ const ColorLabel = styled.div`
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.text};
   padding: ${spacing.xs} ${spacing.sm};
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm};
   ${typography.bodySmall}
   font-weight: 500;
 `;
@@ -71,7 +71,7 @@ const TypographyExample = styled.div`
   margin-bottom: ${spacing.lg};
   padding: ${spacing.lg};
   background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   border: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
@@ -85,7 +85,7 @@ const SpacingBox = styled.div<{ $size: string }>`
   background: ${({ theme }) => theme.colors.primary};
   width: ${({ $size }) => $size};
   height: ${({ $size }) => $size};
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -103,7 +103,7 @@ const ComponentShowcase = styled.div`
 const ComponentGroup = styled.div`
   padding: ${spacing.xl};
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   border: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
@@ -119,7 +119,7 @@ const CodeBlock = styled.pre`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   color: ${({ theme }) => theme.colors.text};
   padding: ${spacing.lg};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   overflow-x: auto;
   ${typography.bodySmall}
   font-family: 'Courier New', monospace;

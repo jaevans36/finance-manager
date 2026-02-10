@@ -1,10 +1,11 @@
 import styled from 'styled-components';
+import { borderRadius } from '@finance-manager/ui/styles';
 import { Skeleton, SkeletonLine, SkeletonCircle } from '../ui/Skeleton';
 
 const SkeletonCard = styled.div`
   background: ${props => props.theme.colors.cardBackground};
   border: 1px solid ${props => props.theme.colors.border};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   padding: 16px;
   margin-bottom: 12px;
 `;

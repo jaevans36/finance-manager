@@ -4,44 +4,45 @@ import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
 import { CheckIcon, XCircleIcon } from 'lucide-react';
 import styled from 'styled-components';
+import { borderRadius, focusRing, spacing } from '@finance-manager/ui/styles';
 
 const FormContainer = styled.div`
   max-width: 400px;
   margin: 0 auto;
-  padding: 20px;
+  padding: ${spacing.xl};
 `;
 
 const Heading = styled.h2`
   color: ${({ theme }) => theme.colors.text};
-  margin-bottom: 20px;
+  margin-bottom: ${spacing.xl};
 `;
 
 const ErrorAlert = styled.div`
-  padding: 10px;
-  margin-bottom: 15px;
+  padding: ${spacing.sm} ${spacing.md};
+  margin-bottom: ${spacing.lg};
   background-color: ${({ theme }) => theme.colors.errorBackground};
   color: ${({ theme }) => theme.colors.error};
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm};
   border: 1px solid ${({ theme }) => theme.colors.error};
 `;
 
 const FormGroup = styled.div`
-  margin-bottom: 15px;
+  margin-bottom: ${spacing.lg};
 `;
 
 const Label = styled.label`
   color: ${({ theme }) => theme.colors.text};
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: ${spacing.xs};
   font-weight: 500;
 `;
 
 const Input = styled.input<{ hasError?: boolean }>`
   width: 100%;
-  padding: 8px;
+  padding: ${spacing.sm};
   font-size: 14px;
   border: 1px solid ${({ theme, hasError }) => hasError ? theme.colors.error : theme.colors.inputBorder};
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm};
   background-color: ${({ theme }) => theme.colors.inputBackground};
   color: ${({ theme }) => theme.colors.text};
   transition: border-color 0.2s ease;
@@ -62,12 +63,12 @@ const ErrorText = styled.span`
   color: ${({ theme }) => theme.colors.error};
   font-size: 12px;
   display: block;
-  margin-top: 4px;
+  margin-top: ${spacing.xs};
 `;
 
 const PasswordStrengthText = styled.div`
   font-size: 12px;
-  margin-top: 5px;
+  margin-top: ${spacing.xs};
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
@@ -81,11 +82,11 @@ const StrengthIndicator = styled.strong<{ strength: string }>`
 
 const SubmitButton = styled.button<{ isLoading?: boolean }>`
   width: 100%;
-  padding: 10px;
+  padding: ${spacing.sm} ${spacing.md};
   background-color: ${({ theme, isLoading }) => isLoading ? theme.colors.primaryDisabled : theme.colors.primary};
   color: ${({ theme }) => theme.colors.buttonText};
   border: none;
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm};
   font-size: 16px;
   font-weight: 500;
   cursor: ${({ isLoading }) => isLoading ? 'not-allowed' : 'pointer'};
@@ -102,10 +103,10 @@ const SubmitButton = styled.button<{ isLoading?: boolean }>`
 `;
 
 const InfoBox = styled.div`
-  margin-top: 15px;
-  padding: 10px;
+  margin-top: ${spacing.lg};
+  padding: ${spacing.sm} ${spacing.md};
   background-color: ${({ theme }) => theme.colors.infoBackground};
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm};
   font-size: 13px;
   color: ${({ theme }) => theme.colors.textSecondary};
   border: 1px solid ${({ theme }) => theme.colors.info};
@@ -113,6 +114,7 @@ const InfoBox = styled.div`
 
 const StyledLink = styled(Link)`
   color: ${({ theme }) => theme.colors.primary};
+  ${focusRing}
 
   &:hover {
     color: ${({ theme }) => theme.colors.primaryHover};
@@ -120,7 +122,7 @@ const StyledLink = styled(Link)`
 `;
 
 const SigninText = styled.p`
-  margin-top: 20px;
+  margin-top: ${spacing.xl};
   text-align: center;
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
@@ -131,7 +133,7 @@ const UsernameInputContainer = styled.div`
 
 const UsernameIcon = styled.div<{ available: boolean }>`
   position: absolute;
-  right: 10px;
+  right: ${spacing.sm};
   top: 50%;
   transform: translateY(-50%);
   color: ${({ available, theme }) => available ? theme.colors.success : theme.colors.error};

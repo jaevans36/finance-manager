@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
+import { borderRadius, shadows } from '@finance-manager/ui/styles';
 import { statisticsService } from '../../../services/statisticsService';
 import type { HistoricalStatistics } from '../../../types/statistics';
 import { LineChartWrapper } from '../../../components/charts/LineChartWrapper';
@@ -14,9 +15,9 @@ const formatWeekLabel = (weekStart: string) => {
 
 const ChartCard = styled.div`
   background: ${(props) => props.theme.colors.cardBackground};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: ${shadows.sm};
   margin-bottom: 24px;
 `;
 
@@ -44,7 +45,7 @@ const WeekRangeSelector = styled.div`
 const RangeButton = styled.button<{ $active?: boolean }>`
   padding: 6px 12px;
   border: 1px solid ${(props) => props.theme.colors.border};
-  border-radius: 6px;
+  border-radius: ${borderRadius.md};
   background: ${(props) => props.$active ? props.theme.colors.primary : props.theme.colors.cardBackground};
   color: ${(props) => props.$active ? 'white' : props.theme.colors.text};
   font-size: 0.875rem;
@@ -84,7 +85,7 @@ const RetryButton = styled.button`
   background: ${(props) => props.theme.colors.primary};
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: ${borderRadius.md};
   cursor: pointer;
   font-size: 0.875rem;
 
@@ -107,6 +108,7 @@ interface HistoricalCompletionChartProps {
 }
 
 export const HistoricalCompletionChart = ({ className }: HistoricalCompletionChartProps) => {
+  const theme = useTheme();
   const [weeks, setWeeks] = useState(8);
   const [data, setData] = useState<HistoricalStatistics[]>([]);
   const [loading, setLoading] = useState(true);
@@ -174,7 +176,7 @@ export const HistoricalCompletionChart = ({ className }: HistoricalCompletionCha
           lines={[
             {
               dataKey: 'completionRate',
-              stroke: '#10b981',
+              stroke: theme.colors.success,
               name: 'Completion Rate %',
             },
           ]}

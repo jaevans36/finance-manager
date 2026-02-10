@@ -1,14 +1,15 @@
 import styled from 'styled-components';
 import { TextSmall } from '@finance-manager/ui';
+import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
 
 const HintContainer = styled.div`
   margin-top: 16px;
   padding: 12px 16px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   border: 1px solid ${({ theme }) => theme.colors.border};
 
-  @media (max-width: 768px) {
+  ${mediaQueries.tablet} {
     display: none;
   }
 `;
@@ -35,7 +36,7 @@ const KeyBadge = styled.kbd`
   padding: 2px 6px;
   background: ${({ theme }) => theme.colors.cardBackground};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm};
   font-size: 11px;
   font-family: monospace;
   font-weight: 600;

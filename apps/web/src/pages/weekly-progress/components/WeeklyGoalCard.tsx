@@ -1,12 +1,13 @@
 import styled from 'styled-components';
 import { Heading3, InputField, Text } from '@finance-manager/ui';
+import { borderRadius } from '@finance-manager/ui/styles';
 import { chartColors } from '../../../components/charts/chartTheme';
 
 const GoalSection = styled.div`
   margin-bottom: 25px;
   padding: 20px;
   background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: 8px;
+  border-radius: ${borderRadius.lg};
   border: 1px solid ${({ theme }) => theme.colors.border};
   height: 100%;
 `;
@@ -22,7 +23,7 @@ const GoalProgressBar = styled.div`
   width: 100%;
   height: 24px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 12px;
+  border-radius: ${borderRadius.xl};
   overflow: hidden;
   position: relative;
 `;
@@ -30,7 +31,7 @@ const GoalProgressBar = styled.div`
 const GoalProgressFill = styled.div<{ $percentage: number; $achieved: boolean }>`
   height: 100%;
   background: ${({ $achieved, theme }) => 
-    $achieved ? `linear-gradient(90deg, ${chartColors.primary} 0%, #45a049 100%)` : 
+    $achieved ? `linear-gradient(90deg, ${chartColors.primary} 0%, ${theme.colors.success} 100%)` : 
     `linear-gradient(90deg, ${theme.colors.primary} 0%, ${theme.colors.primaryHover} 100%)`
   };
   transition: width 0.5s ease;

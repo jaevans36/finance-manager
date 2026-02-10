@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Copy } from 'lucide-react';
 import styled from 'styled-components';
-import { spacing, typography } from '@finance-manager/ui/styles';
+import { spacing, typography, borderRadius, shadows, focusRing } from '@finance-manager/ui/styles';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -21,11 +21,11 @@ const ModalOverlay = styled.div`
 
 const ModalContent = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: 8px;
+  border-radius: ${borderRadius.xl}px;
   width: 400px;
   max-width: 90vw;
   max-height: 90vh;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: ${shadows.xl};
   margin: auto;
 `;
 
@@ -54,6 +54,8 @@ const CloseButton = styled.button`
   &:hover {
     color: ${({ theme }) => theme.colors.text};
   }
+
+  ${focusRing}
 `;
 
 const ModalBody = styled.div`
@@ -67,7 +69,7 @@ const Display = styled.div`
   font-family: 'Courier New', monospace;
   text-align: right;
   padding: ${spacing.lg};
-  border-radius: 6px;
+  border-radius: ${borderRadius.md}px;
   margin-bottom: ${spacing.lg};
   min-height: 60px;
   overflow-x: auto;
@@ -92,7 +94,7 @@ const CalcButton = styled.button<{ $variant?: 'number' | 'operator' | 'equals' |
     $variant && $variant !== 'number' ? 'white' : theme.colors.text
   };
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 6px;
+  border-radius: ${borderRadius.md}px;
   ${typography.sectionHeading}
   padding: ${spacing.lg};
   cursor: pointer;

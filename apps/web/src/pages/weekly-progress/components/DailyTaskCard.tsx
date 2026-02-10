@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { Card, SmallBadge, TextSmall, ScrollableContainer } from '@finance-manager/ui';
+import { borderRadius } from '@finance-manager/ui/styles';
 import type { Task } from '../../../services/taskService';
 import { chartColors } from '../../../components/charts/chartTheme';
 
@@ -65,7 +66,7 @@ const DayProgressBar = styled.div`
   width: 100%;
   height: 12px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: 6px;
+  border-radius: ${borderRadius.md};
   overflow: visible;
   position: relative;
 `;
@@ -73,9 +74,9 @@ const DayProgressBar = styled.div`
 const DayProgressFill = styled.div<{ $percentage: number }>`
   height: 100%;
   width: ${({ $percentage }) => $percentage}%;
-  background: linear-gradient(90deg, ${chartColors.primary} 0%, #45a049 100%);
+  background: linear-gradient(90deg, ${chartColors.primary} 0%, ${({ theme }) => theme.colors.success} 100%);
   transition: width 0.5s ease;
-  border-radius: ${({ $percentage }) => $percentage === 100 ? '6px' : '6px 0 0 6px'};
+  border-radius: ${({ $percentage }) => $percentage === 100 ? borderRadius.md : `${borderRadius.md} 0 0 ${borderRadius.md}`};
 `;
 
 const ProgressHeader = styled.div`
@@ -124,7 +125,7 @@ const TaskItem = styled.div<{ $completed: boolean }>`
   background: ${({ theme, $completed }) => 
     $completed ? theme.colors.backgroundSecondary : theme.colors.cardBackground};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 4px;
+  border-radius: ${borderRadius.sm};
   font-size: 14px;
   transition: all 0.2s;
   cursor: pointer;
@@ -166,7 +167,7 @@ const TaskMeta = styled.div`
 
 const TaskGroup = styled(TextSmall)`
   padding: 2px 6px;
-  border-radius: 3px;
+  border-radius: ${borderRadius.sm};
   background-color: ${({ theme }) => theme.colors.backgroundSecondary};
 `;
 

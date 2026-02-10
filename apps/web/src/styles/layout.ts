@@ -26,7 +26,23 @@ export const borderRadius = {
   md: '6px',
   lg: '8px',
   xl: '12px',
+  '2xl': '16px',
   full: '9999px',
+} as const;
+
+/**
+ * Shadow / Elevation System
+ * Consistent elevation levels used across the application.
+ */
+export const shadows = {
+  /** Subtle lift — cards, inputs on focus */
+  sm: '0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06)',
+  /** Default card elevation */
+  md: '0 2px 8px rgba(0, 0, 0, 0.1)',
+  /** Raised elements — dropdowns, popovers */
+  lg: '0 8px 24px rgba(0, 0, 0, 0.12)',
+  /** Modals & dialogs */
+  xl: '0 12px 40px rgba(0, 0, 0, 0.16)',
 } as const;
 
 /**
@@ -58,6 +74,17 @@ export const truncateText = css`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+`;
+
+/**
+ * Focus ring for keyboard-accessible interactive elements.
+ * Uses :focus-visible so the ring only appears on keyboard navigation.
+ */
+export const focusRing = css`
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
+  }
 `;
 
 export const truncateMultiline = (lines: number) => css`
