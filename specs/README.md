@@ -11,21 +11,41 @@ specs/
 ├── platform/                    # Platform-level specifications
 │   ├── architecture.md          # Overall platform architecture
 │   ├── authentication.md        # Authentication & user management (shared)
+│   ├── authentication-service.md # Centralised auth service (OAuth, JWT, MFA)
+│   ├── authentication-service-tasks.md # Auth tasks (T925-T972, ~5.5 weeks)
 │   ├── admin-system.md          # Admin panel specification (Phase 5)
 │   ├── application-hub.md       # Hub dashboard specification (Phase 6)
 │   ├── design-guidelines.md     # Design system & standards (Phase 7)
-│   └── database-schema.md       # Shared database schema
+│   ├── database-schema.md       # Shared database schema
+│   ├── database-abstraction.md  # Database abstraction layer spec
+│   ├── database-abstraction-tasks.md # DB tasks (T1105-T1126, ~2.5 weeks)
+│   ├── microservices-architecture.md # Microservices transformation spec
+│   ├── microservices-tasks.md   # Microservices tasks (T973-T1008, ~4 weeks)
+│   ├── test-automation.md       # Test automation & quality monitoring spec
+│   ├── test-automation-tasks.md # Test tasks (T1009-T1054, ~5.5 weeks)
+│   ├── project-rename.md        # Rename Finance Manager → Life Manager
+│   ├── project-rename-tasks.md  # Rename tasks (T1127-T1154, ~2 weeks)
+│   └── SPEC-INDEX.md            # Quick navigation index
 └── applications/                # Individual application specifications
-    └── todo/                    # To Do application
-        ├── spec.md              # Core To Do feature spec (Phase 1-4)
-        ├── enhancements.md      # Advanced features (Phase 8-12)
-        ├── tasks.md             # Implementation task breakdown
-        ├── data-model.md        # To Do-specific data models
-        ├── plan.md              # Implementation plan
-        ├── research.md          # Technical research notes
-        ├── quickstart.md        # Quick start guide
-        ├── contracts/           # API contracts
-        └── checklists/          # Testing checklists
+    ├── todo/                    # To Do application
+    │   ├── spec.md              # Core To Do feature spec (Phase 1-4)
+    │   ├── enhancements.md      # Advanced features (Phase 8-12)
+    │   ├── tasks.md             # Implementation task breakdown
+    │   ├── data-model.md        # To Do-specific data models
+    │   ├── plan.md              # Implementation plan
+    │   ├── research.md          # Technical research notes
+    │   ├── quickstart.md        # Quick start guide
+    │   ├── contracts/           # API contracts
+    │   └── checklists/          # Testing checklists
+    ├── fitness/                 # Fitness & Health application
+    │   ├── spec.md              # Fitness feature spec (Phase 14-21)
+    │   └── tasks.md             # Fitness tasks (T800-T924, ~13 weeks)
+    ├── weather/                 # Weather Forecast application
+    │   ├── spec.md              # Weather feature spec (Phase 32-35)
+    │   └── tasks.md             # Weather tasks (T1055-T1104, ~5 weeks)
+    └── finance/                 # Personal Finance application
+        ├── spec.md              # Finance feature spec (Phase 41-47)
+        └── tasks.md             # Finance tasks (T1155-T1256, ~11 weeks)
 ```
 
 ## Specification Organization
@@ -54,11 +74,25 @@ Each application has its own directory with application-specific specifications:
 - **contracts/**: API endpoint contracts
 - **checklists/**: Feature testing checklists
 
+#### Fitness & Health Application (`applications/fitness/`)
+
+- **spec.md**: 9 user stories (workout tracking, food diary, body measurements, goals, habit tracking with GitHub-style grid, meditation, wearable integration, plans, social)
+- **tasks.md**: T800-T924, 125 tasks across Phases 14-21 (~13 weeks)
+
+#### Weather Forecast Application (`applications/weather/`)
+
+- **spec.md**: 8 user stories (current conditions, multi-day forecast, severe alerts, calendar integration, favourite locations, air quality, radar/satellite, historical data)
+- **tasks.md**: T1055-T1104, 50 tasks across Phases 32-35 (~5 weeks)
+
+#### Personal Finance Application (`applications/finance/`)
+
+- **spec.md**: 9 user stories (CSV transaction import for UK banks, budgeting, investment portfolio tracking, bill tracking, savings goals, dashboard & reports, AI insights, multi-currency, debt management)
+- **tasks.md**: T1155-T1256, 102 tasks across Phases 41-47 (~11 weeks)
+
 #### Future Applications
 
-- `applications/finance/` - Personal finance management
-- `applications/budget/` - Budget tracking and planning
-- `applications/investments/` - Investment portfolio tracking
+- `applications/recipes/` - Recipe management & meal planning
+- `applications/journal/` - Personal journal & notes
 - etc.
 
 ## How to Use This Structure
@@ -95,11 +129,20 @@ As the Finance Manager platform grows, new applications will be added alongside 
 
 ```
 applications/
-  └── todo/              # First application - task management
+  ├── todo/              # First application - task management
+  │   ├── spec.md
+  │   ├── enhancements.md
+  │   ├── tasks.md
+  │   └── ...
+  ├── fitness/           # Fitness & health tracking
+  │   ├── spec.md
+  │   └── tasks.md
+  ├── weather/           # Weather forecast
+  │   ├── spec.md
+  │   └── tasks.md
+  └── finance/           # Personal finance management
       ├── spec.md
-      ├── enhancements.md
-      ├── tasks.md
-      └── ...
+      └── tasks.md
 ```
 
 ### Adding a New Application
@@ -172,9 +215,9 @@ These apply to ALL applications and should only change when adding platform-wide
 Each application has its own isolated specifications:
 
 - **To Do**: Tasks, priorities, groups, recurring tasks, calendar view
-- **Finance**: Transactions, accounts, categories, budgets, reports
-- **Budget**: Budget templates, forecasting, spending analysis
-- **Investments**: Portfolio tracking, performance metrics, asset allocation
+- **Fitness**: Workout tracking, food diary, body measurements, habits, meditation
+- **Weather**: Current conditions, forecasts, alerts, radar, air quality, historical data
+- **Finance**: Transactions, accounts, categories, budgets, investments, reports, debt management
 
 ### Growth Pattern Example
 

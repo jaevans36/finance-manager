@@ -688,6 +688,87 @@ After version update:
 
 For complete guidelines, see `docs/VERSION-MANAGEMENT.md`
 
+## Session Summary & Handover
+
+**CRITICAL**: At the end of every development session (or when a significant milestone is complete), ALWAYS provide a structured summary that acts as a project manager handover. This helps the user understand what was achieved, the current state of the project, and what to focus on next.
+
+### When to Provide a Summary
+
+- At the end of a development session (before the user signs off)
+- After completing a major feature or milestone
+- After completing a phase from tasks.md
+- When switching context to a different area of work
+- When the user asks "what did we do?" or similar
+
+### Summary Structure
+
+Every session summary must include the following sections:
+
+#### 1. Session Overview
+- Brief description of the session's objectives and what was achieved
+- Duration estimate (if applicable)
+
+#### 2. Changes Made
+- **Files modified**: List of files that were changed, created, or deleted
+- **Key changes**: Bullet-point summary of what changed and why
+- **Commits**: List of commit hashes and messages made during the session
+
+#### 3. Current Project State
+- **Build status**: Does the project build successfully?
+- **Test status**: Are all tests passing? Any new tests added?
+- **Known issues**: Any bugs, warnings, or technical debt introduced or discovered
+- **Branch status**: Current branch, uncommitted changes, upstream status
+
+#### 4. What's Next
+- **Immediate next steps**: What should be tackled in the next session
+- **Blocked items**: Anything that can't proceed and why
+- **Recommendations**: Suggestions for improvements, refactoring, or priority changes
+- **Relevant tasks**: Reference specific task IDs from tasks.md that are next in line
+
+#### 5. Decisions & Context
+- Any design decisions made during the session and the rationale
+- Any assumptions that were made
+- Any questions or clarifications needed from the user
+
+### Example Summary
+
+```markdown
+## Session Summary — 13 Feb 2026
+
+### Overview
+Implemented the design system overhaul and replaced EditTaskModal with 
+TaskDetailModal. Fixed 3 UX bugs reported by user.
+
+### Changes Made
+- **Modified** (6 files): TaskDetailModal.tsx, TasksPage.tsx, 
+  CalendarPage.tsx, layout.ts, theme.ts, packages/ui/components/index.ts
+- **Created** (2 files): TaskDetailModal.tsx, TaskDetailModal.test.tsx
+- **Deleted** (2 files): EditTaskModal.tsx, EditTaskModal.test.tsx
+- **Commits**: `0c1edea` — feat: design system overhaul and TaskDetailModal
+
+### Current State
+- ✅ Build passes (0 errors)
+- ✅ All 48 tests pass
+- ✅ No uncommitted changes
+- Branch: `001-todo-app`
+
+### What's Next
+- T125: Implement task comments (Phase 14)
+- Consider adding onSubtaskChange to CalendarPage
+- Phase documentation for Phase 13 needs writing
+
+### Decisions
+- Chose left-border accent pattern for Alerts (better a11y than full-bg)
+- Consolidated borderRadius to 2 values (sm/lg) + full for consistency
+```
+
+### Rules
+- Never skip the summary — it's the user's primary way of tracking progress
+- Keep it factual and concise — avoid filler or unnecessary detail
+- Always reference specific files, commits, and task IDs where applicable
+- If the session was interrupted or incomplete, note what was left unfinished
+- Use British English throughout
+
 ## Quickstart Guide
 
 This quickstart guide provides example API requests and expected responses for the To Do application. It covers user registration, authentication, and basic task management operations.

@@ -108,16 +108,121 @@ This index maps features from the original `spec-v2-enhancements.md` to their ne
 
 **Why To Do?** Advanced features specific to task management.
 
+### Phase 13 - To Do Design System Overhaul
+
+| Feature | Location |
+|---------|----------|
+| TaskDetailModal with view/edit modes | `applications/todo/` |
+| Icon migration (emoji → Lucide) | `applications/todo/` |
+| Design token standardisation | `platform/design-guidelines.md` |
+
+**Why Split?** Design tokens are platform-wide; modal and icon changes are To Do-specific.
+
+### Phase 14-21 - Fitness Application
+
+| Phase | Feature | Location |
+|-------|---------|----------|
+| Phase 14 | Workout Tracking Foundation | `applications/fitness/spec.md` |
+| Phase 15 | Food & Nutrition Diary | `applications/fitness/spec.md` |
+| Phase 16 | Body Measurements & Goals | `applications/fitness/spec.md` |
+| Phase 17 | Habit Tracking (GitHub Grid) | `applications/fitness/spec.md` |
+| Phase 18 | Meditation & Mindfulness | `applications/fitness/spec.md` |
+| Phase 19 | Wearable Device Integration | `applications/fitness/spec.md` |
+| Phase 20 | Workout Plans & Social | `applications/fitness/spec.md` |
+| Phase 21 | Fitness Dashboard | `applications/fitness/spec.md` |
+
+**Tasks**: `applications/fitness/tasks.md` (T800-T924, 125 tasks, ~13 weeks)
+
+### Phase 22-24 - Authentication Service
+
+| Phase | Feature | Location |
+|-------|---------|----------|
+| Phase 22 | Auth Service Extraction | `platform/authentication-service.md` |
+| Phase 23 | OAuth 2.0 Integration | `platform/authentication-service.md` |
+| Phase 24 | Sessions & MFA | `platform/authentication-service.md` |
+
+**Tasks**: `platform/authentication-service-tasks.md` (T925-T972, 48 tasks, ~5.5 weeks)
+
+### Phase 25-27 - Microservices Architecture
+
+| Phase | Feature | Location |
+|-------|---------|----------|
+| Phase 25 | API Gateway (YARP) | `platform/microservices-architecture.md` |
+| Phase 26 | Service Isolation & Health | `platform/microservices-architecture.md` |
+| Phase 27 | Event Bus & BFF | `platform/microservices-architecture.md` |
+
+**Tasks**: `platform/microservices-tasks.md` (T973-T1008, 36 tasks, ~4 weeks)
+
+### Phase 28-31 - Test Automation & Quality
+
+| Phase | Feature | Location |
+|-------|---------|----------|
+| Phase 28 | Test Orchestration | `platform/test-automation.md` |
+| Phase 29 | Quality Dashboard | `platform/test-automation.md` |
+| Phase 30 | Flaky Test Detection & Bug Filing | `platform/test-automation.md` |
+| Phase 31 | Performance Monitoring | `platform/test-automation.md` |
+
+**Tasks**: `platform/test-automation-tasks.md` (T1009-T1054, 46 tasks, ~5.5 weeks)
+
+### Phase 32-35 - Weather Application
+
+| Phase | Feature | Location |
+|-------|---------|----------|
+| Phase 32 | Weather Core (Conditions & Forecast) | `applications/weather/spec.md` |
+| Phase 33 | Alerts & Favourite Locations | `applications/weather/spec.md` |
+| Phase 34 | Calendar Integration & Widget | `applications/weather/spec.md` |
+| Phase 35 | AQI, Radar & Historical Data | `applications/weather/spec.md` |
+
+**Tasks**: `applications/weather/tasks.md` (T1055-T1104, 50 tasks, ~5 weeks)
+
+### Phase 36-37 - Database Abstraction Layer
+
+| Phase | Feature | Location |
+|-------|---------|----------|
+| Phase 36 | Core Abstraction & PostgreSQL | `platform/database-abstraction.md` |
+| Phase 37 | Additional Providers & Monitoring | `platform/database-abstraction.md` |
+
+**Tasks**: `platform/database-abstraction-tasks.md` (T1105-T1126, 22 tasks, ~2.5 weeks)
+
+### Phase 38-40 - Project Rename (Finance Manager → Life Manager)
+
+| Phase | Feature | Location |
+|-------|---------|----------|
+| Phase 38 | Codebase Rename | `platform/project-rename.md` |
+| Phase 39 | Branding & Infrastructure | `platform/project-rename.md` |
+| Phase 40 | Documentation Cleanup | `platform/project-rename.md` |
+
+**Tasks**: `platform/project-rename-tasks.md` (T1127-T1154, 28 tasks, ~2 weeks)
+
+### Phase 41-47 - Finance Application
+
+| Phase | Feature | Location |
+|-------|---------|----------|
+| Phase 41 | Accounts & Transaction Import | `applications/finance/spec.md` |
+| Phase 42 | Budgeting | `applications/finance/spec.md` |
+| Phase 43 | Bills & Savings Goals | `applications/finance/spec.md` |
+| Phase 44 | Financial Dashboard & Reports | `applications/finance/spec.md` |
+| Phase 45 | Investment Tracking | `applications/finance/spec.md` |
+| Phase 46 | Debt Management & Multi-Currency | `applications/finance/spec.md` |
+| Phase 47 | AI Financial Insights | `applications/finance/spec.md` |
+
+**Tasks**: `applications/finance/tasks.md` (T1155-T1256, 102 tasks, ~11 weeks)
+
 ## Quick Navigation
 
 ### Platform-Wide Features
 
 Go to `platform/` when looking for:
 - Authentication & user management
+- Centralised authentication service (OAuth, MFA)
 - Admin panel specifications
 - Application hub (portal/dashboard)
 - Design system & UI standards
 - Architecture & routing
+- Microservices architecture (API gateway, event bus)
+- Database abstraction layer
+- Test automation & quality monitoring
+- Project rename migration
 - Shared database schema
 
 ### Application-Specific Features
@@ -129,6 +234,31 @@ Go to `applications/todo/` when looking for:
 - Calendar view
 - Recurring tasks
 - Task groups
+
+Go to `applications/fitness/` when looking for:
+- Workout tracking & exercise logging
+- Food & nutrition diary
+- Body measurements & goals
+- Habit tracking (GitHub-style grid)
+- Meditation & mindfulness
+- Wearable device integration
+
+Go to `applications/weather/` when looking for:
+- Current weather conditions & forecasts
+- Severe weather alerts & notifications
+- Favourite locations management
+- Air quality index (AQI)
+- Radar & satellite imagery
+- Historical weather data
+
+Go to `applications/finance/` when looking for:
+- Transaction import & management (CSV)
+- Budgeting & expense tracking
+- Bills & savings goals
+- Investment portfolio tracking
+- Financial dashboards & reports
+- Debt management & payoff planning
+- AI-powered financial insights
 
 ### Implementation Details
 
@@ -146,21 +276,40 @@ specs/
 ├── platform/
 │   ├── architecture.md               ← Routing, apps, tech stack
 │   ├── authentication.md             ← Auth, sessions, profiles
+│   ├── authentication-service.md     ← Centralised auth (OAuth, MFA)
+│   ├── authentication-service-tasks.md ← Auth tasks (T925-T972)
 │   ├── admin-system.md               ← Admin panel (Phase 5)
 │   ├── application-hub.md            ← Hub dashboard (Phase 6)
 │   ├── design-guidelines.md          ← Design system (Phase 7)
-│   └── database-schema.md            ← Shared database tables
+│   ├── database-schema.md            ← Shared database tables
+│   ├── database-abstraction.md       ← DB abstraction layer spec
+│   ├── database-abstraction-tasks.md ← DB tasks (T1105-T1126)
+│   ├── microservices-architecture.md ← Microservices spec
+│   ├── microservices-tasks.md        ← Microservices tasks (T973-T1008)
+│   ├── test-automation.md            ← Test automation spec
+│   ├── test-automation-tasks.md      ← Test tasks (T1009-T1054)
+│   ├── project-rename.md             ← Rename to Life Manager
+│   └── project-rename-tasks.md       ← Rename tasks (T1127-T1154)
 └── applications/
-    └── todo/
-        ├── spec.md                   ← Core features (Phase 1-4)
-        ├── enhancements.md           ← Advanced features (Phase 2-12)
-        ├── tasks.md                  ← Task breakdown
-        ├── data-model.md             ← Task entities
-        ├── plan.md                   ← Implementation plan
-        ├── research.md               ← Technical research
-        ├── quickstart.md             ← API examples
-        ├── contracts/                ← API contracts
-        └── checklists/               ← Testing checklists
+    ├── todo/
+    │   ├── spec.md                   ← Core features (Phase 1-4)
+    │   ├── enhancements.md           ← Advanced features (Phase 2-12)
+    │   ├── tasks.md                  ← Task breakdown
+    │   ├── data-model.md             ← Task entities
+    │   ├── plan.md                   ← Implementation plan
+    │   ├── research.md               ← Technical research
+    │   ├── quickstart.md             ← API examples
+    │   ├── contracts/                ← API contracts
+    │   └── checklists/               ← Testing checklists
+    ├── fitness/
+    │   ├── spec.md                   ← Fitness app spec (Phase 14-21)
+    │   └── tasks.md                  ← Fitness tasks (T800-T924)
+    ├── weather/
+    │   ├── spec.md                   ← Weather app spec (Phase 32-35)
+    │   └── tasks.md                  ← Weather tasks (T1055-T1104)
+    └── finance/
+        ├── spec.md                   ← Finance app spec (Phase 41-47)
+        └── tasks.md                  ← Finance tasks (T1155-T1256)
 ```
 
 ## When Adding New Features
