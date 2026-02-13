@@ -1,0 +1,264 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AI Contract — Finance Manager Platform",
+  "description": "Machine-readable rules and constraints for AI agents working on this repository.",
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-13",
+  "projectVersion": "0.15.0",
+
+  "stack": {
+    "backend": {
+      "runtime": ".NET 8.0",
+      "language": "C# 12",
+      "orm": "Entity Framework Core 8.0",
+      "database": "PostgreSQL 15",
+      "auth": "JWT Bearer (HS256, symmetric)",
+      "logging": "Serilog",
+      "testing": {
+        "unit": "xUnit + Moq + FluentAssertions",
+        "integration": "xUnit + WebApplicationFactory + EF Core InMemory"
+      },
+      "entryPoint": "apps/finance-api/Program.cs",
+      "projectFile": "apps/finance-api/FinanceApi.csproj"
+    },
+    "frontend": {
+      "framework": "React 18",
+      "language": "TypeScript 5",
+      "buildTool": "Vite 6",
+      "styling": "styled-components 6",
+      "httpClient": "Axios (via apiClient only)",
+      "icons": "lucide-react",
+      "charts": "Recharts",
+      "routing": "react-router-dom 6",
+      "testing": {
+        "unit": "Jest + Testing Library",
+        "e2e": "Playwright (Chromium)"
+      },
+      "entryPoint": "apps/web/src/App.tsx",
+      "packageFile": "apps/web/package.json"
+    },
+    "sharedPackages": [
+      {
+        "name": "@finance-manager/ui",
+        "path": "packages/ui/",
+        "purpose": "Design tokens, themes, shared components"
+      },
+      {
+        "name": "@finance-manager/schema",
+        "path": "packages/schema/",
+        "purpose": "Zod validation schemas, shared types"
+      }
+    ],
+    "infrastructure": {
+      "containerisation": "Docker Compose",
+      "packageManager": "pnpm >=9.0",
+      "nodeVersion": ">=18.0",
+      "devScripts": "PowerShell (scripts/*.ps1)",
+      "ci": "GitHub Actions"
+    }
+  },
+
+  "nonNegotiableRules": [
+    {
+      "id": "RULE-001",
+      "scope": "typescript",
+      "rule": "Never use the 'any' type",
+      "enforce": "Use 'unknown' with type guards, generics, union types, or proper interfaces",
+      "severity": "error"
+    },
+    {
+      "id": "RULE-002",
+      "scope": "react",
+      "rule": "Never use React.FC or React.FunctionComponent",
+      "enforce": "Use direct props destructuring: export const Component = ({ prop }: Props) => {}",
+      "severity": "error"
+    },
+    {
+      "id": "RULE-003",
+      "scope": "frontend",
+      "rule": "All API calls must use apiClient from services/api-client.ts",
+      "enforce": "Never import axios directly in service files",
+      "severity": "error"
+    },
+    {
+      "id": "RULE-004",
+      "scope": "frontend",
+      "rule": "Never hardcode colour values, spacing, or font sizes",
+      "enforce": "Use design tokens from @finance-manager/ui/styles and theme.colors.*",
+      "severity": "error"
+    },
+    {
+      "id": "RULE-005",
+      "scope": "frontend",
+      "rule": "No emoji characters in UI components",
+      "enforce": "Use lucide-react icons exclusively",
+      "severity": "error"
+    },
+    {
+      "id": "RULE-006",
+      "scope": "all",
+      "rule": "British English in all written content",
+      "enforce": "colour, organisation, favourite, behaviour, centre (docs, comments, UI text — not code identifiers)",
+      "severity": "warning"
+    },
+    {
+      "id": "RULE-007",
+      "scope": "git",
+      "rule": "Conventional Commits format",
+      "enforce": "feat:|fix:|docs:|test:|refactor:|perf:|chore: prefix required",
+      "severity": "error"
+    },
+    {
+      "id": "RULE-008",
+      "scope": "git",
+      "rule": "Max 500 lines per PR",
+      "enforce": "Split large changes into multiple commits/PRs",
+      "severity": "warning"
+    },
+    {
+      "id": "RULE-009",
+      "scope": "backend",
+      "rule": "Interface-based dependency injection",
+      "enforce": "All services must have an IService interface, registered as AddScoped",
+      "severity": "error"
+    },
+    {
+      "id": "RULE-010",
+      "scope": "backend",
+      "rule": "Feature-based folder structure",
+      "enforce": "Features/{Feature}/Controllers|DTOs|Models|Services/ — no layer-based folders",
+      "severity": "error"
+    },
+    {
+      "id": "RULE-011",
+      "scope": "backend",
+      "rule": "No entity exposure in API responses",
+      "enforce": "Use DTOs for all request/response shapes",
+      "severity": "error"
+    },
+    {
+      "id": "RULE-012",
+      "scope": "all",
+      "rule": "No secrets in source code",
+      "enforce": "Use environment variables or appsettings.json (which is gitignored in production)",
+      "severity": "error"
+    },
+    {
+      "id": "RULE-013",
+      "scope": "frontend",
+      "rule": "All pages must be lazy-loaded",
+      "enforce": "Use React.lazy() with Suspense for route-level components",
+      "severity": "warning"
+    },
+    {
+      "id": "RULE-014",
+      "scope": "specs",
+      "rule": "Task IDs must be sequential and globally unique",
+      "enforce": "Continue from last allocated ID (currently T1256). Check specs before allocating.",
+      "severity": "error"
+    }
+  ],
+
+  "architecturalConstraints": {
+    "folderStructure": {
+      "backend": "apps/finance-api/Features/{Feature}/{Controllers|DTOs|Models|Services}/",
+      "frontend": {
+        "pages": "apps/web/src/pages/{feature}/",
+        "components": "apps/web/src/components/{feature}/",
+        "services": "apps/web/src/services/{feature}Service.ts",
+        "types": "apps/web/src/types/{feature}.ts"
+      },
+      "specs": {
+        "platform": "specs/platform/",
+        "applications": "specs/applications/{app-name}/"
+      },
+      "tests": {
+        "backendUnit": "apps/finance-api-tests/FinanceApi.UnitTests/Features/",
+        "backendIntegration": "apps/finance-api-tests/FinanceApi.IntegrationTests/Features/",
+        "frontendUnit": "apps/web/tests/components/",
+        "e2e": "apps/web/e2e/"
+      }
+    },
+    "apiRouting": {
+      "pattern": "api/v1/{resource}",
+      "admin": "api/admin/{resource}",
+      "health": "api/v1/health",
+      "version": "api/version/*"
+    },
+    "ports": {
+      "frontend": 5173,
+      "api": 3000,
+      "database": 5432
+    }
+  },
+
+  "responsibilities": {
+    "backend": [
+      "Authentication and authorisation",
+      "Data validation and business logic",
+      "Database access via EF Core",
+      "API endpoint definitions",
+      "Rate limiting and security headers",
+      "Structured logging"
+    ],
+    "frontend": [
+      "UI rendering and user interaction",
+      "Client-side routing",
+      "API consumption via service layer",
+      "Form validation (display only — backend is source of truth)",
+      "Theme management (light/dark)",
+      "Toast notifications and error display"
+    ],
+    "sharedPackages": [
+      "Design tokens (spacing, typography, colours)",
+      "Theme definitions (light/dark)",
+      "Reusable UI components",
+      "Validation schemas (Zod)"
+    ]
+  },
+
+  "rejectedApproaches": [
+    {
+      "approach": "CSS Modules for styling",
+      "reason": "Cannot support runtime theme switching required by light/dark mode",
+      "decidedIn": "ADR-004"
+    },
+    {
+      "approach": "Direct axios imports in services",
+      "reason": "Caused inconsistent auth handling and duplicated error logic",
+      "decidedIn": "ADR-005"
+    },
+    {
+      "approach": "Emoji characters for icons",
+      "reason": "Inconsistent rendering across OS, not themeable, poor accessibility",
+      "decidedIn": "ADR-011"
+    },
+    {
+      "approach": "React.FC for component typing",
+      "reason": "Deprecated pattern, implicit children prop causes bugs",
+      "decidedIn": "ADR-012"
+    },
+    {
+      "approach": "Layer-based folder structure (Controllers/, Services/, Models/)",
+      "reason": "Poor feature cohesion, harder to extract into microservices",
+      "decidedIn": "ADR-002"
+    },
+    {
+      "approach": "American English in documentation",
+      "reason": "Project owner is UK-based, consistency required",
+      "decidedIn": "ADR-014"
+    }
+  ],
+
+  "contextFiles": {
+    "aiContext": "docs/AI_CONTEXT.md",
+    "currentState": "docs/CURRENT_STATE.md",
+    "architecturalDecisions": "docs/ARCHITECTURAL_DECISIONS.md",
+    "aiContract": "docs/AI_CONTRACT.json",
+    "modelSwitchProtocol": "docs/MODEL_SWITCH_PROTOCOL.md",
+    "copilotInstructions": ".github/copilot-instructions.md",
+    "specIndex": "specs/platform/SPEC-INDEX.md",
+    "designSystemGuide": "docs/guides/DESIGN_SYSTEM_USAGE.md",
+    "versionManagement": "docs/VERSION-MANAGEMENT.md"
+  }
+}

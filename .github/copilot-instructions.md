@@ -8,6 +8,18 @@
 - When suggesting third-party dependencies or GitHub Actions, verify the latest stable versions and check for deprecation notices.
 - Prefer checking official documentation or using web search capabilities to confirm current best practices before making suggestions.
 
+## AI Collaboration Context
+
+**Before generating any code**, read these files to understand the project:
+
+1. `docs/AI_CONTRACT.json` — Machine-readable rules, stack, rejected approaches
+2. `docs/AI_CONTEXT.md` — Architecture, patterns, conventions
+3. `docs/CURRENT_STATE.md` — What is currently being built
+4. `docs/ARCHITECTURAL_DECISIONS.md` — ADR-style design decisions
+5. `docs/MODEL_SWITCH_PROTOCOL.md` — Bootstrap and handover procedures
+
+These files are the **single source of truth** for AI agents. If a rule in these files conflicts with general knowledge, the project files take precedence.
+
 # GitHub Copilot Instructions
 
 # To Do App Specification
