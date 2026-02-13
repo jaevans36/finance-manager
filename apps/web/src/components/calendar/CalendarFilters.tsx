@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { X } from 'lucide-react';
+import { X, ListTodo, Calendar } from 'lucide-react';
 import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
 
 const FilterBar = styled.div`
@@ -32,7 +32,7 @@ const Select = styled.select`
   padding: 8px 12px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.md};
+  border-radius: ${borderRadius.sm};
   color: ${({ theme }) => theme.colors.text};
   font-size: 14px;
   cursor: pointer;
@@ -52,7 +52,7 @@ const ToggleGroup = styled.div`
   display: flex;
   gap: 8px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.md};
+  border-radius: ${borderRadius.sm};
   padding: 4px;
 `;
 
@@ -79,7 +79,7 @@ const ClearButton = styled.button`
   padding: 8px 12px;
   background: transparent;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.md};
+  border-radius: ${borderRadius.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: 14px;
   cursor: pointer;
@@ -108,7 +108,7 @@ const SummaryText = styled.div`
     text-align: center;
     padding: 8px;
     background: ${({ theme }) => theme.colors.backgroundSecondary};
-    border-radius: ${borderRadius.md};
+    border-radius: ${borderRadius.sm};
   }
 `;
 
@@ -167,14 +167,14 @@ export const CalendarFilters = ({
             onClick={() => onShowTasksChange(!showTasks)}
             type="button"
           >
-            📋 Tasks
+            <ListTodo size={16} /> Tasks
           </ToggleButton>
           <ToggleButton
             $active={showEvents}
             onClick={() => onShowEventsChange(!showEvents)}
             type="button"
           >
-            📅 Events
+            <Calendar size={16} /> Events
           </ToggleButton>
         </ToggleGroup>
       </FilterGroup>

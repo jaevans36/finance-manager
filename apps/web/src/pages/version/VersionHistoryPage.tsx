@@ -20,10 +20,10 @@ const PageSubtitle = styled.p`
 `;
 
 const CurrentVersionCard = styled.div`
-  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary} 0%, ${({ theme }) => theme.colors.success} 100%);
-  border-radius: ${borderRadius['2xl']};
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary} 0%, ${({ theme }) => theme.colors.primaryHover} 100%);
+  border-radius: ${borderRadius.lg};
   padding: 32px;
-  color: white;
+  color: ${({ theme }) => theme.colors.buttonText};
   margin-bottom: 32px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 `;
@@ -42,7 +42,7 @@ const VersionBadge = styled.span`
   font-weight: 600;
   background: rgba(255, 255, 255, 0.2);
   padding: 6px 12px;
-  border-radius: ${borderRadius['2xl']};
+  border-radius: ${borderRadius.lg};
   backdrop-filter: blur(10px);
 `;
 
@@ -64,7 +64,7 @@ const VersionInfo = styled.div`
 const VersionCard = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   padding: 24px;
   margin-bottom: 16px;
   transition: all 0.2s ease;
@@ -173,10 +173,10 @@ const ChangeIcon = styled.span<ChangeIconProps>`
   margin-top: 2px;
   color: ${({ theme, $type }) => {
     switch ($type) {
-      case 'feat': return theme.colors.success;
-      case 'fix': return theme.colors.error;
-      case 'perf': return theme.colors.warning;
-      case 'security': return theme.colors.info;
+      case 'feat': return theme.colors.successText;
+      case 'fix': return theme.colors.errorText;
+      case 'perf': return theme.colors.errorText;
+      case 'security': return theme.colors.textSecondary;
       default: return theme.colors.textSecondary;
     }
   }};
@@ -213,14 +213,14 @@ const LoadingSpinner = styled(Loader2)`
 const ErrorContainer = styled.div`
   background: ${({ theme }) => theme.colors.error}10;
   border: 1px solid ${({ theme }) => theme.colors.error}40;
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   padding: 24px;
   margin: 32px 0;
   text-align: center;
 `;
 
 const ErrorTitle = styled.h3`
-  color: ${({ theme }) => theme.colors.error};
+  color: ${({ theme }) => theme.colors.errorText};
   margin: 0 0 8px 0;
   font-size: 18px;
 `;
@@ -232,7 +232,7 @@ const ErrorMessage = styled.p`
 
 const RetryButton = styled.button`
   background: ${({ theme }) => theme.colors.primary};
-  color: white;
+  color: ${({ theme }) => theme.colors.buttonText};
   border: none;
   padding: 10px 20px;
   border-radius: ${borderRadius.lg};
@@ -398,7 +398,7 @@ const VersionHistoryPage = () => {
       )}
 
       <p style={{ textAlign: 'center', color: theme.colors.textSecondary, fontSize: '14px', marginTop: '32px' }}>
-        For complete version history, see <a href="https://github.com/jaevans36/finance-manager/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer" style={{ color: theme.colors.success }}>CHANGELOG.md</a>
+        For complete version history, see <a href="https://github.com/jaevans36/finance-manager/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer" style={{ color: theme.colors.successText }}>CHANGELOG.md</a>
       </p>
     </Container>
   );

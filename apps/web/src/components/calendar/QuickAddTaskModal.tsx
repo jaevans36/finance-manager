@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import { X } from 'lucide-react';
+import { X, ListTodo, Calendar } from 'lucide-react';
 import { borderRadius, shadows, mediaQueries, focusRing } from '../../styles/layout';
 import { Button, Input, FormGroup, Label, Alert } from '../ui';
 import type { CreateEventRequest } from '../../types/event';
@@ -21,11 +21,11 @@ const ModalOverlay = styled.div`
 
 const ModalContent = styled.div`
   background: ${({ theme }) => theme.colors.background};
-  border-radius: ${borderRadius.xl}px;
+  border-radius: ${borderRadius.lg};
   padding: 24px;
   max-width: 500px;
   width: 100%;
-  box-shadow: ${shadows.xl};
+  box-shadow: ${shadows.elevated};
 
   ${mediaQueries.tablet} {
     padding: 20px;
@@ -54,7 +54,7 @@ const CloseButton = styled.button`
   height: 32px;
   background: transparent;
   border: none;
-  border-radius: ${borderRadius.md}px;
+  border-radius: ${borderRadius.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
   cursor: pointer;
   transition: all 0.2s ease;
@@ -83,7 +83,7 @@ const TypeSelector = styled.div`
   gap: 8px;
   margin-bottom: 24px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.lg}px;
+  border-radius: ${borderRadius.lg};
   padding: 4px;
 `;
 
@@ -91,7 +91,7 @@ const TypeButton = styled.button<{ $active: boolean }>`
   flex: 1;
   padding: 8px 16px;
   border: none;
-  border-radius: ${borderRadius.md}px;
+  border-radius: ${borderRadius.sm};
   background: ${({ $active, theme }) => $active ? theme.colors.primary : 'transparent'};
   color: ${({ $active, theme }) => $active ? 'white' : theme.colors.text};
   cursor: pointer;
@@ -183,10 +183,10 @@ export const QuickAddTaskModal = ({ date, onSubmitTask, onSubmitEvent, onCancel 
 
         <TypeSelector>
           <TypeButton $active={type === 'task'} onClick={() => setType('task')} type="button">
-            📋 Task
+            <ListTodo size={16} /> Task
           </TypeButton>
           <TypeButton $active={type === 'event'} onClick={() => setType('event')} type="button">
-            📅 Event
+            <Calendar size={16} /> Event
           </TypeButton>
         </TypeSelector>
 

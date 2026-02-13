@@ -29,7 +29,7 @@ const Toolbar = styled.div`
   padding: ${spacing.sm} ${spacing.md};
   background-color: ${({ theme }) => theme.colors.primaryLight};
   border: 1px solid ${({ theme }) => theme.colors.primary};
-  border-radius: ${borderRadius.md};
+  border-radius: ${borderRadius.sm};
   margin-bottom: ${spacing.sm};
   flex-wrap: wrap;
 `;
@@ -64,7 +64,7 @@ export const SubtaskBulkActions = memo(({
 
       <Flex gap={8} align="center">
         <Button
-          variant="success"
+          variant="primary"
           size="small"
           onClick={onCompleteSelected}
           disabled={isLoading}
@@ -86,7 +86,7 @@ export const SubtaskBulkActions = memo(({
         </Button>
 
         <Button
-          variant="outline"
+          variant="secondary"
           size="small"
           onClick={allSelected ? onDeselectAll : onSelectAll}
           disabled={isLoading}

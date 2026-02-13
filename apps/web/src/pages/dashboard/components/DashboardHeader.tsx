@@ -57,7 +57,7 @@ export const DashboardHeader = ({ username, onLogout }: DashboardHeaderProps) =>
       </div>
       <Flex gap={12} as="nav" aria-label="User navigation">
         <NavButton 
-          variant="outline" 
+          variant="secondary" 
           onClick={() => navigate('/dashboard')} 
           aria-label="View dashboard"
           $isActive={location.pathname === '/dashboard'}
@@ -66,7 +66,7 @@ export const DashboardHeader = ({ username, onLogout }: DashboardHeaderProps) =>
           Dashboard
         </NavButton>
         <NavButton 
-          variant="outline" 
+          variant="secondary" 
           onClick={() => navigate('/tasks')} 
           aria-label="View tasks"
           $isActive={location.pathname === '/tasks'}
@@ -75,7 +75,7 @@ export const DashboardHeader = ({ username, onLogout }: DashboardHeaderProps) =>
           Tasks
         </NavButton>
         <NavButton 
-          variant="outline" 
+          variant="secondary" 
           onClick={() => navigate('/calendar')} 
           aria-label="View calendar"
           $isActive={location.pathname === '/calendar'}
@@ -84,7 +84,7 @@ export const DashboardHeader = ({ username, onLogout }: DashboardHeaderProps) =>
           Calendar
         </NavButton>
         <NavButton 
-          variant="outline" 
+          variant="secondary" 
           onClick={() => navigate('/weekly-progress')} 
           aria-label="View weekly progress"
           $isActive={location.pathname === '/weekly-progress'}
@@ -93,7 +93,7 @@ export const DashboardHeader = ({ username, onLogout }: DashboardHeaderProps) =>
           Progress
         </NavButton>
         <NavButton 
-          variant="outline" 
+          variant="secondary" 
           onClick={() => navigate('/profile')} 
           aria-label="Go to profile page"
           $isActive={location.pathname === '/profile'}

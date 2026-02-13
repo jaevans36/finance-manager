@@ -17,7 +17,7 @@ const FilterChip = styled.button<{ $active: boolean }>`
   padding: 6px 12px;
   border: 1px solid ${({ theme, $active }) => 
     $active ? theme.colors.primary : theme.colors.border};
-  border-radius: ${borderRadius['2xl']};
+  border-radius: ${borderRadius.lg};
   background: ${({ theme, $active }) => 
     $active ? theme.colors.primary : 'transparent'};
   color: ${({ theme, $active }) => 

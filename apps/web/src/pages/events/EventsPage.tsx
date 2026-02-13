@@ -23,7 +23,7 @@ const Actions = styled.div`
 const FilterSection = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   padding: 20px;
   margin-bottom: 24px;
 `;
@@ -212,7 +212,7 @@ export const EventsPage = () => {
         <Actions>
           <Button
             size="small"
-            variant="outline"
+            variant="secondary"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter size={16} />
@@ -270,7 +270,7 @@ export const EventsPage = () => {
             </FilterGroup>
             {hasActiveFilters && (
               <div style={{ display: 'flex', alignItems: 'end' }}>
-                <Button size="small" variant="outline" onClick={clearFilters}>
+                <Button size="small" variant="secondary" onClick={clearFilters}>
                   Clear Filters
                 </Button>
               </div>

@@ -36,14 +36,14 @@ export const DateNavigation = ({
 
   return (
     <WeekNavigation>
-      <Button variant="outline" size="small" onClick={() => onNavigate('prev')}>
+      <Button variant="secondary" size="small" onClick={() => onNavigate('prev')}>
         ← Previous
       </Button>
       <WeekDisplay>{formatDateRange(currentStartDate)}</WeekDisplay>
-      <Button variant="outline" size="small" onClick={() => onNavigate('next')}>
+      <Button variant="secondary" size="small" onClick={() => onNavigate('next')}>
         Next →
       </Button>
-      <Button variant="outline" size="small" onClick={onToday}>
+      <Button variant="secondary" size="small" onClick={onToday}>
         {todayLabel}
       </Button>
     </WeekNavigation>

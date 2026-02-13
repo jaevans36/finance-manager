@@ -20,13 +20,13 @@ const Overlay = styled.div`
 const ModalContainer = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.xl}px;
+  border-radius: ${borderRadius.lg};
   padding: 24px;
   max-width: 500px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: ${shadows.xl};
+  box-shadow: ${shadows.elevated};
 
   ${mediaQueries.tablet} {
     width: 95%;
@@ -58,7 +58,7 @@ const CloseButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: ${borderRadius.sm}px;
+  border-radius: ${borderRadius.sm};
   transition: all 0.2s ease;
 
   &:hover {

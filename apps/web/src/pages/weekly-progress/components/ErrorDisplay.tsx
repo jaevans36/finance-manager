@@ -11,7 +11,7 @@ const ErrorContainer = styled(Card)`
 const ErrorTitle = styled.h3`
   font-size: 18px;
   font-weight: 600;
-  color: ${({ theme }) => theme.colors.error};
+  color: ${({ theme }) => theme.colors.errorText};
   margin: 0 0 8px 0;
   display: flex;
   align-items: center;
@@ -33,7 +33,7 @@ const RetryButton = styled.button`
   background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.buttonText};
   border: none;
-  border-radius: ${borderRadius.md}px;
+  border-radius: ${borderRadius.sm};
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -41,7 +41,7 @@ const RetryButton = styled.button`
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: ${shadows.md};
+    box-shadow: none;
   }
 
   &:focus-visible {

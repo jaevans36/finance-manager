@@ -28,8 +28,10 @@ export interface Theme {
     // Status colors
     success: string;
     successBackground: string;
+    successText: string;
     error: string;
     errorBackground: string;
+    errorText: string;
     warning: string;
     warningBackground: string;
     info: string;
@@ -78,8 +80,10 @@ export const lightTheme: Theme = {
     // Status colors
     success: '#28a745',
     successBackground: '#d4edda',
+    successText: '#0A5C38',
     error: '#dc3545',
     errorBackground: '#f8d7da',
+    errorText: '#9B1C1C',
     warning: '#ffc107',
     warningBackground: '#fff3cd',
     info: '#17a2b8',
@@ -128,8 +132,10 @@ export const darkTheme: Theme = {
     // Status colors
     success: '#51cf66',
     successBackground: '#2b3930',
+    successText: '#4DFFBC',
     error: '#ff6b6b',
     errorBackground: '#3d2b2b',
+    errorText: '#FF8A8A',
     warning: '#ffd43b',
     warningBackground: '#3d3a2b',
     info: '#4dabf7',

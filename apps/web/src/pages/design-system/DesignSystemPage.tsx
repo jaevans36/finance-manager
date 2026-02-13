@@ -55,7 +55,6 @@ const ColorSwatch = styled.div<{ $color: string }>`
   display: flex;
   align-items: flex-end;
   padding: ${spacing.md};
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const ColorLabel = styled.div`
@@ -279,9 +278,7 @@ const DesignSystemPage = () => {
             <ComponentRow>
               <Button variant="primary">Primary</Button>
               <Button variant="secondary">Secondary</Button>
-              <Button variant="success">Success</Button>
               <Button variant="danger">Danger</Button>
-              <Button variant="outline">Outline</Button>
             </ComponentRow>
             <ComponentRow>
               <Button size="small">Small</Button>
@@ -290,6 +287,7 @@ const DesignSystemPage = () => {
             </ComponentRow>
             <CodeBlock>{`<Button variant="primary">Primary</Button>
 <Button variant="secondary">Secondary</Button>
+<Button variant="danger">Danger</Button>
 <Button size="small">Small</Button>`}</CodeBlock>
           </ComponentGroup>
 

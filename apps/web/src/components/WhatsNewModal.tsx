@@ -32,12 +32,12 @@ const Overlay = styled.div`
 
 const Modal = styled.div`
   background: ${({ theme }) => theme.colors.background};
-  border-radius: ${borderRadius.xl}px;
+  border-radius: ${borderRadius.lg};
   max-width: 600px;
   width: 90%;
   max-height: 80vh;
   overflow: hidden;
-  box-shadow: ${shadows.xl};
+  box-shadow: ${shadows.elevated};
   animation: slideUp 0.3s ease;
 
   @keyframes slideUp {
@@ -53,9 +53,9 @@ const Modal = styled.div`
 `;
 
 const Header = styled.div`
-  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary} 0%, ${({ theme }) => theme.colors.success} 100%);
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary} 0%, ${({ theme }) => theme.colors.primaryHover} 100%);
   padding: 32px;
-  color: white;
+  color: ${({ theme }) => theme.colors.buttonText};
   position: relative;
 `;
 
@@ -65,14 +65,14 @@ const CloseButton = styled.button`
   right: 16px;
   background: rgba(255, 255, 255, 0.2);
   border: none;
-  border-radius: ${borderRadius.lg}px;
+  border-radius: ${borderRadius.lg};
   width: 36px;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: white;
+  color: ${({ theme }) => theme.colors.buttonText};
   transition: all 0.2s ease;
 
   &:hover {
@@ -87,7 +87,7 @@ const HeaderIcon = styled.div`
   width: 64px;
   height: 64px;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: ${borderRadius['2xl']}px;
+  border-radius: ${borderRadius.lg}px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,12 +120,12 @@ const Content = styled.div`
 
   &::-webkit-scrollbar-track {
     background: ${({ theme }) => theme.colors.backgroundSecondary};
-    border-radius: ${borderRadius.sm}px;
+    border-radius: ${borderRadius.sm};
   }
 
   &::-webkit-scrollbar-thumb {
     background: ${({ theme }) => theme.colors.border};
-    border-radius: ${borderRadius.sm}px;
+    border-radius: ${borderRadius.sm};
 
     &:hover {
       background: ${({ theme }) => theme.colors.textSecondary};
@@ -156,7 +156,7 @@ const FeatureItem = styled.li`
   margin-bottom: 12px;
   padding: 12px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.lg}px;
+  border-radius: ${borderRadius.lg};
   border: 1px solid ${({ theme }) => theme.colors.border};
 
   &:last-child {
@@ -168,7 +168,7 @@ const FeatureIcon = styled.div`
   flex-shrink: 0;
   width: 24px;
   height: 24px;
-  border-radius: ${borderRadius.md}px;
+  border-radius: ${borderRadius.sm};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -226,9 +226,9 @@ const FooterLink = styled.a`
 
 const DismissButton = styled.button`
   background: ${({ theme }) => theme.colors.primary};
-  color: white;
+  color: ${({ theme }) => theme.colors.buttonText};
   border: none;
-  border-radius: ${borderRadius.lg}px;
+  border-radius: ${borderRadius.lg};
   padding: 10px 24px;
   font-size: 14px;
   font-weight: 600;
@@ -236,7 +236,7 @@ const DismissButton = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.success};
+    background: ${({ theme }) => theme.colors.primaryHover};
     transform: translateY(-1px);
     box-shadow: 0 4px 12px ${({ theme }) => theme.colors.success}4D;
   }

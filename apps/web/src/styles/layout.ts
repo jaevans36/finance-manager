@@ -20,29 +20,24 @@ export const spacing = {
 
 /**
  * Border Radius System
+ * Maximum of 2 design values per spec, plus `full` utility for pills/circles.
  */
 export const borderRadius = {
-  sm: '4px',
-  md: '6px',
-  lg: '8px',
-  xl: '12px',
-  '2xl': '16px',
+  /** Small elements — buttons, inputs, badges */
+  sm: '6px',
+  /** Large elements — cards, modals, containers */
+  lg: '12px',
+  /** Pill / circular shapes (utility) */
   full: '9999px',
 } as const;
 
 /**
  * Shadow / Elevation System
- * Consistent elevation levels used across the application.
+ * Minimal: one level for modals/overlays only. Everything else: no shadow.
  */
 export const shadows = {
-  /** Subtle lift — cards, inputs on focus */
-  sm: '0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06)',
-  /** Default card elevation */
-  md: '0 2px 8px rgba(0, 0, 0, 0.1)',
-  /** Raised elements — dropdowns, popovers */
-  lg: '0 8px 24px rgba(0, 0, 0, 0.12)',
-  /** Modals & dialogs */
-  xl: '0 12px 40px rgba(0, 0, 0, 0.16)',
+  /** Modals, overlays, dropdowns — the only permitted elevation */
+  elevated: '0 4px 16px rgba(0, 0, 0, 0.08)',
 } as const;
 
 /**

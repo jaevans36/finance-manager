@@ -66,7 +66,7 @@ const DayProgressBar = styled.div`
   width: 100%;
   height: 12px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.md};
+  border-radius: ${borderRadius.sm};
   overflow: visible;
   position: relative;
 `;
@@ -74,9 +74,9 @@ const DayProgressBar = styled.div`
 const DayProgressFill = styled.div<{ $percentage: number }>`
   height: 100%;
   width: ${({ $percentage }) => $percentage}%;
-  background: linear-gradient(90deg, ${chartColors.primary} 0%, ${({ theme }) => theme.colors.success} 100%);
+  background: linear-gradient(90deg, ${({ theme }) => theme.colors.primary} 0%, ${({ theme }) => theme.colors.primaryHover} 100%);
   transition: width 0.5s ease;
-  border-radius: ${({ $percentage }) => $percentage === 100 ? borderRadius.md : `${borderRadius.md} 0 0 ${borderRadius.md}`};
+  border-radius: ${({ $percentage }) => $percentage === 100 ? borderRadius.sm : `${borderRadius.sm} 0 0 ${borderRadius.sm}`};
 `;
 
 const ProgressHeader = styled.div`

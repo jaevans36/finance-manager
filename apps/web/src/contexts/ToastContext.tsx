@@ -48,7 +48,7 @@ const ToastItem = styled.div<{ $type: ToastType }>`
       default: return theme.colors.border;
     }
   }};
-  border-radius: ${borderRadius.lg}px;
+  border-radius: ${borderRadius.lg};
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   animation: slideIn 0.3s ease-out;
   min-width: 300px;
@@ -95,7 +95,7 @@ const CloseButton = styled.button`
   color: ${({ theme }) => theme.colors.textSecondary};
   cursor: pointer;
   padding: 4px;
-  border-radius: ${borderRadius.sm}px;
+  border-radius: ${borderRadius.sm};
   transition: all 0.2s;
 
   &:hover {

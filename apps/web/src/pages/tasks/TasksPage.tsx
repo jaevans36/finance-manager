@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
@@ -8,7 +8,7 @@ import { taskGroupService } from '../../services/taskGroupService';
 import { subtaskService } from '../../services/subtaskService';
 import { CreateTaskForm } from '../../components/tasks/CreateTaskForm';
 import { EventForm } from '../../components/events/EventForm';
-import { EditTaskModal } from '../../components/tasks/EditTaskModal';
+import { TaskDetailModal } from '../../components/tasks/TaskDetailModal';
 import { TaskList } from '../../components/tasks/TaskList';
 import { TaskGroupList } from '../../components/task-groups/TaskGroupList';
 import { TaskStatistics } from '../../components/dashboard/TaskStatistics';
@@ -16,7 +16,7 @@ import { TaskSkeleton } from '../../components/dashboard/TaskSkeleton';
 import { TaskSearch } from '../../components/dashboard/TaskSearch';
 import { PageLayout } from '../../components/layout/PageLayout';
 import { Alert, Button } from '@finance-manager/ui';
-import { XCircle, ChevronDown } from 'lucide-react';
+import { XCircle, ChevronDown, ListTodo, Calendar } from 'lucide-react';
 import { TaskGroup } from '../../types/taskGroup';
 import { DashboardLayout } from '../dashboard/components';
 import styled from 'styled-components';
@@ -253,6 +253,43 @@ const TasksPage = () => {
     }
   };
 
+  const handleSubtaskChange = useCallback(
+    (taskId: string, counts: { subtaskCount: number; completedSubtaskCount: number }) => {
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === taskId
+            ? {
+                ...t,
+                subtaskCount: counts.subtaskCount,
+                completedSubtaskCount: counts.completedSubtaskCount,
+                hasSubtasks: counts.subtaskCount > 0,
+                progressPercentage:
+                  counts.subtaskCount > 0
+                    ? Math.round((counts.completedSubtaskCount / counts.subtaskCount) * 100)
+                    : 0,
+              }
+            : t,
+        ),
+      );
+      // Also update the editingTask so the modal stays in sync
+      setEditingTask((prev) =>
+        prev && prev.id === taskId
+          ? {
+              ...prev,
+              subtaskCount: counts.subtaskCount,
+              completedSubtaskCount: counts.completedSubtaskCount,
+              hasSubtasks: counts.subtaskCount > 0,
+              progressPercentage:
+                counts.subtaskCount > 0
+                  ? Math.round((counts.completedSubtaskCount / counts.subtaskCount) * 100)
+                  : 0,
+            }
+          : prev,
+      );
+    },
+    [],
+  );
+
   const handleDeleteTask = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this task?')) {
       try {
@@ -317,7 +354,7 @@ const TasksPage = () => {
           ) : (
             <AddButtonContainer>
               <AddButton 
-                variant="success" 
+                variant="primary" 
                 onClick={() => setShowDropdown(!showDropdown)}
                 aria-label="Create new item"
               >
@@ -332,7 +369,7 @@ const TasksPage = () => {
                       setShowDropdown(false);
                     }}
                   >
-                    📋 Task
+                    <ListTodo size={16} /> Task
                   </DropdownItem>
                   <DropdownItem
                     onClick={() => {
@@ -341,7 +378,7 @@ const TasksPage = () => {
                       setShowDropdown(false);
                     }}
                   >
-                    📅 Event
+                    <Calendar size={16} /> Event
                   </DropdownItem>
                 </DropdownMenu>
               )}
@@ -365,10 +402,13 @@ const TasksPage = () => {
       </DashboardLayout>
 
       {editingTask && (
-        <EditTaskModal 
+        <TaskDetailModal 
           task={editingTask} 
           onSubmit={handleUpdateTask} 
           onCancel={() => setEditingTask(null)}
+          onDelete={handleDeleteTask}
+          onToggleComplete={handleToggleComplete}
+          onSubtaskChange={handleSubtaskChange}
         />
       )}
     </PageLayout>

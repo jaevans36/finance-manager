@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import styled, { useTheme } from 'styled-components';
+import { Bell, Calendar, MapPin } from 'lucide-react';
 import type { Event } from '../../types/event';
 import { Card, Button, Text, TextSmall, Badge, Flex } from '../ui';
 import { mediaQueries } from '@finance-manager/ui/styles';
@@ -109,7 +110,7 @@ export const EventItem = memo(({
           )}
           {event.isAllDay && <Badge variant="info">All Day</Badge>}
           {isPast && <Badge variant="outline">Past</Badge>}
-          {reminderText && <Badge variant="warning">🔔 {reminderText}</Badge>}
+          {reminderText && <Badge variant="warning"><Bell size={12} style={{verticalAlign: 'middle', marginRight: '4px'}} />{reminderText}</Badge>}
         </Flex>
 
         {event.description && (
@@ -117,9 +118,9 @@ export const EventItem = memo(({
         )}
 
         <TextSmall style={{ marginTop: '5px' }}>
-          <span>📅 {formatEventDate(event.startDate, event.endDate, event.isAllDay)}</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Calendar size={14} /> {formatEventDate(event.startDate, event.endDate, event.isAllDay)}</span>
           {event.location && (
-            <span style={{ marginLeft: '15px' }}>📍 {event.location}</span>
+            <span style={{ marginLeft: '15px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {event.location}</span>
           )}
         </TextSmall>
       </div>

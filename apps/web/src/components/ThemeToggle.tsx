@@ -9,7 +9,7 @@ const ToggleButton = styled.button`
   right: 20px;
   width: 44px;
   height: 44px;
-  border-radius: ${borderRadius.lg}px;
+  border-radius: ${borderRadius.lg};
   border: 1px solid ${({ theme }) => theme.colors.border};
   background-color: ${({ theme }) => theme.colors.cardBackground};
   color: ${({ theme }) => theme.colors.text};

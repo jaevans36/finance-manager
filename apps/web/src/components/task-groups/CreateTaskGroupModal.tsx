@@ -22,10 +22,10 @@ const ModalOverlay = styled.div`
 const ModalContent = styled.div`
   background-color: ${({ theme }) => theme.colors.background};
   padding: 24px;
-  border-radius: ${borderRadius.xl}px;
+  border-radius: ${borderRadius.lg};
   max-width: 500px;
   width: 90%;
-  box-shadow: ${shadows.xl};
+  box-shadow: ${shadows.elevated};
   max-height: 90vh;
   overflow-y: auto;
 
@@ -184,7 +184,7 @@ export const CreateTaskGroupModal = ({
           <Flex gap={12} style={{ marginTop: '24px' }}>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               onClick={onClose}
               disabled={loading}
               style={{ flex: 1 }}

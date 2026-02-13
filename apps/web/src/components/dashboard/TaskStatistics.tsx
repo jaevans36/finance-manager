@@ -1,7 +1,7 @@
 import styled, { useTheme } from 'styled-components';
 import { Card, Text } from '../ui';
 import { CheckCircleIcon, CircleIcon, AlertCircleIcon, FolderIcon } from 'lucide-react';
-import { borderRadius, mediaQueries, shadows } from '../../styles/layout';
+import { borderRadius, mediaQueries } from '../../styles/layout';
 
 const StatsGrid = styled.div`
   display: grid;
@@ -26,7 +26,7 @@ const StatCard = styled(Card)<{ $color?: string }>`
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: ${shadows.md};
+    box-shadow: none;
   }
 
   ${mediaQueries.tablet} {
@@ -41,7 +41,7 @@ const StatIcon = styled.div<{ $color: string }>`
   justify-content: center;
   width: 48px;
   height: 48px;
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   background-color: ${({ $color }) => $color}15;
   color: ${({ $color }) => $color};
   flex-shrink: 0;
@@ -78,7 +78,7 @@ const StatPercentage = styled.span<{ $isPositive?: boolean }>`
   font-weight: 600;
   margin-left: 8px;
   color: ${({ $isPositive, theme }) => 
-    $isPositive ? theme.colors.success : theme.colors.textSecondary};
+    $isPositive ? theme.colors.successText : theme.colors.textSecondary};
 `;
 
 interface Task {

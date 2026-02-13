@@ -27,7 +27,7 @@ export interface SubtaskFormValues {
 const FormWrapper = styled.div`
   padding: ${spacing.md};
   border: 1px dashed ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.md};
+  border-radius: ${borderRadius.sm};
   background-color: ${({ theme }) => theme.colors.backgroundSecondary};
   margin-top: ${spacing.sm};
 `;

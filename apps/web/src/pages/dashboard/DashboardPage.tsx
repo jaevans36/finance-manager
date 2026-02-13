@@ -29,7 +29,7 @@ const DashboardGrid = styled.div`
 const StatCard = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -57,7 +57,7 @@ interface StatIconProps {
 const StatIcon = styled.div<StatIconProps>`
   width: 48px;
   height: 48px;
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -94,7 +94,7 @@ const QuickActionsGrid = styled.div`
 const QuickActionCard = styled.button`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   padding: 20px;
   display: flex;
   align-items: center;
@@ -119,7 +119,7 @@ const QuickActionCard = styled.button`
 const UpcomingSection = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   padding: 24px;
   margin-bottom: 32px;
 `;

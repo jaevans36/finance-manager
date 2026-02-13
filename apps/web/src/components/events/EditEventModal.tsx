@@ -21,12 +21,12 @@ const ModalOverlay = styled.div`
 
 const ModalContent = styled.div`
   background: ${({ theme }) => theme.colors.background};
-  border-radius: ${borderRadius.xl}px;
+  border-radius: ${borderRadius.lg};
   max-width: 600px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: ${shadows.xl};
+  box-shadow: ${shadows.elevated};
 
   ${mediaQueries.tablet} {
     max-width: 95%;

@@ -17,7 +17,7 @@ const DashboardGrid = styled.div`
 const StatsCard = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   padding: 24px;
   transition: all 0.2s ease;
 
@@ -42,7 +42,7 @@ interface StatsIconProps {
 const StatsIcon = styled.div<StatsIconProps>`
   width: 48px;
   height: 48px;
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   background: ${({ $color }) => $color}20;
   color: ${({ $color }) => $color};
   display: flex;
@@ -96,7 +96,7 @@ const QuickActionsGrid = styled.div`
 const QuickActionButton = styled.button`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -121,7 +121,7 @@ const QuickActionButton = styled.button`
 const ActionIcon = styled.div`
   width: 48px;
   height: 48px;
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   background: ${({ theme }) => theme.colors.primary}20;
   color: ${({ theme }) => theme.colors.primary};
   display: flex;
@@ -138,7 +138,7 @@ const ActionLabel = styled.span`
 const ActivityList = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   padding: 20px;
 `;
 

@@ -115,7 +115,7 @@ const UsernameHint = styled.div<{ $available: boolean }>`
   font-size: 12px;
   margin-top: 4px;
   margin-left: 28px;
-  color: ${({ $available, theme }) => $available ? theme.colors.success : theme.colors.error};
+  color: ${({ $available, theme }) => $available ? theme.colors.successText : theme.colors.errorText};
 
   ${mediaQueries.tablet} {
     margin-left: 0;
@@ -268,7 +268,7 @@ const ProfilePage = () => {
                   style={{ width: '250px' }}
                 />
                 <Button
-                  variant="success"
+                  variant="primary"
                   onClick={handleSaveUsername}
                   disabled={saving || !usernameAvailable || usernameChecking}
                   $isLoading={saving}
@@ -278,7 +278,7 @@ const ProfilePage = () => {
                   Save
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   onClick={handleCancelEdit}
                   disabled={saving}
                   size="small"
@@ -333,7 +333,7 @@ const ProfilePage = () => {
         )}
 
         <ActionButtons>
-          <Button variant="outline" onClick={handleBackToDashboard}>
+          <Button variant="secondary" onClick={handleBackToDashboard}>
             <ArrowLeftIcon size={18} />
             Back to Dashboard
           </Button>

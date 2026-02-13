@@ -6,7 +6,7 @@ import { PageLayout } from '../../components/layout/PageLayout';
 import { StyledCalendar, TaskBadge, EventBadge, BadgeContainer } from '../../components/calendar/StyledCalendar';
 import { QuickAddTaskModal } from '../../components/calendar/QuickAddTaskModal';
 import { DayTaskListModal } from '../../components/calendar/DayTaskListModal';
-import { EditTaskModal } from '../../components/tasks/EditTaskModal';
+import { TaskDetailModal } from '../../components/tasks/TaskDetailModal';
 import { EditEventModal } from '../../components/events/EditEventModal';
 import { CalendarFilters } from '../../components/calendar/CalendarFilters';
 import { CalendarTask } from '../../types/calendar';
@@ -19,7 +19,7 @@ import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
 
 const CalendarContainer = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
@@ -54,7 +54,7 @@ const KeyboardHint = styled.div`
   margin-top: 16px;
   padding: 12px 16px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.md};
+  border-radius: ${borderRadius.sm};
   font-size: 13px;
   color: ${({ theme }) => theme.colors.textSecondary};
 
@@ -439,8 +439,8 @@ const CalendarPage = () => {
     }, 'Low');
 
     // Create tooltip with task and event titles
-    const taskTitles = dayTasks.length > 0 ? dayTasks.map((task) => `📋 ${task.title}`).join('\n') : '';
-    const eventTitles = dayEvents.length > 0 ? dayEvents.map((event) => `📅 ${event.title}`).join('\n') : '';
+    const taskTitles = dayTasks.length > 0 ? dayTasks.map((task) => `Task: ${task.title}`).join('\n') : '';
+    const eventTitles = dayEvents.length > 0 ? dayEvents.map((event) => `Event: ${event.title}`).join('\n') : '';
     const tooltipText = [taskTitles, eventTitles].filter(Boolean).join('\n');
 
     return (
@@ -548,7 +548,7 @@ const CalendarPage = () => {
       )}
 
       {showEditTask && selectedTask && (
-        <EditTaskModal
+        <TaskDetailModal
           task={selectedTask}
           onSubmit={handleUpdateTask}
           onCancel={() => {

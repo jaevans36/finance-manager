@@ -43,7 +43,7 @@ const IconWrapper = styled.div<{ $variant: 'success' | 'error' }>`
   background-color: ${({ $variant, theme }) =>
     $variant === 'success' ? theme.colors.successBackground : theme.colors.errorBackground};
   color: ${({ $variant, theme }) =>
-    $variant === 'success' ? theme.colors.success : theme.colors.error};
+    $variant === 'success' ? theme.colors.successText : theme.colors.errorText};
 `;
 
 const LinkContainer = styled.div`

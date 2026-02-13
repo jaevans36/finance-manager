@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import { X, Check, Circle, Calendar as CalendarIcon } from 'lucide-react';
+import { X, Check, Circle, Calendar as CalendarIcon, MapPin } from 'lucide-react';
 import type { CalendarTask } from '../../types/calendar';
 import type { Event } from '../../types/event';
 import { spacing, borderRadius, shadows, mediaQueries, focusRing } from '@finance-manager/ui/styles';
@@ -21,13 +21,13 @@ const ModalOverlay = styled.div`
 
 const ModalContent = styled.div`
   background: ${({ theme }) => theme.colors.background};
-  border-radius: ${borderRadius.xl}px;
+  border-radius: ${borderRadius.lg};
   padding: 24px;
   max-width: 600px;
   width: 100%;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: ${shadows.xl};
+  box-shadow: ${shadows.elevated};
 
   ${mediaQueries.tablet} {
     padding: 20px;
@@ -57,7 +57,7 @@ const CloseButton = styled.button`
   height: 32px;
   background: transparent;
   border: none;
-  border-radius: ${borderRadius.md}px;
+  border-radius: ${borderRadius.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
   cursor: pointer;
   transition: all 0.2s ease;
@@ -78,7 +78,7 @@ const CloseButton = styled.button`
 const DateDisplay = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   padding: 12px 16px;
-  border-radius: ${borderRadius.lg}px;
+  border-radius: ${borderRadius.lg};
   margin-bottom: 20px;
   font-size: 14px;
   color: ${({ theme }) => theme.colors.textSecondary};
@@ -97,7 +97,7 @@ const TaskItem = styled.div<{ $isCompleted: boolean }>`
   gap: 12px;
   padding: 16px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.lg}px;
+  border-radius: ${borderRadius.lg};
   cursor: pointer;
   transition: all 0.2s ease;
   opacity: ${({ $isCompleted }) => ($isCompleted ? 0.6 : 1)};
@@ -115,25 +115,25 @@ const TaskCheckbox = styled.button<{ $isCompleted: boolean }>`
   height: 24px;
   min-width: 24px;
   background: ${({ $isCompleted, theme }) =>
-    $isCompleted ? theme.colors.success : 'transparent'};
+    $isCompleted ? theme.colors.successText : 'transparent'};
   border: 2px solid
     ${({ $isCompleted, theme }) =>
-      $isCompleted ? theme.colors.success : theme.colors.border};
+      $isCompleted ? theme.colors.successText : theme.colors.border};
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s ease;
   padding: 0;
 
   &:hover {
-    border-color: ${({ theme }) => theme.colors.success};
+    border-color: ${({ theme }) => theme.colors.successText};
     background: ${({ $isCompleted, theme }) =>
-      $isCompleted ? theme.colors.success : `${theme.colors.success}20`};
+      $isCompleted ? theme.colors.successText : `${theme.colors.success}20`};
   }
 
   svg {
     width: 14px;
     height: 14px;
-    color: white;
+    color: ${({ theme }) => theme.colors.buttonText};
   }
 `;
 
@@ -160,33 +160,55 @@ const PriorityBadge = styled.span<{ $priority: string }>`
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
-  border-radius: ${borderRadius.xl}px;
+  border-radius: ${borderRadius.lg};
   font-size: 12px;
   font-weight: 600;
   background: ${({ $priority, theme }) => {
     switch ($priority) {
       case 'Critical':
-        return theme.colors.error;
+        return `${theme.colors.error}26`;
       case 'High':
-        return theme.colors.warning;
+        return `${theme.colors.error}26`;
       case 'Medium':
-        return theme.colors.info;
+        return theme.colors.backgroundTertiary;
+      default:
+        return theme.colors.backgroundSecondary;
+    }
+  }};
+  color: ${({ $priority, theme }) => {
+    switch ($priority) {
+      case 'Critical':
+      case 'High':
+        return theme.colors.errorText;
+      case 'Medium':
+        return theme.colors.text;
       default:
         return theme.colors.textSecondary;
     }
   }};
-  color: white;
+  border: 1px solid ${({ $priority, theme }) => {
+    switch ($priority) {
+      case 'Critical':
+      case 'High':
+        return `${theme.colors.error}40`;
+      case 'Medium':
+        return theme.colors.border;
+      default:
+        return theme.colors.border;
+    }
+  }};
 `;
 
 const GroupBadge = styled.span<{ $color?: string }>`
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
-  border-radius: ${borderRadius.xl}px;
+  border-radius: ${borderRadius.lg};
   font-size: 12px;
   font-weight: 500;
-  background: ${({ $color, theme }) => $color || theme.colors.textSecondary};
-  color: white;
+  background: ${({ $color, theme }) => ($color ? `${$color}20` : theme.colors.backgroundSecondary)};
+  color: ${({ theme }) => theme.colors.text};
+  border: 1px solid ${({ $color, theme }) => ($color ? `${$color}40` : theme.colors.border)};
 `;
 
 const SubtaskProgressRow = styled.div`
@@ -271,7 +293,7 @@ const EventList = styled.div`
 const EventItem = styled.div`
   padding: 16px;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.lg}px;
+  border-radius: ${borderRadius.lg};
   border-left: 4px solid ${({ theme }) => theme.colors.info};
   cursor: pointer;
   transition: all 0.2s ease;
@@ -309,11 +331,12 @@ const EventBadge = styled.span<{ $color?: string }>`
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
-  border-radius: ${borderRadius.xl}px;
+  border-radius: ${borderRadius.lg};
   font-size: 12px;
   font-weight: 500;
-  background: ${({ $color, theme }) => $color || theme.colors.info};
-  color: white;
+  background: ${({ $color, theme }) => ($color ? `${$color}20` : theme.colors.backgroundSecondary)};
+  color: ${({ theme }) => theme.colors.text};
+  border: 1px solid ${({ $color, theme }) => ($color ? `${$color}40` : theme.colors.border)};
 `;
 
 interface DayTaskListModalProps {
@@ -464,7 +487,7 @@ export const DayTaskListModal = ({
                       </EventTime>
                       <EventMeta>
                         {event.isAllDay && <EventBadge>All Day</EventBadge>}
-                        {event.location && <EventBadge>📍 {event.location}</EventBadge>}
+                        {event.location && <EventBadge><MapPin size={12} /> {event.location}</EventBadge>}
                         {event.groupName && (
                           <EventBadge $color={event.groupColour ?? undefined}>{event.groupName}</EventBadge>
                         )}

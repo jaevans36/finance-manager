@@ -64,7 +64,7 @@ const SubtaskRow = styled.div`
   gap: ${spacing.sm};
   padding: ${spacing.xs} ${spacing.sm};
   background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.md};
+  border-radius: ${borderRadius.sm};
 `;
 
 const SubtaskTitle = styled.span`
@@ -360,7 +360,7 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
         </SubtasksSection>
 
         <Flex gap={10}>
-          <Button type="submit" variant="success" $isLoading={isSubmitting}>
+          <Button type="submit" variant="primary" $isLoading={isSubmitting}>
             {isSubmitting ? 'Creating...' : 'Create Task'}
           </Button>
           <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>

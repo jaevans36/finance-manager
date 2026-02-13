@@ -115,7 +115,7 @@ const DropdownMenu = styled.div<{ $isOpen: boolean }>`
   left: 0;
   background: ${({ theme }) => theme.colors.background};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   min-width: 220px;
   opacity: ${({ $isOpen }) => ($isOpen ? 1 : 0)};
@@ -148,11 +148,11 @@ const DropdownItem = styled.button<{ $isActive?: boolean }>`
   }
 
   &:first-child {
-    border-radius: ${borderRadius.xl} ${borderRadius.xl} 0 0;
+    border-radius: ${borderRadius.lg} ${borderRadius.lg} 0 0;
   }
 
   &:last-child {
-    border-radius: 0 0 ${borderRadius.xl} ${borderRadius.xl};
+    border-radius: 0 0 ${borderRadius.lg} ${borderRadius.lg};
   }
 
   svg {

@@ -16,7 +16,7 @@ const SettingsGrid = styled.div`
 const SettingSection = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   padding: 24px;
 `;
 
@@ -32,7 +32,7 @@ const SectionHeader = styled.div`
 const SectionIcon = styled.div<{ $color: string }>`
   width: 40px;
   height: 40px;
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   background: ${({ $color }) => $color}20;
   color: ${({ $color }) => $color};
   display: flex;

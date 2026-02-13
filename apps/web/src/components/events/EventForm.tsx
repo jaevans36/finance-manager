@@ -279,7 +279,7 @@ export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormP
         </div>
 
         <Flex gap={10}>
-          <Button type="submit" variant="success" $isLoading={isSubmitting}>
+          <Button type="submit" variant="primary" $isLoading={isSubmitting}>
             {isSubmitting ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update Event' : 'Create Event')}
           </Button>
           <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>

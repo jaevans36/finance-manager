@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Award } from 'lucide-react';
+import { ArrowLeft, Award, Download, Flame, Trophy } from 'lucide-react';
 import { statisticsService } from '../../services/statisticsService';
 import { taskService, type Task } from '../../services/taskService';
 import { taskGroupService } from '../../services/taskGroupService';
@@ -106,7 +106,7 @@ const ApplyButton = styled.button`
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.text};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.md};
+  border-radius: ${borderRadius.sm};
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s;
@@ -663,7 +663,7 @@ const WeeklyProgressPage = () => {
           title="Daily Task Overview"
           headerAction={
             <SmallButton onClick={() => exportChartAsImage('daily-chart', 'daily-task-overview')}>
-              📥 Export
+              <Download size={14} /> Export
             </SmallButton>
           }
         >
@@ -684,7 +684,7 @@ const WeeklyProgressPage = () => {
           title="Weekly Completion"
           headerAction={
             <SmallButton onClick={() => exportChartAsImage('weekly-pie-chart', 'weekly-completion')}>
-              📥 Export
+              <Download size={14} /> Export
             </SmallButton>
           }
         >
@@ -703,7 +703,7 @@ const WeeklyProgressPage = () => {
       <InsightsSection>
         {streak > 0 && (
           <Card style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', justifyContent: 'center', height: '100%' }}>
-            <InsightIcon>🔥</InsightIcon>
+            <InsightIcon><Flame /></InsightIcon>
             <InsightValue>{streak}</InsightValue>
             <InsightLabel>
               {streak === 1 ? 'Day Streak' : 'Days Streak'}
@@ -716,7 +716,7 @@ const WeeklyProgressPage = () => {
 
         {stats.completionPercentage >= 80 && (
           <Card style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', justifyContent: 'center', height: '100%' }}>
-            <InsightIcon>🏆</InsightIcon>
+            <InsightIcon><Trophy /></InsightIcon>
             <InsightValue>Excellent!</InsightValue>
             <InsightLabel>High Achiever</InsightLabel>
             <Text style={{ fontSize: '12px', marginTop: '8px', color: 'inherit' }}>

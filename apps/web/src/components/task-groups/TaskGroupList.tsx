@@ -84,7 +84,7 @@ export const TaskGroupList = ({
         <GroupListHeader>
           <Text style={{ fontWeight: 600 }} id="task-groups-heading">Task Groups</Text>
           <Button
-            variant="outline"
+            variant="secondary"
             size="small"
             onClick={() => setIsCreateModalOpen(true)}
             aria-label="Create new task group"

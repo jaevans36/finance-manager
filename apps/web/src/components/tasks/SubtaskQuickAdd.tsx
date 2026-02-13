@@ -26,7 +26,7 @@ const MAX_BULK_ITEMS = 50;
 const Wrapper = styled.div`
   padding: ${spacing.md};
   border: 1px dashed ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.md};
+  border-radius: ${borderRadius.sm};
   background-color: ${({ theme }) => theme.colors.backgroundSecondary};
   margin-top: ${spacing.sm};
 `;
@@ -41,7 +41,7 @@ const CountLabel = styled.span`
 `;
 
 const ErrorLabel = styled.span`
-  color: ${({ theme }) => theme.colors.error};
+  color: ${({ theme }) => theme.colors.errorText};
   font-size: 12px;
 `;
 

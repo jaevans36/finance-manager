@@ -91,7 +91,7 @@ const ErrorMessage = styled.p`
 const RetryButton = styled.button`
   padding: 8px 16px;
   background: ${({ theme }) => theme.colors.primary};
-  color: white;
+  color: ${({ theme }) => theme.colors.buttonText};
   border: none;
   border-radius: ${borderRadius.sm};
   cursor: pointer;

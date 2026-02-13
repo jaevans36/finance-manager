@@ -29,7 +29,7 @@ export const StyledCalendar = styled(Calendar)`
       font-weight: 600;
       cursor: pointer;
       padding: 8px 12px;
-      border-radius: ${borderRadius.md};
+      border-radius: ${borderRadius.sm};
       transition: all 0.2s ease;
 
       &:hover:not(:disabled) {
@@ -59,7 +59,7 @@ export const StyledCalendar = styled(Calendar)`
     margin-bottom: 8px;
     background: ${({ theme }) => theme.colors.backgroundSecondary};
     padding: 8px 0;
-    border-radius: ${borderRadius.md};
+    border-radius: ${borderRadius.sm};
 
     abbr {
       text-decoration: none;
@@ -76,7 +76,7 @@ export const StyledCalendar = styled(Calendar)`
     padding: 8px 4px;
     background: ${({ theme }) => theme.colors.backgroundSecondary};
     border: 1px solid ${({ theme }) => theme.colors.border};
-    border-radius: ${borderRadius.md};
+    border-radius: ${borderRadius.sm};
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
@@ -123,7 +123,7 @@ export const StyledCalendar = styled(Calendar)`
     border-color: ${({ theme }) => theme.colors.primary};
 
     abbr {
-      color: white;
+      color: ${({ theme }) => theme.colors.buttonText};
     }
 
     &:hover {
@@ -198,7 +198,7 @@ export const TaskBadge = styled.div<{ priority: string }>`
   height: 20px;
   padding: 0 6px;
   margin-top: 4px;
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   font-size: 11px;
   font-weight: 600;
   background: ${({ priority, theme }) => {
@@ -206,14 +206,24 @@ export const TaskBadge = styled.div<{ priority: string }>`
       case 'Critical':
         return theme.colors.error;
       case 'High':
-        return theme.colors.warning;
+        return theme.colors.error;
       case 'Medium':
-        return theme.colors.info;
-      default:
         return theme.colors.textSecondary;
+      default:
+        return theme.colors.border;
     }
   }};
-  color: white;
+  color: ${({ priority, theme }) => {
+    switch (priority) {
+      case 'Critical':
+      case 'High':
+        return '#1A1A1A';
+      case 'Medium':
+        return theme.colors.buttonText;
+      default:
+        return theme.colors.text;
+    }
+  }};
   cursor: pointer;
   transition: transform 0.2s ease;
 
@@ -230,11 +240,11 @@ export const EventBadge = styled.div<{ color?: string }>`
   height: 20px;
   padding: 0 6px;
   margin-top: 4px;
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   font-size: 11px;
   font-weight: 600;
-  background: ${({ color, theme }) => color || theme.colors.info};
-  color: white;
+  background: ${({ color, theme }) => color || theme.colors.border};
+  color: #1A1A1A;
   cursor: pointer;
   transition: transform 0.2s ease;
 

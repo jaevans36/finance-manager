@@ -21,11 +21,11 @@ const ModalOverlay = styled.div`
 
 const ModalContent = styled.div`
   background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${borderRadius.xl}px;
+  border-radius: ${borderRadius.lg};
   width: 400px;
   max-width: 90vw;
   max-height: 90vh;
-  box-shadow: ${shadows.xl};
+  box-shadow: ${shadows.elevated};
   margin: auto;
 `;
 
@@ -69,7 +69,7 @@ const Display = styled.div`
   font-family: 'Courier New', monospace;
   text-align: right;
   padding: ${spacing.lg};
-  border-radius: ${borderRadius.md}px;
+  border-radius: ${borderRadius.sm};
   margin-bottom: ${spacing.lg};
   min-height: 60px;
   overflow-x: auto;
@@ -94,7 +94,7 @@ const CalcButton = styled.button<{ $variant?: 'number' | 'operator' | 'equals' |
     $variant && $variant !== 'number' ? 'white' : theme.colors.text
   };
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.md}px;
+  border-radius: ${borderRadius.sm};
   ${typography.sectionHeading}
   padding: ${spacing.lg};
   cursor: pointer;

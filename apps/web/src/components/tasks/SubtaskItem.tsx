@@ -32,7 +32,7 @@ const Row = styled.div<{ $completed: boolean; $selected: boolean }>`
   align-items: center;
   gap: ${spacing.sm};
   padding: ${spacing.sm} ${spacing.md};
-  border-radius: ${borderRadius.md};
+  border-radius: ${borderRadius.sm};
   margin-bottom: 2px;
   background-color: ${({ theme, $selected }) =>
     $selected ? theme.colors.primaryLight : 'transparent'};

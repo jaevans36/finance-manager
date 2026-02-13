@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import styled, { useTheme } from 'styled-components';
-import { borderRadius, shadows } from '@finance-manager/ui/styles';
+import { borderRadius } from '@finance-manager/ui/styles';
 import { statisticsService } from '../../../services/statisticsService';
 import type { HistoricalStatistics } from '../../../types/statistics';
 import { LineChartWrapper } from '../../../components/charts/LineChartWrapper';
@@ -17,7 +17,7 @@ const ChartCard = styled.div`
   background: ${(props) => props.theme.colors.cardBackground};
   border-radius: ${borderRadius.lg};
   padding: 24px;
-  box-shadow: ${shadows.sm};
+  box-shadow: none;
   margin-bottom: 24px;
 `;
 
@@ -45,9 +45,9 @@ const WeekRangeSelector = styled.div`
 const RangeButton = styled.button<{ $active?: boolean }>`
   padding: 6px 12px;
   border: 1px solid ${(props) => props.theme.colors.border};
-  border-radius: ${borderRadius.md};
+  border-radius: ${borderRadius.sm};
   background: ${(props) => props.$active ? props.theme.colors.primary : props.theme.colors.cardBackground};
-  color: ${(props) => props.$active ? 'white' : props.theme.colors.text};
+  color: ${(props) => props.$active ? props.theme.colors.buttonText : props.theme.colors.text};
   font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s;
@@ -76,16 +76,16 @@ const ErrorState = styled.div`
 `;
 
 const ErrorMessage = styled.p`
-  color: ${(props) => props.theme.colors.error};
+  color: ${(props) => props.theme.colors.errorText};
   margin: 0;
 `;
 
 const RetryButton = styled.button`
   padding: 8px 16px;
   background: ${(props) => props.theme.colors.primary};
-  color: white;
+  color: ${(props) => props.theme.colors.buttonText};
   border: none;
-  border-radius: ${borderRadius.md};
+  border-radius: ${borderRadius.sm};
   cursor: pointer;
   font-size: 0.875rem;
 

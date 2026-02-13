@@ -67,7 +67,7 @@ const InlineAddRow = styled.div`
   gap: ${spacing.sm};
   padding: ${spacing.sm} ${spacing.md};
   cursor: pointer;
-  border-radius: ${borderRadius.md};
+  border-radius: ${borderRadius.sm};
   color: ${({ theme }) => theme.colors.textSecondary};
   transition: background-color 150ms ease, color 150ms ease;
 
@@ -92,7 +92,7 @@ const InlineInput = styled.div`
 const AddInput = styled.input`
   flex: 1;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.md};
+  border-radius: ${borderRadius.sm};
   padding: ${spacing.sm} ${spacing.md};
   font-size: 13px;
   background: ${({ theme }) => theme.colors.cardBackground};

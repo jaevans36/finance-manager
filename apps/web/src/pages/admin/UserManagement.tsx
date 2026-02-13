@@ -83,7 +83,7 @@ const UsersTable = styled.table`
   border-collapse: collapse;
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   overflow: hidden;
 `;
 
@@ -137,7 +137,7 @@ const Badge = styled.span<{ $variant: 'admin' | 'verified' | 'unverified' }>`
   justify-content: center;
   gap: 4px;
   padding: 4px 12px;
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   font-size: 11px;
   font-weight: 600;
   line-height: 1.2;
@@ -160,7 +160,7 @@ const Badge = styled.span<{ $variant: 'admin' | 'verified' | 'unverified' }>`
 const ActionButton = styled.button`
   padding: 6px 12px;
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.md};
+  border-radius: ${borderRadius.sm};
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.text};
   font-size: 12px;
@@ -197,7 +197,7 @@ const StatsGrid = styled.div`
 const StatCard = styled.div`
   background: ${({ theme }) => theme.colors.backgroundSecondary};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.xl};
+  border-radius: ${borderRadius.lg};
   padding: 20px;
 `;
 
@@ -431,7 +431,7 @@ const UserManagement = () => {
       loading={isLoading}
       headerActions={
         <>
-          <Button size="small" variant="outline" onClick={fetchData}>
+          <Button size="small" variant="secondary" onClick={fetchData}>
             <RefreshCcw size={16} />
           </Button>
           <Button size="small" onClick={() => setShowCreateModal(true)}>

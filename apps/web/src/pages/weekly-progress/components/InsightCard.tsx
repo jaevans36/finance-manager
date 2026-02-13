@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Lightbulb } from 'lucide-react';
 import { Card, TextSmall } from '@finance-manager/ui';
 
 const InsightSection = styled(Card)`
@@ -69,14 +70,14 @@ const EmptyInsight = styled(TextSmall)`
 interface InsightCardProps {
   insights: string[];
   title?: string;
-  icon?: string;
+  icon?: React.ReactNode;
   emptyMessage?: string;
 }
 
 export const InsightCard = ({
   insights,
   title = 'Productivity Insights',
-  icon = '💡',
+  icon = <Lightbulb size={22} />,
   emptyMessage = 'Complete more tasks to generate insights',
 }: InsightCardProps) => {
   return (
