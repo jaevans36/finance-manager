@@ -264,6 +264,49 @@ jobs:
         working-directory: apps/web
         run: pnpm typecheck
 
+  react-health:
+    name: React Health Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared packages
+        run: pnpm --filter @finance-manager/schema build
+
+      - name: Run React Doctor
+        working-directory: apps/web
+        run: |
+          SCORE=$(npx -y react-doctor@latest . --score --no-ami -y 2>/dev/null || echo "0")
+          echo "React Doctor Score: $SCORE"
+          echo "REACT_HEALTH_SCORE=$SCORE" >> $GITHUB_ENV
+          if [ "$SCORE" -lt 75 ]; then
+            echo "::error::React health score ($SCORE) is below threshold (75)"
+            npx -y react-doctor@latest . --verbose --no-ami -y || true
+            exit 1
+          fi
+
+      - name: React Doctor verbose report
+        if: failure()
+        working-directory: apps/web
+        run: npx -y react-doctor@latest . --verbose --no-ami -y || true
+
   build:
     name: Build Check
     runs-on: ubuntu-latest
