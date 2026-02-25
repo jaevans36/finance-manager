@@ -3,7 +3,7 @@ import styled, { useTheme } from 'styled-components';
 import { ChevronDown } from 'lucide-react';
 import { spacing, borderRadius, mediaQueries } from '@finance-manager/ui/styles';
 import { Task } from '../../services/taskService';
-import { Card, Button, Text, TextSmall, Badge, Flex } from '../ui';
+import { Card, Button, Text, TextSmall, Badge, Flex } from '@finance-manager/ui';
 import { SubtaskProgress } from './SubtaskProgress';
 
 interface TaskItemProps {

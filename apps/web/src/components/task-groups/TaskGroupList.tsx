@@ -4,7 +4,7 @@ import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
 import { TaskGroup } from '../../types/taskGroup';
 import { TaskGroupItem } from './TaskGroupItem';
 import { GroupSkeleton } from './GroupSkeleton';
-import { Button, Text, Flex } from '../ui';
+import { Button, Text, Flex } from '@finance-manager/ui';
 import { PlusIcon } from 'lucide-react';
 import { CreateTaskGroupModal } from './CreateTaskGroupModal';
 

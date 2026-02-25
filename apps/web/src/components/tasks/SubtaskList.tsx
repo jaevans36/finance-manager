@@ -20,7 +20,7 @@ import { Plus } from 'lucide-react';
 import { spacing, borderRadius } from '@finance-manager/ui/styles';
 import type { Task } from '../../services/taskService';
 import type { CreateSubtaskInput } from '../../services/subtaskService';
-import { TextSecondary, Alert } from '../ui';
+import { TextSecondary, Alert } from '@finance-manager/ui';
 import { Skeleton, SkeletonLine } from '../ui/Skeleton';
 import { SubtaskItem } from './SubtaskItem';
 import { SubtaskBulkActions } from './SubtaskBulkActions';

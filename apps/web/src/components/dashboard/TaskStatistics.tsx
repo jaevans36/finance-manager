@@ -1,5 +1,5 @@
 import styled, { useTheme } from 'styled-components';
-import { Card, Text } from '../ui';
+import { Card, Text } from '@finance-manager/ui';
 import { CheckCircleIcon, CircleIcon, AlertCircleIcon, FolderIcon } from 'lucide-react';
 import { borderRadius, mediaQueries } from '../../styles/layout';
 

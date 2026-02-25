@@ -10,7 +10,7 @@ import {
   ErrorText, 
   Alert,
   Flex
-} from '../ui';
+} from '@finance-manager/ui';
 import { XCircle } from 'lucide-react';
 import type { Event, CreateEventRequest } from '../../types/event';
 import type { TaskGroup } from '../../types/taskGroup';

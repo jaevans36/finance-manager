@@ -10,7 +10,7 @@ import {
   ErrorText, 
   Alert,
   Flex
-} from '../ui';
+} from '@finance-manager/ui';
 import { XCircle, Plus, X } from 'lucide-react';
 import { spacing, borderRadius } from '@finance-manager/ui/styles';
 

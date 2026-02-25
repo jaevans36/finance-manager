@@ -11,7 +11,7 @@ import {
   Button, 
   Alert,
   Heading2,
-} from '../ui';
+} from '@finance-manager/ui';
 import styled from 'styled-components';
 import { focusRing } from '@finance-manager/ui/styles';
 

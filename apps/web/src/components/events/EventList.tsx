@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import type { Event } from '../../types/event';
 import { EventItem } from './EventItem';
-import { Card, Text, TextSecondary } from '../ui';
+import { Card, Text, TextSecondary } from '@finance-manager/ui';
 
 interface EventListProps {
   events: Event[];

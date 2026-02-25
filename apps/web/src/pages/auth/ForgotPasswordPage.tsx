@@ -13,7 +13,7 @@ import {
   Input,
   Button,
   Alert,
-} from '../../components/ui';
+} from '@finance-manager/ui';
 
 const StyledLink = styled(Link)`
   color: ${({ theme }) => theme.colors.primary};

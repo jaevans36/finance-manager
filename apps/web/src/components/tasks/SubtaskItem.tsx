@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { GripVertical, Pencil, Trash2, Check, X } from 'lucide-react';
 import { borderRadius, spacing, mediaQueries } from '@finance-manager/ui/styles';
 import type { Task } from '../../services/taskService';
-import { Badge, Flex, TextSmall } from '../ui';
+import { Badge, Flex, TextSmall } from '@finance-manager/ui';
 
 // ---------------------------------------------------------------------------
 // Types

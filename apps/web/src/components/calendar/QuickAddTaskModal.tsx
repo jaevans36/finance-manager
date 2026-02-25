@@ -2,7 +2,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { X, ListTodo, Calendar } from 'lucide-react';
 import { borderRadius, shadows, mediaQueries, focusRing } from '../../styles/layout';
-import { Button, Input, FormGroup, Label, Alert } from '../ui';
+import { Button, Input, FormGroup, Label, Alert } from '@finance-manager/ui';
 import type { CreateEventRequest } from '../../types/event';
 
 const ModalOverlay = styled.div`

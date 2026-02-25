@@ -49,5 +49,3 @@ export const REMINDER_OPTIONS = [
   { value: 60, label: '1 hour before' },
   { value: 1440, label: '1 day before' },
 ] as const;
-
-export type ReminderMinutes = 15 | 30 | 60 | 1440;

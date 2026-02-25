@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { mediaQueries } from '@finance-manager/ui/styles';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { ContentContainer, IconButton, Heading1 } from '../ui';
+import { ContentContainer, IconButton, Heading1 } from '@finance-manager/ui';
 
 const Header = styled.div`
   margin-bottom: 30px;

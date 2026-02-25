@@ -2,7 +2,7 @@ import { memo } from 'react';
 import styled, { useTheme } from 'styled-components';
 import { Bell, Calendar, MapPin } from 'lucide-react';
 import type { Event } from '../../types/event';
-import { Card, Button, Text, TextSmall, Badge, Flex } from '../ui';
+import { Card, Button, Text, TextSmall, Badge, Flex } from '@finance-manager/ui';
 import { mediaQueries } from '@finance-manager/ui/styles';
 import { REMINDER_OPTIONS } from '../../types/event';
 

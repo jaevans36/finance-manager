@@ -2,7 +2,7 @@ import { memo } from 'react';
 import styled from 'styled-components';
 import { CheckSquare, Trash2, SquareCheck, Square } from 'lucide-react';
 import { spacing, borderRadius } from '@finance-manager/ui/styles';
-import { Button, Flex, TextSmall } from '../ui';
+import { Button, Flex, TextSmall } from '@finance-manager/ui';
 
 // ---------------------------------------------------------------------------
 // Types

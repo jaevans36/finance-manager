@@ -34,11 +34,11 @@ export interface UpdateUserRequest {
   emailVerified?: boolean;
 }
 
-export interface ResetPasswordRequest {
+interface ResetPasswordRequest {
   newPassword: string;
 }
 
-export interface UserSearchQuery {
+interface UserSearchQuery {
   searchTerm?: string;
   isAdmin?: boolean;
   emailVerified?: boolean;
@@ -48,7 +48,7 @@ export interface UserSearchQuery {
   pageSize?: number;
 }
 
-export interface UsersResponse {
+interface UsersResponse {
   users: UserListItem[];
   pagination: {
     page: number;

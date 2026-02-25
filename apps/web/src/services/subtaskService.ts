@@ -11,7 +11,7 @@ export interface CreateSubtaskInput {
 }
 
 /** Response shape for subtask progress */
-export interface SubtaskProgress {
+interface SubtaskProgress {
   totalCount: number;
   completedCount: number;
   progressPercentage: number;

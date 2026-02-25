@@ -11,7 +11,7 @@ import {
   TabBar,
   Tab,
   TabPanel,
-} from '../ui';
+} from '@finance-manager/ui';
 import {
   X,
   XCircle,

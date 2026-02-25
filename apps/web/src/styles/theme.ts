@@ -50,7 +50,7 @@ export interface Theme {
   };
 }
 
-export const lightTheme: Theme = {
+const lightTheme: Theme = {
   name: 'light',
   fonts: {
     body: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
@@ -102,7 +102,7 @@ export const lightTheme: Theme = {
   },
 };
 
-export const darkTheme: Theme = {
+const darkTheme: Theme = {
   name: 'dark',
   fonts: {
     body: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',

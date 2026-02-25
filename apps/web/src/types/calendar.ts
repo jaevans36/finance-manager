@@ -13,15 +13,4 @@ export interface CalendarTask {
   progressPercentage?: number;
 }
 
-export interface DayData {
-  date: Date;
-  tasks: CalendarTask[];
-  taskCount: number;
-  hasHighPriority: boolean;
-  hasCritical: boolean;
-}
 
-export interface CalendarFilters {
-  groupIds: string[];
-  priorities: string[];
-}

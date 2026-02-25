@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { borderRadius, focusRing, shadows, mediaQueries } from '@finance-manager/ui/styles';
 import { useToast } from '../../contexts/ToastContext';
 import { taskGroupService } from '../../services/taskGroupService';
-import { Button, Input, TextArea, FormGroup, Label, Alert, Flex } from '../ui';
+import { Button, Input, TextArea, FormGroup, Label, Alert, Flex } from '@finance-manager/ui';
 import { XCircleIcon } from 'lucide-react';
 
 const ModalOverlay = styled.div`

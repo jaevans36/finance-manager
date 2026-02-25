@@ -9,7 +9,7 @@
 
 import { apiClient, getFullApiUrl } from './api-client';
 
-export interface VersionInfo {
+interface VersionInfo {
   version: string;
   releaseDate: string;
   codename: string;
@@ -18,7 +18,7 @@ export interface VersionInfo {
   changelog: ChangelogEntry[];
 }
 
-export interface ChangelogEntry {
+interface ChangelogEntry {
   type: 'feat' | 'fix' | 'perf' | 'docs' | 'test';
   category: string;
   description: string;
@@ -32,19 +32,19 @@ export interface VersionHistory {
   latestVersion: string | null;
 }
 
-export interface VersionHistoryItem {
+interface VersionHistoryItem {
   version: string;
   releaseDate: string;
   codename: string;
   changelog: ChangelogSection[];
 }
 
-export interface ChangelogSection {
+interface ChangelogSection {
   section: string; // Added, Changed, Fixed, etc.
   items: ChangelogItem[];
 }
 
-export interface ChangelogItem {
+interface ChangelogItem {
   category: string;
   description: string;
   type: string;

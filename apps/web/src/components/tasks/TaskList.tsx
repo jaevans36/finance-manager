@@ -4,7 +4,7 @@ import { Task } from '../../services/taskService';
 import { TaskItem } from './TaskItem';
 import { SubtaskList } from './SubtaskList';
 import { useSubtasks } from '../../hooks/useSubtasks';
-import { Card, Text, TextSecondary } from '../ui';
+import { Card, Text, TextSecondary } from '@finance-manager/ui';
 import { spacing, borderRadius } from '@finance-manager/ui/styles';
 
 interface TaskListProps {

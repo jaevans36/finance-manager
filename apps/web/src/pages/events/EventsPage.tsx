@@ -105,7 +105,7 @@ const EmptyState = styled.div`
   }
 `;
 
-export const EventsPage = () => {
+const EventsPage = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [groups, setGroups] = useState<TaskGroup[]>([]);
   const [loading, setLoading] = useState(true);

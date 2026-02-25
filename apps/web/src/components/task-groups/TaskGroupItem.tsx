@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { borderRadius } from '@finance-manager/ui/styles';
 import { TaskGroup } from '../../types/taskGroup';
-import { Text, Badge } from '../ui';
+import { Text, Badge } from '@finance-manager/ui';
 import { FolderIcon } from 'lucide-react';
 
 const GroupItemContainer = styled.div<{ $isActive: boolean }>`
