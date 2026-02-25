@@ -1,6 +1,6 @@
 # Architectural Decisions Record
 
-> **Last Updated**: 2026-02-13  
+> **Last Updated**: 2026-02-25  
 > **Format**: ADR (Architecture Decision Record)  
 > **Scope**: All decisions affecting structure, patterns, or technology choices
 
@@ -66,7 +66,8 @@ React 18 with TypeScript 5, Vite for build tooling. Lazy-loaded routes, styled-c
 ## ADR-004: styled-components over CSS Modules
 
 **Date**: 2025-11  
-**Status**: Active
+**Status**: Superseded by ADR-016  
+**Superseded**: 2026-02-25
 
 ### Context
 Need a styling solution that supports theming (light/dark), design tokens, and component-scoped styles.
@@ -303,3 +304,115 @@ PowerShell scripts in `scripts/` directory for all development operations. Alway
 - (+) Consistent environment setup across sessions
 - (+) Proper service orchestration (Docker → API → Frontend)
 - (-) Windows-specific (PowerShell Core available on macOS/Linux but scripts not tested)
+
+---
+
+## ADR-016: Tailwind CSS + shadcn/ui Replacing styled-components
+
+**Date**: 2026-02-25  
+**Status**: Accepted (implementation pending Phase 48-53)  
+**Supersedes**: ADR-004
+
+### Context
+styled-components generates CSS at runtime, adding ~12KB gzipped to the bundle and increasing TTI. 62 files import styled-components. Theme-aware styles require verbose `${({ theme }) => theme.colors.*}` boilerplate. The shared `@finance-manager/ui` package is tightly coupled to styled-components, making it difficult to use in non-React contexts.
+
+### Decision
+Replace styled-components with Tailwind CSS (utility-first, build-time CSS) and shadcn/ui (accessible component primitives based on Radix UI). Design tokens move from JS objects to CSS variables. Dark mode switches from JavaScript ThemeProvider to CSS class strategy (`dark:` variants).
+
+### Migration Strategy
+1. Phase 48: Install Tailwind + shadcn alongside styled-components (co-existence)
+2. Phase 51-52: Migrate all pages file-by-file
+3. Phase 53: Remove styled-components entirely
+
+### Consequences
+- (+) Zero-runtime CSS — styles compiled at build time
+- (+) Smaller bundle — Tailwind purges unused CSS
+- (+) shadcn gives component ownership (copy-paste, not dependency)
+- (+) Accessible by default — Radix UI primitives handle ARIA, focus, keyboard
+- (+) CSS variables for theming — simpler than JS theme objects
+- (-) Co-existence period increases complexity temporarily
+- (-) 62 files must be migrated (~9 weeks total effort)
+- (-) Team must learn Tailwind utility class conventions
+
+### Rejected Alternatives
+- **CSS Modules**: Same limitation as ADR-004 — no runtime theme injection (though CSS variables could solve this now)
+- **Emotion**: Same runtime CSS-in-JS problems as styled-components
+- **MUI / Ant Design**: Heavy runtime, dependency lock-in, poor tree-shaking
+- **Big-bang migration**: Too risky — phased migration with co-existence is safer
+
+---
+
+## ADR-017: TanStack Query for Server State Management
+
+**Date**: 2026-02-25  
+**Status**: Accepted (implementation pending Phase 49)
+
+### Context
+Every page uses `useState` + `useEffect` for data fetching, resulting in ~15 lines of boilerplate per data source (loading state, error state, data state, fetch function, useEffect). No caching exists — navigating between pages re-fetches all data. No optimistic updates — mutations require full page refreshes to see results.
+
+### Decision
+Adopt TanStack Query v5 for all server state management. Create custom hooks per domain (useTasks, useEvents, etc.) with centralised query keys. Add optimistic updates for common mutations (task completion, creation).
+
+### Consequences
+- (+) Automatic caching — revisiting a page shows cached data instantly
+- (+) Background refetching — data stays fresh without manual triggers
+- (+) Request deduplication — multiple components using same data make one request
+- (+) Optimistic updates — UI responds instantly to user actions
+- (+) DevTools for debugging cache state
+- (-) Learning curve — query keys, stale time, cache invalidation patterns
+- (-) Existing pages must be migrated to use hooks instead of direct service calls
+
+### Rejected Alternatives
+- **SWR**: Less feature-rich than TanStack Query, smaller ecosystem
+- **Redux Toolkit Query**: Would require Redux, unnecessary complexity for this project
+- **Hand-rolled cache** (existing `queryCache.ts`): Only 98 lines, no background refetch, no optimistic updates, no devtools
+
+---
+
+## ADR-018: React Hook Form + Zod for Form Handling
+
+**Date**: 2026-02-25  
+**Status**: Accepted (implementation pending Phase 50)
+
+### Context
+Forms use `useState` for each field, manual validation in `onSubmit`, and inconsistent patterns across components. Validation rules exist only in the frontend — no shared schemas with the backend. The `@finance-manager/schema` package exists but is underutilised.
+
+### Decision
+Adopt React Hook Form (RHF) with `@hookform/resolvers` for Zod integration. Define validation schemas in `@finance-manager/schema` and share them with the frontend via the Zod resolver. shadcn/ui form components are built for RHF.
+
+### Consequences
+- (+) Shared validation schemas between frontend and backend
+- (+) Type-safe forms — `z.infer<>` derives types from schemas
+- (+) Reduced re-renders — RHF uses uncontrolled inputs by default
+- (+) shadcn/ui Form component designed specifically for RHF
+- (-) Migration effort for existing forms (~8 forms)
+- (-) Zod schemas must be maintained in sync with backend DTOs
+
+### Rejected Alternatives
+- **TanStack Form**: Less mature, smaller ecosystem, fewer resources, shadcn not built for it
+- **Formik**: Older, larger bundle, less ergonomic than RHF
+- **Manual useState**: Current approach — boilerplate-heavy, no schema validation
+
+---
+
+## ADR-019: TanStack Table for Data-Heavy Pages
+
+**Date**: 2026-02-25  
+**Status**: Accepted (implementation pending Phase 54)
+
+### Context
+The User Management page renders a data table with sorting and filtering using custom implementations. Future pages (finance transactions, admin audit logs) will need similar capabilities.
+
+### Decision
+Adopt TanStack Table v8 as a headless table library, rendering through shadcn Table component. Create a reusable `DataTable` component that encapsulates sorting, filtering, and pagination.
+
+### Consequences
+- (+) Headless — full control over rendering with shadcn/Tailwind
+- (+) Reusable DataTable pattern for all data-heavy pages
+- (+) Server-side pagination support built-in
+- (-) Only benefits a few pages currently — adoption is narrow
+
+### Rejected Alternatives
+- **AG Grid**: Commercial licence, heavy bundle, opinionated rendering
+- **React Table (v7)**: Superseded by TanStack Table v8
+- **Custom implementation**: Current approach — limited features, must be rebuilt per table

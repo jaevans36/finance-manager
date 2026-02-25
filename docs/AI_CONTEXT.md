@@ -1,7 +1,7 @@
 # AI Context — Finance Manager Platform
 
 > **Purpose**: Deterministic context file for any AI model working on this repository.  
-> **Last Updated**: 2026-02-13  
+> **Last Updated**: 2026-02-25  
 > **Version**: 0.15.0  
 > **Branch**: `001-todo-app`
 
@@ -40,6 +40,10 @@
 | Build | Vite | 6.0+ |
 | Routing | react-router-dom | 6.21+ |
 | Styling | styled-components | 6.1+ |
+| Styling (planned) | Tailwind CSS + shadcn/ui | 3.4+ / latest |
+| Server State (planned) | TanStack Query | 5.0+ |
+| Forms (planned) | React Hook Form + Zod | 7.0+ / 3.0+ |
+| Data Tables (planned) | TanStack Table | 8.0+ |
 | HTTP | Axios (via centralised `apiClient`) | 1.6+ |
 | Icons | lucide-react | 0.555+ |
 | Charts | Recharts | 3.6+ |
@@ -97,8 +101,8 @@ apps/finance-api/
 ```
 apps/web/src/
 ├── components/                    ← Feature-organised components
-├── contexts/                      ← AuthContext, ThemeContext, ToastContext
-├── hooks/                         ← Custom React hooks
+├── contexts/                      ← AuthContext, ToastContext
+├── hooks/                         ← Custom React hooks (+ planned query/form hooks)
 ├── pages/                         ← Route-level components (lazy-loaded)
 ├── services/                      ← API service layer (all use apiClient)
 ├── styles/                        ← Theme, layout tokens, typography, global CSS
@@ -179,19 +183,22 @@ User → React Page → Service Layer → apiClient (Axios) → /api/v1/* → Co
 - App specs: `specs/applications/{app-name}/`
 - User stories: P1-P5 priority, Given/When/Then acceptance scenarios
 - Tasks: `[TID] [P?] [Story] Description - Xh` format with checkboxes
-- Task IDs: Sequential across all features (T001-T1256 allocated)
-- Phases: Numbered 1-47 across all planned features
+- Task IDs: Sequential across all features (T001-T1388 allocated)
+- Phases: Numbered 1-54 across all planned features
 - Index: `specs/platform/SPEC-INDEX.md`
 
 ## 6. Design System
 
 - Package: `@finance-manager/ui` at `packages/ui/`
+- **Current**: styled-components based — tokens via JS objects, themes via ThemeProvider
+- **Planned migration**: Tailwind CSS + shadcn/ui (Phase 48-53) — tokens via CSS variables, themes via `dark:` class
 - Tokens: `spacing`, `typography`, `borderRadius`, `shadows`, `transitions`
 - Themes: `lightTheme`, `darkTheme` — both WCAG AAA compliant
 - Icons: Lucide React only — no emoji in UI
 - Components: Button, Card, Input, Modal, Badge, Alert, Heading1-3, Skeleton
 - Documentation route: `/design-system`
 - Guide: `docs/guides/DESIGN_SYSTEM_USAGE.md`
+- Modernisation spec: `specs/platform/frontend-modernisation.md`
 
 ## 7. Active Applications
 
@@ -211,6 +218,7 @@ User → React Page → Service Layer → apiClient (Axios) → /api/v1/* → Co
 | Test Automation | 28-31 | T1009-T1054 |
 | DB Abstraction | 36-37 | T1105-T1126 |
 | Project Rename | 38-40 | T1127-T1154 |
+| Frontend Modernisation | 48-54 | T1257-T1388 |
 
 ## 9. Key File References
 

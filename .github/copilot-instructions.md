@@ -491,12 +491,32 @@ Any written content should be in British English, not American English. If there
 
 **CRITICAL**: All applications must use the `@finance-manager/ui` shared package for UI components and design tokens.
 
-### Package Location
-- **Shared Package**: `packages/ui/`
-- **Documentation**: `docs/guides/DESIGN_SYSTEM_USAGE.md` (comprehensive guide)
-- **Live Examples**: Navigate to `/design-system` in any app
+> **⚠️ MIGRATION IN PROGRESS (Phase 48-53)**: The design system is migrating from styled-components to **Tailwind CSS + shadcn/ui**. During migration, **both systems co-exist**. For **new** components, use Tailwind + shadcn. For **existing** components, the styled-components patterns below still apply until migrated. See `specs/platform/frontend-modernisation.md` for the full plan.
 
-### Mandatory Standards
+### For New Components (Tailwind + shadcn)
+
+```typescript
+// ✅ NEW PATTERN: Tailwind utility classes + shadcn components
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+const MyComponent = ({ className }: { className?: string }) => (
+  <Card className={cn('p-4 space-y-2', className)}>
+    <CardHeader>
+      <CardTitle className="text-lg font-semibold">Title</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <Button variant="default">Action</Button>
+    </CardContent>
+  </Card>
+);
+
+// Dark mode: use dark: prefix — no ThemeProvider needed
+<div className="bg-background text-foreground dark:bg-slate-900">
+```
+
+### For Existing Components (styled-components — until migrated)
 
 1. **Always use design tokens** - Never hardcode values:
    ```typescript
@@ -591,6 +611,7 @@ ${spacing['5xl']} // 48px
 - **Full Documentation**: `docs/guides/DESIGN_SYSTEM_USAGE.md`
 - **Package README**: `packages/ui/README.md`
 - **Component Library**: `packages/ui/src/components/README.md`
+- **Modernisation Spec**: `specs/platform/frontend-modernisation.md`
 - **Live Examples**: `/design-system` route in any app
 
 ## Version Management

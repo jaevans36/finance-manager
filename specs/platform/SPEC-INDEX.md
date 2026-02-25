@@ -208,6 +208,20 @@ This index maps features from the original `spec-v2-enhancements.md` to their ne
 
 **Tasks**: `applications/finance/tasks.md` (T1155-T1256, 102 tasks, ~11 weeks)
 
+### Phase 48-54 - Frontend Modernisation
+
+| Phase | Feature | Location |
+|-------|---------|----------|
+| Phase 48 | Tailwind CSS & shadcn/ui Foundation | `platform/frontend-modernisation.md` |
+| Phase 49 | TanStack Query for Server State | `platform/frontend-modernisation.md` |
+| Phase 50 | React Hook Form & Zod Validation | `platform/frontend-modernisation.md` |
+| Phase 51 | Page Migration Batch 1 — Core Pages | `platform/frontend-modernisation.md` |
+| Phase 52 | Page Migration Batch 2 — Auth, Admin & Secondary | `platform/frontend-modernisation.md` |
+| Phase 53 | Cleanup & styled-components Removal | `platform/frontend-modernisation.md` |
+| Phase 54 | TanStack Table for Data-Heavy Pages | `platform/frontend-modernisation.md` |
+
+**Tasks**: `platform/frontend-modernisation-tasks.md` (T1257-T1388, 132 tasks, ~9 weeks)
+
 ## Quick Navigation
 
 ### Platform-Wide Features
@@ -289,7 +303,9 @@ specs/
 │   ├── test-automation.md            ← Test automation spec
 │   ├── test-automation-tasks.md      ← Test tasks (T1009-T1054)
 │   ├── project-rename.md             ← Rename to Life Manager
-│   └── project-rename-tasks.md       ← Rename tasks (T1127-T1154)
+│   ├── project-rename-tasks.md       ← Rename tasks (T1127-T1154)
+│   ├── frontend-modernisation.md     ← Tailwind, shadcn/ui, TanStack Query, RHF+Zod
+│   └── frontend-modernisation-tasks.md ← Modernisation tasks (T1257-T1388)
 └── applications/
     ├── todo/
     │   ├── spec.md                   ← Core features (Phase 1-4)

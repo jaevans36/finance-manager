@@ -3,7 +3,7 @@
   "title": "AI Contract — Finance Manager Platform",
   "description": "Machine-readable rules and constraints for AI agents working on this repository.",
   "version": "1.0.0",
-  "lastUpdated": "2026-02-13",
+  "lastUpdated": "2026-02-25",
   "projectVersion": "0.15.0",
 
   "stack": {
@@ -25,7 +25,11 @@
       "framework": "React 18",
       "language": "TypeScript 5",
       "buildTool": "Vite 6",
-      "styling": "styled-components 6",
+      "styling": "styled-components 6 (migrating to Tailwind CSS + shadcn/ui in Phase 48-53)",
+      "stylingPlanned": "Tailwind CSS 3.4+ + shadcn/ui + Radix UI",
+      "serverStatePlanned": "TanStack Query v5",
+      "formsPlanned": "React Hook Form 7 + Zod + @hookform/resolvers",
+      "dataTablesPlanned": "TanStack Table v8",
       "httpClient": "Axios (via apiClient only)",
       "icons": "lucide-react",
       "charts": "Recharts",
@@ -84,7 +88,7 @@
       "id": "RULE-004",
       "scope": "frontend",
       "rule": "Never hardcode colour values, spacing, or font sizes",
-      "enforce": "Use design tokens from @finance-manager/ui/styles and theme.colors.*",
+      "enforce": "Use design tokens from @finance-manager/ui/styles and theme.colors.* (current) or Tailwind utility classes (after Phase 48)",
       "severity": "error"
     },
     {
@@ -154,7 +158,7 @@
       "id": "RULE-014",
       "scope": "specs",
       "rule": "Task IDs must be sequential and globally unique",
-      "enforce": "Continue from last allocated ID (currently T1256). Check specs before allocating.",
+      "enforce": "Continue from last allocated ID (currently T1388). Check specs before allocating.",
       "severity": "error"
     }
   ],
@@ -247,6 +251,21 @@
       "approach": "American English in documentation",
       "reason": "Project owner is UK-based, consistency required",
       "decidedIn": "ADR-014"
+    },
+    {
+      "approach": "styled-components as long-term styling solution",
+      "reason": "Runtime CSS generation, growing bundle size, complex theme boilerplate. Superseded by Tailwind CSS + shadcn/ui (ADR-016).",
+      "decidedIn": "ADR-016"
+    },
+    {
+      "approach": "Manual useState/useEffect for server state",
+      "reason": "No caching, no background refetching, request duplication across components. Superseded by TanStack Query (ADR-017).",
+      "decidedIn": "ADR-017"
+    },
+    {
+      "approach": "Manual form state management with useState",
+      "reason": "Boilerplate-heavy, no schema validation, inconsistent patterns. Superseded by React Hook Form + Zod (ADR-018).",
+      "decidedIn": "ADR-018"
     }
   ],
 

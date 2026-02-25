@@ -2,6 +2,10 @@
 
 Shared UI component library and design system for Finance Manager applications.
 
+> **⚠️ MIGRATION NOTICE**: This package currently uses **styled-components**.
+> It is being migrated to **Tailwind CSS + shadcn/ui** (Phase 48-53).
+> See `specs/platform/frontend-modernisation.md` for the migration plan.
+
 ## Features
 
 - 🎨 **Complete Design System**: Typography, spacing, colors, and layout utilities

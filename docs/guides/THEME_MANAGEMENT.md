@@ -1,5 +1,10 @@
 # Theme Management Guide
 
+> **⚠️ MIGRATION NOTICE**: This guide documents the **styled-components ThemeProvider** approach.
+> This is being superseded by **CSS variables + Tailwind `dark:` class strategy** (ADR-016, Phase 48-53).
+> During migration, both systems co-exist. For new components, use Tailwind dark mode classes.
+> See `specs/platform/frontend-modernisation.md` for the migration plan.
+
 ## Overview
 
 The Finance Manager application now has a **centralized theme management system** that ensures consistent styling across all components. This guide explains how to use and maintain it.

@@ -1,5 +1,10 @@
 # Design System & Shared UI Package - Developer Guide
 
+> **⚠️ MIGRATION NOTICE**: This guide documents the **styled-components** based design system.
+> This approach is being superseded by **Tailwind CSS + shadcn/ui** (ADR-016, Phase 48-53).
+> During migration, both systems co-exist. For new components, prefer Tailwind + shadcn.
+> See `specs/platform/frontend-modernisation.md` for the migration plan.
+
 **Last Updated**: January 26, 2026  
 **Package**: `@finance-manager/ui`  
 **Location**: `packages/ui/`

@@ -25,6 +25,8 @@ specs/
 │   ├── test-automation-tasks.md # Test tasks (T1009-T1054, ~5.5 weeks)
 │   ├── project-rename.md        # Rename Finance Manager → Life Manager
 │   ├── project-rename-tasks.md  # Rename tasks (T1127-T1154, ~2 weeks)
+│   ├── frontend-modernisation.md # Tailwind, shadcn/ui, TanStack Query, RHF+Zod
+│   ├── frontend-modernisation-tasks.md # Modernisation tasks (T1257-T1388, ~9 weeks)
 │   └── SPEC-INDEX.md            # Quick navigation index
 └── applications/                # Individual application specifications
     ├── todo/                    # To Do application
@@ -88,6 +90,11 @@ Each application has its own directory with application-specific specifications:
 
 - **spec.md**: 9 user stories (CSV transaction import for UK banks, budgeting, investment portfolio tracking, bill tracking, savings goals, dashboard & reports, AI insights, multi-currency, debt management)
 - **tasks.md**: T1155-T1256, 102 tasks across Phases 41-47 (~11 weeks)
+
+### Platform: Frontend Modernisation (`platform/`)
+
+- **frontend-modernisation.md**: 5 user stories (Tailwind CSS + shadcn/ui foundation, TanStack Query for server state, React Hook Form + Zod validation, page migration, TanStack Table for data grids)
+- **frontend-modernisation-tasks.md**: T1257-T1388, 132 tasks across Phases 48-54 (~9 weeks)
 
 #### Future Applications
 
