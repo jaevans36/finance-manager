@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
+      '@': path.resolve(__dirname, './src'),
       '@workspace': path.resolve(__dirname, '../../'),
     },
   },
@@ -31,7 +32,8 @@ export default defineConfig({
         manualChunks: {
           // Split vendor code for better caching
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['styled-components', 'lucide-react'],
+          'ui-vendor': ['lucide-react'],
+          'query-vendor': ['@tanstack/react-query'],
         },
       },
     },

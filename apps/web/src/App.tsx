@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, LoadingSpinner } from '@finance-manager/ui';
+import { QueryProvider } from './providers/QueryProvider';
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -50,10 +51,11 @@ function App() {
   };
   return (
     <ErrorBoundary>
-      <ThemeProvider>
-        <ToastProvider>
-          <AuthProvider>
-            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <QueryProvider>
+        <ThemeProvider>
+          <ToastProvider>
+            <AuthProvider>
+              <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <AppHeader />
               {showWhatsNew && <WhatsNewModal onClose={handleCloseWhatsNew} />}
               <Suspense fallback={<LoadingSpinner />}>
@@ -159,7 +161,8 @@ function App() {
           </AuthProvider>
         </ToastProvider>
       </ThemeProvider>
-    </ErrorBoundary>
+    </QueryProvider>
+  </ErrorBoundary>
   );
 }
 

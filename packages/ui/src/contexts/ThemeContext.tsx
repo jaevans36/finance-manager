@@ -34,8 +34,15 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
     // Save preference to localStorage
     localStorage.setItem(THEME_STORAGE_KEY, isDarkMode ? 'dark' : 'light');
     
-    // Update document class for CSS variables if needed
+    // Update document attribute for legacy CSS variables
     document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+
+    // Toggle 'dark' class for Tailwind CSS dark mode
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }, [isDarkMode]);
 
   const toggleTheme = () => {

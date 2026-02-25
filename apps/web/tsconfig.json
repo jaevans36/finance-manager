@@ -12,7 +12,11 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src", "../../VERSION.json"],
   "exclude": ["node_modules", "dist", "tests"]

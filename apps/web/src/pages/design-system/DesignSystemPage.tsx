@@ -21,7 +21,19 @@ import {
 } from '@finance-manager/ui';
 import { spacing, typography, borderRadius } from '@finance-manager/ui/styles';
 import { useTheme } from '@finance-manager/ui';
-import { Palette, Type, Layers, Space, CheckCircle } from 'lucide-react';
+import { Palette, Type, Layers, Space, CheckCircle, Sparkles } from 'lucide-react';
+
+// shadcn/ui components (Tailwind-based)
+import { Button as ShadcnButton } from '@/components/ui/button';
+import { Card as ShadcnCard, CardHeader as ShadcnCardHeader, CardTitle as ShadcnCardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Badge as ShadcnBadge } from '@/components/ui/badge';
+import { Input as ShadcnInput } from '@/components/ui/input';
+import { Label as ShadcnLabel } from '@/components/ui/label';
+import { Alert as ShadcnAlert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 const PageContainer = styled(Container)`
   padding-top: ${spacing.xl};
@@ -392,6 +404,146 @@ const Container = styled.div\`
   \${typography.pageTitle}
   color: \${({ theme }) => theme.colors.text};
 \`;`}</CodeBlock>
+          </CardBody>
+        </Card>
+      </Section>
+
+      {/* Tailwind + shadcn/ui Section */}
+      <Section>
+        <SectionHeader>
+          <Sparkles size={24} />
+          <Heading2>Tailwind + shadcn/ui (New)</Heading2>
+        </SectionHeader>
+        <Text style={{ marginBottom: spacing.lg }}>
+          The project is migrating to Tailwind CSS + shadcn/ui. New components below co-exist
+          with the styled-components system above during the transition.
+        </Text>
+
+        <Tabs defaultValue="buttons" className="w-full">
+          <TabsList>
+            <TabsTrigger value="buttons">Buttons</TabsTrigger>
+            <TabsTrigger value="cards">Cards</TabsTrigger>
+            <TabsTrigger value="forms">Forms</TabsTrigger>
+            <TabsTrigger value="feedback">Feedback</TabsTrigger>
+          </TabsList>
+
+          {/* shadcn Buttons */}
+          <TabsContent value="buttons" className="space-y-4">
+            <div className="rounded-lg border bg-card p-6 space-y-4">
+              <h3 className="text-lg font-semibold">Button Variants</h3>
+              <div className="flex flex-wrap gap-3">
+                <ShadcnButton>Default</ShadcnButton>
+                <ShadcnButton variant="secondary">Secondary</ShadcnButton>
+                <ShadcnButton variant="destructive">Destructive</ShadcnButton>
+                <ShadcnButton variant="outline">Outline</ShadcnButton>
+                <ShadcnButton variant="ghost">Ghost</ShadcnButton>
+                <ShadcnButton variant="link">Link</ShadcnButton>
+              </div>
+              <h3 className="text-lg font-semibold">Button Sizes</h3>
+              <div className="flex flex-wrap items-center gap-3">
+                <ShadcnButton size="sm">Small</ShadcnButton>
+                <ShadcnButton size="default">Default</ShadcnButton>
+                <ShadcnButton size="lg">Large</ShadcnButton>
+                <ShadcnButton size="icon"><CheckCircle className="h-4 w-4" /></ShadcnButton>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* shadcn Cards */}
+          <TabsContent value="cards" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ShadcnCard>
+                <ShadcnCardHeader>
+                  <ShadcnCardTitle>Card Title</ShadcnCardTitle>
+                  <CardDescription>Card description with muted text</CardDescription>
+                </ShadcnCardHeader>
+                <CardContent>
+                  <p className="text-sm">Card body content goes here.</p>
+                </CardContent>
+                <CardFooter>
+                  <ShadcnButton variant="outline" size="sm">Action</ShadcnButton>
+                </CardFooter>
+              </ShadcnCard>
+
+              <ShadcnCard>
+                <ShadcnCardHeader>
+                  <ShadcnCardTitle>Badges</ShadcnCardTitle>
+                </ShadcnCardHeader>
+                <CardContent className="flex flex-wrap gap-2">
+                  <ShadcnBadge>Default</ShadcnBadge>
+                  <ShadcnBadge variant="secondary">Secondary</ShadcnBadge>
+                  <ShadcnBadge variant="destructive">Destructive</ShadcnBadge>
+                  <ShadcnBadge variant="outline">Outline</ShadcnBadge>
+                  <ShadcnBadge variant="success">Success</ShadcnBadge>
+                  <ShadcnBadge variant="warning">Warning</ShadcnBadge>
+                </CardContent>
+              </ShadcnCard>
+            </div>
+          </TabsContent>
+
+          {/* shadcn Forms */}
+          <TabsContent value="forms" className="space-y-4">
+            <div className="rounded-lg border bg-card p-6 space-y-6">
+              <div className="space-y-2">
+                <ShadcnLabel htmlFor="tw-input">Text Input</ShadcnLabel>
+                <ShadcnInput id="tw-input" placeholder="Enter text..." />
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center space-x-3">
+                <Switch id="tw-switch" />
+                <ShadcnLabel htmlFor="tw-switch">Dark Mode Toggle</ShadcnLabel>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <Checkbox id="tw-check" />
+                <ShadcnLabel htmlFor="tw-check">Accept terms and conditions</ShadcnLabel>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* shadcn Feedback */}
+          <TabsContent value="feedback" className="space-y-4">
+            <div className="space-y-3">
+              <ShadcnAlert>
+                <CheckCircle className="h-4 w-4" />
+                <AlertTitle>Default Alert</AlertTitle>
+                <AlertDescription>This is a default alert message.</AlertDescription>
+              </ShadcnAlert>
+              <ShadcnAlert variant="destructive">
+                <AlertTitle>Destructive</AlertTitle>
+                <AlertDescription>Something went wrong.</AlertDescription>
+              </ShadcnAlert>
+              <ShadcnAlert variant="success">
+                <CheckCircle className="h-4 w-4" />
+                <AlertTitle>Success</AlertTitle>
+                <AlertDescription>Your changes have been saved.</AlertDescription>
+              </ShadcnAlert>
+              <ShadcnAlert variant="warning">
+                <AlertTitle>Warning</AlertTitle>
+                <AlertDescription>Please review your input carefully.</AlertDescription>
+              </ShadcnAlert>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Import guide */}
+        <Card style={{ marginTop: spacing.xl }}>
+          <CardBody>
+            <Heading3>Using shadcn/ui Components</Heading3>
+            <CodeBlock>{`// Import shadcn components (Tailwind-based)
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+
+// Use cn() for conditional classes
+import { cn } from '@/lib/utils';
+<div className={cn('p-4 rounded-lg', isActive && 'bg-primary text-white')}>
+
+// TanStack Query hooks
+import { useTasks, useCreateTask } from '@/hooks/queries';
+const { data: tasks, isLoading } = useTasks({ completed: false });`}</CodeBlock>
           </CardBody>
         </Card>
       </Section>
