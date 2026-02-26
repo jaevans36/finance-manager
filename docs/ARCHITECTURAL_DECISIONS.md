@@ -416,3 +416,37 @@ Adopt TanStack Table v8 as a headless table library, rendering through shadcn Ta
 - **AG Grid**: Commercial licence, heavy bundle, opinionated rendering
 - **React Table (v7)**: Superseded by TanStack Table v8
 - **Custom implementation**: Current approach — limited features, must be rebuilt per table
+
+---
+
+## ADR-020: Modified GitFlow Branching Strategy
+
+**Date**: 2026-02-26
+**Status**: Accepted
+
+### Context
+All development was being done on a single `001-todo-app` branch across multiple phases. This made it impossible to isolate individual phases, roll back a single phase without affecting others, or maintain a clean release history. With 54 phases planned, the project needed a structured branching model that aligns with our semantic versioning and conventional commits practices.
+
+### Decision
+Adopt a modified GitFlow model with three branch types:
+- `main` — stable releases, tagged with semver
+- `develop` — integration branch for completed phases
+- `phase-XX/description` — individual phase work, branched from develop
+
+Phase branches are squash-merged into `develop` via PR. Releases merge `develop` into `main` with a version tag. Large phases (>500 LOC) are split into multiple sequential PRs.
+
+Full details in `docs/BRANCHING-STRATEGY.md`.
+
+### Consequences
+- (+) Each phase is isolated and can be reviewed independently
+- (+) Clean merge history with squash commits
+- (+) Aligns with semver — each release is a clear point-in-time
+- (+) `main` is always stable and deployable
+- (+) Large phases naturally split into reviewable PRs
+- (-) Minor overhead creating branches and PRs per phase
+- (-) Requires rebasing phase branches if `develop` advances
+
+### Rejected Alternatives
+- **Single feature branch**: Current approach — no isolation, no rollback capability
+- **Phase branches from main (no develop)**: Simpler, but no integration testing point before release
+- **Trunk-based development**: Too risky without comprehensive CI/CD and feature flags

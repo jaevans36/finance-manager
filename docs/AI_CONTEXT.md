@@ -165,8 +165,12 @@ User → React Page → Service Layer → apiClient (Axios) → /api/v1/* → Co
 ### Git
 
 - Conventional Commits: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `perf:`
-- Max 500 lines per PR
-- Branch: feature branches off `001-todo-app`
+- Max 500 lines per PR (split large phases into sequential PRs)
+- **Branching model**: Modified GitFlow — see `docs/BRANCHING-STRATEGY.md`
+  - `main` — stable releases, tagged with semver
+  - `develop` — integration branch for completed phases
+  - `phase-XX/description` — individual phase work, branched from `develop`
+- Phase branches squash-merge into `develop` via PR; releases merge `develop` → `main` + tag
 - Task references in commits: `feat: implement login (T035)`
 
 ### Testing
@@ -227,6 +231,7 @@ User → React Page → Service Layer → apiClient (Axios) → /api/v1/* → Co
 | AI instructions | `.github/copilot-instructions.md` |
 | Version | `VERSION.json` |
 | Changelog | `CHANGELOG.md` |
+| Branching strategy | `docs/BRANCHING-STRATEGY.md` |
 | Spec index | `specs/platform/SPEC-INDEX.md` |
 | To Do tasks | `specs/001-todo-app/tasks.md` |
 | Design tokens | `packages/ui/src/styles/layout.ts` |

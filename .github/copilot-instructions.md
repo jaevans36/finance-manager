@@ -42,6 +42,13 @@ The application should be well designed with a focus on security, simlicity, and
 
 Commits and Pull Requests should follow the Conventional Commits specification for consistency and clarity in versioning, they should be no longer than 500 lines of code to facilitate easier reviews.
 
+The project uses a modified GitFlow branching strategy — see `docs/BRANCHING-STRATEGY.md` for full details:
+- `main` — stable releases, tagged with semver
+- `develop` — integration branch for completed phases
+- `phase-XX/description` — individual phase work, branched from `develop`
+
+Phase branches are squash-merged into `develop` via PR. Releases merge `develop` into `main` with a version tag. When a phase exceeds 500 LOC, split it into multiple sequential PRs against `develop`.
+
 No secrets or sensitive information should be hardcoded in the codebase; instead, use environment variables or secure vaults to manage such data.
 
 When making code changes or suggestions, please make sure you're using the most up-to-date standards, libraries and frameworks, avoiding any deprecated packages or APIs. Avoid any outdated coding practices that may compromise security or performance for both the front-end and back-end codebases.

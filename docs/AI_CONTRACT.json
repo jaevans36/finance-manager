@@ -116,8 +116,15 @@
       "id": "RULE-008",
       "scope": "git",
       "rule": "Max 500 lines per PR",
-      "enforce": "Split large changes into multiple commits/PRs",
+      "enforce": "Split large phases into multiple sequential PRs against develop",
       "severity": "warning"
+    },
+    {
+      "id": "RULE-015",
+      "scope": "git",
+      "rule": "Modified GitFlow branching model",
+      "enforce": "Phase branches from develop (phase-XX/description), squash-merge to develop, release merge develop to main + tag. See docs/BRANCHING-STRATEGY.md",
+      "severity": "error"
     },
     {
       "id": "RULE-009",
@@ -278,6 +285,7 @@
     "copilotInstructions": ".github/copilot-instructions.md",
     "specIndex": "specs/platform/SPEC-INDEX.md",
     "designSystemGuide": "docs/guides/DESIGN_SYSTEM_USAGE.md",
-    "versionManagement": "docs/VERSION-MANAGEMENT.md"
+    "versionManagement": "docs/VERSION-MANAGEMENT.md",
+    "branchingStrategy": "docs/BRANCHING-STRATEGY.md"
   }
 }
