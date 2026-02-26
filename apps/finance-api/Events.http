@@ -1,0 +1,190 @@
+### Events API Test File
+### Base URL
+@baseUrl = http://localhost:5000
+@username = testuser_{{$timestamp}}
+@email = testuser_{{$timestamp}}@example.com
+@password = TestPassword123!
+
+### Variables (will be set from responses)
+@accessToken = 
+@userId = 
+@eventId = 
+@groupId = 
+
+###############################################################################
+### 1. SETUP: Register a test user
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+###############################################################################
+### 2. SETUP: Login and get access token
+# @name login
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+###############################################################################
+### 3. SETUP: Create a task group for events
+# @name createGroup
+POST {{baseUrl}}/api/v1/task-groups
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.accessToken}}
+
+{
+  "name": "Work Events",
+  "colour": "#3B82F6"
+}
+
+###############################################################################
+### 4. CREATE EVENT: Simple all-day event
+# @name createSimpleEvent
+POST {{baseUrl}}/api/v1/events
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.accessToken}}
+
+{
+  "title": "Team Meeting",
+  "description": "Quarterly planning session",
+  "startDate": "2026-01-20T00:00:00Z",
+  "endDate": "2026-01-20T23:59:59Z",
+  "isAllDay": true
+}
+
+###############################################################################
+### 5. CREATE EVENT: Timed event with location and reminder
+# @name createTimedEvent
+POST {{baseUrl}}/api/v1/events
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.accessToken}}
+
+{
+  "title": "Client Presentation",
+  "description": "Q1 results presentation for ABC Corp",
+  "startDate": "2026-01-22T14:00:00Z",
+  "endDate": "2026-01-22T15:30:00Z",
+  "isAllDay": false,
+  "location": "Conference Room A",
+  "reminderMinutes": 30,
+  "groupId": "{{createGroup.response.body.id}}"
+}
+
+###############################################################################
+### 6. CREATE EVENT: Multi-day event
+# @name createMultiDayEvent
+POST {{baseUrl}}/api/v1/events
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.accessToken}}
+
+{
+  "title": "Annual Conference 2026",
+  "description": "Three-day industry conference in London",
+  "startDate": "2026-03-15T00:00:00Z",
+  "endDate": "2026-03-17T23:59:59Z",
+  "isAllDay": true,
+  "location": "ExCeL London"
+}
+
+###############################################################################
+### 7. GET ALL EVENTS: List all user events
+GET {{baseUrl}}/api/v1/events
+Authorization: Bearer {{login.response.body.accessToken}}
+
+###############################################################################
+### 8. GET EVENTS: Filter by date range
+GET {{baseUrl}}/api/v1/events?startDate=2026-01-20T00:00:00Z&endDate=2026-01-31T23:59:59Z
+Authorization: Bearer {{login.response.body.accessToken}}
+
+###############################################################################
+### 9. GET EVENTS: Filter by group
+GET {{baseUrl}}/api/v1/events?groupId={{createGroup.response.body.id}}
+Authorization: Bearer {{login.response.body.accessToken}}
+
+###############################################################################
+### 10. GET SINGLE EVENT: By ID
+GET {{baseUrl}}/api/v1/events/{{createTimedEvent.response.body.id}}
+Authorization: Bearer {{login.response.body.accessToken}}
+
+###############################################################################
+### 11. UPDATE EVENT: Change time and location
+PUT {{baseUrl}}/api/v1/events/{{createTimedEvent.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.accessToken}}
+
+{
+  "title": "Client Presentation (Updated)",
+  "startDate": "2026-01-22T15:00:00Z",
+  "endDate": "2026-01-22T16:30:00Z",
+  "location": "Conference Room B",
+  "reminderMinutes": 60
+}
+
+###############################################################################
+### 12. UPDATE EVENT: Partial update (only description)
+PUT {{baseUrl}}/api/v1/events/{{createSimpleEvent.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.accessToken}}
+
+{
+  "description": "Quarterly planning session - Added agenda items"
+}
+
+###############################################################################
+### 13. DELETE EVENT: Remove an event
+DELETE {{baseUrl}}/api/v1/events/{{createMultiDayEvent.response.body.id}}
+Authorization: Bearer {{login.response.body.accessToken}}
+
+###############################################################################
+### 14. ERROR TEST: Create event with invalid dates (end before start)
+POST {{baseUrl}}/api/v1/events
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.accessToken}}
+
+{
+  "title": "Invalid Event",
+  "startDate": "2026-01-25T15:00:00Z",
+  "endDate": "2026-01-25T14:00:00Z",
+  "isAllDay": false
+}
+
+###############################################################################
+### 15. ERROR TEST: Create event with invalid reminder
+POST {{baseUrl}}/api/v1/events
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.accessToken}}
+
+{
+  "title": "Invalid Reminder Event",
+  "startDate": "2026-01-26T10:00:00Z",
+  "endDate": "2026-01-26T11:00:00Z",
+  "isAllDay": false,
+  "reminderMinutes": 45
+}
+
+###############################################################################
+### 16. ERROR TEST: Get non-existent event
+GET {{baseUrl}}/api/v1/events/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{login.response.body.accessToken}}
+
+###############################################################################
+### 17. ERROR TEST: Update without authentication
+PUT {{baseUrl}}/api/v1/events/{{createSimpleEvent.response.body.id}}
+Content-Type: application/json
+
+{
+  "title": "This should fail"
+}
+
+###############################################################################
+### 18. VERIFICATION: Get all events after changes
+GET {{baseUrl}}/api/v1/events
+Authorization: Bearer {{login.response.body.accessToken}}

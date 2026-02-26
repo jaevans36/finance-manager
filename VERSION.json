@@ -1,0 +1,46 @@
+{
+  "version": "0.15.0",
+  "releaseDate": "2026-01-29",
+  "codename": "Quick Wins: APIs, Admin & Security",
+  "description": "Version History API, Admin Dashboard, User Management UI, and comprehensive security hardening",
+  "breaking": false,
+  "changelog": [
+    {
+      "type": "feat",
+      "category": "Version History API",
+      "description": "API-driven version history from CHANGELOG.md with 3 REST endpoints and caching",
+      "impact": "high"
+    },
+    {
+      "type": "feat",
+      "category": "Admin Dashboard",
+      "description": "Complete admin dashboard with system statistics, quick actions, and activity log",
+      "impact": "high"
+    },
+    {
+      "type": "feat",
+      "category": "User Management",
+      "description": "Admin UI for managing users with search, filters, and permission controls",
+      "impact": "high"
+    },
+    {
+      "type": "feat",
+      "category": "Security",
+      "description": "Rate limiting middleware (60/min, 1000/hour) with sliding window algorithm",
+      "impact": "high"
+    },
+    {
+      "type": "feat",
+      "category": "Security",
+      "description": "Security headers middleware (CSP, HSTS, X-Frame-Options, etc.) following OWASP best practices",
+      "impact": "high"
+    },
+    {
+      "type": "perf",
+      "category": "Caching",
+      "description": "Version history cached for 5 minutes to reduce file I/O",
+      "impact": "medium"
+    }
+  ],
+  "previousVersion": "0.14.0"
+}

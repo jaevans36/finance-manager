@@ -1,0 +1,12 @@
+{
+  "diff": false,
+  "verbose": false,
+  "ignore": {
+    "rules": [],
+    "files": [
+      "src/vite-env.d.ts",
+      "src/styled.d.ts",
+      "tests/**"
+    ]
+  }
+}

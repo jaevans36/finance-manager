@@ -1,0 +1,80 @@
+is_global = true
+
+# StyleCop Analyzer Configuration
+# Disable rules that don't fit the project's coding style
+
+# SA1633: File must have header
+# Reason: File headers are not required for this project
+dotnet_diagnostic.SA1633.severity = none
+
+# SA1309: Field names should not begin with underscore
+# Reason: We use underscore prefix for private fields (common C# convention)
+dotnet_diagnostic.SA1309.severity = none
+
+# SA1101: Prefix local calls with this
+# Reason: Cleaner code without this. prefix
+dotnet_diagnostic.SA1101.severity = none
+
+# SA1516: Elements should be separated by blank line
+# Reason: Too strict for property declarations
+dotnet_diagnostic.SA1516.severity = suggestion
+
+# SA1200: Using directives should be placed correctly
+# Reason: We use file-scoped namespaces, so usings go outside
+dotnet_diagnostic.SA1200.severity = none
+
+# SA1210: Using directives should be ordered alphabetically
+# Reason: IDE handles this automatically
+dotnet_diagnostic.SA1210.severity = suggestion
+
+# SA1208: System using directives should be placed before other using directives
+# Reason: IDE handles this automatically
+dotnet_diagnostic.SA1208.severity = suggestion
+
+# SA1028: Code should not contain trailing whitespace
+# Reason: IDE handles this automatically on save
+dotnet_diagnostic.SA1028.severity = suggestion
+
+# SA1413: Use trailing comma in multi-line initializers
+# Reason: Not consistently needed
+dotnet_diagnostic.SA1413.severity = suggestion
+
+# SA1206: Declaration keywords should follow order
+# Reason: Too strict for required properties
+dotnet_diagnostic.SA1206.severity = suggestion
+
+# SA1000: Keywords should be spaced correctly
+# Reason: New C# syntax (e.g., new() expressions)
+dotnet_diagnostic.SA1000.severity = suggestion
+
+# SA1513: Closing brace should be followed by blank line
+# Reason: Too strict for compact code
+dotnet_diagnostic.SA1513.severity = suggestion
+
+# SA1503: Braces should not be omitted
+# Reason: Allow single-line if statements without braces
+dotnet_diagnostic.SA1503.severity = suggestion
+
+# SA1128: Put constructor initializers on their own line
+# Reason: Allow compact constructors
+dotnet_diagnostic.SA1128.severity = suggestion
+
+# SA1122: Use string.Empty for empty strings
+# Reason: "" is more concise
+dotnet_diagnostic.SA1122.severity = suggestion
+
+# SA1111: Closing parenthesis should be on line of last parameter
+# Reason: Allow flexible formatting
+dotnet_diagnostic.SA1111.severity = suggestion
+
+# SA1009: Closing parenthesis should not be preceded by a space
+# Reason: Allow flexible formatting
+dotnet_diagnostic.SA1009.severity = suggestion
+
+# SA1117: Parameters should be on same line or separate lines
+# Reason: Allow flexible formatting
+dotnet_diagnostic.SA1117.severity = suggestion
+
+# SA0001: XML comment analysis is disabled
+# Reason: We don't require XML documentation for all members
+dotnet_diagnostic.SA0001.severity = none

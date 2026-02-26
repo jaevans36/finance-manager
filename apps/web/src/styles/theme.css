@@ -1,0 +1,119 @@
+/**
+ * CSS Variable Theme — Finance Manager
+ *
+ * Defines colour tokens as HSL values that Tailwind CSS references via
+ * `hsl(var(--token))`. Both light (:root) and dark (.dark) palettes
+ * are provided, matching the existing styled-components theme values.
+ *
+ * Usage: Tailwind classes like `bg-primary`, `text-foreground`, `border-border`
+ *        automatically resolve to the correct theme value.
+ */
+
+@layer base {
+  :root {
+    /* ── Backgrounds ─────────────────────────────────── */
+    --background: 0 0% 100%;           /* #FFFFFF */
+    --foreground: 0 0% 10%;            /* #1A1A1A */
+
+    /* ── Card ────────────────────────────────────────── */
+    --card: 0 0% 100%;                 /* #FFFFFF */
+    --card-foreground: 0 0% 10%;       /* #1A1A1A */
+
+    /* ── Popover ─────────────────────────────────────── */
+    --popover: 0 0% 100%;              /* #FFFFFF */
+    --popover-foreground: 0 0% 10%;    /* #1A1A1A */
+
+    /* ── Primary (near-black for calm, professional UI) */
+    --primary: 0 0% 10%;               /* #1A1A1A */
+    --primary-foreground: 0 0% 100%;   /* #FFFFFF */
+
+    /* ── Secondary ───────────────────────────────────── */
+    --secondary: 0 0% 97%;             /* #F7F7F7 */
+    --secondary-foreground: 0 0% 32%;  /* #525252 */
+
+    /* ── Muted ───────────────────────────────────────── */
+    --muted: 0 0% 94%;                 /* #EFEFEF */
+    --muted-foreground: 0 0% 32%;      /* #525252 */
+
+    /* ── Accent ──────────────────────────────────────── */
+    --accent: 0 0% 96%;                /* #F5F5F5 */
+    --accent-foreground: 0 0% 10%;     /* #1A1A1A */
+
+    /* ── Destructive ─────────────────────────────────── */
+    --destructive: 0 100% 65%;         /* #FF4D4D */
+    --destructive-foreground: 0 0% 100%; /* white text on red */
+
+    /* ── Success ─────────────────────────────────────── */
+    --success: 154 100% 65%;           /* #4DFFBC */
+    --success-foreground: 155 78% 20%; /* #0A5C38 */
+
+    /* ── Warning (mapped to destructive per spec) ────── */
+    --warning: 0 100% 65%;             /* #FF4D4D */
+    --warning-foreground: 0 68% 36%;   /* #9B1C1C */
+
+    /* ── Border / Input / Ring ───────────────────────── */
+    --border: 0 0% 85%;                /* #D9D9D9 */
+    --input: 0 0% 85%;                 /* #D9D9D9 */
+    --ring: 0 0% 10%;                  /* #1A1A1A — focus ring */
+
+    /* ── Radius ──────────────────────────────────────── */
+    --radius: 6px;
+  }
+
+  .dark {
+    /* ── Backgrounds ─────────────────────────────────── */
+    --background: 0 0% 10%;            /* #1A1A1A */
+    --foreground: 0 0% 91%;            /* #E8E8E8 */
+
+    /* ── Card ────────────────────────────────────────── */
+    --card: 0 0% 13%;                  /* #222222 */
+    --card-foreground: 0 0% 91%;       /* #E8E8E8 */
+
+    /* ── Popover ─────────────────────────────────────── */
+    --popover: 0 0% 13%;               /* #222222 */
+    --popover-foreground: 0 0% 91%;    /* #E8E8E8 */
+
+    /* ── Primary (near-white on dark) ────────────────── */
+    --primary: 0 0% 91%;               /* #E8E8E8 */
+    --primary-foreground: 0 0% 10%;    /* #1A1A1A */
+
+    /* ── Secondary ───────────────────────────────────── */
+    --secondary: 0 0% 18%;             /* #2D2D2D */
+    --secondary-foreground: 0 0% 69%;  /* #B0B0B0 */
+
+    /* ── Muted ───────────────────────────────────────── */
+    --muted: 0 0% 18%;                 /* #2D2D2D */
+    --muted-foreground: 0 0% 69%;      /* #B0B0B0 */
+
+    /* ── Accent ──────────────────────────────────────── */
+    --accent: 0 0% 16%;                /* #2A2A2A */
+    --accent-foreground: 0 0% 91%;     /* #E8E8E8 */
+
+    /* ── Destructive ─────────────────────────────────── */
+    --destructive: 0 100% 65%;         /* #FF4D4D */
+    --destructive-foreground: 0 0% 91%; /* light text on red */
+
+    /* ── Success ─────────────────────────────────────── */
+    --success: 154 100% 65%;           /* #4DFFBC */
+    --success-foreground: 154 100% 65%; /* #4DFFBC (self on dark bg) */
+
+    /* ── Warning ─────────────────────────────────────── */
+    --warning: 0 100% 65%;             /* #FF4D4D */
+    --warning-foreground: 0 100% 77%;  /* #FF8A8A */
+
+    /* ── Border / Input / Ring ───────────────────────── */
+    --border: 0 0% 20%;                /* #333333 */
+    --input: 0 0% 20%;                 /* #333333 */
+    --ring: 0 0% 91%;                  /* #E8E8E8 — focus ring */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}

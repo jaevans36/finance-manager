@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <!-- Exclude test projects from coverage -->
+          <Exclude>[*.Tests]*,[*.IntegrationTests]*,[*.UnitTests]*</Exclude>
+          
+          <!-- Exclude specific files -->
+          <ExcludeByFile>**/Migrations/*.cs,**/Program.cs</ExcludeByFile>
+          
+          <!-- Include only the main API project -->
+          <Include>[FinanceApi]*</Include>
+          
+          <!-- Exclude specific attributes (e.g., generated code) -->
+          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+          
+          <!-- Coverage output formats -->
+          <Format>json,cobertura,lcov,opencover</Format>
+          
+          <!-- Set thresholds (optional - will not fail build, just report) -->
+          <Threshold>80</Threshold>
+          <ThresholdType>line,branch</ThresholdType>
+          <ThresholdStat>total</ThresholdStat>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
