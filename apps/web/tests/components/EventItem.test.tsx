@@ -80,8 +80,8 @@ describe('EventItem', () => {
     it('should show reminder indicator when reminder is set', () => {
       renderWithProviders(<EventItem event={mockEvent} {...mockHandlers} />);
 
-      // Check for reminder icon or text
-      expect(screen.getByTitle(/reminder|Reminder: 15 minutes/i)).toBeInTheDocument();
+      // Reminder renders as a Badge with the reminder label text
+      expect(screen.getByText('15 minutes before')).toBeInTheDocument();
     });
 
     it('should not show description when not provided', () => {
