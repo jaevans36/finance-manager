@@ -115,6 +115,7 @@ builder.Services.AddScoped<IVersionService, VersionService>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 builder.Services.AddScoped<IWipService, WipService>();
+builder.Services.AddScoped<IClassificationSuggestionService, ClassificationSuggestionService>();
 // Configure PostgreSQL with Entity Framework Core
 builder.Services.AddDbContext<FinanceDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));

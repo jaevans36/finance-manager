@@ -13,6 +13,9 @@ public interface ITaskService
     System.Threading.Tasks.Task<TaskDto> CreateTaskAsync(Guid userId, CreateTaskRequest request);
     System.Threading.Tasks.Task<TaskDto> UpdateTaskAsync(Guid userId, Guid taskId, UpdateTaskRequest request);
     System.Threading.Tasks.Task<TaskDto> UpdateTaskStatusAsync(Guid userId, Guid taskId, UpdateTaskStatusRequest request);
+    System.Threading.Tasks.Task<TaskDto> ClassifyTaskAsync(Guid userId, Guid taskId, ClassifyTaskRequest request);
+    System.Threading.Tasks.Task<List<TaskDto>> BulkClassifyAsync(Guid userId, BulkClassifyRequest request);
+    System.Threading.Tasks.Task<MatrixResponse> GetMatrixAsync(Guid userId, Guid? groupId = null, string? priority = null, bool includeCompleted = false);
     System.Threading.Tasks.Task DeleteTaskAsync(Guid userId, Guid taskId);
     System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid userId, Guid taskId, bool includeSubtasks = false);
     System.Threading.Tasks.Task<List<TaskDto>> GetTasksAsync(
@@ -195,6 +198,162 @@ public class TaskService : ITaskService
         // Future: add strict transition rules if needed
     }
 
+    public async System.Threading.Tasks.Task<TaskDto> ClassifyTaskAsync(Guid userId, Guid taskId, ClassifyTaskRequest request)
+    {
+        var task = await _context.Tasks
+            .Include(t => t.Group)
+            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
+
+        if (task == null)
+        {
+            throw new KeyNotFoundException("Task not found");
+        }
+
+        if (request.Urgency != null)
+        {
+            if (!Enum.TryParse<Models.UrgencyLevel>(request.Urgency, true, out var urgency))
+            {
+                throw new ArgumentException($"Invalid urgency level: {request.Urgency}");
+            }
+
+            task.Urgency = urgency;
+        }
+
+        if (request.Importance != null)
+        {
+            if (!Enum.TryParse<Models.ImportanceLevel>(request.Importance, true, out var importance))
+            {
+                throw new ArgumentException($"Invalid importance level: {request.Importance}");
+            }
+
+            task.Importance = importance;
+        }
+
+        task.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        await _activityLogService.LogAsync(userId, ActivityType.TaskUpdated,
+            $"Classified task: {task.Title} (Urgency={task.Urgency}, Importance={task.Importance})", null, null);
+
+        return await MapToTaskDtoAsync(task);
+    }
+
+    public async System.Threading.Tasks.Task<List<TaskDto>> BulkClassifyAsync(Guid userId, BulkClassifyRequest request)
+    {
+        if (request.Items == null || request.Items.Count == 0)
+        {
+            throw new ArgumentException("At least one task must be specified for bulk classification");
+        }
+
+        var taskIds = request.Items.Select(i => i.TaskId).ToList();
+        var tasks = await _context.Tasks
+            .Include(t => t.Group)
+            .Where(t => taskIds.Contains(t.Id) && t.UserId == userId)
+            .ToListAsync();
+
+        if (tasks.Count != taskIds.Count)
+        {
+            var foundIds = tasks.Select(t => t.Id).ToHashSet();
+            var missing = taskIds.Where(id => !foundIds.Contains(id)).ToList();
+            throw new KeyNotFoundException($"Tasks not found: {string.Join(", ", missing)}");
+        }
+
+        var taskLookup = tasks.ToDictionary(t => t.Id);
+
+        foreach (var item in request.Items)
+        {
+            var task = taskLookup[item.TaskId];
+
+            if (item.Urgency != null && Enum.TryParse<Models.UrgencyLevel>(item.Urgency, true, out var urgency))
+            {
+                task.Urgency = urgency;
+            }
+
+            if (item.Importance != null && Enum.TryParse<Models.ImportanceLevel>(item.Importance, true, out var importance))
+            {
+                task.Importance = importance;
+            }
+
+            task.UpdatedAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+
+        await _activityLogService.LogAsync(userId, ActivityType.TaskUpdated,
+            $"Bulk classified {request.Items.Count} tasks", null, null);
+
+        var result = new List<TaskDto>();
+        foreach (var task in tasks)
+        {
+            result.Add(await MapToTaskDtoAsync(task));
+        }
+
+        return result;
+    }
+
+    public async System.Threading.Tasks.Task<MatrixResponse> GetMatrixAsync(
+        Guid userId, Guid? groupId = null, string? priority = null, bool includeCompleted = false)
+    {
+        var query = _context.Tasks
+            .Include(t => t.Group)
+            .Where(t => t.UserId == userId && t.ParentTaskId == null);
+
+        if (!includeCompleted)
+        {
+            query = query.Where(t => !t.Completed);
+        }
+
+        if (groupId.HasValue)
+        {
+            query = query.Where(t => t.GroupId == groupId.Value);
+        }
+
+        if (!string.IsNullOrEmpty(priority) && Enum.TryParse<Models.Priority>(priority, true, out var parsedPriority))
+        {
+            query = query.Where(t => t.Priority == parsedPriority);
+        }
+
+        var tasks = await query.OrderByDescending(t => t.Priority).ThenBy(t => t.DueDate).ToListAsync();
+
+        var response = new MatrixResponse();
+
+        foreach (var task in tasks)
+        {
+            var dto = await MapToTaskDtoAsync(task);
+            var quadrant = ComputeQuadrant(task.Urgency, task.Importance);
+
+            switch (quadrant)
+            {
+                case "Q1": response.Q1DoFirst.Add(dto); break;
+                case "Q2": response.Q2Schedule.Add(dto); break;
+                case "Q3": response.Q3Delegate.Add(dto); break;
+                case "Q4": response.Q4Eliminate.Add(dto); break;
+                default: response.Unclassified.Add(dto); break;
+            }
+        }
+
+        return response;
+    }
+
+    internal static string? ComputeQuadrant(Models.UrgencyLevel? urgency, Models.ImportanceLevel? importance)
+    {
+        if (!urgency.HasValue || !importance.HasValue)
+        {
+            return null;
+        }
+
+        var isUrgent = urgency.Value >= Models.UrgencyLevel.Medium;
+        var isImportant = importance.Value >= Models.ImportanceLevel.Medium;
+
+        return (isUrgent, isImportant) switch
+        {
+            (true, true) => "Q1",
+            (false, true) => "Q2",
+            (true, false) => "Q3",
+            (false, false) => "Q4",
+        };
+    }
+
     public async System.Threading.Tasks.Task DeleteTaskAsync(Guid userId, Guid taskId)
     {
         var task = await _context.Tasks
@@ -342,6 +501,9 @@ public class TaskService : ITaskService
             Status = task.Status.ToString(),
             StartedAt = task.StartedAt,
             BlockedReason = task.BlockedReason,
+            Urgency = task.Urgency?.ToString(),
+            Importance = task.Importance?.ToString(),
+            Quadrant = ComputeQuadrant(task.Urgency, task.Importance),
             GroupId = task.GroupId,
             GroupName = task.Group?.Name,
             GroupColour = task.Group?.Colour,

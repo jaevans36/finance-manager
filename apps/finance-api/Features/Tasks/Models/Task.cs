@@ -59,6 +59,12 @@ public class Task
     [MaxLength(500)]
     public string? BlockedReason { get; set; }
 
+    [Column("urgency")]
+    public UrgencyLevel? Urgency { get; set; }
+
+    [Column("importance")]
+    public ImportanceLevel? Importance { get; set; }
+
     [Column("created_at")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -92,4 +98,18 @@ public enum TaskStatus
     InProgress,
     Blocked,
     Completed
+}
+
+public enum UrgencyLevel
+{
+    Low,
+    Medium,
+    High
+}
+
+public enum ImportanceLevel
+{
+    Low,
+    Medium,
+    High
 }

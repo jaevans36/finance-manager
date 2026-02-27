@@ -51,6 +51,9 @@ describe('TaskDetailModal', () => {
     status: 'NotStarted' as const,
     startedAt: null,
     blockedReason: null,
+    urgency: null,
+    importance: null,
+    quadrant: null,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };

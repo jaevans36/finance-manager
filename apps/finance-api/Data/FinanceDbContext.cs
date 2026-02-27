@@ -195,6 +195,7 @@ public class FinanceDbContext : DbContext
             entity.HasIndex(e => new { e.UserId, e.Priority });
             entity.HasIndex(e => new { e.UserId, e.Completed, e.CreatedAt });
             entity.HasIndex(e => new { e.UserId, e.Status });
+            entity.HasIndex(e => new { e.UserId, e.Urgency, e.Importance });
         });
 
         // UserSettings configuration

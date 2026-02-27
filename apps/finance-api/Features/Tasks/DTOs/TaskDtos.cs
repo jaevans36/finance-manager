@@ -49,6 +49,9 @@ public class TaskDto
     public string Status { get; set; } = "NotStarted";
     public DateTime? StartedAt { get; set; }
     public string? BlockedReason { get; set; }
+    public string? Urgency { get; set; }
+    public string? Importance { get; set; }
+    public string? Quadrant { get; set; }
     public Guid? GroupId { get; set; }
     public string? GroupName { get; set; }
     public string? GroupColour { get; set; }
@@ -71,4 +74,52 @@ public class UpdateTaskStatusRequest
 
     [StringLength(500)]
     public string? BlockedReason { get; set; }
+}
+
+public class ClassifyTaskRequest
+{
+    [RegularExpression("^(Low|Medium|High)$", ErrorMessage = "Urgency must be Low, Medium, or High")]
+    public string? Urgency { get; set; }
+
+    [RegularExpression("^(Low|Medium|High)$", ErrorMessage = "Importance must be Low, Medium, or High")]
+    public string? Importance { get; set; }
+}
+
+public class BulkClassifyRequest
+{
+    [Required]
+    public List<BulkClassifyItem> Items { get; set; } = new();
+}
+
+public class BulkClassifyItem
+{
+    [Required]
+    public Guid TaskId { get; set; }
+
+    [RegularExpression("^(Low|Medium|High)$", ErrorMessage = "Urgency must be Low, Medium, or High")]
+    public string? Urgency { get; set; }
+
+    [RegularExpression("^(Low|Medium|High)$", ErrorMessage = "Importance must be Low, Medium, or High")]
+    public string? Importance { get; set; }
+}
+
+public class MatrixResponse
+{
+    public List<TaskDto> Q1DoFirst { get; set; } = new();
+    public List<TaskDto> Q2Schedule { get; set; } = new();
+    public List<TaskDto> Q3Delegate { get; set; } = new();
+    public List<TaskDto> Q4Eliminate { get; set; } = new();
+    public List<TaskDto> Unclassified { get; set; } = new();
+}
+
+public class ClassificationSuggestionDto
+{
+    public Guid TaskId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string? SuggestedUrgency { get; set; }
+    public string? SuggestedImportance { get; set; }
+    public string? SuggestedQuadrant { get; set; }
+    public string Reason { get; set; } = string.Empty;
+    public string? CurrentUrgency { get; set; }
+    public string? CurrentImportance { get; set; }
 }

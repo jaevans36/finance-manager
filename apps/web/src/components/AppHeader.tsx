@@ -13,6 +13,7 @@ import {
 } from './ui/dropdown-menu';
 import {
   LayoutDashboard,
+  LayoutGrid,
   ListTodo,
   Calendar,
   BarChart3,
@@ -59,6 +60,7 @@ export const AppHeader = () => {
   const navigationItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/tasks', icon: ListTodo, label: 'Tasks' },
+    { path: '/matrix', icon: LayoutGrid, label: 'Matrix' },
     { path: '/events', icon: CalendarClock, label: 'Events' },
     { path: '/calendar', icon: Calendar, label: 'Calendar' },
     { path: '/weekly-progress', icon: BarChart3, label: 'Progress' },

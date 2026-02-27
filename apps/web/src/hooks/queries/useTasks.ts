@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { taskService, type Task, type TaskStatus } from '@/services/taskService';
+import { taskService, type Task, type TaskStatus, type UrgencyLevel, type ImportanceLevel } from '@/services/taskService';
 import { queryKeys } from '../query-keys';
 
 interface TaskQueryParams {
@@ -114,6 +114,65 @@ export function useUpdateTaskStatus() {
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.statistics.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.settings.wipSummary() });
+    },
+  });
+}
+
+/** Fetch tasks grouped by Eisenhower Matrix quadrant */
+export function useMatrixTasks(params?: { groupId?: string; priority?: string; includeCompleted?: boolean }) {
+  return useQuery({
+    queryKey: queryKeys.tasks.matrix(params as Record<string, unknown>),
+    queryFn: () => taskService.getMatrixTasks(params),
+  });
+}
+
+/** Classify a task with urgency and importance */
+export function useClassifyTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, urgency, importance }: { id: string; urgency?: UrgencyLevel; importance?: ImportanceLevel }) =>
+      taskService.classifyTask(id, urgency, importance),
+    onSuccess: (_data: Task, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.matrix() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.statistics.all });
+    },
+  });
+}
+
+/** Bulk classify multiple tasks */
+export function useBulkClassify() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (items: Array<{ taskId: string; urgency?: UrgencyLevel; importance?: ImportanceLevel }>) =>
+      taskService.bulkClassifyTasks(items),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.statistics.all });
+    },
+  });
+}
+
+/** Get auto-classification suggestion for a single task */
+export function useClassificationSuggestion(taskId: string, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.tasks.suggestion(taskId),
+    queryFn: () => taskService.getSuggestion(taskId),
+    enabled: !!taskId && enabled,
+  });
+}
+
+/** Preview auto-classification for all unclassified tasks */
+export function useAutoClassifyPreview() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => taskService.previewAutoClassify(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.autoClassify() });
     },
   });
 }

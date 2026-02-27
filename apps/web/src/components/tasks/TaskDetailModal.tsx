@@ -14,6 +14,7 @@ import {
   Link2,
   MessageSquare,
   CheckCircle2,
+  LayoutGrid,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Input } from '../../components/ui/input';
@@ -26,9 +27,11 @@ import { useEditTaskForm } from '../../hooks/forms';
 import type { UpdateTaskInput } from '@finance-manager/schema';
 import { useSubtasks } from '../../hooks/useSubtasks';
 import { SubtaskList } from './SubtaskList';
-import type { Task, TaskStatus } from '../../services/taskService';
+import type { Task, TaskStatus, UrgencyLevel, ImportanceLevel } from '../../services/taskService';
 import { StatusBadge } from './StatusBadge';
 import { StatusSelector } from './StatusSelector';
+import { QuadrantBadge } from './QuadrantBadge';
+import { ClassificationPicker } from './ClassificationPicker';
 
 // =============================================================================
 // Types
@@ -52,6 +55,7 @@ interface TaskDetailModalProps {
   onDelete?: (id: string) => void;
   onToggleComplete?: (id: string) => void;
   onStatusChange?: (id: string, status: TaskStatus, blockedReason?: string) => void;
+  onClassificationChange?: (id: string, urgency: UrgencyLevel | null, importance: ImportanceLevel | null) => void;
   /** Called whenever subtasks are added, removed, or toggled so the parent can refresh counts */
   onSubtaskChange?: (taskId: string, counts: { subtaskCount: number; completedSubtaskCount: number }) => void;
 }
@@ -106,6 +110,7 @@ export const TaskDetailModal = ({
   onDelete,
   onToggleComplete,
   onStatusChange,
+  onClassificationChange,
   onSubtaskChange,
 }: TaskDetailModalProps) => {
   // ── State ──────────────────────────────────────────────────────────────
@@ -345,6 +350,9 @@ export const TaskDetailModal = ({
           {/* Status badge */}
           <StatusBadge status={task.status} />
 
+          {/* Quadrant badge */}
+          {task.quadrant && <QuadrantBadge quadrant={task.quadrant} showLabel />}
+
           {/* Priority badge */}
           <Badge variant={getPriorityVariant(task.priority)}>
             <Flag size={12} className="mr-1" />
@@ -494,6 +502,30 @@ export const TaskDetailModal = ({
               <p className="m-0 text-sm text-red-600 dark:text-red-400">{task.blockedReason}</p>
             </>
           )}
+
+          {/* Eisenhower Classification */}
+          <span className="flex items-center justify-center text-muted-foreground">
+            <LayoutGrid size={16} aria-hidden="true" />
+          </span>
+          <span className="text-sm font-medium text-muted-foreground" id="meta-quadrant-label">Quadrant</span>
+          <div className="min-w-0 text-sm text-foreground" aria-labelledby="meta-quadrant-label">
+            {onClassificationChange ? (
+              <ClassificationPicker
+                urgency={task.urgency}
+                importance={task.importance}
+                onChange={(urgency, importance) => onClassificationChange(task.id, urgency, importance)}
+                disabled={isSubmitting}
+              />
+            ) : (
+              <div className="flex items-center gap-2">
+                {task.quadrant ? (
+                  <QuadrantBadge quadrant={task.quadrant} showLabel />
+                ) : (
+                  <span className="text-muted-foreground">Unclassified</span>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Priority — only in edit mode; header shows badge in view mode */}
           {isEditing && (

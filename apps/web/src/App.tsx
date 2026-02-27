@@ -25,6 +25,7 @@ const ResendVerificationPage = lazy(() => import('./pages/auth/ResendVerificatio
 const WeeklyProgressPage = lazy(() => import('./pages/weekly-progress/WeeklyProgressPage'));
 const CalendarPage = lazy(() => import('./pages/calendar/CalendarPage'));
 const EventsPage = lazy(() => import('./pages/events/EventsPage'));
+const EisenhowerMatrixPage = lazy(() => import('./pages/eisenhower/EisenhowerMatrixPage'));
 const VersionHistoryPage = lazy(() => import('./pages/version/VersionHistoryPage'));
 const DesignSystemPage = lazy(() => import('./pages/design-system/DesignSystemPage'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -112,6 +113,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <EventsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/matrix"
+                  element={
+                    <ProtectedRoute>
+                      <EisenhowerMatrixPage />
                     </ProtectedRoute>
                   }
                 />

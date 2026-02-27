@@ -2,6 +2,9 @@ import { apiClient } from './api-client';
 import { statisticsService } from './statisticsService';
 
 export type TaskStatus = 'NotStarted' | 'InProgress' | 'Blocked' | 'Completed';
+export type UrgencyLevel = 'Low' | 'Medium' | 'High';
+export type ImportanceLevel = 'Low' | 'Medium' | 'High';
+export type Quadrant = 'Q1' | 'Q2' | 'Q3' | 'Q4';
 
 export interface Task {
   id: string;
@@ -15,6 +18,9 @@ export interface Task {
   status: TaskStatus;
   startedAt: string | null;
   blockedReason: string | null;
+  urgency: UrgencyLevel | null;
+  importance: ImportanceLevel | null;
+  quadrant: Quadrant | null;
   groupId: string | null;
   groupName: string | null;
   groupColour: string | null;
@@ -117,4 +123,64 @@ export const taskService = {
 
     return response.data;
   },
+
+  async classifyTask(id: string, urgency?: UrgencyLevel, importance?: ImportanceLevel): Promise<Task> {
+    const response = await apiClient.patch<Task>(`/tasks/${id}/classify`, {
+      urgency,
+      importance,
+    });
+
+    statisticsService.invalidateCache();
+
+    return response.data;
+  },
+
+  async bulkClassifyTasks(items: Array<{ taskId: string; urgency?: UrgencyLevel; importance?: ImportanceLevel }>): Promise<Task[]> {
+    const response = await apiClient.post<Task[]>('/tasks/bulk-classify', { items });
+
+    statisticsService.invalidateCache();
+
+    return response.data;
+  },
+
+  async getMatrixTasks(params?: { groupId?: string; priority?: string; includeCompleted?: boolean }): Promise<MatrixResponse> {
+    const queryString = params
+      ? '?' + new URLSearchParams(
+          Object.entries(params)
+            .filter(([, value]) => value !== undefined && value !== '')
+            .map(([key, value]) => [key, String(value)])
+        ).toString()
+      : '';
+    const response = await apiClient.get<MatrixResponse>(`/tasks/matrix${queryString}`);
+    return response.data;
+  },
+
+  async getSuggestion(id: string): Promise<ClassificationSuggestion> {
+    const response = await apiClient.get<ClassificationSuggestion>(`/tasks/${id}/suggest-classification`);
+    return response.data;
+  },
+
+  async previewAutoClassify(): Promise<ClassificationSuggestion[]> {
+    const response = await apiClient.post<ClassificationSuggestion[]>('/tasks/auto-classify');
+    return response.data;
+  },
 };
+
+export interface MatrixResponse {
+  q1DoFirst: Task[];
+  q2Schedule: Task[];
+  q3Delegate: Task[];
+  q4Eliminate: Task[];
+  unclassified: Task[];
+}
+
+export interface ClassificationSuggestion {
+  taskId: string;
+  title: string;
+  suggestedUrgency: UrgencyLevel | null;
+  suggestedImportance: ImportanceLevel | null;
+  suggestedQuadrant: Quadrant | null;
+  reason: string;
+  currentUrgency: UrgencyLevel | null;
+  currentImportance: ImportanceLevel | null;
+}

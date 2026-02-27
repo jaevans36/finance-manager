@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
-import { taskService, type Task, type TaskStatus } from '../../services/taskService';
+import { taskService, type Task, type TaskStatus, type UrgencyLevel, type ImportanceLevel } from '../../services/taskService';
 import { eventService } from '../../services/eventService';
 import { taskGroupService } from '../../services/taskGroupService';
 import { subtaskService } from '../../services/subtaskService';
@@ -273,6 +273,18 @@ const TasksPage = () => {
     }
   };
 
+  const handleClassificationChange = async (id: string, urgency: UrgencyLevel | null, importance: ImportanceLevel | null) => {
+    try {
+      const updatedTask = await taskService.classifyTask(id, urgency ?? undefined, importance ?? undefined);
+      setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
+      setEditingTask((prev) => (prev && prev.id === id ? updatedTask : prev));
+      toast.success('Classification updated');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to classify task';
+      toast.error(message);
+    }
+  };
+
   const handleGroupCreated = () => {
     loadGroups();
   };
@@ -376,6 +388,7 @@ const TasksPage = () => {
           onDelete={handleDeleteTask}
           onToggleComplete={handleToggleComplete}
           onStatusChange={handleStatusChange}
+          onClassificationChange={handleClassificationChange}
           onSubtaskChange={handleSubtaskChange}
         />
       )}
