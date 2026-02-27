@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import styled, { useTheme } from 'styled-components';
-import { borderRadius } from '@finance-manager/ui/styles';
+import { cn } from '../../../lib/utils';
 import { statisticsService } from '../../../services/statisticsService';
 import type { HistoricalStatistics } from '../../../types/statistics';
 import { LineChartWrapper } from '../../../components/charts/LineChartWrapper';
@@ -13,102 +12,14 @@ const formatWeekLabel = (weekStart: string) => {
   return `${month} ${day}`;
 };
 
-const ChartCard = styled.div`
-  background: ${(props) => props.theme.colors.cardBackground};
-  border-radius: ${borderRadius.lg};
-  padding: 24px;
-  box-shadow: none;
-  margin-bottom: 24px;
-`;
-
-const ChartHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 12px;
-`;
-
-const Title = styled.h2`
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: ${(props) => props.theme.colors.text};
-`;
-
-const WeekRangeSelector = styled.div`
-  display: flex;
-  gap: 8px;
-`;
-
-const RangeButton = styled.button<{ $active?: boolean }>`
-  padding: 6px 12px;
-  border: 1px solid ${(props) => props.theme.colors.border};
-  border-radius: ${borderRadius.sm};
-  background: ${(props) => props.$active ? props.theme.colors.primary : props.theme.colors.cardBackground};
-  color: ${(props) => props.$active ? props.theme.colors.buttonText : props.theme.colors.text};
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background: ${(props) => props.$active ? props.theme.colors.primaryHover : props.theme.colors.backgroundSecondary};
-  }
-`;
-
-const LoadingState = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 300px;
-  color: ${(props) => props.theme.colors.textSecondary};
-  font-size: 1rem;
-`;
-
-const ErrorState = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 300px;
-  gap: 12px;
-`;
-
-const ErrorMessage = styled.p`
-  color: ${(props) => props.theme.colors.errorText};
-  margin: 0;
-`;
-
-const RetryButton = styled.button`
-  padding: 8px 16px;
-  background: ${(props) => props.theme.colors.primary};
-  color: ${(props) => props.theme.colors.buttonText};
-  border: none;
-  border-radius: ${borderRadius.sm};
-  cursor: pointer;
-  font-size: 0.875rem;
-
-  &:hover {
-    background: ${(props) => props.theme.colors.primaryHover};
-  }
-`;
-
-const EmptyState = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 300px;
-  color: ${(props) => props.theme.colors.textSecondary};
-  font-size: 1rem;
-`;
+const getCssVar = (name: string) =>
+  getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
 interface HistoricalCompletionChartProps {
   className?: string;
 }
 
 export const HistoricalCompletionChart = ({ className }: HistoricalCompletionChartProps) => {
-  const theme = useTheme();
   const [weeks, setWeeks] = useState(8);
   const [data, setData] = useState<HistoricalStatistics[]>([]);
   const [loading, setLoading] = useState(true);
@@ -120,7 +31,7 @@ export const HistoricalCompletionChart = ({ className }: HistoricalCompletionCha
     try {
       const historicalData = await statisticsService.getHistoricalStatistics(weeks);
       setData(historicalData);
-    } catch (err) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load historical data');
     } finally {
       setLoading(false);
@@ -133,39 +44,55 @@ export const HistoricalCompletionChart = ({ className }: HistoricalCompletionCha
 
   const chartData = data.map((stat) => ({
     week: formatWeekLabel(stat.weekStart),
-    completionRate: Math.round(stat.completionRate * 10) / 10, // Round to 1 decimal
+    completionRate: Math.round(stat.completionRate * 10) / 10,
     totalTasks: stat.totalTasks,
     completedTasks: stat.completedTasks,
   }));
 
   return (
-    <ChartCard className={className}>
-      <ChartHeader>
-        <Title>Completion Rate History</Title>
-        <WeekRangeSelector>
-          <RangeButton $active={weeks === 4} onClick={() => setWeeks(4)}>
-            4 Weeks
-          </RangeButton>
-          <RangeButton $active={weeks === 8} onClick={() => setWeeks(8)}>
-            8 Weeks
-          </RangeButton>
-          <RangeButton $active={weeks === 12} onClick={() => setWeeks(12)}>
-            12 Weeks
-          </RangeButton>
-        </WeekRangeSelector>
-      </ChartHeader>
+    <div className={cn('rounded-lg bg-card p-6 mb-6', className)}>
+      <div className="flex justify-between items-center mb-5 flex-wrap gap-3">
+        <h2 className="m-0 text-xl font-semibold text-foreground">Completion Rate History</h2>
+        <div className="flex gap-2">
+          {([4, 8, 12] as const).map((w) => (
+            <button
+              key={w}
+              className={cn(
+                'px-3 py-1.5 border rounded text-sm cursor-pointer transition-all',
+                weeks === w
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-card text-foreground border-border hover:bg-secondary'
+              )}
+              onClick={() => setWeeks(w)}
+            >
+              {w} Weeks
+            </button>
+          ))}
+        </div>
+      </div>
 
-      {loading && <LoadingState>Loading historical data...</LoadingState>}
+      {loading && (
+        <div className="flex justify-center items-center h-[300px] text-muted-foreground">
+          Loading historical data...
+        </div>
+      )}
 
       {error && !loading && (
-        <ErrorState>
-          <ErrorMessage>{error}</ErrorMessage>
-          <RetryButton onClick={fetchData}>Retry</RetryButton>
-        </ErrorState>
+        <div className="flex flex-col justify-center items-center h-[300px] gap-3">
+          <p className="text-destructive m-0">{error}</p>
+          <button
+            className="px-4 py-2 bg-primary text-primary-foreground border-none rounded text-sm cursor-pointer hover:bg-primary/90"
+            onClick={fetchData}
+          >
+            Retry
+          </button>
+        </div>
       )}
 
       {!loading && !error && chartData.length === 0 && (
-        <EmptyState>No historical data available</EmptyState>
+        <div className="flex justify-center items-center h-[300px] text-muted-foreground">
+          No historical data available
+        </div>
       )}
 
       {!loading && !error && chartData.length > 0 && (
@@ -176,12 +103,12 @@ export const HistoricalCompletionChart = ({ className }: HistoricalCompletionCha
           lines={[
             {
               dataKey: 'completionRate',
-              stroke: theme.colors.success,
+              stroke: `hsl(${getCssVar('--success')})`,
               name: 'Completion Rate %',
             },
           ]}
         />
       )}
-    </ChartCard>
+    </div>
   );
 };

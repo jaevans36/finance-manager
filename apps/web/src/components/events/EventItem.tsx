@@ -1,54 +1,15 @@
 import { memo } from 'react';
-import styled, { useTheme } from 'styled-components';
 import { Bell, Calendar, MapPin } from 'lucide-react';
 import type { Event } from '../../types/event';
-import { Card, Button, Text, TextSmall, Badge, Flex } from '@finance-manager/ui';
-import { mediaQueries } from '@finance-manager/ui/styles';
 import { REMINDER_OPTIONS } from '../../types/event';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
 
 interface EventItemProps {
   event: Event;
   onEdit: (event: Event) => void;
   onDelete: (id: string) => void;
 }
-
-const EventCard = styled(Card)`
-  padding: 15px;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-
-  ${mediaQueries.tablet} {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 12px;
-  }
-`;
-
-const EventIndicator = styled.div<{ $color?: string }>`
-  width: 4px;
-  height: 60px;
-  background-color: ${({ $color, theme }) => $color || theme.colors.info};
-  border-radius: 2px;
-  flex-shrink: 0;
-
-  ${mediaQueries.tablet} {
-    width: 100%;
-    height: 4px;
-  }
-`;
-
-const EventTitle = styled.h3`
-  margin: 0;
-  font-size: 16px;
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const EventDescription = styled(Text)`
-  margin: 5px 0;
-`;
 
 const formatEventDate = (startDate: string, endDate: string, isAllDay: boolean): string => {
   const start = new Date(startDate);
@@ -86,64 +47,74 @@ export const EventItem = memo(({
   onEdit,
   onDelete,
 }: EventItemProps) => {
-  const theme = useTheme();
   const isPast = new Date(event.endDate) < new Date();
   const reminderText = getReminderLabel(event.reminderMinutes);
 
   return (
-    <EventCard role="article" aria-label={`Event: ${event.title}`}>
-      <EventIndicator $color={event.groupColour || undefined} />
+    <div
+      className="mb-2.5 flex items-center gap-[15px] rounded-lg border border-border bg-card p-[15px] md:flex-col md:items-start md:gap-3 md:p-3"
+      role="article"
+      aria-label={`Event: ${event.title}`}
+    >
+      <div
+        className="h-[60px] w-1 flex-shrink-0 rounded-sm md:h-1 md:w-full"
+        style={{ backgroundColor: event.groupColour || '#898989' }}
+      />
 
-      <div style={{ flex: 1 }}>
-        <Flex align="center" gap={10} style={{ marginBottom: '5px' }}>
-          <EventTitle>{event.title}</EventTitle>
+      <div className="flex-1 min-w-0">
+        <div className="mb-[5px] flex flex-wrap items-center gap-2.5">
+          <h3 className="m-0 text-base text-foreground">{event.title}</h3>
           {event.groupName && (
-            <Badge 
-              variant="outline" 
-              style={{ 
-                borderColor: event.groupColour || theme.colors.textSecondary,
-                color: event.groupColour || theme.colors.textSecondary
+            <Badge
+              variant="outline"
+              style={{
+                borderColor: event.groupColour || 'hsl(var(--muted-foreground))',
+                color: event.groupColour || 'hsl(var(--muted-foreground))',
               }}
             >
               {event.groupName}
             </Badge>
           )}
-          {event.isAllDay && <Badge variant="info">All Day</Badge>}
+          {event.isAllDay && <Badge variant="secondary">All Day</Badge>}
           {isPast && <Badge variant="outline">Past</Badge>}
-          {reminderText && <Badge variant="warning"><Bell size={12} style={{verticalAlign: 'middle', marginRight: '4px'}} />{reminderText}</Badge>}
-        </Flex>
+          {reminderText && (
+            <Badge variant="warning">
+              <Bell className="mr-1 inline h-3 w-3 align-middle" />{reminderText}
+            </Badge>
+          )}
+        </div>
 
         {event.description && (
-          <EventDescription>{event.description}</EventDescription>
+          <p className="my-[5px] text-sm text-foreground">{event.description}</p>
         )}
 
-        <TextSmall style={{ marginTop: '5px' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Calendar size={14} /> {formatEventDate(event.startDate, event.endDate, event.isAllDay)}</span>
+        <p className="mt-[5px] text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {formatEventDate(event.startDate, event.endDate, event.isAllDay)}</span>
           {event.location && (
-            <span style={{ marginLeft: '15px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {event.location}</span>
+            <span className="ml-[15px] inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {event.location}</span>
           )}
-        </TextSmall>
+        </p>
       </div>
 
-      <Flex gap={5}>
-        <Button 
-          variant="primary" 
-          size="small" 
+      <div className="flex gap-[5px]">
+        <Button
+          variant="default"
+          size="sm"
           onClick={() => onEdit(event)}
           aria-label={`Edit event "${event.title}"`}
         >
           Edit
         </Button>
-        <Button 
-          variant="danger" 
-          size="small" 
+        <Button
+          variant="destructive"
+          size="sm"
           onClick={() => onDelete(event.id)}
           aria-label={`Delete event "${event.title}"`}
         >
           Delete
         </Button>
-      </Flex>
-    </EventCard>
+      </div>
+    </div>
   );
 });
 

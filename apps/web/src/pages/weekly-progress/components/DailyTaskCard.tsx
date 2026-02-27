@@ -1,181 +1,7 @@
-import styled from 'styled-components';
-import { Card, SmallBadge, TextSmall, ScrollableContainer } from '@finance-manager/ui';
-import { borderRadius } from '@finance-manager/ui/styles';
+import { cn } from '../../../lib/utils';
+import { Badge } from '../../../components/ui/badge';
 import type { Task } from '../../../services/taskService';
 import { chartColors } from '../../../components/charts/chartTheme';
-
-const DayCard = styled(Card)`
-  padding: 18px;
-  min-height: 320px;
-  display: flex;
-  flex-direction: column;
-  transition: all 0.3s ease;
-  animation: fadeIn 0.5s ease-in;
-
-  &:hover {
-    transform: translateY(-3px);
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-`;
-
-const DayHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding-bottom: 10px;
-  margin-bottom: 12px;
-`;
-
-const DayHeaderLeft = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const DayName = styled.div`
-  font-weight: 600;
-  font-size: 16px;
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const DayDate = styled(TextSmall)`
-  display: block;
-  margin-top: 2px;
-`;
-
-const TaskCount = styled(TextSmall)`
-  font-weight: 500;
-`;
-
-const DayProgressContainer = styled.div`
-  position: relative;
-  width: 100%;
-  margin-bottom: 16px;
-`;
-
-const DayProgressBar = styled.div`
-  width: 100%;
-  height: 12px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.sm};
-  overflow: visible;
-  position: relative;
-`;
-
-const DayProgressFill = styled.div<{ $percentage: number }>`
-  height: 100%;
-  width: ${({ $percentage }) => $percentage}%;
-  background: linear-gradient(90deg, ${({ theme }) => theme.colors.primary} 0%, ${({ theme }) => theme.colors.primaryHover} 100%);
-  transition: width 0.5s ease;
-  border-radius: ${({ $percentage }) => $percentage === 100 ? borderRadius.sm : `${borderRadius.sm} 0 0 ${borderRadius.sm}`};
-`;
-
-const ProgressHeader = styled.div`
-  position: relative;
-  width: 100%;
-  height: 24px;
-  margin-bottom: 4px;
-`;
-
-const ProgressPercentage = styled.div<{ $percentage: number }>`
-  position: absolute;
-  left: ${({ $percentage }) => $percentage}%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  transition: left 0.5s ease;
-`;
-
-const PercentageValue = styled.span<{ $percentage: number }>`
-  font-size: 14px;
-  font-weight: 700;
-  color: ${chartColors.primary};
-  position: relative;
-  left: ${({ $percentage }) => {
-    if ($percentage <= 2) return '24px';
-    if ($percentage >= 98) return '-16px';
-    return '0';
-  }};
-`;
-
-const ProgressArrow = styled.div`
-  width: 0;
-  height: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 5px solid ${chartColors.primary};
-`;
-
-const TaskItem = styled.div<{ $completed: boolean }>`
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 8px;
-  background: ${({ theme, $completed }) => 
-    $completed ? theme.colors.backgroundSecondary : theme.colors.cardBackground};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.sm};
-  font-size: 14px;
-  transition: all 0.2s;
-  cursor: pointer;
-
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.primary};
-    transform: translateX(2px);
-  }
-`;
-
-const TaskCheckbox = styled.input`
-  margin-top: 2px;
-  cursor: pointer;
-`;
-
-const TaskContent = styled.div`
-  flex: 1;
-  min-width: 0;
-`;
-
-const TaskTitle = styled.div<{ $completed: boolean }>`
-  font-weight: 500;
-  color: ${({ theme, $completed }) => $completed ? theme.colors.textSecondary : theme.colors.text};
-  text-decoration: ${({ $completed }) => $completed ? 'line-through' : 'none'};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  line-height: 1.4;
-`;
-
-const TaskMeta = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-top: 4px;
-  flex-wrap: wrap;
-`;
-
-const TaskGroup = styled(TextSmall)`
-  padding: 2px 6px;
-  border-radius: ${borderRadius.sm};
-  background-color: ${({ theme }) => theme.colors.backgroundSecondary};
-`;
-
-const EmptyDay = styled(TextSmall)`
-  display: block;
-  text-align: center;
-  padding: 20px;
-`;
 
 const getPriorityColor = (priority: string): string => {
   switch (priority) {
@@ -217,70 +43,104 @@ export const DailyTaskCard = ({
   const dayName = dayDate.toLocaleDateString('en-GB', { weekday: 'long' });
   const dayNumber = dayDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
 
+  const getPercentageOffset = (pct: number) => {
+    if (pct <= 2) return 'left-6';
+    if (pct >= 98) return '-left-4';
+    return 'left-0';
+  };
+
   return (
-    <DayCard>
-      <DayHeader>
-        <DayHeaderLeft>
-          <DayName>{dayName}</DayName>
-          <DayDate>{dayNumber}</DayDate>
-        </DayHeaderLeft>
-        <TaskCount>
+    <div className="rounded-lg border border-border bg-card p-[18px] min-h-[320px] flex flex-col transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 duration-500 hover:-translate-y-[3px]">
+      <div className="flex justify-between items-start pb-2.5 mb-3">
+        <div className="flex flex-col">
+          <div className="font-semibold text-base text-foreground">{dayName}</div>
+          <span className="block mt-0.5 text-xs text-muted-foreground">{dayNumber}</span>
+        </div>
+        <span className="text-xs text-muted-foreground font-medium">
           {completedTasks}/{totalTasks} tasks
-        </TaskCount>
-      </DayHeader>
-      
+        </span>
+      </div>
+
       {totalTasks > 0 && (
-        <DayProgressContainer>
-          <ProgressHeader>
-            <ProgressPercentage $percentage={completionRate}>
-              <PercentageValue $percentage={completionRate}>
+        <div className="relative w-full mb-4">
+          <div className="relative w-full h-6 mb-1">
+            <div
+              className="absolute flex flex-col items-center gap-0.5 transition-[left] duration-500 -translate-x-1/2"
+              style={{ left: `${completionRate}%` }}
+            >
+              <span
+                className={cn(
+                  'text-sm font-bold text-primary relative',
+                  getPercentageOffset(completionRate),
+                )}
+              >
                 {completionRate.toFixed(0)}%
-              </PercentageValue>
-              <ProgressArrow />
-            </ProgressPercentage>
-          </ProgressHeader>
-          <DayProgressBar>
-            <DayProgressFill $percentage={completionRate} />
-          </DayProgressBar>
-        </DayProgressContainer>
+              </span>
+              <div
+                className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[5px] border-t-primary"
+              />
+            </div>
+          </div>
+          <div className="w-full h-3 bg-secondary rounded-sm relative">
+            <div
+              className={cn(
+                'h-full bg-gradient-to-r from-primary to-primary/80 transition-[width] duration-500',
+                completionRate === 100 ? 'rounded-sm' : 'rounded-l-sm',
+              )}
+              style={{ width: `${completionRate}%` }}
+            />
+          </div>
+        </div>
       )}
-      
+
       {tasks.length > 0 ? (
-        <ScrollableContainer 
-          style={{ 
-            marginTop: '12px', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            gap: '10px', 
-            flex: 1 
-          }}
-        >
+        <div className="mt-3 flex flex-col gap-2.5 flex-1 overflow-y-auto">
           {tasks.map((task) => (
-            <TaskItem key={task.id} $completed={task.completed}>
-              <TaskCheckbox 
-                type="checkbox" 
+            <div
+              key={task.id}
+              className={cn(
+                'flex items-start gap-2 p-2 border border-border rounded-sm text-sm transition-all duration-200 cursor-pointer hover:border-primary hover:translate-x-0.5',
+                task.completed ? 'bg-secondary' : 'bg-card',
+              )}
+            >
+              <input
+                type="checkbox"
+                className="mt-0.5 cursor-pointer"
                 checked={task.completed}
                 onChange={() => onToggleTask(task.id, task.completed)}
               />
-              <TaskContent>
-                <TaskTitle $completed={task.completed} title={task.title}>
-                  {removeDayPrefix(task.title)}
-                </TaskTitle>
-                <TaskMeta>
-                  <SmallBadge style={{ backgroundColor: getPriorityColor(task.priority) }}>
-                    {task.priority}
-                  </SmallBadge>
-                  {task.groupName && (
-                    <TaskGroup>{task.groupName}</TaskGroup>
+              <div className="flex-1 min-w-0">
+                <div
+                  className={cn(
+                    'font-medium line-clamp-2 leading-[1.4]',
+                    task.completed
+                      ? 'text-muted-foreground line-through'
+                      : 'text-foreground',
                   )}
-                </TaskMeta>
-              </TaskContent>
-            </TaskItem>
+                  title={task.title}
+                >
+                  {removeDayPrefix(task.title)}
+                </div>
+                <div className="flex gap-2 mt-1 flex-wrap">
+                  <Badge
+                    className="text-[11px] text-white"
+                    style={{ backgroundColor: getPriorityColor(task.priority) }}
+                  >
+                    {task.priority}
+                  </Badge>
+                  {task.groupName && (
+                    <span className="text-xs text-muted-foreground px-1.5 py-0.5 rounded-sm bg-secondary">
+                      {task.groupName}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
           ))}
-        </ScrollableContainer>
+        </div>
       ) : (
-        <EmptyDay>No tasks</EmptyDay>
+        <span className="block text-center text-xs text-muted-foreground p-5">No tasks</span>
       )}
-    </DayCard>
+    </div>
   );
 };

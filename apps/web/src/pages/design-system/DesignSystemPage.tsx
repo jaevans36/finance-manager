@@ -1,423 +1,339 @@
-import styled from 'styled-components';
-import { 
-  Container, 
-  Heading1, 
-  Heading2, 
-  Heading3, 
-  Text, 
-  TextSmall, 
-  TextSecondary,
-  Button,
-  Card,
-  CardHeader,
-  CardTitle,
-  CardBody,
-  Badge,
-  SmallBadge,
-  Input,
-  Label,
-  FormGroup,
-  Alert
-} from '@finance-manager/ui';
-import { spacing, typography, borderRadius } from '@finance-manager/ui/styles';
-import { useTheme } from '@finance-manager/ui';
 import { Palette, Type, Layers, Space, CheckCircle, Sparkles } from 'lucide-react';
 
-// shadcn/ui components (Tailwind-based)
-import { Button as ShadcnButton } from '@/components/ui/button';
-import { Card as ShadcnCard, CardHeader as ShadcnCardHeader, CardTitle as ShadcnCardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Badge as ShadcnBadge } from '@/components/ui/badge';
-import { Input as ShadcnInput } from '@/components/ui/input';
-import { Label as ShadcnLabel } from '@/components/ui/label';
-import { Alert as ShadcnAlert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Button } from '../../components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Alert, AlertTitle, AlertDescription } from '../../components/ui/alert';
+import { Separator } from '../../components/ui/separator';
+import { Switch } from '../../components/ui/switch';
+import { Checkbox } from '../../components/ui/checkbox';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/tabs';
 
-const PageContainer = styled(Container)`
-  padding-top: ${spacing.xl};
-  padding-bottom: ${spacing['3xl']};
-`;
+/** CSS variable colour tokens exposed by theme.css */
+const colorCategories = [
+  {
+    title: 'Brand Colours',
+    colors: [
+      { name: 'Primary', css: '--primary' },
+      { name: 'Primary Foreground', css: '--primary-foreground' },
+    ],
+  },
+  {
+    title: 'Background Colours',
+    colors: [
+      { name: 'Background', css: '--background' },
+      { name: 'Card', css: '--card' },
+      { name: 'Secondary', css: '--secondary' },
+      { name: 'Muted', css: '--muted' },
+      { name: 'Accent', css: '--accent' },
+    ],
+  },
+  {
+    title: 'Text Colours',
+    colors: [
+      { name: 'Foreground', css: '--foreground' },
+      { name: 'Card Foreground', css: '--card-foreground' },
+      { name: 'Muted Foreground', css: '--muted-foreground' },
+      { name: 'Secondary Foreground', css: '--secondary-foreground' },
+    ],
+  },
+  {
+    title: 'Status Colours',
+    colors: [
+      { name: 'Destructive', css: '--destructive' },
+      { name: 'Success', css: '--success' },
+      { name: 'Warning', css: '--warning' },
+    ],
+  },
+  {
+    title: 'Border & Ring',
+    colors: [
+      { name: 'Border', css: '--border' },
+      { name: 'Input', css: '--input' },
+      { name: 'Ring', css: '--ring' },
+    ],
+  },
+];
 
-const Section = styled.section`
-  margin-bottom: ${spacing['3xl']};
-`;
-
-const SectionHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${spacing.md};
-  margin-bottom: ${spacing.xl};
-  padding-bottom: ${spacing.md};
-  border-bottom: 2px solid ${({ theme }) => theme.colors.border};
-`;
-
-const ColorGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: ${spacing.lg};
-`;
-
-const ColorSwatch = styled.div<{ $color: string }>`
-  background: ${({ $color }) => $color};
-  height: 100px;
-  border-radius: ${borderRadius.lg};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  display: flex;
-  align-items: flex-end;
-  padding: ${spacing.md};
-`;
-
-const ColorLabel = styled.div`
-  background: ${({ theme }) => theme.colors.background};
-  color: ${({ theme }) => theme.colors.text};
-  padding: ${spacing.xs} ${spacing.sm};
-  border-radius: ${borderRadius.sm};
-  ${typography.bodySmall}
-  font-weight: 500;
-`;
-
-const TypographyExample = styled.div`
-  margin-bottom: ${spacing.lg};
-  padding: ${spacing.lg};
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${borderRadius.lg};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-`;
-
-const SpacingGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: ${spacing.lg};
-`;
-
-const SpacingBox = styled.div<{ $size: string }>`
-  background: ${({ theme }) => theme.colors.primary};
-  width: ${({ $size }) => $size};
-  height: ${({ $size }) => $size};
-  border-radius: ${borderRadius.sm};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  ${typography.bodySmall}
-  font-weight: 600;
-`;
-
-const ComponentShowcase = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${spacing.xl};
-`;
-
-const ComponentGroup = styled.div`
-  padding: ${spacing.xl};
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.lg};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-`;
-
-const ComponentRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${spacing.md};
-  align-items: center;
-  margin-top: ${spacing.md};
-`;
-
-const CodeBlock = styled.pre`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  color: ${({ theme }) => theme.colors.text};
-  padding: ${spacing.lg};
-  border-radius: ${borderRadius.lg};
-  overflow-x: auto;
-  ${typography.bodySmall}
-  font-family: 'Courier New', monospace;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  margin-top: ${spacing.md};
-`;
+const spacingSizes = [
+  { name: 'xs (1 / 4px)', tw: '1', px: '4px' },
+  { name: 'sm (2 / 8px)', tw: '2', px: '8px' },
+  { name: 'md (3 / 12px)', tw: '3', px: '12px' },
+  { name: 'lg (4 / 16px)', tw: '4', px: '16px' },
+  { name: 'xl (5 / 20px)', tw: '5', px: '20px' },
+  { name: '2xl (6 / 24px)', tw: '6', px: '24px' },
+  { name: '3xl (8 / 32px)', tw: '8', px: '32px' },
+];
 
 const DesignSystemPage = () => {
-  const { theme } = useTheme();
-
-  const colorCategories = [
-    {
-      title: 'Brand Colors',
-      colors: [
-        { name: 'Primary', value: theme.colors.primary },
-        { name: 'Primary Hover', value: theme.colors.primaryHover },
-        { name: 'Primary Disabled', value: theme.colors.primaryDisabled },
-      ]
-    },
-    {
-      title: 'Background Colors',
-      colors: [
-        { name: 'Background', value: theme.colors.background },
-        { name: 'Background Secondary', value: theme.colors.backgroundSecondary },
-        { name: 'Background Tertiary', value: theme.colors.backgroundTertiary },
-        { name: 'Card Background', value: theme.colors.cardBackground },
-      ]
-    },
-    {
-      title: 'Text Colors',
-      colors: [
-        { name: 'Text', value: theme.colors.text },
-        { name: 'Text Secondary', value: theme.colors.textSecondary },
-        { name: 'Text Disabled', value: theme.colors.textDisabled },
-      ]
-    },
-    {
-      title: 'Status Colors',
-      colors: [
-        { name: 'Success', value: theme.colors.success },
-        { name: 'Error', value: theme.colors.error },
-        { name: 'Warning', value: theme.colors.warning },
-        { name: 'Info', value: theme.colors.info },
-      ]
-    },
-    {
-      title: 'Border & Shadow',
-      colors: [
-        { name: 'Border', value: theme.colors.border },
-        { name: 'Border Hover', value: theme.colors.borderHover },
-      ]
-    }
-  ];
-
-  const spacingSizes = [
-    { name: 'xs', value: spacing.xs },
-    { name: 'sm', value: spacing.sm },
-    { name: 'md', value: spacing.md },
-    { name: 'lg', value: spacing.lg },
-    { name: 'xl', value: spacing.xl },
-    { name: '2xl', value: spacing['2xl'] },
-    { name: '3xl', value: spacing['3xl'] },
-  ];
-
   return (
-    <PageContainer>
-      <Heading1>Design System</Heading1>
-      <Text>Complete design system and component library for Finance Manager applications.</Text>
+    <div className="mx-auto w-4/5 max-w-6xl px-5 pt-5 pb-8 md:w-[95%] md:px-[10px]">
+      <h1 className="text-2xl font-semibold">Design System</h1>
+      <p className="text-sm mt-1">
+        Complete design system and component library for Finance Manager applications.
+      </p>
 
-      {/* Colors Section */}
-      <Section>
-        <SectionHeader>
+      {/* Colour Palette */}
+      <section className="mb-8">
+        <div className="flex items-center gap-3 mb-5 pb-3 border-b-2 border-border">
           <Palette size={24} />
-          <Heading2>Colour Palette</Heading2>
-        </SectionHeader>
+          <h2 className="text-lg font-semibold">Colour Palette</h2>
+        </div>
         {colorCategories.map((category) => (
-          <div key={category.title} style={{ marginBottom: spacing.xl }}>
-            <Heading3>{category.title}</Heading3>
-            <ColorGrid>
+          <div key={category.title} className="mb-5">
+            <h3 className="text-base font-semibold mb-2">{category.title}</h3>
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
               {category.colors.map((color) => (
-                <ColorSwatch key={color.name} $color={color.value}>
-                  <ColorLabel>{color.name}</ColorLabel>
-                </ColorSwatch>
+                <div
+                  key={color.name}
+                  className="h-[100px] rounded-lg border border-border flex items-end p-3"
+                  style={{ background: `hsl(var(${color.css}))` }}
+                >
+                  <span className="bg-background text-foreground px-2 py-1 rounded-sm text-xs font-medium">
+                    {color.name}
+                  </span>
+                </div>
               ))}
-            </ColorGrid>
+            </div>
           </div>
         ))}
-      </Section>
+      </section>
 
-      {/* Typography Section */}
-      <Section>
-        <SectionHeader>
+      {/* Typography */}
+      <section className="mb-8">
+        <div className="flex items-center gap-3 mb-5 pb-3 border-b-2 border-border">
           <Type size={24} />
-          <Heading2>Typography</Heading2>
-        </SectionHeader>
-        <TypographyExample>
-          <Heading1>Heading 1 (Page Title)</Heading1>
-          <CodeBlock>{`<Heading1>Page Title</Heading1>`}</CodeBlock>
-        </TypographyExample>
+          <h2 className="text-lg font-semibold">Typography</h2>
+        </div>
 
-        <TypographyExample>
-          <Heading2>Heading 2 (Section Heading)</Heading2>
-          <CodeBlock>{`<Heading2>Section Heading</Heading2>`}</CodeBlock>
-        </TypographyExample>
+        <div className="mb-4 p-4 bg-card rounded-lg border border-border">
+          <h1 className="text-2xl font-semibold">Heading 1 (Page Title)</h1>
+          <pre className="bg-muted text-foreground p-4 rounded-lg overflow-x-auto text-xs font-mono border border-border mt-3">
+            {`<h1 className="text-2xl font-semibold">Page Title</h1>`}
+          </pre>
+        </div>
 
-        <TypographyExample>
-          <Heading3>Heading 3 (Card Title)</Heading3>
-          <CodeBlock>{`<Heading3>Card Title</Heading3>`}</CodeBlock>
-        </TypographyExample>
+        <div className="mb-4 p-4 bg-card rounded-lg border border-border">
+          <h2 className="text-lg font-semibold">Heading 2 (Section Heading)</h2>
+          <pre className="bg-muted text-foreground p-4 rounded-lg overflow-x-auto text-xs font-mono border border-border mt-3">
+            {`<h2 className="text-lg font-semibold">Section Heading</h2>`}
+          </pre>
+        </div>
 
-        <TypographyExample>
-          <Text>Body Text (Standard body text, 14px)</Text>
-          <CodeBlock>{`<Text>Standard body text</Text>`}</CodeBlock>
-        </TypographyExample>
+        <div className="mb-4 p-4 bg-card rounded-lg border border-border">
+          <h3 className="text-base font-semibold">Heading 3 (Card Title)</h3>
+          <pre className="bg-muted text-foreground p-4 rounded-lg overflow-x-auto text-xs font-mono border border-border mt-3">
+            {`<h3 className="text-base font-semibold">Card Title</h3>`}
+          </pre>
+        </div>
 
-        <TypographyExample>
-          <TextSecondary>Secondary Text (Muted text, 14px)</TextSecondary>
-          <CodeBlock>{`<TextSecondary>Secondary text</TextSecondary>`}</CodeBlock>
-        </TypographyExample>
+        <div className="mb-4 p-4 bg-card rounded-lg border border-border">
+          <p className="text-sm">Body Text (Standard body text, 14px)</p>
+          <pre className="bg-muted text-foreground p-4 rounded-lg overflow-x-auto text-xs font-mono border border-border mt-3">
+            {`<p className="text-sm">Standard body text</p>`}
+          </pre>
+        </div>
 
-        <TypographyExample>
-          <TextSmall>Small Text (Captions, meta text, 12px)</TextSmall>
-          <CodeBlock>{`<TextSmall>Small text</TextSmall>`}</CodeBlock>
-        </TypographyExample>
-      </Section>
+        <div className="mb-4 p-4 bg-card rounded-lg border border-border">
+          <p className="text-sm text-muted-foreground">Secondary Text (Muted text, 14px)</p>
+          <pre className="bg-muted text-foreground p-4 rounded-lg overflow-x-auto text-xs font-mono border border-border mt-3">
+            {`<p className="text-sm text-muted-foreground">Secondary text</p>`}
+          </pre>
+        </div>
 
-      {/* Spacing Section */}
-      <Section>
-        <SectionHeader>
+        <div className="mb-4 p-4 bg-card rounded-lg border border-border">
+          <p className="text-xs">Small Text (Captions, meta text, 12px)</p>
+          <pre className="bg-muted text-foreground p-4 rounded-lg overflow-x-auto text-xs font-mono border border-border mt-3">
+            {`<p className="text-xs">Small text</p>`}
+          </pre>
+        </div>
+      </section>
+
+      {/* Spacing */}
+      <section className="mb-8">
+        <div className="flex items-center gap-3 mb-5 pb-3 border-b-2 border-border">
           <Space size={28} />
-          <Heading2>Spacing Scale</Heading2>
-        </SectionHeader>
-        <Text>4px-based spacing system:</Text>
-        <SpacingGrid style={{ marginTop: spacing.lg }}>
+          <h2 className="text-lg font-semibold">Spacing Scale</h2>
+        </div>
+        <p className="text-sm">Tailwind 4px-based spacing scale:</p>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4 mt-4">
           {spacingSizes.map((size) => (
             <div key={size.name}>
-              <SpacingBox $size={size.value}>{size.value}</SpacingBox>
-              <TextSmall style={{ marginTop: spacing.xs, textAlign: 'center', fontWeight: 600 }}>
-                {size.name}
-              </TextSmall>
+              <div
+                className="bg-primary rounded-sm flex items-center justify-center text-primary-foreground text-xs font-semibold"
+                style={{ width: size.px, height: size.px }}
+              >
+                {size.px}
+              </div>
+              <p className="text-xs mt-1 text-center font-semibold">{size.name}</p>
             </div>
           ))}
-        </SpacingGrid>
-      </Section>
+        </div>
+      </section>
 
-      {/* Components Section */}
-      <Section>
-        <SectionHeader>
+      {/* Components */}
+      <section className="mb-8">
+        <div className="flex items-center gap-3 mb-5 pb-3 border-b-2 border-border">
           <Layers size={24} />
-          <Heading2>Components</Heading2>
-        </SectionHeader>
+          <h2 className="text-lg font-semibold">Components</h2>
+        </div>
 
-        <ComponentShowcase>
+        <div className="flex flex-col gap-5">
           {/* Buttons */}
-          <ComponentGroup>
-            <Heading3>Buttons</Heading3>
-            <ComponentRow>
-              <Button variant="primary">Primary</Button>
+          <div className="p-5 bg-muted rounded-lg border border-border">
+            <h3 className="text-base font-semibold">Buttons</h3>
+            <div className="flex flex-wrap gap-3 items-center mt-3">
+              <Button>Default</Button>
               <Button variant="secondary">Secondary</Button>
-              <Button variant="danger">Danger</Button>
-            </ComponentRow>
-            <ComponentRow>
-              <Button size="small">Small</Button>
-              <Button size="medium">Medium</Button>
-              <Button size="large">Large</Button>
-            </ComponentRow>
-            <CodeBlock>{`<Button variant="primary">Primary</Button>
+              <Button variant="destructive">Destructive</Button>
+              <Button variant="outline">Outline</Button>
+              <Button variant="ghost">Ghost</Button>
+              <Button variant="link">Link</Button>
+            </div>
+            <div className="flex flex-wrap gap-3 items-center mt-3">
+              <Button size="sm">Small</Button>
+              <Button size="default">Default</Button>
+              <Button size="lg">Large</Button>
+            </div>
+            <pre className="bg-muted text-foreground p-4 rounded-lg overflow-x-auto text-xs font-mono border border-border mt-3">
+              {`<Button>Default</Button>
 <Button variant="secondary">Secondary</Button>
-<Button variant="danger">Danger</Button>
-<Button size="small">Small</Button>`}</CodeBlock>
-          </ComponentGroup>
+<Button variant="destructive">Destructive</Button>
+<Button size="sm">Small</Button>`}
+            </pre>
+          </div>
 
           {/* Badges */}
-          <ComponentGroup>
-            <Heading3>Badges</Heading3>
-            <ComponentRow>
-              <Badge variant="primary">Primary</Badge>
-              <Badge variant="success">Success</Badge>
-              <Badge variant="error">Error</Badge>
-              <Badge variant="warning">Warning</Badge>
-              <Badge variant="info">Info</Badge>
+          <div className="p-5 bg-muted rounded-lg border border-border">
+            <h3 className="text-base font-semibold">Badges</h3>
+            <div className="flex flex-wrap gap-3 items-center mt-3">
+              <Badge>Default</Badge>
+              <Badge variant="secondary">Secondary</Badge>
+              <Badge variant="destructive">Destructive</Badge>
               <Badge variant="outline">Outline</Badge>
-            </ComponentRow>
-            <ComponentRow>
-              <SmallBadge>Small Badge</SmallBadge>
-            </ComponentRow>
-            <CodeBlock>{`<Badge variant="success">Success</Badge>
-<Badge variant="outline">Outline</Badge>
-<SmallBadge>Small Badge</SmallBadge>`}</CodeBlock>
-          </ComponentGroup>
+              <Badge variant="success">Success</Badge>
+              <Badge variant="warning">Warning</Badge>
+            </div>
+            <pre className="bg-muted text-foreground p-4 rounded-lg overflow-x-auto text-xs font-mono border border-border mt-3">
+              {`<Badge variant="success">Success</Badge>
+<Badge variant="outline">Outline</Badge>`}
+            </pre>
+          </div>
 
           {/* Cards */}
-          <ComponentGroup>
-            <Heading3>Cards</Heading3>
-            <Card>
+          <div className="p-5 bg-muted rounded-lg border border-border">
+            <h3 className="text-base font-semibold">Cards</h3>
+            <Card className="mt-3">
               <CardHeader>
                 <CardTitle>Card Title</CardTitle>
               </CardHeader>
-              <CardBody>
-                <Text>Card body content goes here. Cards provide a container for related content and actions.</Text>
-              </CardBody>
+              <CardContent>
+                <p className="text-sm">
+                  Card body content goes here. Cards provide a container for related content and
+                  actions.
+                </p>
+              </CardContent>
             </Card>
-            <CodeBlock>{`<Card>
+            <pre className="bg-muted text-foreground p-4 rounded-lg overflow-x-auto text-xs font-mono border border-border mt-3">
+              {`<Card>
   <CardHeader>
     <CardTitle>Card Title</CardTitle>
   </CardHeader>
-  <CardBody>
-    <Text>Card content</Text>
-  </CardBody>
-</Card>`}</CodeBlock>
-          </ComponentGroup>
+  <CardContent>
+    <p className="text-sm">Card content</p>
+  </CardContent>
+</Card>`}
+            </pre>
+          </div>
 
           {/* Alerts */}
-          <ComponentGroup>
-            <Heading3>Alerts</Heading3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+          <div className="p-5 bg-muted rounded-lg border border-border">
+            <h3 className="text-base font-semibold">Alerts</h3>
+            <div className="flex flex-col gap-3 mt-3">
               <Alert variant="success">
-                <CheckCircle size={16} />
-                <span>Success! Your changes have been saved.</span>
+                <CheckCircle className="h-4 w-4" />
+                <AlertTitle>Success</AlertTitle>
+                <AlertDescription>Your changes have been saved.</AlertDescription>
               </Alert>
-              <Alert variant="error">
-                <span>Error! Something went wrong.</span>
+              <Alert variant="destructive">
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>Something went wrong.</AlertDescription>
               </Alert>
               <Alert variant="warning">
-                <span>Warning! Please review your input.</span>
+                <AlertTitle>Warning</AlertTitle>
+                <AlertDescription>Please review your input.</AlertDescription>
               </Alert>
-              <Alert variant="info">
-                <span>Info: This is an informational message.</span>
+              <Alert>
+                <AlertTitle>Info</AlertTitle>
+                <AlertDescription>This is an informational message.</AlertDescription>
               </Alert>
             </div>
-            <CodeBlock>{`<Alert variant="success">Success message</Alert>
-<Alert variant="error">Error message</Alert>`}</CodeBlock>
-          </ComponentGroup>
+            <pre className="bg-muted text-foreground p-4 rounded-lg overflow-x-auto text-xs font-mono border border-border mt-3">
+              {`<Alert variant="success">
+  <AlertTitle>Success</AlertTitle>
+  <AlertDescription>Your changes have been saved.</AlertDescription>
+</Alert>`}
+            </pre>
+          </div>
 
           {/* Form Inputs */}
-          <ComponentGroup>
-            <Heading3>Form Inputs</Heading3>
-            <FormGroup>
+          <div className="p-5 bg-muted rounded-lg border border-border">
+            <h3 className="text-base font-semibold">Form Inputs</h3>
+            <div className="space-y-2 mt-3 max-w-sm">
               <Label htmlFor="example">Label</Label>
               <Input id="example" type="text" placeholder="Enter text..." />
-            </FormGroup>
-            <CodeBlock>{`<FormGroup>
+            </div>
+            <pre className="bg-muted text-foreground p-4 rounded-lg overflow-x-auto text-xs font-mono border border-border mt-3">
+              {`<div className="space-y-2">
   <Label htmlFor="example">Label</Label>
   <Input id="example" placeholder="Enter text..." />
-</FormGroup>`}</CodeBlock>
-          </ComponentGroup>
-        </ComponentShowcase>
-      </Section>
+</div>`}
+            </pre>
+          </div>
+        </div>
+      </section>
 
-      {/* Usage Section */}
-      <Section>
-        <SectionHeader>
+      {/* Usage */}
+      <section className="mb-8">
+        <div className="flex items-center gap-3 mb-5 pb-3 border-b-2 border-border">
           <CheckCircle size={24} />
-          <Heading2>Usage</Heading2>
-        </SectionHeader>
+          <h2 className="text-lg font-semibold">Usage</h2>
+        </div>
         <Card>
-          <CardBody>
-            <Heading3>Importing from @finance-manager/ui</Heading3>
-            <CodeBlock>{`// Import components
-import { Button, Card, Input } from '@finance-manager/ui';
+          <CardContent className="pt-6">
+            <h3 className="text-base font-semibold mb-2">Importing Components</h3>
+            <pre className="bg-muted text-foreground p-4 rounded-lg overflow-x-auto text-xs font-mono border border-border mt-3">
+              {`// Import shadcn components
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
-// Import design tokens
-import { spacing, typography } from '@finance-manager/ui/styles';
+// Use cn() for conditional classes
+import { cn } from '@/lib/utils';
+<div className={cn('p-4 rounded-lg', isActive && 'bg-primary text-white')}>
 
-// Import contexts
-import { ThemeProvider, useTheme } from '@finance-manager/ui';
+// Tailwind utility classes
+<div className="p-4 text-2xl font-semibold text-foreground">
 
-// Use in styled-components
-const Container = styled.div\`
-  padding: \${spacing.lg};
-  \${typography.pageTitle}
-  color: \${({ theme }) => theme.colors.text};
-\`;`}</CodeBlock>
-          </CardBody>
+// TanStack Query hooks
+import { useTasks, useCreateTask } from '@/hooks/queries';
+const { data: tasks, isLoading } = useTasks({ completed: false });`}
+            </pre>
+          </CardContent>
         </Card>
-      </Section>
+      </section>
 
-      {/* Tailwind + shadcn/ui Section */}
-      <Section>
-        <SectionHeader>
+      {/* Interactive Showcase (Tabs) */}
+      <section className="mb-8">
+        <div className="flex items-center gap-3 mb-5 pb-3 border-b-2 border-border">
           <Sparkles size={24} />
-          <Heading2>Tailwind + shadcn/ui (New)</Heading2>
-        </SectionHeader>
-        <Text style={{ marginBottom: spacing.lg }}>
-          The project is migrating to Tailwind CSS + shadcn/ui. New components below co-exist
-          with the styled-components system above during the transition.
-        </Text>
+          <h2 className="text-lg font-semibold">Interactive Showcase</h2>
+        </div>
+        <p className="text-sm mb-4">
+          Explore all shadcn/ui component variants in the tabs below.
+        </p>
 
         <Tabs defaultValue="buttons" className="w-full">
           <TabsList>
@@ -427,112 +343,113 @@ const Container = styled.div\`
             <TabsTrigger value="feedback">Feedback</TabsTrigger>
           </TabsList>
 
-          {/* shadcn Buttons */}
+          {/* Buttons */}
           <TabsContent value="buttons" className="space-y-4">
             <div className="rounded-lg border bg-card p-6 space-y-4">
               <h3 className="text-lg font-semibold">Button Variants</h3>
               <div className="flex flex-wrap gap-3">
-                <ShadcnButton>Default</ShadcnButton>
-                <ShadcnButton variant="secondary">Secondary</ShadcnButton>
-                <ShadcnButton variant="destructive">Destructive</ShadcnButton>
-                <ShadcnButton variant="outline">Outline</ShadcnButton>
-                <ShadcnButton variant="ghost">Ghost</ShadcnButton>
-                <ShadcnButton variant="link">Link</ShadcnButton>
+                <Button>Default</Button>
+                <Button variant="secondary">Secondary</Button>
+                <Button variant="destructive">Destructive</Button>
+                <Button variant="outline">Outline</Button>
+                <Button variant="ghost">Ghost</Button>
+                <Button variant="link">Link</Button>
               </div>
               <h3 className="text-lg font-semibold">Button Sizes</h3>
               <div className="flex flex-wrap items-center gap-3">
-                <ShadcnButton size="sm">Small</ShadcnButton>
-                <ShadcnButton size="default">Default</ShadcnButton>
-                <ShadcnButton size="lg">Large</ShadcnButton>
-                <ShadcnButton size="icon"><CheckCircle className="h-4 w-4" /></ShadcnButton>
+                <Button size="sm">Small</Button>
+                <Button size="default">Default</Button>
+                <Button size="lg">Large</Button>
+                <Button size="icon"><CheckCircle className="h-4 w-4" /></Button>
               </div>
             </div>
           </TabsContent>
 
-          {/* shadcn Cards */}
+          {/* Cards */}
           <TabsContent value="cards" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <ShadcnCard>
-                <ShadcnCardHeader>
-                  <ShadcnCardTitle>Card Title</ShadcnCardTitle>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Card Title</CardTitle>
                   <CardDescription>Card description with muted text</CardDescription>
-                </ShadcnCardHeader>
+                </CardHeader>
                 <CardContent>
                   <p className="text-sm">Card body content goes here.</p>
                 </CardContent>
                 <CardFooter>
-                  <ShadcnButton variant="outline" size="sm">Action</ShadcnButton>
+                  <Button variant="outline" size="sm">Action</Button>
                 </CardFooter>
-              </ShadcnCard>
+              </Card>
 
-              <ShadcnCard>
-                <ShadcnCardHeader>
-                  <ShadcnCardTitle>Badges</ShadcnCardTitle>
-                </ShadcnCardHeader>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Badges</CardTitle>
+                </CardHeader>
                 <CardContent className="flex flex-wrap gap-2">
-                  <ShadcnBadge>Default</ShadcnBadge>
-                  <ShadcnBadge variant="secondary">Secondary</ShadcnBadge>
-                  <ShadcnBadge variant="destructive">Destructive</ShadcnBadge>
-                  <ShadcnBadge variant="outline">Outline</ShadcnBadge>
-                  <ShadcnBadge variant="success">Success</ShadcnBadge>
-                  <ShadcnBadge variant="warning">Warning</ShadcnBadge>
+                  <Badge>Default</Badge>
+                  <Badge variant="secondary">Secondary</Badge>
+                  <Badge variant="destructive">Destructive</Badge>
+                  <Badge variant="outline">Outline</Badge>
+                  <Badge variant="success">Success</Badge>
+                  <Badge variant="warning">Warning</Badge>
                 </CardContent>
-              </ShadcnCard>
+              </Card>
             </div>
           </TabsContent>
 
-          {/* shadcn Forms */}
+          {/* Forms */}
           <TabsContent value="forms" className="space-y-4">
             <div className="rounded-lg border bg-card p-6 space-y-6">
               <div className="space-y-2">
-                <ShadcnLabel htmlFor="tw-input">Text Input</ShadcnLabel>
-                <ShadcnInput id="tw-input" placeholder="Enter text..." />
+                <Label htmlFor="tw-input">Text Input</Label>
+                <Input id="tw-input" placeholder="Enter text..." />
               </div>
 
               <Separator />
 
               <div className="flex items-center space-x-3">
                 <Switch id="tw-switch" />
-                <ShadcnLabel htmlFor="tw-switch">Dark Mode Toggle</ShadcnLabel>
+                <Label htmlFor="tw-switch">Dark Mode Toggle</Label>
               </div>
 
               <div className="flex items-center space-x-3">
                 <Checkbox id="tw-check" />
-                <ShadcnLabel htmlFor="tw-check">Accept terms and conditions</ShadcnLabel>
+                <Label htmlFor="tw-check">Accept terms and conditions</Label>
               </div>
             </div>
           </TabsContent>
 
-          {/* shadcn Feedback */}
+          {/* Feedback */}
           <TabsContent value="feedback" className="space-y-4">
             <div className="space-y-3">
-              <ShadcnAlert>
+              <Alert>
                 <CheckCircle className="h-4 w-4" />
                 <AlertTitle>Default Alert</AlertTitle>
                 <AlertDescription>This is a default alert message.</AlertDescription>
-              </ShadcnAlert>
-              <ShadcnAlert variant="destructive">
+              </Alert>
+              <Alert variant="destructive">
                 <AlertTitle>Destructive</AlertTitle>
                 <AlertDescription>Something went wrong.</AlertDescription>
-              </ShadcnAlert>
-              <ShadcnAlert variant="success">
+              </Alert>
+              <Alert variant="success">
                 <CheckCircle className="h-4 w-4" />
                 <AlertTitle>Success</AlertTitle>
                 <AlertDescription>Your changes have been saved.</AlertDescription>
-              </ShadcnAlert>
-              <ShadcnAlert variant="warning">
+              </Alert>
+              <Alert variant="warning">
                 <AlertTitle>Warning</AlertTitle>
                 <AlertDescription>Please review your input carefully.</AlertDescription>
-              </ShadcnAlert>
+              </Alert>
             </div>
           </TabsContent>
         </Tabs>
 
         {/* Import guide */}
-        <Card style={{ marginTop: spacing.xl }}>
-          <CardBody>
-            <Heading3>Using shadcn/ui Components</Heading3>
-            <CodeBlock>{`// Import shadcn components (Tailwind-based)
+        <Card className="mt-5">
+          <CardContent className="pt-6">
+            <h3 className="text-base font-semibold mb-2">Using shadcn/ui Components</h3>
+            <pre className="bg-muted text-foreground p-4 rounded-lg overflow-x-auto text-xs font-mono border border-border mt-3">
+              {`// Import shadcn components (Tailwind-based)
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -543,11 +460,12 @@ import { cn } from '@/lib/utils';
 
 // TanStack Query hooks
 import { useTasks, useCreateTask } from '@/hooks/queries';
-const { data: tasks, isLoading } = useTasks({ completed: false });`}</CodeBlock>
-          </CardBody>
+const { data: tasks, isLoading } = useTasks({ completed: false });`}
+            </pre>
+          </CardContent>
         </Card>
-      </Section>
-    </PageContainer>
+      </section>
+    </div>
   );
 };
 

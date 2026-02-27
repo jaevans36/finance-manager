@@ -1,7 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider } from 'styled-components';
-import { lightTheme } from '../../src/styles/theme';
+import { ThemeProvider } from '@finance-manager/ui';
 import { ToastProvider } from '../../src/contexts/ToastContext';
 
 // Mock api-client before importing services
@@ -31,7 +30,7 @@ const mockTaskGroupService = taskGroupService as jest.Mocked<typeof taskGroupSer
 const renderWeeklyProgress = () => {
   return render(
     <BrowserRouter>
-      <ThemeProvider theme={lightTheme}>
+      <ThemeProvider>
         <ToastProvider>
           <WeeklyProgressPage />
         </ToastProvider>

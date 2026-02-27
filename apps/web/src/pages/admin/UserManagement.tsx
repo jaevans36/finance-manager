@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Button } from '@finance-manager/ui';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Badge } from '../../components/ui/badge';
+import { Checkbox } from '../../components/ui/checkbox';
 import { Modal } from '../../components/ui/Modal';
 import { Search, Shield, ShieldOff, Trash2, RefreshCcw, Plus, Edit, Key } from 'lucide-react';
-import styled from 'styled-components';
-import { borderRadius } from '@finance-manager/ui/styles';
 import { useAuth } from '../../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { 
@@ -14,261 +16,7 @@ import {
   type UpdateUserRequest 
 } from '../../services/userManagementService';
 import { PageLayout } from '../../components/layout/PageLayout';
-
-const ControlsContainer = styled.div`
-  display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  align-items: center;
-`;
-
-const SearchBar = styled.div`
-  flex: 1;
-  min-width: 300px;
-  position: relative;
-`;
-
-const SearchInput = styled.input`
-  width: 100%;
-  padding: 12px 12px 12px 44px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  background: ${({ theme }) => theme.colors.background};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 14px;
-  transition: all 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primary}20;
-  }
-`;
-
-const SearchIcon = styled(Search)`
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: ${({ theme }) => theme.colors.textSecondary};
-  pointer-events: none;
-`;
-
-const FilterButton = styled.button<{ $active?: boolean }>`
-  padding: 10px 20px;
-  border: 1px solid ${({ theme, $active }) => 
-    $active ? theme.colors.primary : theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  background: ${({ theme, $active }) => 
-    $active ? theme.colors.primary : theme.colors.background};
-  color: ${({ theme, $active }) => 
-    $active ? 'white' : theme.colors.text};
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    border-color: ${({ theme, $active }) => 
-      $active ? theme.colors.primary : theme.colors.textSecondary};
-  }
-`;
-
-const UsersTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  overflow: hidden;
-`;
-
-const TableHeader = styled.thead`
-  background: ${({ theme }) => theme.colors.background};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-`;
-
-const TableRow = styled.tr`
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.background};
-  }
-`;
-
-const TableCell = styled.td`
-  padding: 16px;
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const TableHeaderCell = styled.th`
-  padding: 16px;
-  text-align: left;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const UserEmail = styled.div`
-  font-weight: 500;
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const Username = styled.div`
-  font-size: 13px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-top: 2px;
-`;
-
-const Badge = styled.span<{ $variant: 'admin' | 'verified' | 'unverified' }>`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 4px 12px;
-  border-radius: ${borderRadius.lg};
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.2;
-  height: 24px;
-  min-width: 90px;
-  min-height: 20px;
-  max-height: 20px;
-  background: ${({ theme, $variant }) => {
-    if ($variant === 'admin') return theme.colors.warning + '20';
-    if ($variant === 'verified') return theme.colors.success + '20';
-    return theme.colors.error + '20';
-  }};
-  color: ${({ theme, $variant }) => {
-    if ($variant === 'admin') return theme.colors.warning;
-    if ($variant === 'verified') return theme.colors.success;
-    return theme.colors.error;
-  }};
-`;
-
-const ActionButton = styled.button`
-  padding: 6px 12px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.sm};
-  background: ${({ theme }) => theme.colors.background};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 12px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.primary};
-    background: ${({ theme }) => theme.colors.primary}10;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  &.danger:hover {
-    border-color: ${({ theme }) => theme.colors.error};
-    background: ${({ theme }) => theme.colors.error}10;
-    color: ${({ theme }) => theme.colors.error};
-  }
-`;
-
-const StatsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-`;
-
-const StatCard = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  padding: 20px;
-`;
-
-const StatValue = styled.div`
-  font-size: 28px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.text};
-  margin-bottom: 4px;
-`;
-
-const StatLabel = styled.div`
-  font-size: 13px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 20px;
-`;
-
-const Label = styled.label`
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.text};
-  margin-bottom: 8px;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  background: ${({ theme }) => theme.colors.background};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 14px;
-  transition: all 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primary}20;
-  }
-`;
-
-const CheckboxLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.text};
-  cursor: pointer;
-`;
-
-const Checkbox = styled.input`
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-`;
-
-const ErrorMessage = styled.div`
-  color: ${({ theme }) => theme.colors.error};
-  font-size: 13px;
-  margin-top: 8px;
-`;
-
-const ModalActions = styled.div`
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 24px;
-`;
+import { cn } from '../../lib/utils';
 
 const UserManagement = () => {
   const { user: currentUser } = useAuth();
@@ -318,7 +66,7 @@ const UserManagement = () => {
       
       setUsers(usersResponse.users);
       setStats(statsResponse);
-    } catch (err) {
+    } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to load users';
       setError(message);
       console.error('Failed to fetch users:', err);
@@ -334,7 +82,7 @@ const UserManagement = () => {
       setShowCreateModal(false);
       setCreateForm({ email: '', username: '', password: '', isAdmin: false, emailVerified: false });
       await fetchData();
-    } catch (err) {
+    } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to create user';
       setFormError(message);
     }
@@ -349,7 +97,7 @@ const UserManagement = () => {
       setSelectedUser(null);
       setEditForm({});
       await fetchData();
-    } catch (err) {
+    } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to update user';
       setFormError(message);
     }
@@ -363,7 +111,7 @@ const UserManagement = () => {
       setShowDeleteModal(false);
       setSelectedUser(null);
       await fetchData();
-    } catch (err) {
+    } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to delete user';
       setFormError(message);
     }
@@ -377,7 +125,7 @@ const UserManagement = () => {
       setShowResetPasswordModal(false);
       setSelectedUser(null);
       setNewPassword('');
-    } catch (err) {
+    } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to reset password';
       setFormError(message);
     }
@@ -393,7 +141,7 @@ const UserManagement = () => {
     try {
       await userManagementService.updateUser(user.id, { isAdmin: newIsAdmin });
       await fetchData();
-    } catch (err) {
+    } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to update user';
       alert(message);
     }
@@ -431,10 +179,10 @@ const UserManagement = () => {
       loading={isLoading}
       headerActions={
         <>
-          <Button size="small" variant="secondary" onClick={fetchData}>
+          <Button size="sm" variant="secondary" onClick={fetchData}>
             <RefreshCcw size={16} />
           </Button>
-          <Button size="small" onClick={() => setShowCreateModal(true)}>
+          <Button size="sm" onClick={() => setShowCreateModal(true)}>
             <Plus size={16} />
             Create User
           </Button>
@@ -442,112 +190,134 @@ const UserManagement = () => {
       }
     >
       {stats && (
-        <StatsGrid>
-          <StatCard>
-            <StatValue>{stats.totalUsers}</StatValue>
-            <StatLabel>Total Users</StatLabel>
-          </StatCard>
-          <StatCard>
-            <StatValue>{stats.adminUsers}</StatValue>
-            <StatLabel>Administrators</StatLabel>
-          </StatCard>
-          <StatCard>
-            <StatValue>{stats.verifiedUsers}</StatValue>
-            <StatLabel>Verified</StatLabel>
-          </StatCard>
-          <StatCard>
-            <StatValue>{stats.unverifiedUsers}</StatValue>
-            <StatLabel>Unverified</StatLabel>
-          </StatCard>
-        </StatsGrid>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6">
+          <div className="rounded-lg border border-border bg-card p-5">
+            <div className="text-[28px] font-bold text-foreground mb-1">{stats.totalUsers}</div>
+            <div className="text-[13px] text-muted-foreground">Total Users</div>
+          </div>
+          <div className="rounded-lg border border-border bg-card p-5">
+            <div className="text-[28px] font-bold text-foreground mb-1">{stats.adminUsers}</div>
+            <div className="text-[13px] text-muted-foreground">Administrators</div>
+          </div>
+          <div className="rounded-lg border border-border bg-card p-5">
+            <div className="text-[28px] font-bold text-foreground mb-1">{stats.verifiedUsers}</div>
+            <div className="text-[13px] text-muted-foreground">Verified</div>
+          </div>
+          <div className="rounded-lg border border-border bg-card p-5">
+            <div className="text-[28px] font-bold text-foreground mb-1">{stats.unverifiedUsers}</div>
+            <div className="text-[13px] text-muted-foreground">Unverified</div>
+          </div>
+        </div>
       )}
 
-      <ControlsContainer>
-        <SearchBar>
-          <SearchIcon size={18} />
-          <SearchInput
+      <div className="flex flex-wrap items-center gap-4 mb-6">
+        <div className="relative flex-1 min-w-[300px]">
+          <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <input
             type="text"
             placeholder="Search users by email or username..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full rounded-lg border border-border bg-background py-3 pl-11 pr-3 text-sm text-foreground transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
-        </SearchBar>
-        <FilterButton 
-          $active={filter === 'all'} 
+        </div>
+        <button
           onClick={() => setFilter('all')}
+          className={cn(
+            'inline-flex items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-medium transition-all cursor-pointer',
+            filter === 'all'
+              ? 'border-primary bg-primary text-primary-foreground'
+              : 'border-border bg-background text-foreground hover:border-muted-foreground'
+          )}
         >
           All Users
-        </FilterButton>
-        <FilterButton 
-          $active={filter === 'admin'} 
+        </button>
+        <button
           onClick={() => setFilter('admin')}
+          className={cn(
+            'inline-flex items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-medium transition-all cursor-pointer',
+            filter === 'admin'
+              ? 'border-primary bg-primary text-primary-foreground'
+              : 'border-border bg-background text-foreground hover:border-muted-foreground'
+          )}
         >
           Admins Only
-        </FilterButton>
-        <FilterButton 
-          $active={filter === 'verified'} 
+        </button>
+        <button
           onClick={() => setFilter('verified')}
+          className={cn(
+            'inline-flex items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-medium transition-all cursor-pointer',
+            filter === 'verified'
+              ? 'border-primary bg-primary text-primary-foreground'
+              : 'border-border bg-background text-foreground hover:border-muted-foreground'
+          )}
         >
           Verified
-        </FilterButton>
-        <FilterButton 
-          $active={filter === 'unverified'} 
+        </button>
+        <button
           onClick={() => setFilter('unverified')}
+          className={cn(
+            'inline-flex items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-medium transition-all cursor-pointer',
+            filter === 'unverified'
+              ? 'border-primary bg-primary text-primary-foreground'
+              : 'border-border bg-background text-foreground hover:border-muted-foreground'
+          )}
         >
           Unverified
-        </FilterButton>
-      </ControlsContainer>
+        </button>
+      </div>
 
-      {error && <ErrorMessage>{error}</ErrorMessage>}
+      {error && <div className="mt-2 text-[13px] text-destructive">{error}</div>}
 
       {isLoading ? (
         <div>Loading users...</div>
       ) : (
-        <UsersTable>
-          <TableHeader>
-            <TableRow>
-              <TableHeaderCell>User</TableHeaderCell>
-              <TableHeaderCell>Status</TableHeaderCell>
-              <TableHeaderCell>Activity</TableHeaderCell>
-              <TableHeaderCell>Joined</TableHeaderCell>
-              <TableHeaderCell>Actions</TableHeaderCell>
-            </TableRow>
-          </TableHeader>
+        <table className="w-full border-collapse overflow-hidden rounded-lg border border-border bg-card">
+          <thead className="border-b border-border bg-background">
+            <tr className="border-b border-border">
+              <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">User</th>
+              <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</th>
+              <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Activity</th>
+              <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Joined</th>
+              <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Actions</th>
+            </tr>
+          </thead>
           <tbody>
             {users.map(user => (
-              <TableRow key={user.id}>
-                <TableCell>
-                  <UserEmail>{user.email}</UserEmail>
-                  <Username>@{user.username}</Username>
-                </TableCell>
-                <TableCell>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <tr key={user.id} className="border-b border-border last:border-b-0 hover:bg-background">
+                <td className="p-4 text-sm text-foreground">
+                  <div className="font-medium text-foreground">{user.email}</div>
+                  <div className="mt-0.5 text-[13px] text-muted-foreground">@{user.username}</div>
+                </td>
+                <td className="p-4 text-sm text-foreground">
+                  <div className="flex items-center gap-2">
                     {user.isAdmin && (
-                      <Badge $variant="admin">
+                      <Badge variant="warning">
                         <Shield size={12} />
                         Admin
                       </Badge>
                     )}
-                    <Badge $variant={user.emailVerified ? 'verified' : 'unverified'}>
+                    <Badge variant={user.emailVerified ? 'success' : 'destructive'}>
                       {user.emailVerified ? 'Verified' : 'Unverified'}
                     </Badge>
                   </div>
-                </TableCell>
-                <TableCell>
+                </td>
+                <td className="p-4 text-sm text-foreground">
                   {user.taskCount} tasks, {user.eventCount} events
-                </TableCell>
-                <TableCell>
+                </td>
+                <td className="p-4 text-sm text-foreground">
                   {new Date(user.createdAt).toLocaleDateString('en-GB', {
                     day: 'numeric',
                     month: 'short',
                     year: 'numeric'
                   })}
-                </TableCell>
-                <TableCell>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <ActionButton
+                </td>
+                <td className="p-4 text-sm text-foreground">
+                  <div className="flex flex-wrap gap-2">
+                    <button
                       onClick={() => handleToggleAdmin(user)}
                       disabled={user.id === currentUser.id}
+                      className="inline-flex items-center gap-1.5 rounded border border-border bg-background px-3 py-1.5 text-xs text-foreground transition-all hover:border-primary hover:bg-primary/10 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {user.isAdmin ? (
                         <>
@@ -560,29 +330,35 @@ const UserManagement = () => {
                           Make Admin
                         </>
                       )}
-                    </ActionButton>
-                    <ActionButton onClick={() => openEditModal(user)}>
+                    </button>
+                    <button
+                      onClick={() => openEditModal(user)}
+                      className="inline-flex items-center gap-1.5 rounded border border-border bg-background px-3 py-1.5 text-xs text-foreground transition-all hover:border-primary hover:bg-primary/10"
+                    >
                       <Edit size={14} />
                       Edit
-                    </ActionButton>
-                    <ActionButton onClick={() => openResetPasswordModal(user)}>
+                    </button>
+                    <button
+                      onClick={() => openResetPasswordModal(user)}
+                      className="inline-flex items-center gap-1.5 rounded border border-border bg-background px-3 py-1.5 text-xs text-foreground transition-all hover:border-primary hover:bg-primary/10"
+                    >
                       <Key size={14} />
                       Reset Password
-                    </ActionButton>
-                    <ActionButton
-                      className="danger"
+                    </button>
+                    <button
                       onClick={() => openDeleteModal(user)}
                       disabled={user.id === currentUser.id}
+                      className="inline-flex items-center gap-1.5 rounded border border-border bg-background px-3 py-1.5 text-xs text-foreground transition-all hover:border-destructive hover:bg-destructive/10 hover:text-destructive disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Trash2 size={14} />
                       Delete
-                    </ActionButton>
+                    </button>
                   </div>
-                </TableCell>
-              </TableRow>
+                </td>
+              </tr>
             ))}
           </tbody>
-        </UsersTable>
+        </table>
       )}
 
       {/* Create User Modal */}
@@ -595,62 +371,60 @@ const UserManagement = () => {
         }}
         title="Create New User"
       >
-        <FormGroup>
-          <Label>Email</Label>
+        <div className="mb-5">
+          <Label className="mb-2 block text-sm font-semibold">Email</Label>
           <Input
             type="email"
             value={createForm.email}
             onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
             placeholder="user@example.com"
           />
-        </FormGroup>
-        <FormGroup>
-          <Label>Username</Label>
+        </div>
+        <div className="mb-5">
+          <Label className="mb-2 block text-sm font-semibold">Username</Label>
           <Input
             type="text"
             value={createForm.username}
             onChange={(e) => setCreateForm({ ...createForm, username: e.target.value })}
             placeholder="username"
           />
-        </FormGroup>
-        <FormGroup>
-          <Label>Password</Label>
+        </div>
+        <div className="mb-5">
+          <Label className="mb-2 block text-sm font-semibold">Password</Label>
           <Input
             type="password"
             value={createForm.password}
             onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
             placeholder="Min. 8 characters"
           />
-        </FormGroup>
-        <FormGroup>
-          <CheckboxLabel>
+        </div>
+        <div className="mb-5">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <Checkbox
-              type="checkbox"
               checked={createForm.isAdmin}
-              onChange={(e) => setCreateForm({ ...createForm, isAdmin: e.target.checked })}
+              onCheckedChange={(checked) => setCreateForm({ ...createForm, isAdmin: checked === true })}
             />
             Grant admin privileges
-          </CheckboxLabel>
-        </FormGroup>
-        <FormGroup>
-          <CheckboxLabel>
+          </label>
+        </div>
+        <div className="mb-5">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <Checkbox
-              type="checkbox"
               checked={createForm.emailVerified}
-              onChange={(e) => setCreateForm({ ...createForm, emailVerified: e.target.checked })}
+              onCheckedChange={(checked) => setCreateForm({ ...createForm, emailVerified: checked === true })}
             />
             Mark email as verified
-          </CheckboxLabel>
-        </FormGroup>
-        {formError && <ErrorMessage>{formError}</ErrorMessage>}
-        <ModalActions>
+          </label>
+        </div>
+        {formError && <div className="mt-2 text-[13px] text-destructive">{formError}</div>}
+        <div className="mt-6 flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setShowCreateModal(false)}>
             Cancel
           </Button>
           <Button onClick={handleCreateUser}>
             Create User
           </Button>
-        </ModalActions>
+        </div>
       </Modal>
 
       {/* Edit User Modal */}
@@ -664,52 +438,50 @@ const UserManagement = () => {
         }}
         title={`Edit User: ${selectedUser?.username}`}
       >
-        <FormGroup>
-          <Label>Email</Label>
+        <div className="mb-5">
+          <Label className="mb-2 block text-sm font-semibold">Email</Label>
           <Input
             type="email"
             value={editForm.email || ''}
             onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
           />
-        </FormGroup>
-        <FormGroup>
-          <Label>Username</Label>
+        </div>
+        <div className="mb-5">
+          <Label className="mb-2 block text-sm font-semibold">Username</Label>
           <Input
             type="text"
             value={editForm.username || ''}
             onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
           />
-        </FormGroup>
-        <FormGroup>
-          <CheckboxLabel>
+        </div>
+        <div className="mb-5">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <Checkbox
-              type="checkbox"
               checked={editForm.isAdmin || false}
-              onChange={(e) => setEditForm({ ...editForm, isAdmin: e.target.checked })}
+              onCheckedChange={(checked) => setEditForm({ ...editForm, isAdmin: checked === true })}
               disabled={selectedUser?.id === currentUser.id}
             />
             Admin privileges
-          </CheckboxLabel>
-        </FormGroup>
-        <FormGroup>
-          <CheckboxLabel>
+          </label>
+        </div>
+        <div className="mb-5">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <Checkbox
-              type="checkbox"
               checked={editForm.emailVerified || false}
-              onChange={(e) => setEditForm({ ...editForm, emailVerified: e.target.checked })}
+              onCheckedChange={(checked) => setEditForm({ ...editForm, emailVerified: checked === true })}
             />
             Email verified
-          </CheckboxLabel>
-        </FormGroup>
-        {formError && <ErrorMessage>{formError}</ErrorMessage>}
-        <ModalActions>
+          </label>
+        </div>
+        {formError && <div className="mt-2 text-[13px] text-destructive">{formError}</div>}
+        <div className="mt-6 flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setShowEditModal(false)}>
             Cancel
           </Button>
           <Button onClick={handleEditUser}>
             Save Changes
           </Button>
-        </ModalActions>
+        </div>
       </Modal>
 
       {/* Delete User Modal */}
@@ -726,15 +498,15 @@ const UserManagement = () => {
           Are you sure you want to delete <strong>{selectedUser?.username}</strong>?
           This action cannot be undone and will remove all their data.
         </p>
-        {formError && <ErrorMessage>{formError}</ErrorMessage>}
-        <ModalActions>
+        {formError && <div className="mt-2 text-[13px] text-destructive">{formError}</div>}
+        <div className="mt-6 flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
             Cancel
           </Button>
-          <Button onClick={handleDeleteUser} style={{ background: 'var(--color-error)' }}>
+          <Button variant="destructive" onClick={handleDeleteUser}>
             Delete User
           </Button>
-        </ModalActions>
+        </div>
       </Modal>
 
       {/* Reset Password Modal */}
@@ -748,24 +520,24 @@ const UserManagement = () => {
         }}
         title={`Reset Password for ${selectedUser?.username}`}
       >
-        <FormGroup>
-          <Label>New Password</Label>
+        <div className="mb-5">
+          <Label className="mb-2 block text-sm font-semibold">New Password</Label>
           <Input
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             placeholder="Min. 8 characters"
           />
-        </FormGroup>
-        {formError && <ErrorMessage>{formError}</ErrorMessage>}
-        <ModalActions>
+        </div>
+        {formError && <div className="mt-2 text-[13px] text-destructive">{formError}</div>}
+        <div className="mt-6 flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setShowResetPasswordModal(false)}>
             Cancel
           </Button>
           <Button onClick={handleResetPassword}>
             Reset Password
           </Button>
-        </ModalActions>
+        </div>
       </Modal>
     </PageLayout>
   );

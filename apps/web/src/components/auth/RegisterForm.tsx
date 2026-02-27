@@ -3,151 +3,13 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
 import { CheckIcon, XCircleIcon } from 'lucide-react';
-import styled from 'styled-components';
-import { borderRadius, focusRing, spacing } from '@finance-manager/ui/styles';
 import { useRegisterForm } from '../../hooks/forms';
 import type { RegisterInput } from '@finance-manager/schema';
-
-const FormContainer = styled.div`
-  max-width: 400px;
-  margin: 0 auto;
-  padding: ${spacing.xl};
-`;
-
-const Heading = styled.h2`
-  color: ${({ theme }) => theme.colors.text};
-  margin-bottom: ${spacing.xl};
-`;
-
-const ErrorAlert = styled.div`
-  padding: ${spacing.sm} ${spacing.md};
-  margin-bottom: ${spacing.lg};
-  background-color: ${({ theme }) => theme.colors.errorBackground};
-  color: ${({ theme }) => theme.colors.error};
-  border-radius: ${borderRadius.sm};
-  border: 1px solid ${({ theme }) => theme.colors.error};
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: ${spacing.lg};
-`;
-
-const Label = styled.label`
-  color: ${({ theme }) => theme.colors.text};
-  display: block;
-  margin-bottom: ${spacing.xs};
-  font-weight: 500;
-`;
-
-const Input = styled.input<{ hasError?: boolean }>`
-  width: 100%;
-  padding: ${spacing.sm};
-  font-size: 14px;
-  border: 1px solid ${({ theme, hasError }) => hasError ? theme.colors.error : theme.colors.inputBorder};
-  border-radius: ${borderRadius.sm};
-  background-color: ${({ theme }) => theme.colors.inputBackground};
-  color: ${({ theme }) => theme.colors.text};
-  transition: border-color 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme, hasError }) => hasError ? theme.colors.error : theme.colors.inputBorderFocus};
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    background-color: ${({ theme }) => theme.colors.backgroundSecondary};
-  }
-`;
-
-const ErrorText = styled.span`
-  color: ${({ theme }) => theme.colors.error};
-  font-size: 12px;
-  display: block;
-  margin-top: ${spacing.xs};
-`;
-
-const PasswordStrengthText = styled.div`
-  font-size: 12px;
-  margin-top: ${spacing.xs};
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const StrengthIndicator = styled.strong<{ strength: string }>`
-  color: ${({ strength, theme }) => {
-    if (strength === 'Strong') return theme.colors.success;
-    if (strength === 'Medium') return theme.colors.warning;
-    return theme.colors.error;
-  }};
-`;
-
-const SubmitButton = styled.button<{ isLoading?: boolean }>`
-  width: 100%;
-  padding: ${spacing.sm} ${spacing.md};
-  background-color: ${({ theme, isLoading }) => isLoading ? theme.colors.primaryDisabled : theme.colors.primary};
-  color: ${({ theme }) => theme.colors.buttonText};
-  border: none;
-  border-radius: ${borderRadius.sm};
-  font-size: 16px;
-  font-weight: 500;
-  cursor: ${({ isLoading }) => isLoading ? 'not-allowed' : 'pointer'};
-  transition: background-color 0.2s ease;
-
-  &:hover:not(:disabled) {
-    background-color: ${({ theme }) => theme.colors.primaryHover};
-  }
-
-  &:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.colors.primary};
-    outline-offset: 2px;
-  }
-`;
-
-const InfoBox = styled.div`
-  margin-top: ${spacing.lg};
-  padding: ${spacing.sm} ${spacing.md};
-  background-color: ${({ theme }) => theme.colors.infoBackground};
-  border-radius: ${borderRadius.sm};
-  font-size: 13px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.info};
-`;
-
-const StyledLink = styled(Link)`
-  color: ${({ theme }) => theme.colors.primary};
-  ${focusRing}
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.primaryHover};
-  }
-`;
-
-const SigninText = styled.p`
-  margin-top: ${spacing.xl};
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const UsernameInputContainer = styled.div`
-  position: relative;
-`;
-
-const UsernameIcon = styled.div<{ available: boolean }>`
-  position: absolute;
-  right: ${spacing.sm};
-  top: 50%;
-  transform: translateY(-50%);
-  color: ${({ available, theme }) => available ? theme.colors.success : theme.colors.error};
-  display: flex;
-  align-items: center;
-`;
-
-const UsernameHint = styled.div<{ available: boolean }>`
-  font-size: 12px;
-  margin-top: 4px;
-  color: ${({ available, theme }) => available ? theme.colors.success : theme.colors.textSecondary};
-`;
+import { cn } from '../../lib/utils';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Alert, AlertDescription } from '../../components/ui/alert';
 
 export const RegisterForm = () => {
   const {
@@ -252,92 +114,111 @@ export const RegisterForm = () => {
   const passwordStrength = getPasswordStrength();
 
   return (
-    <FormContainer>
-      <Heading>Create Account</Heading>
+    <div className="mx-auto max-w-[400px] p-5">
+      <h2 className="mb-5 text-foreground">Create Account</h2>
       
-      {apiError && <ErrorAlert>{apiError}</ErrorAlert>}
+      {apiError && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{apiError}</AlertDescription>
+        </Alert>
+      )}
 
       <form onSubmit={handleSubmit(onFormSubmit)}>
-        <FormGroup>
+        <div className="mb-4 space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             type="email"
             {...register('email')}
-            hasError={!!errors.email}
+            className={cn(errors.email && 'border-destructive')}
             disabled={isSubmitting}
           />
-          {errors.email && <ErrorText>{errors.email.message}</ErrorText>}
-        </FormGroup>
+          {errors.email && <p className="mt-1 text-xs text-destructive">{errors.email.message}</p>}
+        </div>
 
-        <FormGroup>
+        <div className="mb-4 space-y-2">
           <Label htmlFor="username">Username</Label>
-          <UsernameInputContainer>
+          <div className="relative">
             <Input
               id="username"
               type="text"
               {...register('username')}
-              hasError={!!errors.username}
+              className={cn(errors.username && 'border-destructive')}
               disabled={isSubmitting}
               placeholder="Choose a unique username"
             />
             {watchedUsername && !usernameChecking && usernameAvailable !== null && (
-              <UsernameIcon available={usernameAvailable}>
+              <div className={cn(
+                'absolute right-2 top-1/2 flex -translate-y-1/2 items-center',
+                usernameAvailable ? 'text-success' : 'text-destructive',
+              )}>
                 {usernameAvailable ? <CheckIcon size={18} /> : <XCircleIcon size={18} />}
-              </UsernameIcon>
+              </div>
             )}
-          </UsernameInputContainer>
+          </div>
           {watchedUsername && usernameMessage && (
-            <UsernameHint available={usernameAvailable === true}>
+            <p className={cn(
+              'mt-1 text-xs',
+              usernameAvailable === true ? 'text-success' : 'text-muted-foreground',
+            )}>
               {usernameMessage}
-            </UsernameHint>
+            </p>
           )}
-          {errors.username && <ErrorText>{errors.username.message}</ErrorText>}
-        </FormGroup>
+          {errors.username && <p className="mt-1 text-xs text-destructive">{errors.username.message}</p>}
+        </div>
 
-        <FormGroup>
+        <div className="mb-4 space-y-2">
           <Label htmlFor="password">Password</Label>
           <Input
             id="password"
             type="password"
             {...register('password')}
-            hasError={!!errors.password}
+            className={cn(errors.password && 'border-destructive')}
             disabled={isSubmitting}
           />
           {watchedPassword && (
-            <PasswordStrengthText>
-              Password strength: <StrengthIndicator strength={passwordStrength}>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Password strength: <strong className={cn(
+                passwordStrength === 'Strong' && 'text-success',
+                passwordStrength === 'Medium' && 'text-warning',
+                passwordStrength === 'Weak' && 'text-destructive',
+              )}>
                 {passwordStrength}
-              </StrengthIndicator>
-            </PasswordStrengthText>
+              </strong>
+            </p>
           )}
-          {errors.password && <ErrorText>{errors.password.message}</ErrorText>}
-        </FormGroup>
+          {errors.password && <p className="mt-1 text-xs text-destructive">{errors.password.message}</p>}
+        </div>
 
-        <FormGroup>
+        <div className="mb-4 space-y-2">
           <Label htmlFor="confirmPassword">Confirm Password</Label>
           <Input
             id="confirmPassword"
             type="password"
             {...register('confirmPassword')}
-            hasError={!!errors.confirmPassword}
+            className={cn(errors.confirmPassword && 'border-destructive')}
             disabled={isSubmitting}
           />
-          {errors.confirmPassword && <ErrorText>{errors.confirmPassword.message}</ErrorText>}
-        </FormGroup>
+          {errors.confirmPassword && <p className="mt-1 text-xs text-destructive">{errors.confirmPassword.message}</p>}
+        </div>
 
-        <SubmitButton type="submit" disabled={isSubmitting} isLoading={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting} className="w-full">
           {isSubmitting ? 'Creating account...' : 'Register'}
-        </SubmitButton>
+        </Button>
       </form>
 
-      <InfoBox>
-        📧 A verification email will be sent to your email address after registration.
-      </InfoBox>
+      <Alert variant="default" className="mt-4 border-blue-200 bg-blue-50 text-sm text-muted-foreground dark:border-blue-800 dark:bg-blue-950">
+        <AlertDescription>
+          📧 A verification email will be sent to your email address after registration.
+        </AlertDescription>
+      </Alert>
 
-      <SigninText>
-        Already have an account? <StyledLink to="/login">Sign in</StyledLink>
-      </SigninText>
-    </FormContainer>
+      <p className="mt-5 text-center text-muted-foreground">
+        Already have an account?{' '}
+        <Link to="/login" className="text-primary hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+          Sign in
+        </Link>
+      </p>
+    </div>
   );
 };

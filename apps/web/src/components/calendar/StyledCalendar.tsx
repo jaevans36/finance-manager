@@ -1,262 +1,83 @@
-import styled from 'styled-components';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
+import './calendar-theme.css';
+import { cn } from '../../lib/utils';
 
-export const StyledCalendar = styled(Calendar)`
-  width: 100% !important;
-  max-width: 100% !important;
-  height: 100%;
-  min-height: 600px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  background: ${({ theme }) => theme.colors.cardBackground};
-  font-family: ${({ theme }) => theme.fonts.body};
-  padding: 16px;
-  box-sizing: border-box;
+type CalendarProps = React.ComponentProps<typeof Calendar>;
 
-  /* Navigation */
-  .react-calendar__navigation {
-    display: flex;
-    height: 44px;
-    margin-bottom: 16px;
+export const StyledCalendar = ({ className, ...props }: CalendarProps) => (
+  <Calendar {...props} className={cn('finance-calendar', className)} />
+);
 
-    button {
-      background: ${({ theme }) => theme.colors.backgroundSecondary};
-      border: 1px solid ${({ theme }) => theme.colors.border};
-      color: ${({ theme }) => theme.colors.text};
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      padding: 8px 12px;
-      border-radius: ${borderRadius.sm};
-      transition: all 0.2s ease;
+/* ── Badge helper components ─────────────────────────── */
 
-      &:hover:not(:disabled) {
-        background: ${({ theme }) => theme.colors.backgroundTertiary};
-        border-color: ${({ theme }) => theme.colors.primary};
-      }
-
-      &:disabled {
-        opacity: 0.3;
-        cursor: not-allowed;
-      }
-
-      &.react-calendar__navigation__label {
-        flex-grow: 1;
-        font-size: 18px;
-      }
-    }
+const getPriorityBg = (priority: string): string => {
+  switch (priority) {
+    case 'Critical':
+    case 'High':
+      return 'bg-destructive';
+    case 'Medium':
+      return 'bg-muted-foreground';
+    default:
+      return 'bg-border';
   }
+};
 
-  /* Weekday labels */
-  .react-calendar__month-view__weekdays {
-    text-align: center;
-    text-transform: uppercase;
-    font-size: 12px;
-    font-weight: 600;
-    color: ${({ theme }) => theme.colors.textSecondary};
-    margin-bottom: 8px;
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-    padding: 8px 0;
-    border-radius: ${borderRadius.sm};
-
-    abbr {
-      text-decoration: none;
-    }
+const getPriorityText = (priority: string): string => {
+  switch (priority) {
+    case 'Critical':
+    case 'High':
+      return 'text-[#1A1A1A]';
+    case 'Medium':
+      return 'text-primary-foreground';
+    default:
+      return 'text-foreground';
   }
+};
 
-  /* Day tiles */
-  .react-calendar__tile {
-    aspect-ratio: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 8px 4px;
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-    border: 1px solid ${({ theme }) => theme.colors.border};
-    border-radius: ${borderRadius.sm};
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-    min-height: 100px;
+interface TaskBadgeProps extends React.HTMLAttributes<HTMLDivElement> {
+  priority: string;
+  children: React.ReactNode;
+}
 
-    ${mediaQueries.tablet} {
-      min-height: 70px;
-      padding: 6px 2px;
-    }
+export const TaskBadge = ({ priority, className, children, ...props }: TaskBadgeProps) => (
+  <div
+    className={cn(
+      'mt-1 flex h-5 min-w-[24px] cursor-pointer items-center justify-center rounded-md px-1.5 text-[11px] font-semibold transition-transform hover:scale-110',
+      getPriorityBg(priority),
+      getPriorityText(priority),
+      className,
+    )}
+    {...props}
+  >
+    {children}
+  </div>
+);
 
-    &:hover:not(:disabled) {
-      background: ${({ theme }) => theme.colors.backgroundTertiary};
-      border-color: ${({ theme }) => theme.colors.primary};
-      box-shadow: 0 2px 8px ${({ theme }) => theme.colors.shadow};
-    }
+interface EventBadgeProps extends React.HTMLAttributes<HTMLDivElement> {
+  color?: string;
+  children: React.ReactNode;
+}
 
-    &:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
+export const EventBadge = ({ color, className, style, children, ...props }: EventBadgeProps) => (
+  <div
+    className={cn(
+      'mt-1 flex h-5 min-w-[24px] cursor-pointer items-center justify-center rounded-md px-1.5 text-[11px] font-semibold text-[#1A1A1A] transition-transform hover:scale-110',
+      !color && 'bg-border',
+      className,
+    )}
+    style={color ? { backgroundColor: color, ...style } : style}
+    {...props}
+  >
+    {children}
+  </div>
+);
 
-    abbr {
-      font-size: 14px;
-      font-weight: 500;
-      color: ${({ theme }) => theme.colors.text};
-    }
-  }
-
-  /* Today's date */
-  .react-calendar__tile--now {
-    background: ${({ theme }) => theme.colors.backgroundTertiary};
-    border: 2px solid ${({ theme }) => theme.colors.primary};
-    font-weight: 700;
-    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primary}20;
-
-    abbr {
-      color: ${({ theme }) => theme.colors.primary};
-    }
-  }
-
-  /* Selected date */
-  .react-calendar__tile--active {
-    background: ${({ theme }) => theme.colors.primary};
-    border-color: ${({ theme }) => theme.colors.primary};
-
-    abbr {
-      color: ${({ theme }) => theme.colors.buttonText};
-    }
-
-    &:hover {
-      background: ${({ theme }) => theme.colors.primaryHover};
-    }
-  }
-
-  /* Weekend days */
-  .react-calendar__month-view__days__day--weekend {
-    background: ${({ theme }) => theme.colors.backgroundTertiary};
-  }
-
-  /* Neighboring month days */
-  .react-calendar__month-view__days__day--neighboringMonth {
-    opacity: 0.3;
-
-    abbr {
-      color: ${({ theme }) => theme.colors.textSecondary};
-    }
-  }
-
-  /* Month view grid */
-  .react-calendar__month-view__days {
-    display: grid !important;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
-  }
-
-  /* Responsive design */
-  ${mediaQueries.tablet} {
-    padding: 12px;
-    min-height: 500px;
-
-    .react-calendar__tile {
-      min-height: 70px;
-      padding: 6px 2px;
-
-      abbr {
-        font-size: 12px;
-      }
-    }
-
-    .react-calendar__navigation button {
-      padding: 6px 8px;
-      font-size: 14px;
-
-      &.react-calendar__navigation__label {
-        font-size: 16px;
-      }
-    }
-  }
-
-  @media (max-width: 480px) {
-    min-height: 400px;
-
-    .react-calendar__tile {
-      min-height: 50px;
-      padding: 4px 2px;
-
-      abbr {
-        font-size: 11px;
-      }
-    }
-  }
-`;
-
-export const TaskBadge = styled.div<{ priority: string }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 20px;
-  padding: 0 6px;
-  margin-top: 4px;
-  border-radius: ${borderRadius.lg};
-  font-size: 11px;
-  font-weight: 600;
-  background: ${({ priority, theme }) => {
-    switch (priority) {
-      case 'Critical':
-        return theme.colors.error;
-      case 'High':
-        return theme.colors.error;
-      case 'Medium':
-        return theme.colors.textSecondary;
-      default:
-        return theme.colors.border;
-    }
-  }};
-  color: ${({ priority, theme }) => {
-    switch (priority) {
-      case 'Critical':
-      case 'High':
-        return '#1A1A1A';
-      case 'Medium':
-        return theme.colors.buttonText;
-      default:
-        return theme.colors.text;
-    }
-  }};
-  cursor: pointer;
-  transition: transform 0.2s ease;
-
-  &:hover {
-    transform: scale(1.1);
-  }
-`;
-
-export const EventBadge = styled.div<{ color?: string }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 20px;
-  padding: 0 6px;
-  margin-top: 4px;
-  border-radius: ${borderRadius.lg};
-  font-size: 11px;
-  font-weight: 600;
-  background: ${({ color, theme }) => color || theme.colors.border};
-  color: #1A1A1A;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-
-  &:hover {
-    transform: scale(1.1);
-  }
-`;
-
-export const BadgeContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  width: 100%;
-`;
+export const BadgeContainer = ({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn('flex w-full flex-col items-center gap-0.5', className)}
+    {...props}
+  >
+    {children}
+  </div>
+);

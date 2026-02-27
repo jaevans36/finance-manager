@@ -1,7 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
-import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Award, Download, Flame, Trophy } from 'lucide-react';
+import { Award, Download, Flame, Trophy } from 'lucide-react';
+import { cn } from '../../lib/utils';
+import { Card } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
 import { statisticsService } from '../../services/statisticsService';
 import { taskService, type Task } from '../../services/taskService';
 import { taskGroupService } from '../../services/taskGroupService';
@@ -11,21 +15,6 @@ import type { TaskGroup } from '../../types/taskGroup';
 import { BarChartWrapper } from '../../components/charts/BarChartWrapper';
 import { PieChartWrapper } from '../../components/charts/PieChartWrapper';
 import { chartColors } from '../../components/charts/chartTheme';
-import { 
-  ContentContainer,
-  IconButton,
-  ResponsiveGrid,
-  TwoColumnGrid,
-  ResponsiveDailyGrid,
-  InputField,
-  SmallButton,
-  Heading1,
-  Heading3,
-  Text,
-  TextSecondary,
-  SmallBadge,
-  Card
-} from '@finance-manager/ui';
 import {
   ChartCard,
   ErrorDisplay,
@@ -37,7 +26,6 @@ import {
   DailyTaskCard,
 } from './components';
 import { HistoricalCompletionChart } from './components/HistoricalCompletionChart';
-import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
 
 // Helper function to get border color for priority cards
 const getPriorityColor = (priority: string): string => {
@@ -48,165 +36,7 @@ const getPriorityColor = (priority: string): string => {
   }
 };
 
-const Header = styled.div`
-  margin-bottom: 30px;
-`;
 
-const HeaderTop = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 10px;
-`;
-
-const WeekNavigation = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  margin-top: 20px;
-  flex-wrap: wrap;
-
-  ${mediaQueries.tablet} {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-`;
-
-const NavigationLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  flex-wrap: wrap;
-`;
-
-const LoadingSkeleton = styled.div`
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${borderRadius.lg};
-  padding: 20px;
-  min-height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const CustomDateSelector = styled.div`
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-`;
-
-const FilterContainer = styled.div`
-  margin-bottom: 25px;
-`;
-
-const ApplyButton = styled.button`
-  padding: 8px 16px;
-  background: ${({ theme }) => theme.colors.background};
-  color: ${({ theme }) => theme.colors.text};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.sm};
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
-
-const DailyBreakdownSection = styled.div`
-  margin-top: 30px;
-`;
-
-const InsightsSection = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
-  margin-bottom: 30px;
-`;
-
-const UrgentSection = styled.div`
-  margin-top: 30px;
-`;
-
-const GoalAndInsightGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin-bottom: 25px;
-
-  ${mediaQueries.desktop} {
-    grid-template-columns: 1fr;
-  }
-
-  > * {
-    min-height: 180px;
-  }
-`;
-
-const InsightIcon = styled.div`
-  margin-bottom: 12px;
-  color: ${({ theme }) => theme.colors.primary};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  svg {
-    width: 40px;
-    height: 40px;
-  }
-`;
-
-const InsightValue = styled.div`
-  font-size: 24px;
-  font-weight: bold;
-  color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: 8px;
-`;
-
-const InsightLabel = styled(TextSecondary)`
-  display: block;
-`;
-
-const UrgentList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-
-const UrgentTaskCard = styled(Card)<{ $priority: string }>`
-  padding: 15px;
-  border-left: 4px solid ${({ $priority }) => 
-    $priority === 'Critical' ? chartColors.critical :
-    $priority === 'High' ? chartColors.high :
-    chartColors.medium
-  };
-`;
-
-const TaskHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-`;
-
-const UrgentTaskTitle = styled(Text)`
-  font-weight: 500;
-`;
-
-const DaysRemaining = styled(Text)<{ $urgent: boolean }>`
-  color: ${({ $urgent }) => $urgent ? chartColors.urgent : chartColors.textLight};
-  font-weight: 500;
-`;
 
 
 const WeeklyProgressPage = () => {
@@ -425,24 +255,24 @@ const WeeklyProgressPage = () => {
 
   if (loading || !stats) {
     return (
-      <ContentContainer>
-        <LoadingSkeleton>Loading statistics...</LoadingSkeleton>
-      </ContentContainer>
+      <div className="mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-[10px] md:w-[95%]">
+        <div className="bg-card rounded-lg p-5 min-h-[200px] flex items-center justify-center">Loading statistics...</div>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <ContentContainer>
-        <Header>
-          <Heading1 style={{ margin: 0 }}>Weekly Progress Dashboard</Heading1>
-        </Header>
+      <div className="mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-[10px] md:w-[95%]">
+        <div className="mb-8">
+          <h1 className="m-0 text-2xl font-semibold">Weekly Progress Dashboard</h1>
+        </div>
         <ErrorDisplay 
           message={error}
           onRetry={() => loadData()}
           title="Failed to Load Statistics"
         />
-      </ContentContainer>
+      </div>
     );
   }
 
@@ -528,11 +358,11 @@ const WeeklyProgressPage = () => {
   ];
 
   return (
-    <ContentContainer>
-      <Header>
-        <Heading1 style={{ margin: 0 }}>Weekly Progress Dashboard</Heading1>
-        <WeekNavigation>
-          <NavigationLeft>
+    <div className="mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-[10px] md:w-[95%]">
+      <div className="mb-8">
+        <h1 className="m-0 text-2xl font-semibold">Weekly Progress Dashboard</h1>
+        <div className="flex flex-col items-start gap-5 mt-5 flex-wrap md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-4 flex-wrap">
             <ViewModeSelector
               currentMode={viewMode}
               onModeChange={handleViewModeChange}
@@ -559,35 +389,39 @@ const WeeklyProgressPage = () => {
             )}
 
             {viewMode === 'custom' && (
-              <CustomDateSelector>
-                <InputField
+              <div className="flex gap-2.5 items-center flex-wrap">
+                <Input
                   type="date"
                   value={customStartDate}
                   onChange={(e) => setCustomStartDate(e.target.value)}
                   placeholder="Start date"
+                  className="w-auto"
                 />
-                <Text>to</Text>
-                <InputField
+                <span className="text-sm">to</span>
+                <Input
                   type="date"
                   value={customEndDate}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomEndDate(e.target.value)}
                   placeholder="End date"
+                  className="w-auto"
                 />
-                <ApplyButton 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={applyCustomDateRange}
                   disabled={!customStartDate || !customEndDate}
                 >
                   Apply
-                </ApplyButton>
-              </CustomDateSelector>
+                </Button>
+              </div>
             )}
-          </NavigationLeft>
-        </WeekNavigation>
-      </Header>
+          </div>
+        </div>
+      </div>
 
       {/* Group Filter Section */}
       {groups.length > 0 && (
-        <FilterContainer>
+        <div className="mb-6">
           <GroupFilter
             groups={groups.map(g => g.name)}
             selectedGroup={selectedGroupId ? groups.find(g => g.id === selectedGroupId)?.name || null : null}
@@ -600,11 +434,11 @@ const WeeklyProgressPage = () => {
               }
             }}
           />
-        </FilterContainer>
+        </div>
       )}
 
       {/* Weekly Goal and Most Productive Day */}
-      <GoalAndInsightGrid>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6 [&>*]:min-h-[180px]">
         <WeeklyGoalCard
           completedTasks={stats.completedTasks}
           weeklyGoal={weeklyGoal}
@@ -612,20 +446,20 @@ const WeeklyProgressPage = () => {
         />
 
         {bestDay && bestDay.count > 0 && (
-          <Card style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', justifyContent: 'center', height: '100%' }}>
-            <InsightIcon>
+          <Card className="p-5 flex flex-col items-center text-center justify-center h-full">
+            <div className="mb-3 text-primary flex items-center justify-center [&_svg]:w-10 [&_svg]:h-10">
               <Award />
-            </InsightIcon>
-            <InsightValue>{bestDay.day}</InsightValue>
-            <InsightLabel>Most Productive Day</InsightLabel>
-            <Text style={{ fontSize: '12px', marginTop: '8px', color: 'inherit' }}>
+            </div>
+            <div className="text-2xl font-bold text-primary mb-2">{bestDay.day}</div>
+            <span className="block text-muted-foreground">Most Productive Day</span>
+            <span className="text-xs mt-2">
               {bestDay.count} {bestDay.count === 1 ? 'task' : 'tasks'} completed
-            </Text>
+            </span>
           </Card>
         )}
-      </GoalAndInsightGrid>
+      </div>
 
-      <ResponsiveGrid minWidth="200px" gap={20} style={{ marginBottom: '30px' }}>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-5 mb-8">
         <StatisticCard
           label="Total Tasks"
           value={stats.totalTasks}
@@ -656,15 +490,15 @@ const WeeklyProgressPage = () => {
           value={stats.totalTasks - stats.completedTasks}
           valueColor={chartColors.secondary}
         />
-      </ResponsiveGrid>
+      </div>
 
-      <TwoColumnGrid gap={20} style={{ marginBottom: '30px' }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
         <ChartCard 
           title="Daily Task Overview"
           headerAction={
-            <SmallButton onClick={() => exportChartAsImage('daily-chart', 'daily-task-overview')}>
+            <Button variant="outline" size="sm" onClick={() => exportChartAsImage('daily-chart', 'daily-task-overview')}>
               <Download size={14} /> Export
-            </SmallButton>
+            </Button>
           }
         >
           <div id="daily-chart">
@@ -683,9 +517,9 @@ const WeeklyProgressPage = () => {
         <ChartCard 
           title="Weekly Completion"
           headerAction={
-            <SmallButton onClick={() => exportChartAsImage('weekly-pie-chart', 'weekly-completion')}>
+            <Button variant="outline" size="sm" onClick={() => exportChartAsImage('weekly-pie-chart', 'weekly-completion')}>
               <Download size={14} /> Export
-            </SmallButton>
+            </Button>
           }
         >
           <div id="weekly-pie-chart">
@@ -697,41 +531,41 @@ const WeeklyProgressPage = () => {
             />
           </div>
         </ChartCard>
-      </TwoColumnGrid>
+      </div>
 
       {/* Productivity Insights */}
-      <InsightsSection>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-5 mt-5 mb-8">
         {streak > 0 && (
-          <Card style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', justifyContent: 'center', height: '100%' }}>
-            <InsightIcon><Flame /></InsightIcon>
-            <InsightValue>{streak}</InsightValue>
-            <InsightLabel>
+          <Card className="p-5 flex flex-col items-center text-center justify-center h-full">
+            <div className="mb-3 text-primary flex items-center justify-center [&_svg]:w-10 [&_svg]:h-10"><Flame /></div>
+            <div className="text-2xl font-bold text-primary mb-2">{streak}</div>
+            <span className="block text-muted-foreground">
               {streak === 1 ? 'Day Streak' : 'Days Streak'}
-            </InsightLabel>
-            <Text style={{ fontSize: '12px', marginTop: '8px', color: 'inherit' }}>
+            </span>
+            <span className="text-xs mt-2">
               Consecutive days with completed tasks
-            </Text>
+            </span>
           </Card>
         )}
 
         {stats.completionPercentage >= 80 && (
-          <Card style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', justifyContent: 'center', height: '100%' }}>
-            <InsightIcon><Trophy /></InsightIcon>
-            <InsightValue>Excellent!</InsightValue>
-            <InsightLabel>High Achiever</InsightLabel>
-            <Text style={{ fontSize: '12px', marginTop: '8px', color: 'inherit' }}>
+          <Card className="p-5 flex flex-col items-center text-center justify-center h-full">
+            <div className="mb-3 text-primary flex items-center justify-center [&_svg]:w-10 [&_svg]:h-10"><Trophy /></div>
+            <div className="text-2xl font-bold text-primary mb-2">Excellent!</div>
+            <span className="block text-muted-foreground">High Achiever</span>
+            <span className="text-xs mt-2">
               {stats.completionPercentage.toFixed(0)}% completion rate this week
-            </Text>
+            </span>
           </Card>
         )}
-      </InsightsSection>
+      </div>
 
       {/* Historical Completion Rate Chart */}
       <HistoricalCompletionChart />
 
-      <DailyBreakdownSection>
-        <Heading3 style={{ margin: '0 0 15px 0' }}>Daily Task Breakdown</Heading3>
-        <ResponsiveDailyGrid gap={20} style={{ marginTop: '20px' }}>
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold mb-4">Daily Task Breakdown</h3>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-5 mt-5">
           {filteredDailyBreakdown.map((day) => (
             <DailyTaskCard
               key={day.date}
@@ -743,68 +577,68 @@ const WeeklyProgressPage = () => {
               onToggleTask={handleToggleTask}
             />
           ))}
-        </ResponsiveDailyGrid>
-      </DailyBreakdownSection>
+        </div>
+      </div>
 
       {urgentTasks && filteredUrgentTasks.length > 0 && (
-        <UrgentSection>
-          <Heading3 style={{ margin: '0 0 15px 0' }}>Urgent Tasks This Week</Heading3>
-          <UrgentList>
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold mb-4">Urgent Tasks This Week</h3>
+          <div className="flex flex-col gap-2.5">
             {filteredUrgentTasks.map(task => (
-              <UrgentTaskCard key={task.id} $priority={task.priority}>
-                <TaskHeader>
-                  <UrgentTaskTitle>{task.title}</UrgentTaskTitle>
-                  <SmallBadge style={{ backgroundColor: getPriorityColor(task.priority) }}>
+              <Card key={task.id} className="p-4" style={{ borderLeft: `4px solid ${getPriorityColor(task.priority)}` }}>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium">{task.title}</span>
+                  <Badge style={{ backgroundColor: getPriorityColor(task.priority) }}>
                     {task.priority}
-                  </SmallBadge>
-                </TaskHeader>
-                {task.description && <Text>{task.description}</Text>}
+                  </Badge>
+                </div>
+                {task.description && <p className="text-sm">{task.description}</p>}
                 {task.daysUntilDue !== undefined && (
-                  <DaysRemaining $urgent={task.daysUntilDue <= 2}>
+                  <span className={cn("text-sm font-medium", task.daysUntilDue <= 2 ? "text-destructive" : "text-muted-foreground")}>
                     {task.daysUntilDue === 0 ? 'Due today' :
                      task.daysUntilDue === 1 ? 'Due tomorrow' :
                      `Due in ${task.daysUntilDue} days`}
-                  </DaysRemaining>
+                  </span>
                 )}
-              </UrgentTaskCard>
+              </Card>
             ))}
-          </UrgentList>
-        </UrgentSection>
+          </div>
+        </div>
       )}
 
       {/* Unscheduled Tasks Section */}
       {unscheduledTasks.length > 0 && (
-        <UrgentSection>
-          <Heading3 style={{ margin: '0 0 15px 0' }}>Unscheduled Tasks</Heading3>
-          <Text style={{ marginBottom: '15px', color: 'inherit' }}>
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold mb-4">Unscheduled Tasks</h3>
+          <p className="text-sm mb-4">
             Tasks without due dates ({unscheduledTasks.length})
-          </Text>
-          <UrgentList>
+          </p>
+          <div className="flex flex-col gap-2.5">
             {unscheduledTasks.slice(0, 10).map((task: Task) => (
-              <UrgentTaskCard key={task.id} $priority={task.priority || 'Low'}>
-                <TaskHeader>
-                  <UrgentTaskTitle>{task.title}</UrgentTaskTitle>
-                  <SmallBadge style={{ backgroundColor: getPriorityColor(task.priority || 'Low') }}>
+              <Card key={task.id} className="p-4" style={{ borderLeft: `4px solid ${getPriorityColor(task.priority || 'Low')}` }}>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium">{task.title}</span>
+                  <Badge style={{ backgroundColor: getPriorityColor(task.priority || 'Low') }}>
                     {task.priority || 'Low'}
-                  </SmallBadge>
-                </TaskHeader>
-                {task.description && <Text>{task.description}</Text>}
+                  </Badge>
+                </div>
+                {task.description && <p className="text-sm">{task.description}</p>}
                 {task.groupName && (
-                  <Text style={{ fontSize: '12px', marginTop: '8px', color: 'inherit' }}>
+                  <span className="text-xs mt-2 block">
                     📁 {task.groupName}
-                  </Text>
+                  </span>
                 )}
-              </UrgentTaskCard>
+              </Card>
             ))}
-          </UrgentList>
+          </div>
           {unscheduledTasks.length > 10 && (
-            <Text style={{ marginTop: '15px', textAlign: 'center', color: 'inherit' }}>
+            <p className="text-sm mt-4 text-center">
               +{unscheduledTasks.length - 10} more unscheduled tasks
-            </Text>
+            </p>
           )}
-        </UrgentSection>
+        </div>
       )}
-    </ContentContainer>
+    </div>
   );
 };
 

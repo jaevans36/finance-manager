@@ -5,44 +5,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
 import { useLoginForm } from '../../hooks/forms';
 import type { LoginInput } from '@finance-manager/schema';
-import { 
-  FormGroup, 
-  Label, 
-  Input, 
-  ErrorText, 
-  Button, 
-  Alert,
-  Heading2,
-} from '@finance-manager/ui';
-import styled from 'styled-components';
-import { focusRing } from '@finance-manager/ui/styles';
-
-const FormContainer = styled.div`
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 20px;
-`;
-
-const LinkContainer = styled.div`
-  margin-top: 15px;
-  text-align: center;
-`;
-
-const StyledLink = styled(Link)`
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.primary};
-  ${focusRing}
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.primaryHover};
-  }
-`;
-
-const SignupText = styled.p`
-  margin-top: 20px;
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Alert, AlertDescription } from '../../components/ui/alert';
 
 export const LoginForm = () => {
   const [apiError, setApiError] = useState('');
@@ -72,65 +38,67 @@ export const LoginForm = () => {
   };
 
   return (
-    <FormContainer>
-      <Heading2>Sign In</Heading2>
+    <div className="mx-auto max-w-[400px] p-5">
+      <h2 className="mb-5 text-foreground">Sign In</h2>
       
       {apiError && (
-        <Alert variant="error">
+        <Alert variant="destructive" className="mb-4">
           <XCircle />
-          <span>{apiError}</span>
+          <AlertDescription>{apiError}</AlertDescription>
         </Alert>
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} aria-label="Login form">
-        <FormGroup>
+        <div className="mb-4 space-y-2">
           <Label htmlFor="emailOrUsername">Email or Username</Label>
           <Input
             id="emailOrUsername"
             type="text"
             {...register('emailOrUsername')}
             autoComplete="username"
-            hasError={!!errors.emailOrUsername}
             disabled={isSubmitting}
             placeholder="Enter your email or username"
             aria-required="true"
             aria-invalid={!!errors.emailOrUsername}
             aria-describedby={errors.emailOrUsername ? 'email-error' : undefined}
           />
-          {errors.emailOrUsername && <ErrorText>{errors.emailOrUsername.message}</ErrorText>}
-        </FormGroup>
+          {errors.emailOrUsername && <p className="mt-1 text-xs text-destructive">{errors.emailOrUsername.message}</p>}
+        </div>
 
-        <FormGroup>
+        <div className="mb-4 space-y-2">
           <Label htmlFor="password">Password</Label>
           <Input
             id="password"
             type="password"
             {...register('password')}
             autoComplete="current-password"
-            hasError={!!errors.password}
             disabled={isSubmitting}
             placeholder="Enter your password"
           />
-          {errors.password && <ErrorText>{errors.password.message}</ErrorText>}
-        </FormGroup>
+          {errors.password && <p className="mt-1 text-xs text-destructive">{errors.password.message}</p>}
+        </div>
 
         <Button 
           type="submit" 
           disabled={isSubmitting} 
-          $isLoading={isSubmitting}
-          fullWidth
+          className="w-full"
         >
           {isSubmitting ? 'Signing in...' : 'Sign In'}
         </Button>
       </form>
 
-      <LinkContainer>
-        <StyledLink to="/forgot-password">Forgot your password?</StyledLink>
-      </LinkContainer>
+      <div className="mt-4 text-center">
+        <Link to="/forgot-password" className="text-sm text-primary hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+          Forgot your password?
+        </Link>
+      </div>
 
-      <SignupText>
-        Don&apos;t have an account? <StyledLink to="/register">Create one</StyledLink>
-      </SignupText>
-    </FormContainer>
+      <p className="mt-5 text-center text-muted-foreground">
+        Don&apos;t have an account?{' '}
+        <Link to="/register" className="text-sm text-primary hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+          Create one
+        </Link>
+      </p>
+    </div>
   );
 };

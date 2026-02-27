@@ -1,5 +1,4 @@
 import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import styled from 'styled-components';
 import { chartColors } from './chartTheme';
 
 interface BarChartData {
@@ -16,12 +15,6 @@ interface BarChartWrapperProps {
   description?: string;
 }
 
-const ChartContainer = styled.div<{ height: number }>`
-  width: 100%;
-  height: ${props => props.height}px;
-  min-height: ${props => props.height}px;
-`;
-
 export const BarChartWrapper = ({ 
   data, 
   dataKeys,
@@ -33,7 +26,7 @@ export const BarChartWrapper = ({
   const ariaLabel = description || `${title} showing data distribution across categories`;
   
   return (
-    <ChartContainer height={height} role="img" aria-label={ariaLabel} tabIndex={0}>
+    <div className="w-full" style={{ height, minHeight: height }} role="img" aria-label={ariaLabel} tabIndex={0}>
       <ResponsiveContainer width="100%" height="100%">
         <RechartsBarChart 
           data={data} 
@@ -70,6 +63,6 @@ export const BarChartWrapper = ({
           ))}
         </RechartsBarChart>
       </ResponsiveContainer>
-    </ChartContainer>
+    </div>
   );
 };

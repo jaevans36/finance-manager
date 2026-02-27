@@ -1,5 +1,4 @@
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import styled from 'styled-components';
 import { chartColors } from './chartTheme';
 
 interface PieChartData {
@@ -17,24 +16,18 @@ interface PieChartWrapperProps {
   description?: string;
 }
 
-const ChartContainer = styled.div<{ height: number }>`
-  width: 100%;
-  height: ${props => props.height}px;
-  min-height: ${props => props.height}px;
-`;
-
-export const PieChartWrapper: React.FC<PieChartWrapperProps> = ({ 
-  data, 
+export const PieChartWrapper = ({
+  data,
   showLegend = true,
   height = 250,
   title = 'Pie Chart',
   description,
-}) => {
+}: PieChartWrapperProps) => {
   const COLORS = data.map(item => item.color || chartColors.primary);
   const ariaLabel = description || `${title} showing distribution of ${data.map(d => d.name).join(', ')}`;
 
   return (
-    <ChartContainer height={height} role="img" aria-label={ariaLabel} tabIndex={0}>
+    <div className="w-full" style={{ height, minHeight: height }} role="img" aria-label={ariaLabel} tabIndex={0}>
       <ResponsiveContainer width="100%" height="100%">
         <RechartsPieChart aria-label={ariaLabel}>
           <Pie
@@ -66,6 +59,6 @@ export const PieChartWrapper: React.FC<PieChartWrapperProps> = ({
           {showLegend && <Legend wrapperStyle={{ paddingTop: '10px' }} />}
         </RechartsPieChart>
       </ResponsiveContainer>
-    </ChartContainer>
+    </div>
   );
 };

@@ -1,10 +1,9 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider } from 'styled-components';
+import { ThemeProvider } from '@finance-manager/ui';
 import CalendarPage from '../../src/pages/calendar/CalendarPage';
 import { ToastProvider } from '../../src/contexts/ToastContext';
-import { lightTheme } from '../../src/styles/theme';
 import { taskService } from '../../src/services/taskService';
 import { eventService } from '../../src/services/eventService';
 import type { Task } from '../../src/services/taskService';
@@ -103,7 +102,7 @@ const mockTasks: Task[] = [
 const renderCalendarPage = () => {
   return render(
     <BrowserRouter>
-      <ThemeProvider theme={lightTheme}>
+      <ThemeProvider>
         <ToastProvider>
           <CalendarPage />
         </ToastProvider>

@@ -1,78 +1,15 @@
-import styled from 'styled-components';
-import { borderRadius, focusRing, shadows, mediaQueries } from '@finance-manager/ui/styles';
+import { cn } from '../../lib/utils';
 import { useToast } from '../../contexts/ToastContext';
 import { taskGroupService } from '../../services/taskGroupService';
 import { useTaskGroupForm } from '../../hooks/forms';
 import type { CreateTaskGroupInput } from '@finance-manager/schema';
-import { Button, Input, TextArea, FormGroup, Label, ErrorText, Alert, Flex } from '@finance-manager/ui';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Textarea } from '../ui/textarea';
+import { Label } from '../ui/label';
+import { Alert, AlertDescription } from '../ui/alert';
 import { XCircleIcon } from 'lucide-react';
 import { useState } from 'react';
-
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background-color: ${({ theme }) => theme.colors.background};
-  padding: 24px;
-  border-radius: ${borderRadius.lg};
-  max-width: 500px;
-  width: 90%;
-  box-shadow: ${shadows.elevated};
-  max-height: 90vh;
-  overflow-y: auto;
-
-  ${mediaQueries.tablet} {
-    width: 95%;
-    padding: 16px;
-    max-height: 95vh;
-  }
-`;
-
-const ModalHeader = styled.h2`
-  margin: 0 0 20px 0;
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 20px;
-  font-weight: 600;
-`;
-
-const ColourOptions = styled.div`
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 8px;
-`;
-
-const ColourOption = styled.button<{ $colour: string; $selected: boolean }>`
-  width: 40px;
-  height: 40px;
-  border-radius: ${borderRadius.lg};
-  background-color: ${({ $colour }) => $colour};
-  border: 3px solid ${({ $selected, theme }) =>
-    $selected ? theme.colors.text : 'transparent'};
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    transform: scale(1.1);
-  }
-
-  ${mediaQueries.tablet} {
-    width: 48px;
-    height: 48px;
-  }
-
-  ${focusRing}
-`;
 
 const COLOUR_OPTIONS = [
   '#3B82F6', // Blue
@@ -127,19 +64,25 @@ export const CreateTaskGroupModal = ({
   };
 
   return (
-    <ModalOverlay onClick={onClose}>
-      <ModalContent onClick={(e) => e.stopPropagation()}>
-        <ModalHeader>Create Task Group</ModalHeader>
+    <div
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50"
+      onClick={onClose}
+    >
+      <div
+        className="w-[90%] max-w-[500px] overflow-y-auto rounded-lg bg-background p-6 shadow-lg md:w-[95%] md:max-h-[95vh] md:p-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="m-0 mb-5 text-xl font-semibold text-foreground">Create Task Group</h2>
 
         {apiError && (
-          <Alert variant="error" style={{ marginBottom: '16px' }}>
-            <XCircleIcon size={16} />
-            {apiError}
+          <Alert variant="destructive" className="mb-4">
+            <XCircleIcon className="h-4 w-4" />
+            <AlertDescription>{apiError}</AlertDescription>
           </Alert>
         )}
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <FormGroup>
+          <div className="mb-4 space-y-2">
             <Label htmlFor="name">Group Name *</Label>
             <Input
               id="name"
@@ -147,59 +90,62 @@ export const CreateTaskGroupModal = ({
               {...register('name')}
               placeholder="e.g., House Renovation"
               maxLength={100}
-              hasError={!!errors.name}
+              className={cn(errors.name && 'border-destructive')}
             />
-            {errors.name && <ErrorText>{errors.name.message}</ErrorText>}
-          </FormGroup>
+            {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+          </div>
 
-          <FormGroup>
+          <div className="mb-4 space-y-2">
             <Label htmlFor="description">Description (Optional)</Label>
-            <TextArea
+            <Textarea
               id="description"
               {...register('description')}
               placeholder="Describe this group..."
               maxLength={500}
               rows={3}
             />
-            {errors.description && <ErrorText>{errors.description.message}</ErrorText>}
-          </FormGroup>
+            {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
+          </div>
 
-          <FormGroup>
+          <div className="mb-4 space-y-2">
             <Label>Colour</Label>
-            <ColourOptions>
+            <div className="mt-2 flex flex-wrap gap-3">
               {COLOUR_OPTIONS.map((option) => (
-                <ColourOption
+                <button
                   key={option}
                   type="button"
-                  $colour={option}
-                  $selected={selectedColour === option}
+                  className={cn(
+                    'h-10 w-10 cursor-pointer rounded-lg border-[3px] transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:h-12 md:w-12',
+                    selectedColour === option ? 'border-foreground' : 'border-transparent',
+                  )}
+                  style={{ backgroundColor: option }}
                   onClick={() => setValue('colour', option)}
                 />
               ))}
-            </ColourOptions>
-          </FormGroup>
+            </div>
+          </div>
 
-          <Flex gap={12} style={{ marginTop: '24px' }}>
+          <div className="mt-6 flex gap-3">
             <Button
               type="button"
               variant="secondary"
               onClick={onClose}
               disabled={isSubmitting}
-              style={{ flex: 1 }}
+              className="flex-1"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              variant="primary"
+              variant="default"
               disabled={isSubmitting}
-              style={{ flex: 1 }}
+              className="flex-1"
             >
               {isSubmitting ? 'Creating...' : 'Create Group'}
             </Button>
-          </Flex>
+          </div>
         </form>
-      </ModalContent>
-    </ModalOverlay>
+      </div>
+    </div>
   );
 };

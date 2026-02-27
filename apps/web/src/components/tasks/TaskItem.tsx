@@ -1,9 +1,9 @@
-import { memo, useState, useCallback } from 'react';
-import styled, { useTheme } from 'styled-components';
+import { memo } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { spacing, borderRadius, mediaQueries } from '@finance-manager/ui/styles';
+import { cn } from '../../lib/utils';
 import { Task } from '../../services/taskService';
-import { Card, Button, Text, TextSmall, Badge, Flex } from '@finance-manager/ui';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
 import { SubtaskProgress } from './SubtaskProgress';
 
 interface TaskItemProps {
@@ -17,105 +17,19 @@ interface TaskItemProps {
   onToggleSubtaskExpand?: (taskId: string) => void;
 }
 
-const TaskCard = styled(Card)<{ $completed: boolean; $contained: boolean }>`
-  padding: 15px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  opacity: ${({ $completed }) => ($completed ? 0.6 : 1)};
-
-  ${({ $contained }) =>
-    $contained
-      ? `
-    border: none;
-    border-radius: 0;
-    margin-bottom: 0;
-  `
-      : `
-    margin-bottom: 10px;
-  `}
-
-  ${mediaQueries.tablet} {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 12px;
-  }
-`;
-
-const Checkbox = styled.input`
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-
-  ${mediaQueries.tablet} {
-    width: 24px;
-    height: 24px;
-    flex-shrink: 0;
-  }
-`;
-
-const TaskTitle = styled.h3<{ $completed: boolean }>`
-  margin: 0;
-  font-size: 16px;
-  text-decoration: ${({ $completed }) => ($completed ? 'line-through' : 'none')};
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const TaskDescription = styled(Text)`
-  margin: 5px 0;
-`;
-
-const getPriorityVariant = (priority: string): 'primary' | 'success' | 'warning' | 'error' | 'info' => {
+const getPriorityVariant = (priority: string) => {
   switch (priority) {
     case 'Critical':
-      return 'error';
     case 'High':
-      return 'error';
+      return 'destructive' as const;
     case 'Medium':
-      return 'warning';
+      return 'warning' as const;
     case 'Low':
-      return 'success';
+      return 'success' as const;
     default:
-      return 'info';
+      return 'secondary' as const;
   }
 };
-
-const ExpandChevron = styled.button<{ $expanded: boolean }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: ${spacing.xs};
-  border-radius: ${borderRadius.sm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  transition: color 200ms ease, transform 200ms ease;
-  flex-shrink: 0;
-
-  svg {
-    width: 16px;
-    height: 16px;
-    transition: transform 200ms ease;
-    transform: ${({ $expanded }) => ($expanded ? 'rotate(0deg)' : 'rotate(-90deg)')};
-  }
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.text};
-    background-color: ${({ theme }) => theme.colors.backgroundTertiary};
-  }
-`;
-
-const SubtaskCountBadge = styled(Badge)`
-  font-size: 10px;
-  padding: 2px 6px;
-`;
-
-const SubtaskProgressInline = styled.div`
-  margin-top: ${spacing.xs};
-  max-width: 240px;
-`;
 
 export const TaskItem = memo(({
   task,
@@ -125,7 +39,6 @@ export const TaskItem = memo(({
   isSubtaskExpanded = false,
   onToggleSubtaskExpand,
 }: TaskItemProps) => {
-  const theme = useTheme();
   const isOverdue = task.dueDate && !task.completed && new Date(task.dueDate) < new Date();
   
   const formatDateTime = (dateString: string) => {
@@ -142,103 +55,114 @@ export const TaskItem = memo(({
   const wasModified = new Date(task.updatedAt).getTime() > new Date(task.createdAt).getTime() + 1000;
 
   return (
-    <TaskCard $completed={task.completed} $contained={isSubtaskExpanded} role="article" aria-label={`Task: ${task.title}`}>
-      <Checkbox
+    <div
+      className={cn(
+        'flex items-center gap-[15px] p-[15px] md:flex-col md:items-start md:gap-3 md:p-3',
+        task.completed && 'opacity-60',
+        isSubtaskExpanded ? 'border-none rounded-none' : 'mb-2.5 rounded-lg border border-border bg-card',
+      )}
+      role="article"
+      aria-label={`Task: ${task.title}`}
+    >
+      <input
         type="checkbox"
         checked={task.completed}
         onChange={() => onToggleComplete(task.id)}
+        className="h-[18px] w-[18px] cursor-pointer md:h-6 md:w-6 flex-shrink-0"
         aria-label={`Mark task "${task.title}" as ${task.completed ? 'incomplete' : 'complete'}`}
       />
 
-      <div style={{ flex: 1 }}>
-        <Flex align="center" gap={10} style={{ marginBottom: '5px' }}>
-          <TaskTitle $completed={task.completed}>{task.title}</TaskTitle>
+      <div className="flex-1 min-w-0">
+        <div className="mb-[5px] flex flex-wrap items-center gap-2.5">
+          <h3 className={cn('m-0 text-base text-foreground', task.completed && 'line-through')}>
+            {task.title}
+          </h3>
           {task.groupName && (
-            <Badge 
-              variant="outline" 
-              style={{ 
-                borderColor: task.groupColour || theme.colors.textSecondary,
-                color: task.groupColour || theme.colors.textSecondary
+            <Badge
+              variant="outline"
+              style={{
+                borderColor: task.groupColour || 'hsl(var(--muted-foreground))',
+                color: task.groupColour || 'hsl(var(--muted-foreground))',
               }}
             >
               {task.groupName}
             </Badge>
           )}
           <Badge variant={getPriorityVariant(task.priority)}>{task.priority}</Badge>
-          {isOverdue && <Badge variant="error">OVERDUE</Badge>}
+          {isOverdue && <Badge variant="destructive">OVERDUE</Badge>}
           {task.hasSubtasks && (
-            <SubtaskCountBadge variant="info">
+            <Badge variant="secondary" className="px-1.5 py-0.5 text-[10px]">
               {task.completedSubtaskCount}/{task.subtaskCount} ✓
-            </SubtaskCountBadge>
+            </Badge>
           )}
-        </Flex>
+        </div>
 
         {task.description && (
-          <TaskDescription>{task.description}</TaskDescription>
+          <p className="my-[5px] text-sm text-foreground">{task.description}</p>
         )}
 
         {/* Inline subtask progress bar */}
         {task.hasSubtasks && (
-          <SubtaskProgressInline>
+          <div className="mt-1 max-w-[240px]">
             <SubtaskProgress
               completed={task.completedSubtaskCount}
               total={task.subtaskCount}
               percentage={task.progressPercentage}
               compact
             />
-          </SubtaskProgressInline>
+          </div>
         )}
 
-        <TextSmall style={{ marginTop: '5px' }}>
+        <p className="mt-[5px] text-xs text-muted-foreground">
           {task.dueDate && (
             <span>Due: {new Date(task.dueDate).toLocaleDateString()}</span>
           )}
           {task.completedAt && (
-            <span style={{ marginLeft: '15px' }}>
+            <span className="ml-[15px]">
               Completed: {new Date(task.completedAt).toLocaleDateString()}
             </span>
           )}
-          <span style={{ marginLeft: task.dueDate || task.completedAt ? '15px' : '0' }}>
+          <span className={task.dueDate || task.completedAt ? 'ml-[15px]' : ''}>
             Created: {formatDateTime(task.createdAt)}
           </span>
           {wasModified && (
-            <span style={{ marginLeft: '15px' }}>
+            <span className="ml-[15px]">
               Modified: {formatDateTime(task.updatedAt)}
             </span>
           )}
-        </TextSmall>
+        </p>
       </div>
 
-      <Flex gap={5} align="center">
+      <div className="flex items-center gap-[5px]">
         {onToggleSubtaskExpand && (
-          <ExpandChevron
-            $expanded={isSubtaskExpanded}
+          <button
+            className="flex items-center justify-center rounded border-none bg-transparent p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             onClick={() => onToggleSubtaskExpand(task.id)}
             aria-label={isSubtaskExpanded ? 'Collapse subtasks' : 'Expand subtasks'}
             aria-expanded={isSubtaskExpanded}
             title={task.hasSubtasks ? `${task.subtaskCount} subtask${task.subtaskCount !== 1 ? 's' : ''}` : 'Add subtasks'}
           >
-            <ChevronDown />
-          </ExpandChevron>
+            <ChevronDown className={cn('h-4 w-4 transition-transform duration-200', isSubtaskExpanded ? 'rotate-0' : '-rotate-90')} />
+          </button>
         )}
-        <Button 
-          variant="primary" 
-          size="small" 
+        <Button
+          variant="default"
+          size="sm"
           onClick={() => onEdit(task)}
           aria-label={`Edit task "${task.title}"`}
         >
           Edit
         </Button>
-        <Button 
-          variant="danger" 
-          size="small" 
+        <Button
+          variant="destructive"
+          size="sm"
           onClick={() => onDelete(task.id)}
           aria-label={`Delete task "${task.title}"`}
         >
           Delete
         </Button>
-      </Flex>
-    </TaskCard>
+      </div>
+    </div>
   );
 });
 

@@ -15,62 +15,18 @@ import { TaskStatistics } from '../../components/dashboard/TaskStatistics';
 import { TaskSkeleton } from '../../components/dashboard/TaskSkeleton';
 import { TaskSearch } from '../../components/dashboard/TaskSearch';
 import { PageLayout } from '../../components/layout/PageLayout';
-import { Alert, Button } from '@finance-manager/ui';
+import { Alert, AlertDescription } from '../../components/ui/alert';
+import { Button } from '../../components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../../components/ui/dropdown-menu';
 import { XCircle, ChevronDown, ListTodo, Calendar } from 'lucide-react';
 import { TaskGroup } from '../../types/taskGroup';
 import { DashboardLayout } from '../dashboard/components';
-import styled from 'styled-components';
-import { borderRadius } from '@finance-manager/ui/styles';
 import type { CreateEventRequest } from '../../types/event';
-
-const AddButtonContainer = styled.div`
-  position: relative;
-  display: inline-block;
-  margin-bottom: 20px;
-`;
-
-const AddButton = styled(Button).attrs({ size: 'small' })`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const DropdownMenu = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 8px;
-  background: ${({ theme }) => theme.colors.background};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  min-width: 200px;
-  overflow: hidden;
-`;
-
-const DropdownItem = styled.button`
-  width: 100%;
-  padding: 12px 16px;
-  background: none;
-  border: none;
-  text-align: left;
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.text};
-  cursor: pointer;
-  transition: background 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-  }
-
-  &:not(:last-child) {
-    border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  }
-`;
 
 const TasksPage = () => {
   const navigate = useNavigate();
@@ -84,7 +40,6 @@ const TasksPage = () => {
   const [error, setError] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [createType, setCreateType] = useState<'task' | 'event'>('task');
-  const [showDropdown, setShowDropdown] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -316,9 +271,9 @@ const TasksPage = () => {
       loadingComponent={<TaskSkeleton />}
     >
       {error && (
-        <Alert variant="error" style={{ marginBottom: '20px' }}>
-          <XCircle size={16} />
-          <span>{error}</span>
+        <Alert variant="destructive" className="mb-5">
+          <XCircle className="size-4" />
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
@@ -352,37 +307,33 @@ const TasksPage = () => {
               />
             )
           ) : (
-            <AddButtonContainer>
-              <AddButton 
-                variant="primary" 
-                onClick={() => setShowDropdown(!showDropdown)}
-                aria-label="Create new item"
-              >
-                + New <ChevronDown size={16} />
-              </AddButton>
-              {showDropdown && (
-                <DropdownMenu>
-                  <DropdownItem
+            <div className="relative mb-5 inline-block">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button aria-label="Create new item">
+                    + New <ChevronDown className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="min-w-[200px]">
+                  <DropdownMenuItem
                     onClick={() => {
                       setCreateType('task');
                       setShowCreateForm(true);
-                      setShowDropdown(false);
                     }}
                   >
-                    <ListTodo size={16} /> Task
-                  </DropdownItem>
-                  <DropdownItem
+                    <ListTodo className="size-4" /> Task
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
                     onClick={() => {
                       setCreateType('event');
                       setShowCreateForm(true);
-                      setShowDropdown(false);
                     }}
                   >
-                    <Calendar size={16} /> Event
-                  </DropdownItem>
-                </DropdownMenu>
-              )}
-            </AddButtonContainer>
+                    <Calendar className="size-4" /> Event
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           )}
 
           {loading ? (

@@ -1,9 +1,8 @@
 import { memo, useState, useRef, useEffect, useCallback } from 'react';
-import styled from 'styled-components';
 import { GripVertical, Pencil, Trash2, Check, X } from 'lucide-react';
-import { borderRadius, spacing, mediaQueries } from '@finance-manager/ui/styles';
+import { cn } from '../../lib/utils';
 import type { Task } from '../../services/taskService';
-import { Badge, Flex, TextSmall } from '@finance-manager/ui';
+import { Badge } from '../ui/badge';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -24,145 +23,20 @@ interface SubtaskItemProps {
 }
 
 // ---------------------------------------------------------------------------
-// Styled – hover-only actions, clean spacing
+// Helpers
 // ---------------------------------------------------------------------------
 
-const Row = styled.div<{ $completed: boolean; $selected: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: ${spacing.sm};
-  padding: ${spacing.sm} ${spacing.md};
-  border-radius: ${borderRadius.sm};
-  margin-bottom: 2px;
-  background-color: ${({ theme, $selected }) =>
-    $selected ? theme.colors.primaryLight : 'transparent'};
-  opacity: ${({ $completed }) => ($completed ? 0.6 : 1)};
-  transition: background-color 150ms ease;
-
-  &:hover {
-    background-color: ${({ theme, $selected }) =>
-      $selected ? theme.colors.primaryLight : theme.colors.backgroundSecondary};
-  }
-
-  /* Show actions and drag handle on hover */
-  &:hover [data-actions],
-  &:hover [data-drag] {
-    opacity: 1;
-  }
-
-  ${mediaQueries.tablet} {
-    [data-actions],
-    [data-drag] {
-      opacity: 1;
-    }
-  }
-`;
-
-const DragHandle = styled.span`
-  display: flex;
-  align-items: center;
-  cursor: grab;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  flex-shrink: 0;
-  opacity: 0;
-  transition: opacity 150ms ease;
-
-  &:active {
-    cursor: grabbing;
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-`;
-
-
-
-const SelectionCheckbox = styled.input`
-  width: 14px;
-  height: 14px;
-  cursor: pointer;
-  flex-shrink: 0;
-  accent-color: ${({ theme }) => theme.colors.primary};
-`;
-
-const Title = styled.span<{ $completed: boolean }>`
-  flex: 1;
-  font-size: 13px;
-  color: ${({ theme, $completed }) => ($completed ? theme.colors.textSecondary : theme.colors.text)};
-  text-decoration: ${({ $completed }) => ($completed ? 'line-through' : 'none')};
-  cursor: pointer;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  user-select: none;
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.primary};
-  }
-`;
-
-const EditInput = styled.input`
-  flex: 1;
-  font-size: 13px;
-  border: 1px solid ${({ theme }) => theme.colors.primary};
-  border-radius: ${borderRadius.sm};
-  padding: 2px ${spacing.sm};
-  background: ${({ theme }) => theme.colors.cardBackground};
-  color: ${({ theme }) => theme.colors.text};
-  outline: none;
-  min-width: 0;
-`;
-
-const Actions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  opacity: 0;
-  transition: opacity 150ms ease;
-`;
-
-const ActionButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: ${spacing.xs};
-  border-radius: ${borderRadius.sm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  transition: color 150ms ease, background-color 150ms ease;
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.text};
-    background-color: ${({ theme }) => theme.colors.backgroundTertiary};
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-`;
-
-const OverdueBadge = styled(Badge)`
-  font-size: 10px;
-  padding: 2px 6px;
-`;
-
-const getPriorityVariant = (priority: string): 'primary' | 'success' | 'warning' | 'error' | 'info' => {
+const getPriorityVariant = (priority: string) => {
   switch (priority) {
     case 'Critical':
     case 'High':
-      return 'error';
+      return 'destructive' as const;
     case 'Medium':
-      return 'warning';
+      return 'warning' as const;
     case 'Low':
-      return 'success';
+      return 'success' as const;
     default:
-      return 'info';
+      return 'secondary' as const;
   }
 };
 
@@ -220,109 +94,133 @@ export const SubtaskItem = memo(({
   );
 
   return (
-    <Row
-      $completed={subtask.completed}
-      $selected={isSelected}
+    <div
+      className={cn(
+        'group/row mb-0.5 flex items-center gap-2 rounded px-3 py-2 transition-colors',
+        isSelected ? 'bg-primary/10' : 'hover:bg-secondary',
+        subtask.completed && 'opacity-60',
+      )}
       style={style}
       role="listitem"
       aria-label={`Subtask: ${subtask.title}`}
     >
       {/* Selection checkbox */}
       {onSelect && (
-        <SelectionCheckbox
+        <input
           type="checkbox"
           checked={isSelected}
           onChange={() => onSelect(subtask.id)}
+          className="h-3.5 w-3.5 flex-shrink-0 cursor-pointer accent-primary"
           aria-label={`Select subtask "${subtask.title}"`}
         />
       )}
 
       {/* Drag handle – visible on hover */}
-      <DragHandle data-drag {...dragHandleProps} aria-label="Drag to reorder">
-        <GripVertical />
-      </DragHandle>
+      <span
+        data-drag
+        className="flex flex-shrink-0 cursor-grab items-center text-muted-foreground opacity-0 transition-opacity active:cursor-grabbing group-hover/row:opacity-100 md:opacity-100"
+        {...dragHandleProps}
+        aria-label="Drag to reorder"
+      >
+        <GripVertical className="h-3.5 w-3.5" />
+      </span>
 
       {/* Title – click to toggle completion, or inline edit */}
       {isEditing ? (
-        <EditInput
+        <input
           ref={editInputRef}
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleEditKeyDown}
           onBlur={handleSaveEdit}
+          className="min-w-0 flex-1 rounded border border-primary bg-card px-2 py-0.5 text-[13px] text-foreground outline-none"
           aria-label="Edit subtask title"
         />
       ) : (
-        <Title
-          $completed={subtask.completed}
+        <span
+          className={cn(
+            'min-w-0 flex-1 cursor-pointer select-none truncate text-[13px] hover:text-primary',
+            subtask.completed ? 'text-muted-foreground line-through' : 'text-foreground',
+          )}
           onClick={() => onToggleComplete(subtask.id, !subtask.completed)}
           role="button"
           tabIndex={0}
           aria-label={`Mark "${subtask.title}" as ${subtask.completed ? 'incomplete' : 'complete'}`}
         >
           {subtask.title}
-        </Title>
+        </span>
       )}
 
       {/* Metadata */}
-      <Flex align="center" gap={6}>
+      <div className="flex items-center gap-1.5">
         {/* Only show non-default priority */}
         {subtask.priority !== 'Medium' && (
           <Badge
             variant={getPriorityVariant(subtask.priority)}
-            style={{ fontSize: '10px', padding: '2px 6px' }}
+            className="px-1.5 py-0.5 text-[10px]"
           >
             {subtask.priority}
           </Badge>
         )}
 
         {subtask.dueDate && (
-          <TextSmall>
+          <span className="text-xs text-muted-foreground">
             {new Date(subtask.dueDate).toLocaleDateString('en-GB')}
-          </TextSmall>
+          </span>
         )}
 
-        {isOverdue && <OverdueBadge variant="error">Overdue</OverdueBadge>}
-      </Flex>
+        {isOverdue && (
+          <Badge variant="destructive" className="px-1.5 py-0.5 text-[10px]">
+            Overdue
+          </Badge>
+        )}
+      </div>
 
       {/* Actions – visible on hover */}
-      <Actions data-actions>
+      <div
+        data-actions
+        className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover/row:opacity-100 md:opacity-100"
+      >
         {isEditing ? (
           <>
-            <ActionButton
+            <button
+              className="flex items-center justify-center rounded border-none bg-transparent p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               onClick={handleSaveEdit}
               aria-label="Save edit"
             >
-              <Check />
-            </ActionButton>
-            <ActionButton
+              <Check className="h-3.5 w-3.5" />
+            </button>
+            <button
+              className="flex items-center justify-center rounded border-none bg-transparent p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               onClick={handleCancelEdit}
               aria-label="Cancel edit"
             >
-              <X />
-            </ActionButton>
+              <X className="h-3.5 w-3.5" />
+            </button>
           </>
         ) : (
           <>
-            <ActionButton
+            <button
+              className="flex items-center justify-center rounded border-none bg-transparent p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               onClick={() => {
                 setEditValue(subtask.title);
                 setIsEditing(true);
               }}
               aria-label={`Edit subtask "${subtask.title}"`}
             >
-              <Pencil />
-            </ActionButton>
-            <ActionButton
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
+            <button
+              className="flex items-center justify-center rounded border-none bg-transparent p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               onClick={() => onDelete(subtask.id)}
               aria-label={`Delete subtask "${subtask.title}"`}
             >
-              <Trash2 />
-            </ActionButton>
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
           </>
         )}
-      </Actions>
-    </Row>
+      </div>
+    </div>
   );
 });
 

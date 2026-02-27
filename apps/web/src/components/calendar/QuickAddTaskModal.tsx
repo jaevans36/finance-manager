@@ -1,114 +1,13 @@
 import { useState } from 'react';
-import styled from 'styled-components';
 import { X, ListTodo, Calendar } from 'lucide-react';
-import { borderRadius, shadows, mediaQueries, focusRing } from '../../styles/layout';
-import { Button, Input, FormGroup, Label, Alert } from '@finance-manager/ui';
+import { cn } from '../../lib/utils';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Button } from '../../components/ui/button';
+import { Alert, AlertDescription } from '../../components/ui/alert';
 import type { CreateEventRequest } from '../../types/event';
 import { useCreateTaskForm } from '../../hooks/forms';
 import type { CreateTaskInput } from '@finance-manager/schema';
-
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 16px;
-`;
-
-const ModalContent = styled.div`
-  background: ${({ theme }) => theme.colors.background};
-  border-radius: ${borderRadius.lg};
-  padding: 24px;
-  max-width: 500px;
-  width: 100%;
-  box-shadow: ${shadows.elevated};
-
-  ${mediaQueries.tablet} {
-    padding: 20px;
-  }
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-`;
-
-const ModalTitle = styled.h2`
-  font-size: 20px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0;
-`;
-
-const CloseButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  border: none;
-  border-radius: ${borderRadius.sm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-    color: ${({ theme }) => theme.colors.text};
-  }
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  ${focusRing}
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 12px;
-  margin-top: 24px;
-`;
-
-const TypeSelector = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.lg};
-  padding: 4px;
-`;
-
-const TypeButton = styled.button<{ $active: boolean }>`
-  flex: 1;
-  padding: 8px 16px;
-  border: none;
-  border-radius: ${borderRadius.sm};
-  background: ${({ $active, theme }) => $active ? theme.colors.primary : 'transparent'};
-  color: ${({ $active, theme }) => $active ? 'white' : theme.colors.text};
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-
-  &:hover {
-    background: ${({ $active, theme }) => $active ? theme.colors.primaryHover : theme.colors.cardBackground};
-  }
-`;
 
 interface QuickAddTaskModalProps {
   date: Date;
@@ -119,15 +18,13 @@ interface QuickAddTaskModalProps {
 
 export const QuickAddTaskModal = ({ date, onSubmitTask, onSubmitEvent, onCancel }: QuickAddTaskModalProps) => {
   const [type, setType] = useState<'task' | 'event'>('task');
-  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useCreateTaskForm({
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useCreateTaskForm({
     dueDate: date.toISOString().split('T')[0],
   });
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('10:00');
   const [isAllDay, setIsAllDay] = useState(false);
   const [apiError, setApiError] = useState('');
-
-  const watchedDueDate = watch('dueDate');
 
   const onFormSubmit = async (data: CreateTaskInput) => {
     setApiError('');
@@ -167,32 +64,64 @@ export const QuickAddTaskModal = ({ date, onSubmitTask, onSubmitEvent, onCancel 
   };
 
   return (
-    <ModalOverlay onClick={onCancel} role="dialog" aria-modal="true">
-      <ModalContent onClick={handleModalClick}>
-        <ModalHeader>
-          <ModalTitle>Quick Add</ModalTitle>
-          <CloseButton onClick={onCancel} aria-label="Close modal">
+    <div
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-4"
+      onClick={onCancel}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        className="w-full max-w-[500px] rounded-lg bg-background p-5 shadow-lg md:p-6"
+        onClick={handleModalClick}
+      >
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="m-0 text-xl font-bold text-foreground">Quick Add</h2>
+          <button
+            onClick={onCancel}
+            aria-label="Close modal"
+            className="flex h-8 w-8 items-center justify-center rounded border-none bg-transparent text-muted-foreground transition-all hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&_svg]:h-5 [&_svg]:w-5"
+          >
             <X />
-          </CloseButton>
-        </ModalHeader>
+          </button>
+        </div>
 
-        <TypeSelector>
-          <TypeButton $active={type === 'task'} onClick={() => setType('task')} type="button">
+        {/* Type Selector */}
+        <div className="mb-6 flex gap-2 rounded-lg bg-secondary p-1">
+          <button
+            type="button"
+            className={cn(
+              'flex flex-1 items-center justify-center gap-1.5 rounded px-4 py-2 text-sm font-semibold transition-all',
+              type === 'task'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-transparent text-foreground hover:bg-card',
+            )}
+            onClick={() => setType('task')}
+          >
             <ListTodo size={16} /> Task
-          </TypeButton>
-          <TypeButton $active={type === 'event'} onClick={() => setType('event')} type="button">
+          </button>
+          <button
+            type="button"
+            className={cn(
+              'flex flex-1 items-center justify-center gap-1.5 rounded px-4 py-2 text-sm font-semibold transition-all',
+              type === 'event'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-transparent text-foreground hover:bg-card',
+            )}
+            onClick={() => setType('event')}
+          >
             <Calendar size={16} /> Event
-          </TypeButton>
-        </TypeSelector>
+          </button>
+        </div>
 
         {apiError && (
-          <Alert variant="error" style={{ marginBottom: '16px' }}>
-            {apiError}
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{apiError}</AlertDescription>
           </Alert>
         )}
 
         <form onSubmit={handleSubmit(onFormSubmit)}>
-          <FormGroup>
+          <div className="mb-4 space-y-2">
             <Label htmlFor="item-title">{type === 'task' ? 'Task' : 'Event'} Title *</Label>
             <Input
               id="item-title"
@@ -203,27 +132,27 @@ export const QuickAddTaskModal = ({ date, onSubmitTask, onSubmitEvent, onCancel 
               disabled={isSubmitting}
               autoFocus
             />
-            {errors.title && <span style={{ color: 'red', fontSize: '12px' }}>{errors.title.message}</span>}
-          </FormGroup>
+            {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
+          </div>
 
           {type === 'task' ? (
             <>
-              <FormGroup>
+              <div className="mb-4 space-y-2">
                 <Label htmlFor="task-priority">Priority</Label>
-                <Input
-                  as="select"
+                <select
                   id="task-priority"
                   {...register('priority')}
                   disabled={isSubmitting}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <option value="Low">Low</option>
                   <option value="Medium">Medium</option>
                   <option value="High">High</option>
                   <option value="Critical">Critical</option>
-                </Input>
-              </FormGroup>
+                </select>
+              </div>
 
-              <FormGroup>
+              <div className="mb-4 space-y-2">
                 <Label htmlFor="task-due-date">Due Date</Label>
                 <Input
                   id="task-due-date"
@@ -231,11 +160,11 @@ export const QuickAddTaskModal = ({ date, onSubmitTask, onSubmitEvent, onCancel 
                   {...register('dueDate')}
                   disabled={isSubmitting}
                 />
-              </FormGroup>
+              </div>
             </>
           ) : (
             <>
-              <FormGroup>
+              <div className="mb-4 space-y-2">
                 <Label htmlFor="event-date">Date</Label>
                 <Input
                   id="event-date"
@@ -243,24 +172,23 @@ export const QuickAddTaskModal = ({ date, onSubmitTask, onSubmitEvent, onCancel 
                   {...register('dueDate')}
                   disabled={isSubmitting}
                 />
-              </FormGroup>
+              </div>
 
-              <FormGroup>
-                <Label>
+              <div className="mb-4 space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium">
                   <input
                     type="checkbox"
                     checked={isAllDay}
                     onChange={(e) => setIsAllDay(e.target.checked)}
                     disabled={isSubmitting}
-                    style={{ marginRight: '8px' }}
                   />
                   All Day Event
-                </Label>
-              </FormGroup>
+                </label>
+              </div>
 
               {!isAllDay && (
                 <>
-                  <FormGroup>
+                  <div className="mb-4 space-y-2">
                     <Label htmlFor="start-time">Start Time</Label>
                     <Input
                       id="start-time"
@@ -269,9 +197,9 @@ export const QuickAddTaskModal = ({ date, onSubmitTask, onSubmitEvent, onCancel 
                       onChange={(e) => setStartTime(e.target.value)}
                       disabled={isSubmitting}
                     />
-                  </FormGroup>
+                  </div>
 
-                  <FormGroup>
+                  <div className="mb-4 space-y-2">
                     <Label htmlFor="end-time">End Time</Label>
                     <Input
                       id="end-time"
@@ -280,33 +208,32 @@ export const QuickAddTaskModal = ({ date, onSubmitTask, onSubmitEvent, onCancel 
                       onChange={(e) => setEndTime(e.target.value)}
                       disabled={isSubmitting}
                     />
-                  </FormGroup>
+                  </div>
                 </>
               )}
             </>
           )}
 
-          <ButtonGroup>
-            <Button 
-              type="submit" 
-              variant="primary" 
-              $isLoading={isSubmitting}
+          <div className="mt-6 flex gap-3">
+            <Button
+              type="submit"
+              variant="default"
               disabled={isSubmitting}
-              style={{ flex: 1 }}
+              className="flex-1"
             >
               {isSubmitting ? 'Adding...' : `Add ${type === 'task' ? 'Task' : 'Event'}`}
             </Button>
-            <Button 
-              type="button" 
-              variant="secondary" 
+            <Button
+              type="button"
+              variant="secondary"
               onClick={onCancel}
               disabled={isSubmitting}
             >
               Cancel
             </Button>
-          </ButtonGroup>
+          </div>
         </form>
-      </ModalContent>
-    </ModalOverlay>
+      </div>
+    </div>
   );
 };

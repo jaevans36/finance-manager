@@ -1,11 +1,9 @@
 import { useState, useCallback } from 'react';
-import styled from 'styled-components';
+import { cn } from '../../lib/utils';
 import { Task } from '../../services/taskService';
 import { TaskItem } from './TaskItem';
 import { SubtaskList } from './SubtaskList';
 import { useSubtasks } from '../../hooks/useSubtasks';
-import { Card, Text, TextSecondary } from '@finance-manager/ui';
-import { spacing, borderRadius } from '@finance-manager/ui/styles';
 
 interface TaskListProps {
   tasks: Task[];
@@ -36,37 +34,6 @@ const writeExpandedIds = (ids: Set<string>) => {
     // Silently ignore quota errors
   }
 };
-
-const TaskGroup = styled.div<{ $expanded: boolean }>`
-  margin-bottom: 10px;
-  border-radius: ${borderRadius.lg};
-  overflow: hidden;
-
-  ${({ $expanded, theme }) =>
-    $expanded
-      ? `
-    border: 1px solid ${theme.colors.cardBorder};
-    background: ${theme.colors.cardBackground};
-  `
-      : ''}
-`;
-
-const SubtaskPanel = styled.div`
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-  padding: ${spacing.sm} ${spacing.md} ${spacing.md};
-`;
-
-const EmptyState = styled(Card)`
-  text-align: center;
-  padding: 60px 20px;
-  background-color: ${({ theme }) => theme.colors.backgroundSecondary};
-`;
-
-const LoadingState = styled.div`
-  text-align: center;
-  padding: 40px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
 
 /** Wrapper that renders the SubtaskList for a single parent task */
 const SubtaskListContainer = ({
@@ -135,15 +102,19 @@ export const TaskList = ({
   }, []);
 
   if (isLoading) {
-    return <LoadingState role="status" aria-live="polite">Loading tasks...</LoadingState>;
+    return (
+      <div className="py-10 text-center text-muted-foreground" role="status" aria-live="polite">
+        Loading tasks...
+      </div>
+    );
   }
 
   if (tasks.length === 0) {
     return (
-      <EmptyState role="status">
-        <Text style={{ marginBottom: '10px' }}>No tasks yet</Text>
-        <TextSecondary>Create your first task to get started!</TextSecondary>
-      </EmptyState>
+      <div className="rounded-lg border border-border bg-secondary px-5 py-[60px] text-center" role="status">
+        <p className="mb-2.5 text-sm text-foreground">No tasks yet</p>
+        <p className="text-sm text-muted-foreground">Create your first task to get started!</p>
+      </div>
     );
   }
 
@@ -153,7 +124,13 @@ export const TaskList = ({
         const isExpanded = expandedIds.has(task.id);
 
         return (
-          <TaskGroup key={task.id} $expanded={isExpanded}>
+          <div
+            key={task.id}
+            className={cn(
+              'mb-2.5 overflow-hidden rounded-lg',
+              isExpanded && 'border border-border bg-card',
+            )}
+          >
             <TaskItem
               task={task}
               onToggleComplete={onToggleComplete}
@@ -163,13 +140,13 @@ export const TaskList = ({
               onToggleSubtaskExpand={handleToggleExpand}
             />
             {isExpanded && (
-              <SubtaskPanel>
+              <div className="border-t border-border px-3 pb-3 pt-2">
                 <SubtaskListContainer
                   parentTask={task}
                 />
-              </SubtaskPanel>
+              </div>
             )}
-          </TaskGroup>
+          </div>
         );
       })}
     </div>

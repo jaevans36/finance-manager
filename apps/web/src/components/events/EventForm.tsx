@@ -1,41 +1,14 @@
 import { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { 
-  Card, 
-  Button, 
-  Input, 
-  TextArea, 
-  FormGroup, 
-  Label, 
-  ErrorText, 
-  Alert,
-  Flex
-} from '@finance-manager/ui';
 import { XCircle } from 'lucide-react';
 import type { Event, CreateEventRequest } from '../../types/event';
 import type { TaskGroup } from '../../types/taskGroup';
 import { useCreateEventForm } from '../../hooks/forms';
 import type { CreateEventInput } from '@finance-manager/schema';
-
-const Subheading = styled.h2`
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0 0 20px 0;
-`;
-
-const CheckboxLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.text};
-  cursor: pointer;
-  
-  input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-  }
-`;
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Textarea } from '../ui/textarea';
+import { Label } from '../ui/label';
+import { Alert, AlertDescription } from '../ui/alert';
 
 interface EventFormProps {
   event?: Event;
@@ -118,18 +91,18 @@ export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormP
   ];
 
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} style={{ marginBottom: '30px' }} aria-label={`${isEditing ? 'Edit' : 'Create'} event form`}>
-      <Card style={{ padding: '20px' }}>
-        <Subheading>{isEditing ? 'Edit Event' : 'Create New Event'}</Subheading>
+    <form onSubmit={handleSubmit(onFormSubmit)} className="mb-[30px]" aria-label={`${isEditing ? 'Edit' : 'Create'} event form`}>
+      <div className="rounded-lg border border-border bg-card p-5">
+        <h2 className="m-0 mb-5 text-foreground">{isEditing ? 'Edit Event' : 'Create New Event'}</h2>
 
         {apiError && (
-          <Alert variant="error" style={{ marginBottom: '15px' }}>
-            <XCircle size={16} />
-            <span>{apiError}</span>
+          <Alert variant="destructive" className="mb-4">
+            <XCircle className="h-4 w-4" />
+            <AlertDescription>{apiError}</AlertDescription>
           </Alert>
         )}
 
-        <FormGroup>
+        <div className="mb-4 space-y-2">
           <Label htmlFor="title">Title *</Label>
           <Input
             id="title"
@@ -141,13 +114,13 @@ export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormP
             maxLength={200}
             disabled={isSubmitting}
           />
-          {errors.title && <ErrorText>{errors.title.message}</ErrorText>}
-          <ErrorText>{(watchedTitle ?? '').length}/200</ErrorText>
-        </FormGroup>
+          {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
+          <p className="text-sm text-muted-foreground">{(watchedTitle ?? '').length}/200</p>
+        </div>
 
-        <FormGroup>
+        <div className="mb-4 space-y-2">
           <Label htmlFor="description">Description</Label>
-          <TextArea
+          <Textarea
             id="description"
             {...register('description')}
             placeholder="Enter event description"
@@ -155,11 +128,11 @@ export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormP
             rows={3}
             disabled={isSubmitting}
           />
-          <ErrorText>{(watchedDescription ?? '').length}/5000</ErrorText>
-        </FormGroup>
+          <p className="text-sm text-muted-foreground">{(watchedDescription ?? '').length}/5000</p>
+        </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-          <FormGroup>
+        <div className="mb-4 grid grid-cols-2 gap-4">
+          <div className="space-y-2">
             <Label htmlFor="startDate">Start Date & Time *</Label>
             <Input
               id="startDate"
@@ -168,10 +141,10 @@ export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormP
               {...register('startDate')}
               disabled={isSubmitting}
             />
-            {errors.startDate && <ErrorText>{errors.startDate.message}</ErrorText>}
-          </FormGroup>
+            {errors.startDate && <p className="text-sm text-destructive">{errors.startDate.message}</p>}
+          </div>
 
-          <FormGroup>
+          <div className="space-y-2">
             <Label htmlFor="endDate">End Date & Time *</Label>
             <Input
               id="endDate"
@@ -181,22 +154,23 @@ export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormP
               min={watchedStartDate}
               disabled={isSubmitting}
             />
-            {errors.endDate && <ErrorText>{errors.endDate.message}</ErrorText>}
-          </FormGroup>
+            {errors.endDate && <p className="text-sm text-destructive">{errors.endDate.message}</p>}
+          </div>
         </div>
 
-        <FormGroup>
-          <CheckboxLabel>
+        <div className="mb-4">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               {...register('isAllDay')}
               disabled={isSubmitting}
+              className="h-[18px] w-[18px] cursor-pointer"
             />
             All-day event
-          </CheckboxLabel>
-        </FormGroup>
+          </label>
+        </div>
 
-        <FormGroup>
+        <div className="mb-4 space-y-2">
           <Label htmlFor="location">Location</Label>
           <Input
             id="location"
@@ -206,33 +180,33 @@ export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormP
             maxLength={500}
             disabled={isSubmitting}
           />
-          <ErrorText>{(watchedLocation ?? '').length}/500</ErrorText>
-        </FormGroup>
+          <p className="text-sm text-muted-foreground">{(watchedLocation ?? '').length}/500</p>
+        </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-          <FormGroup>
+        <div className="mb-4 grid grid-cols-2 gap-4">
+          <div className="space-y-2">
             <Label htmlFor="reminder">Reminder</Label>
-            <Input
-              as="select"
+            <select
               id="reminder"
               {...register('reminderMinutes')}
               disabled={isSubmitting}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {reminderOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
-            </Input>
-          </FormGroup>
+            </select>
+          </div>
 
-          <FormGroup>
+          <div className="space-y-2">
             <Label htmlFor="group">Group</Label>
-            <Input
-              as="select"
+            <select
               id="group"
               {...register('groupId')}
               disabled={isSubmitting}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="">No group</option>
               {groups.map((group) => (
@@ -240,19 +214,19 @@ export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormP
                   {group.name}
                 </option>
               ))}
-            </Input>
-          </FormGroup>
+            </select>
+          </div>
         </div>
 
-        <Flex gap={10}>
-          <Button type="submit" variant="primary" $isLoading={isSubmitting}>
+        <div className="flex gap-2.5">
+          <Button type="submit" variant="default" disabled={isSubmitting}>
             {isSubmitting ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update Event' : 'Create Event')}
           </Button>
           <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
             Cancel
           </Button>
-        </Flex>
-      </Card>
+        </div>
+      </div>
     </form>
   );
 };

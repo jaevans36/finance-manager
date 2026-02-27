@@ -57,7 +57,7 @@ describe('Responsive Chart Tests (T241)', () => {
 
       const chart = screen.getByRole('img');
       expect(chart).toBeInTheDocument();
-      expect(chart).toHaveStyle({ width: '100%' });
+      expect(chart).toHaveClass('w-full');
     });
 
     it('should render on tablet viewport (768px)', () => {
@@ -72,7 +72,7 @@ describe('Responsive Chart Tests (T241)', () => {
 
       const chart = screen.getByRole('img');
       expect(chart).toBeInTheDocument();
-      expect(chart).toHaveStyle({ width: '100%' });
+      expect(chart).toHaveClass('w-full');
     });
 
     it('should render on desktop viewport (1920px)', () => {
@@ -87,7 +87,7 @@ describe('Responsive Chart Tests (T241)', () => {
 
       const chart = screen.getByRole('img');
       expect(chart).toBeInTheDocument();
-      expect(chart).toHaveStyle({ width: '100%' });
+      expect(chart).toHaveClass('w-full');
     });
 
     it('should maintain aspect ratio on small screens', () => {
@@ -146,7 +146,7 @@ describe('Responsive Chart Tests (T241)', () => {
 
       const chart = screen.getByRole('img');
       expect(chart).toBeInTheDocument();
-      expect(chart).toHaveStyle({ width: '100%' });
+      expect(chart).toHaveClass('w-full');
     });
 
     it('should render on tablet viewport (768px)', () => {
@@ -161,7 +161,7 @@ describe('Responsive Chart Tests (T241)', () => {
 
       const chart = screen.getByRole('img');
       expect(chart).toBeInTheDocument();
-      expect(chart).toHaveStyle({ width: '100%' });
+      expect(chart).toHaveClass('w-full');
     });
 
     it('should render on desktop viewport (1920px)', () => {
@@ -176,7 +176,7 @@ describe('Responsive Chart Tests (T241)', () => {
 
       const chart = screen.getByRole('img');
       expect(chart).toBeInTheDocument();
-      expect(chart).toHaveStyle({ width: '100%' });
+      expect(chart).toHaveClass('w-full');
     });
 
     it('should maintain custom height on different viewports', () => {
@@ -229,7 +229,7 @@ describe('Responsive Chart Tests (T241)', () => {
       );
 
       const chartContainer = container.firstChild as HTMLElement;
-      expect(chartContainer).toHaveStyle({ width: '100%' });
+      expect(chartContainer).toHaveClass('w-full');
     });
 
     it('should use 100% width for bar chart responsive container', () => {
@@ -240,7 +240,7 @@ describe('Responsive Chart Tests (T241)', () => {
       );
 
       const chartContainer = container.firstChild as HTMLElement;
-      expect(chartContainer).toHaveStyle({ width: '100%' });
+      expect(chartContainer).toHaveClass('w-full');
     });
 
     it('should handle viewport resize simulation', () => {
@@ -267,7 +267,7 @@ describe('Responsive Chart Tests (T241)', () => {
 
       chart = screen.getByRole('img');
       expect(chart).toBeInTheDocument();
-      expect(chart).toHaveStyle({ width: '100%' });
+      expect(chart).toHaveClass('w-full');
     });
   });
 

@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import { LoadingSpinner } from '@finance-manager/ui';
+import { Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface AdminRouteProps {
@@ -15,13 +15,8 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
 
   if (isLoading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh' 
-      }}>
-        <LoadingSpinner />
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }

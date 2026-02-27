@@ -1,136 +1,13 @@
 import { useState, useEffect } from 'react';
-import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { authService } from '../../services/authService';
-import { Container, Card, Heading1, Text, TextSecondary, Button, Flex, Input } from '@finance-manager/ui';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
 import { UserIcon, MailIcon, CalendarIcon, LogOutIcon, ArrowLeftIcon, EditIcon, CheckIcon, XIcon } from 'lucide-react';
-import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
 import { useProfileForm } from '../../hooks/forms';
-
-const ProfileHeader = styled.div`
-  margin-bottom: 30px;
-`;
-
-const ProfileCard = styled(Card)`
-  padding: 30px;
-  margin-bottom: 20px;
-
-  ${mediaQueries.tablet} {
-    padding: 20px 16px;
-  }
-`;
-
-const ProfileSection = styled.div`
-  margin-bottom: 24px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-const ProfileLabel = styled(TextSecondary)`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-  font-size: 14px;
-
-  ${mediaQueries.tablet} {
-    font-size: 13px;
-  }
-`;
-
-const ProfileValue = styled(Text)`
-  font-size: 16px;
-  font-weight: 500;
-  padding-left: 28px;
-
-  ${mediaQueries.tablet} {
-    padding-left: 0;
-    font-size: 15px;
-  }
-`;
-
-const UsernameContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-left: 28px;
-
-  ${mediaQueries.tablet} {
-    flex-wrap: wrap;
-    padding-left: 0;
-    gap: 8px;
-  }
-`;
-
-const UsernameEditButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background-color: ${({ theme }) => theme.colors.backgroundSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.sm};
-  cursor: pointer;
-  transition: all 0.2s;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 13px;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.backgroundTertiary};
-    border-color: ${({ theme }) => theme.colors.primary};
-    color: ${({ theme }) => theme.colors.primary};
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-`;
-
-const UsernameInputContainer = styled.div`
-  display: flex;
-  gap: 8px;
-  padding-left: 28px;
-  align-items: center;
-
-  ${mediaQueries.tablet} {
-    flex-wrap: wrap;
-    padding-left: 0;
-
-    input {
-      width: 100% !important;
-      max-width: 100%;
-    }
-
-    button {
-      flex: 1;
-    }
-  }
-`;
-
-const UsernameHint = styled.div<{ $available: boolean }>`
-  font-size: 12px;
-  margin-top: 4px;
-  margin-left: 28px;
-  color: ${({ $available, theme }) => $available ? theme.colors.successText : theme.colors.errorText};
-
-  ${mediaQueries.tablet} {
-    margin-left: 0;
-  }
-`;
-
-const ActionButtons = styled(Flex)`
-  gap: 12px;
-  margin-top: 30px;
-
-  ${mediaQueries.tablet} {
-    flex-direction: column;
-  }
-`;
+import { cn } from '../../lib/utils';
 
 const formatDate = (dateString?: string | null) => {
   if (!dateString) return 'Not available';
@@ -246,34 +123,34 @@ const ProfilePage = () => {
   }
 
   return (
-    <Container style={{ padding: '20px', maxWidth: '1200px', width: '80%' }}>
-      <ProfileHeader>
-        <Heading1 style={{ margin: 0 }}>Profile</Heading1>
-        <TextSecondary style={{ margin: '5px 0 0' }}>Manage your account information</TextSecondary>
-      </ProfileHeader>
+    <div className="mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-[10px] md:w-[95%]">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-foreground">Profile</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">Manage your account information</p>
+      </div>
 
-      <ProfileCard>
-        <ProfileSection>
-          <ProfileLabel>
+      <div className="mb-5 rounded-lg border border-border bg-card p-8 md:p-5">
+        {/* Username Section */}
+        <div className="mb-6 last:mb-0">
+          <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground md:text-[13px]">
             <UserIcon size={20} />
-            Username {isTemporaryUsername && <span style={{ color: 'orange' }}>(Temporary)</span>}
-          </ProfileLabel>
+            Username {isTemporaryUsername && <span className="text-warning">(Temporary)</span>}
+          </div>
           {editingUsername ? (
             <>
-              <UsernameInputContainer>
+              <div className="flex items-center gap-2 pl-7 md:flex-wrap md:pl-0">
                 <Input
                   type="text"
                   {...register('username')}
                   placeholder="Enter new username"
                   disabled={saving}
-                  style={{ width: '250px' }}
+                  className="w-[250px] md:w-full"
                 />
                 <Button
-                  variant="primary"
+                  variant="default"
                   onClick={handleSaveUsername}
                   disabled={saving || !usernameAvailable || usernameChecking}
-                  $isLoading={saving}
-                  size="small"
+                  size="sm"
                 >
                   <CheckIcon size={16} />
                   Save
@@ -282,69 +159,79 @@ const ProfilePage = () => {
                   variant="secondary"
                   onClick={handleCancelEdit}
                   disabled={saving}
-                  size="small"
+                  size="sm"
                 >
                   <XIcon size={16} />
                   Cancel
                 </Button>
-              </UsernameInputContainer>
+              </div>
               {watchedUsername && usernameMessage && (
-                <UsernameHint $available={usernameAvailable === true}>
+                <div className={cn(
+                  'mt-1 ml-7 text-xs md:ml-0',
+                  usernameAvailable ? 'text-success' : 'text-destructive'
+                )}>
                   {usernameMessage}
-                </UsernameHint>
+                </div>
               )}
             </>
           ) : (
-            <UsernameContainer>
-              <ProfileValue style={{ padding: 0 }}>@{user.username}</ProfileValue>
-              <UsernameEditButton onClick={handleEditUsername}>
+            <div className="flex items-center gap-3 pl-7 md:flex-wrap md:gap-2 md:pl-0">
+              <span className="text-base font-medium text-foreground">@{user.username}</span>
+              <button
+                onClick={handleEditUsername}
+                className="flex items-center gap-1.5 rounded border border-border bg-card px-3 py-1.5 text-[13px] text-muted-foreground transition-all hover:border-primary hover:bg-accent hover:text-primary [&_svg]:h-3.5 [&_svg]:w-3.5"
+              >
                 <EditIcon />
                 {isTemporaryUsername ? 'Set Username' : 'Edit'}
-              </UsernameEditButton>
-            </UsernameContainer>
+              </button>
+            </div>
           )}
-        </ProfileSection>
+        </div>
 
-        <ProfileSection>
-          <ProfileLabel>
+        {/* Email Section */}
+        <div className="mb-6 last:mb-0">
+          <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground md:text-[13px]">
             <MailIcon size={20} />
             Email Address
-          </ProfileLabel>
-          <ProfileValue>{user.email}</ProfileValue>
-        </ProfileSection>
+          </div>
+          <div className="pl-7 text-base font-medium text-foreground md:pl-0 md:text-[15px]">{user.email}</div>
+        </div>
 
+        {/* Created At */}
         {user.createdAt && (
-          <ProfileSection>
-            <ProfileLabel>
+          <div className="mb-6 last:mb-0">
+            <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground md:text-[13px]">
               <CalendarIcon size={20} />
               Account Created
-            </ProfileLabel>
-            <ProfileValue>{formatDate(user.createdAt)}</ProfileValue>
-          </ProfileSection>
+            </div>
+            <div className="pl-7 text-base font-medium text-foreground md:pl-0 md:text-[15px]">{formatDate(user.createdAt)}</div>
+          </div>
         )}
 
+        {/* Last Login */}
         {user.lastLoginAt && (
-          <ProfileSection>
-            <ProfileLabel>
+          <div className="mb-6 last:mb-0">
+            <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground md:text-[13px]">
               <CalendarIcon size={20} />
               Last Login
-            </ProfileLabel>
-            <ProfileValue>{formatDate(user.lastLoginAt)}</ProfileValue>
-          </ProfileSection>
+            </div>
+            <div className="pl-7 text-base font-medium text-foreground md:pl-0 md:text-[15px]">{formatDate(user.lastLoginAt)}</div>
+          </div>
         )}
 
-        <ActionButtons>
+        {/* Action Buttons */}
+        <div className="mt-8 flex gap-3 md:flex-col">
           <Button variant="secondary" onClick={handleBackToDashboard}>
             <ArrowLeftIcon size={18} />
             Back to Dashboard
           </Button>
-          <Button variant="danger" onClick={handleLogout}>
+          <Button variant="destructive" onClick={handleLogout}>
             <LogOutIcon size={18} />
             Logout
           </Button>
-        </ActionButtons>
-      </ProfileCard>
-    </Container>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -1,44 +1,7 @@
-import styled from 'styled-components';
-import { borderRadius } from '@finance-manager/ui/styles';
+import { cn } from '../../lib/utils';
+import { Badge } from '../ui/badge';
 import { TaskGroup } from '../../types/taskGroup';
-import { Text, Badge } from '@finance-manager/ui';
 import { FolderIcon } from 'lucide-react';
-
-const GroupItemContainer = styled.div<{ $isActive: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: ${borderRadius.lg};
-  cursor: pointer;
-  transition: background-color 0.2s;
-  background-color: ${({ $isActive, theme }) =>
-    $isActive ? theme.colors.backgroundSecondary : 'transparent'};
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.backgroundSecondary};
-  }
-`;
-
-const ColourIndicator = styled.div<{ $colour: string }>`
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: ${({ $colour }) => $colour};
-  flex-shrink: 0;
-`;
-
-const GroupInfo = styled.div`
-  flex: 1;
-  min-width: 0;
-`;
-
-const GroupName = styled(Text)`
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
 
 interface TaskGroupItemProps {
   group: TaskGroup;
@@ -48,8 +11,11 @@ interface TaskGroupItemProps {
 
 export const TaskGroupItem = ({ group, isActive, onClick }: TaskGroupItemProps) => {
   return (
-    <GroupItemContainer 
-      $isActive={isActive} 
+    <div
+      className={cn(
+        'flex cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors hover:bg-secondary',
+        isActive && 'bg-secondary',
+      )}
       onClick={onClick}
       role="button"
       tabIndex={0}
@@ -62,12 +28,16 @@ export const TaskGroupItem = ({ group, isActive, onClick }: TaskGroupItemProps) 
         }
       }}
     >
-      <ColourIndicator $colour={group.colour} aria-hidden="true" />
+      <div
+        className="size-3 shrink-0 rounded-full"
+        style={{ backgroundColor: group.colour }}
+        aria-hidden="true"
+      />
       <FolderIcon size={18} aria-hidden="true" />
-      <GroupInfo>
-        <GroupName>{group.name}</GroupName>
-      </GroupInfo>
+      <div className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-medium text-foreground">{group.name}</span>
+      </div>
       <Badge variant="outline" aria-label={`${group.taskCount} tasks`}>{group.taskCount}</Badge>
-    </GroupItemContainer>
+    </div>
   );
 };

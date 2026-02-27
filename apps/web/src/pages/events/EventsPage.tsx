@@ -2,108 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { eventService } from '../../services/eventService';
 import { taskGroupService } from '../../services/taskGroupService';
 import { PageLayout } from '../../components/layout/PageLayout';
-import { Button } from '@finance-manager/ui';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
 import { EventList } from '../../components/events/EventList';
 import { EventForm } from '../../components/events/EventForm';
 import { Plus, Filter, Calendar } from 'lucide-react';
-import styled from 'styled-components';
-import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
 import type { Event, CreateEventRequest, UpdateEventRequest } from '../../types/event';
 import type { TaskGroup } from '../../types/taskGroup';
-
-const Actions = styled.div`
-  display: flex;
-  gap: 12px;
-
-  ${mediaQueries.tablet} {
-    flex-direction: column;
-  }
-`;
-
-const FilterSection = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  padding: 20px;
-  margin-bottom: 24px;
-`;
-
-const FilterRow = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  align-items: end;
-`;
-
-const FilterGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const FilterLabel = styled.label`
-  font-size: 14px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const FilterInput = styled.input`
-  padding: 8px 12px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  background: ${({ theme }) => theme.colors.background};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 14px;
-  transition: border-color 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
-`;
-
-const FilterSelect = styled.select`
-  padding: 8px 12px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  background: ${({ theme }) => theme.colors.background};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 14px;
-  cursor: pointer;
-  transition: border-color 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 60px 20px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-
-  > svg {
-    margin-bottom: 16px;
-    opacity: 0.5;
-  }
-
-  button {
-    margin-top: 8px;
-  }
-
-  h3 {
-    font-size: 18px;
-    font-weight: 600;
-    margin: 0 0 8px 0;
-    color: ${({ theme }) => theme.colors.text};
-  }
-
-  p {
-    font-size: 14px;
-    margin: 0 0 24px 0;
-  }
-`;
 
 const EventsPage = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -209,56 +115,57 @@ const EventsPage = () => {
       subtitle="Manage your scheduled events and appointments"
       loading={loading}
       headerActions={
-        <Actions>
+        <div className="flex gap-3 md:flex-col">
           <Button
-            size="small"
-            variant="secondary"
+            size="sm"
+            variant="outline"
             onClick={() => setShowFilters(!showFilters)}
           >
-            <Filter size={16} />
+            <Filter className="size-4" />
             {showFilters ? 'Hide Filters' : 'Show Filters'}
           </Button>
           <Button
-            size="small"
+            size="sm"
             onClick={() => {
               setEditingEvent(undefined);
               setShowForm(true);
             }}
           >
-            <Plus size={16} />
+            <Plus className="size-4" />
             New Event
           </Button>
-        </Actions>
+        </div>
       }
     >
 
       {showFilters && (
-        <FilterSection>
-          <FilterRow>
-            <FilterGroup>
-              <FilterLabel htmlFor="start-date">Start Date</FilterLabel>
-              <FilterInput
+        <div className="mb-6 rounded-lg border border-border bg-secondary p-5">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] items-end gap-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="start-date" className="text-sm font-semibold">Start Date</Label>
+              <Input
                 id="start-date"
                 type="date"
                 value={startDateFilter}
                 onChange={(e) => setStartDateFilter(e.target.value)}
               />
-            </FilterGroup>
-            <FilterGroup>
-              <FilterLabel htmlFor="end-date">End Date</FilterLabel>
-              <FilterInput
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="end-date" className="text-sm font-semibold">End Date</Label>
+              <Input
                 id="end-date"
                 type="date"
                 value={endDateFilter}
                 onChange={(e) => setEndDateFilter(e.target.value)}
               />
-            </FilterGroup>
-            <FilterGroup>
-              <FilterLabel htmlFor="group">Group</FilterLabel>
-              <FilterSelect
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="group" className="text-sm font-semibold">Group</Label>
+              <select
                 id="group"
                 value={groupFilter}
                 onChange={(e) => setGroupFilter(e.target.value)}
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground transition-colors focus:border-primary focus:outline-none"
               >
                 <option value="">All Groups</option>
                 {groups.map((group) => (
@@ -266,17 +173,17 @@ const EventsPage = () => {
                     {group.name}
                   </option>
                 ))}
-              </FilterSelect>
-            </FilterGroup>
+              </select>
+            </div>
             {hasActiveFilters && (
-              <div style={{ display: 'flex', alignItems: 'end' }}>
-                <Button size="small" variant="secondary" onClick={clearFilters}>
+              <div className="flex items-end">
+                <Button size="sm" variant="outline" onClick={clearFilters}>
                   Clear Filters
                 </Button>
               </div>
             )}
-          </FilterRow>
-        </FilterSection>
+          </div>
+        </div>
       )}
 
       {showForm && (
@@ -292,26 +199,26 @@ const EventsPage = () => {
       )}
 
       {!loading && events.length === 0 && !showForm && (
-        <EmptyState>
-          <Calendar size={64} strokeWidth={1.5} />
-          <h3>No events yet</h3>
-          <p>
+        <div className="px-5 py-[60px] text-center text-muted-foreground">
+          <Calendar size={64} strokeWidth={1.5} className="mx-auto mb-4 opacity-50" />
+          <h3 className="m-0 mb-2 text-lg font-semibold text-foreground">No events yet</h3>
+          <p className="m-0 mb-6 text-sm">
             {hasActiveFilters 
               ? 'No events match your current filters. Try adjusting your filter criteria.'
               : 'Get started by creating your first event to keep track of meetings and appointments.'
             }
           </p>
           <Button
-            size="small"
+            size="sm"
             onClick={() => {
               setEditingEvent(undefined);
               setShowForm(true);
             }}
           >
-            <Plus size={16} />
+            <Plus className="size-4" />
             Create Your First Event
           </Button>
-        </EmptyState>
+        </div>
       )}
 
       {!showForm && events.length > 0 && (

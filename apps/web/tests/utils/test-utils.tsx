@@ -4,7 +4,7 @@
  * Provides a `renderWithProviders` helper that wraps components in the same
  * provider stack used by the real application (ThemeProvider, BrowserRouter,
  * ToastProvider).  All component tests should use this instead of bare
- * `render()` to ensure styled-components theme tokens are available.
+ * `render()` to ensure theme context and CSS tokens are available.
  *
  * Usage:
  *   import { renderWithProviders } from '../utils/test-utils';
@@ -13,9 +13,8 @@
 
 import React, { ReactElement } from 'react';
 import { render, RenderOptions, RenderResult } from '@testing-library/react';
-import { ThemeProvider } from 'styled-components';
+import { ThemeProvider } from '@finance-manager/ui';
 import { BrowserRouter } from 'react-router-dom';
-import { lightTheme } from '../../src/styles/theme';
 import { ToastProvider } from '../../src/contexts/ToastContext';
 
 interface ProviderOptions {
@@ -37,14 +36,14 @@ export const renderWithProviders = (
 ): RenderResult => {
   const Wrapper = ({ children }: { children: React.ReactNode }) => {
     let wrapped = (
-      <ThemeProvider theme={lightTheme}>
+      <ThemeProvider>
         {children}
       </ThemeProvider>
     );
 
     if (withToast) {
       wrapped = (
-        <ThemeProvider theme={lightTheme}>
+        <ThemeProvider>
           <ToastProvider>
             {children}
           </ToastProvider>

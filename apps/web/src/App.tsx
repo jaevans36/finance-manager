@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, LoadingSpinner } from '@finance-manager/ui';
+import { ThemeProvider } from '@finance-manager/ui';
+import { Loader2 } from 'lucide-react';
 import { QueryProvider } from './providers/QueryProvider';
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -58,7 +59,7 @@ function App() {
               <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <AppHeader />
               {showWhatsNew && <WhatsNewModal onClose={handleCloseWhatsNew} />}
-              <Suspense fallback={<LoadingSpinner />}>
+              <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
                 <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />

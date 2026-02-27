@@ -1,19 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import styled from 'styled-components';
-import {
-  Card,
-  Button,
-  Input,
-  TextArea,
-  Badge,
-  Alert,
-  Divider,
-  TabBar,
-  Tab,
-  TabPanel,
-} from '@finance-manager/ui';
-import { useEditTaskForm } from '../../hooks/forms';
-import type { UpdateTaskInput } from '@finance-manager/schema';
 import {
   X,
   XCircle,
@@ -30,12 +15,15 @@ import {
   MessageSquare,
   CheckCircle2,
 } from 'lucide-react';
-import {
-  spacing,
-  borderRadius,
-  focusRing,
-  mediaQueries,
-} from '@finance-manager/ui/styles';
+import { cn } from '../../lib/utils';
+import { Input } from '../../components/ui/input';
+import { Textarea } from '../../components/ui/textarea';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import { Alert, AlertDescription } from '../../components/ui/alert';
+import { Separator } from '../../components/ui/separator';
+import { useEditTaskForm } from '../../hooks/forms';
+import type { UpdateTaskInput } from '@finance-manager/schema';
 import { useSubtasks } from '../../hooks/useSubtasks';
 import { SubtaskList } from './SubtaskList';
 import type { Task } from '../../services/taskService';
@@ -80,11 +68,11 @@ const formatDate = (iso: string): string => {
 
 const getPriorityVariant = (
   p: Priority,
-): 'error' | 'warning' | 'outline' => {
+): 'destructive' | 'warning' | 'outline' => {
   switch (p) {
     case 'Critical':
     case 'High':
-      return 'error';
+      return 'destructive';
     case 'Medium':
       return 'warning';
     default:
@@ -93,359 +81,16 @@ const getPriorityVariant = (
 };
 
 // =============================================================================
-// Styled Components — all values from design-system tokens
+// Tailwind CSS class constants
 // =============================================================================
 
-const Overlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-
-const ModalCard = styled(Card)`
-  padding: 0;
-  max-width: 680px;
-  width: 90%;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-
-  ${mediaQueries.tablet} {
-    width: 95%;
-    max-height: 95vh;
-  }
-`;
-
-/* ── Header ────────────────────────────────────────────────────────────────── */
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: ${spacing.lg} ${spacing['2xl']};
-  gap: ${spacing.sm};
-
-  ${mediaQueries.tablet} {
-    padding: ${spacing.md} ${spacing.lg};
-  }
-`;
-
-const HeaderLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${spacing.sm};
-  min-width: 0;
-  flex: 1;
-`;
-
-const HeaderActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${spacing.xs};
-  flex-shrink: 0;
-`;
-
-const ActionButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: transparent;
-  border-radius: ${borderRadius.sm};
-  cursor: pointer;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  transition: all 0.15s ease;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-    color: ${({ theme }) => theme.colors.text};
-  }
-
-  ${focusRing}
-`;
-
-/* Group colour dot */
-const GroupDot = styled.span<{ $color?: string }>`
-  width: 8px;
-  height: 8px;
-  border-radius: ${borderRadius.full};
-  background: ${({ $color, theme }) => $color || theme.colors.border};
-  flex-shrink: 0;
-`;
-
-/* ── Overflow menu ─────────────────────────────────────────────────────────── */
-
-const OverflowWrap = styled.div`
-  position: relative;
-`;
-
-const OverflowMenu = styled.div`
-  position: absolute;
-  top: calc(100% + ${spacing.xs});
-  right: 0;
-  min-width: 160px;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.sm};
-  z-index: 10;
-  overflow: hidden;
-`;
-
-const OverflowItem = styled.button<{ $danger?: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: ${spacing.sm};
-  width: 100%;
-  padding: ${spacing.sm} ${spacing.lg};
-  border: none;
-  background: transparent;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
-  color: ${({ $danger, theme }) =>
-    $danger ? theme.colors.errorText : theme.colors.text};
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.15s ease;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-  }
-
-  ${focusRing}
-`;
-
-/* ── Scrollable body ───────────────────────────────────────────────────────── */
-
-const Body = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 0 ${spacing['2xl']} ${spacing.lg};
-
-  ${mediaQueries.tablet} {
-    padding: 0 ${spacing.lg} ${spacing.md};
-  }
-`;
-
-/* ── Title ─────────────────────────────────────────────────────────────────── */
-
-const TitleView = styled.h2`
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 1.3;
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0 0 ${spacing.sm};
-  word-break: break-word;
-`;
-
-const TitleInput = styled(Input)`
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 1.3;
-  padding: ${spacing.sm} ${spacing.sm};
-  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
-  border-radius: ${borderRadius.sm};
-  background: ${({ theme }) => theme.colors.inputBackground};
-  color: ${({ theme }) => theme.colors.text};
-  margin-bottom: ${spacing.xs};
-
-  &::placeholder {
-    color: ${({ theme }) => theme.colors.textDisabled};
-  }
-
-  ${focusRing}
-
-  ${mediaQueries.tablet} {
-    font-size: 18px;
-  }
-`;
-
-const CharCount = styled.span`
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  display: block;
-  text-align: right;
-  margin-bottom: ${spacing.sm};
-`;
-
-/* ── Metadata ──────────────────────────────────────────────────────────────── */
-
-const MetaGrid = styled.div`
-  display: grid;
-  grid-template-columns: 20px auto 1fr;
-  gap: ${spacing.sm} ${spacing.md};
-  align-items: center;
-`;
-
-const MetaIcon = styled.span`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const MetaLabel = styled.span`
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.4;
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const MetaValue = styled.div`
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
-  color: ${({ theme }) => theme.colors.text};
-  min-width: 0;
-`;
-
-const MetaSelect = styled.select`
-  width: 100%;
-  padding: ${spacing.xs} ${spacing.sm};
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
-  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
-  border-radius: ${borderRadius.sm};
-  background: ${({ theme }) => theme.colors.inputBackground};
-  color: ${({ theme }) => theme.colors.text};
-  cursor: pointer;
-  font-family: inherit;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.inputBorderFocus};
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  ${focusRing}
-`;
-
-const MetaDateInput = styled(Input)`
-  padding: ${spacing.xs} ${spacing.sm};
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
-  height: auto;
-  border-radius: ${borderRadius.sm};
-
-  ${focusRing}
-`;
-
-const EmptyMeta = styled.span`
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-/* ── Sections ──────────────────────────────────────────────────────────────── */
-
-const SectionHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${spacing.sm};
-  margin-bottom: ${spacing.sm};
-`;
-
-const SectionLabel = styled.span`
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.4;
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const DescriptionView = styled.p`
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-`;
-
-const DescriptionEmpty = styled.p`
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin: 0;
-`;
-
-const DescriptionTextArea = styled(TextArea)`
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
-  border: 1px solid ${({ theme }) => theme.colors.inputBorder};
-  border-radius: ${borderRadius.sm};
-  background: ${({ theme }) => theme.colors.inputBackground};
-  resize: vertical;
-
-  ${focusRing}
-`;
-
-/* ── Attachments stub ──────────────────────────────────────────────────────── */
-
-const AttachmentEmpty = styled.p`
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin: 0;
-`;
-
-/* ── Tab content stubs ─────────────────────────────────────────────────────── */
-
-const StubText = styled.p`
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin: 0;
-  padding: ${spacing.lg} 0;
-`;
-
-/* ── Footer ────────────────────────────────────────────────────────────────── */
-
-const Footer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: ${spacing.sm};
-  padding: ${spacing.lg} ${spacing['2xl']};
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-
-  ${mediaQueries.tablet} {
-    padding: ${spacing.md} ${spacing.lg};
-  }
-`;
-
-/* ── SubtaskCount ──────────────────────────────────────────────────────────── */
-
-const SubtaskCountBadge = styled.span`
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  padding: 2px ${spacing.sm};
-  border-radius: ${borderRadius.full};
-  margin-left: ${spacing.xs};
-`;
+const overlayClasses = 'fixed inset-0 z-[1000] flex items-center justify-center bg-black/50';
+const modalClasses = 'flex w-[95%] max-w-[680px] flex-col overflow-hidden rounded-lg border border-border bg-card shadow-lg max-h-[95vh] md:w-[90%] md:max-h-[90vh]';
+const headerClasses = 'flex items-center justify-between gap-2 px-4 py-3 md:px-6 md:py-4';
+const bodyClasses = 'flex-1 overflow-y-auto px-4 pb-3 pt-0 md:px-6 md:pb-4';
+const footerClasses = 'flex justify-end gap-2 border-t border-border bg-secondary px-4 py-3 md:px-6 md:py-4';
+const actionButtonClasses = 'flex h-8 w-8 items-center justify-center rounded border-none bg-transparent text-muted-foreground transition-all hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+const metaSelectClasses = 'w-full rounded border border-input bg-background px-2 py-1 text-sm font-normal text-foreground focus:border-ring focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60';
 
 // =============================================================================
 // Component
@@ -625,28 +270,29 @@ export const TaskDetailModal = ({
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <Overlay
+    <div
+      className={overlayClasses}
       onClick={onCancel}
       role="dialog"
       aria-modal="true"
       aria-labelledby="task-detail-title"
     >
-      <ModalCard onClick={stopPropagation}>
+      <div className={modalClasses} onClick={stopPropagation}>
         {/* Wrap in form only in edit mode so Enter submits */}
         {isEditing ? (
           <form
             onSubmit={rhfHandleSubmit(onSave)}
             aria-label="Edit task form"
-            style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flex: 1, minHeight: 0 }}
+            className="flex min-h-0 flex-1 flex-col overflow-hidden"
           >
             {renderHeader()}
-            <Divider style={{ margin: 0 }} />
-            <Body>{renderBody()}</Body>
-            <Footer>
+            <Separator className="m-0" />
+            <div className={bodyClasses}>{renderBody()}</div>
+            <div className={footerClasses}>
               <Button
                 type="button"
                 variant="secondary"
-                size="small"
+                size="sm"
                 onClick={handleCancelEdit}
                 disabled={isSubmitting}
                 aria-label="Cancel editing"
@@ -655,50 +301,53 @@ export const TaskDetailModal = ({
               </Button>
               <Button
                 type="submit"
-                variant="primary"
-                size="small"
-                $isLoading={isSubmitting}
+                variant="default"
+                size="sm"
+                disabled={isSubmitting}
                 aria-label="Save task changes"
               >
                 {isSubmitting ? 'Saving…' : 'Save Changes'}
               </Button>
-            </Footer>
+            </div>
           </form>
         ) : (
           <>
             {renderHeader()}
-            <Divider style={{ margin: 0 }} />
-            <Body>{renderBody()}</Body>
+            <Separator className="m-0" />
+            <div className={bodyClasses}>{renderBody()}</div>
           </>
         )}
-      </ModalCard>
-    </Overlay>
+      </div>
+    </div>
   );
 
   // ── Sub-renders ────────────────────────────────────────────────────────
 
   function renderHeader() {
     return (
-      <Header>
-        <HeaderLeft>
+      <div className={headerClasses}>
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           {/* Group badge */}
           {task.groupName && (
             <Badge variant="outline">
-              <GroupDot $color={task.groupColour ?? undefined} />
-              <span style={{ marginLeft: spacing.xs }}>{task.groupName}</span>
+              <span
+                className="h-2 w-2 shrink-0 rounded-full"
+                style={{ background: task.groupColour || undefined }}
+              />
+              <span className="ml-1">{task.groupName}</span>
             </Badge>
           )}
 
           {/* Status badge */}
-          <Badge variant={task.completed ? 'success' : 'info'}>
+          <Badge variant={task.completed ? 'success' : 'secondary'}>
             {task.completed ? (
               <>
-                <CheckCircle2 size={12} style={{ marginRight: spacing.xs }} />
+                <CheckCircle2 size={12} className="mr-1" />
                 Completed
               </>
             ) : (
               <>
-                <CircleDot size={12} style={{ marginRight: spacing.xs }} />
+                <CircleDot size={12} className="mr-1" />
                 Open
               </>
             )}
@@ -706,16 +355,17 @@ export const TaskDetailModal = ({
 
           {/* Priority badge */}
           <Badge variant={getPriorityVariant(task.priority)}>
-            <Flag size={12} style={{ marginRight: spacing.xs }} />
+            <Flag size={12} className="mr-1" />
             {task.priority}
           </Badge>
-        </HeaderLeft>
+        </div>
 
-        <HeaderActions>
+        <div className="flex shrink-0 items-center gap-1">
           {/* Toggle complete */}
           {onToggleComplete && !isEditing && (
-            <ActionButton
+            <button
               type="button"
+              className={actionButtonClasses}
               onClick={handleToggle}
               aria-label={
                 task.completed ? 'Mark as incomplete' : 'Mark as complete'
@@ -723,58 +373,64 @@ export const TaskDetailModal = ({
               title={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
             >
               <CheckCircle2 size={16} />
-            </ActionButton>
+            </button>
           )}
 
           {/* Edit */}
           {!isEditing && (
-            <ActionButton
+            <button
               type="button"
+              className={actionButtonClasses}
               onClick={handleStartEdit}
               aria-label="Edit task"
               title="Edit task"
             >
               <Pencil size={16} />
-            </ActionButton>
+            </button>
           )}
 
           {/* Overflow */}
           {!isEditing && onDelete !== undefined && (
-            <OverflowWrap ref={overflowRef}>
-              <ActionButton
+            <div className="relative" ref={overflowRef}>
+              <button
                 type="button"
+                className={actionButtonClasses}
                 onClick={() => setShowOverflow((v) => !v)}
                 aria-label="More actions"
                 aria-haspopup="true"
                 aria-expanded={showOverflow}
               >
                 <MoreHorizontal size={16} />
-              </ActionButton>
+              </button>
               {showOverflow && (
-                <OverflowMenu role="menu">
-                  <OverflowItem
+                <div
+                  className="absolute right-0 top-full z-10 mt-1 min-w-[160px] overflow-hidden rounded border border-border bg-card"
+                  role="menu"
+                >
+                  <button
                     role="menuitem"
-                    $danger
+                    className="flex w-full items-center gap-2 border-none bg-transparent px-4 py-2 text-sm text-destructive transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     onClick={handleDelete}
                   >
                     <Trash2 size={14} />
                     Delete task
-                  </OverflowItem>
-                </OverflowMenu>
+                  </button>
+                </div>
               )}
-            </OverflowWrap>
+            </div>
           )}
 
           {/* Close */}
-          <ActionButton
+          <button
             type="button"
+            className={actionButtonClasses}
             onClick={isEditing ? handleCancelEdit : onCancel}
             aria-label="Close"
           >
             <X size={16} />
-          </ActionButton>
-        </HeaderActions>
-      </Header>
+          </button>
+        </div>
+      </div>
     );
   }
 
@@ -783,20 +439,17 @@ export const TaskDetailModal = ({
       <>
         {/* Error alert (edit mode) */}
         {apiError && (
-          <Alert
-            variant="error"
-            style={{ marginBottom: spacing.lg, marginTop: spacing.lg }}
-          >
+          <Alert variant="destructive" className="mb-4 mt-4">
             <XCircle size={16} />
-            <span>{apiError}</span>
+            <AlertDescription>{apiError}</AlertDescription>
           </Alert>
         )}
 
         {/* ── Title ─────────────────────────────────────────────── */}
-        <div style={{ marginTop: spacing.lg }}>
+        <div className="mt-4">
           {isEditing ? (
             <>
-              <TitleInput
+              <Input
                 ref={(el) => {
                   titleRegRef(el);
                   (titleInputRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
@@ -810,95 +463,99 @@ export const TaskDetailModal = ({
                 aria-required="true"
                 aria-invalid={!!formErrors.title}
                 aria-label="Task title"
+                className="mb-1 text-lg font-semibold leading-tight"
               />
-              {formErrors.title && <CharCount style={{ color: 'inherit' }}>{formErrors.title.message}</CharCount>}
-              <CharCount>{(watchedTitle ?? '').length}/200</CharCount>
+              {formErrors.title && <span className="mb-2 block text-right text-[11px] font-medium">{formErrors.title.message}</span>}
+              <span className="mb-2 block text-right text-[11px] font-medium text-muted-foreground">{(watchedTitle ?? '').length}/200</span>
             </>
           ) : (
-            <TitleView id="task-detail-title">{task.title}</TitleView>
+            <h2 id="task-detail-title" className="mb-2 break-words text-lg font-semibold leading-tight text-foreground">{task.title}</h2>
           )}
         </div>
 
-        <Divider />
+        <Separator />
 
         {/* ── Key Metadata ──────────────────────────────────────── */}
-        <MetaGrid>
+        <div className="grid grid-cols-[20px_auto_1fr] items-center gap-x-3 gap-y-2">
           {/* Status — only in edit mode; header badges cover view mode */}
           {isEditing && onToggleComplete && (
             <>
-              <MetaIcon>
+              <span className="flex items-center justify-center text-muted-foreground">
                 <CircleDot size={16} aria-hidden="true" />
-              </MetaIcon>
-              <MetaLabel id="meta-status-label">Status</MetaLabel>
-              <MetaValue aria-labelledby="meta-status-label">
-                <MetaSelect
+              </span>
+              <span className="text-sm font-medium text-muted-foreground" id="meta-status-label">Status</span>
+              <div className="min-w-0 text-sm text-foreground" aria-labelledby="meta-status-label">
+                <select
                   value={task.completed ? 'completed' : 'open'}
                   onChange={() => handleToggle()}
                   disabled={isSubmitting}
                   aria-label="Task status"
+                  className={metaSelectClasses}
                 >
                   <option value="open">Open</option>
                   <option value="completed">Completed</option>
-                </MetaSelect>
-              </MetaValue>
+                </select>
+              </div>
             </>
           )}
 
           {/* Priority — only in edit mode; header shows badge in view mode */}
           {isEditing && (
             <>
-              <MetaIcon>
+              <span className="flex items-center justify-center text-muted-foreground">
                 <Flag size={16} aria-hidden="true" />
-              </MetaIcon>
-              <MetaLabel id="meta-priority-label">Priority</MetaLabel>
-              <MetaValue aria-labelledby="meta-priority-label">
-                <MetaSelect
+              </span>
+              <span className="text-sm font-medium text-muted-foreground" id="meta-priority-label">Priority</span>
+              <div className="min-w-0 text-sm text-foreground" aria-labelledby="meta-priority-label">
+                <select
                   id="priority"
                   {...register('priority')}
                   disabled={isSubmitting}
                   aria-label="Task priority"
+                  className={metaSelectClasses}
                 >
                   <option value="Low">Low</option>
                   <option value="Medium">Medium</option>
                   <option value="High">High</option>
                   <option value="Critical">Critical</option>
-                </MetaSelect>
-              </MetaValue>
+                </select>
+              </div>
             </>
           )}
 
           {/* Due date — always visible */}
-          <MetaIcon>
+          <span className="flex items-center justify-center text-muted-foreground">
             <Calendar size={16} aria-hidden="true" />
-          </MetaIcon>
-          <MetaLabel id="meta-due-label">Due date</MetaLabel>
-          <MetaValue aria-labelledby="meta-due-label">
+          </span>
+          <span className="text-sm font-medium text-muted-foreground" id="meta-due-label">Due date</span>
+          <div className="min-w-0 text-sm text-foreground" aria-labelledby="meta-due-label">
             {isEditing ? (
-              <MetaDateInput
+              <Input
                 id="dueDate"
                 type="date"
                 {...register('dueDate')}
                 min={new Date().toISOString().split('T')[0]}
                 disabled={isSubmitting}
                 aria-label="Due date"
+                className="h-auto px-2 py-1 text-sm"
               />
             ) : task.dueDate ? (
               formatDate(task.dueDate)
             ) : (
-              <EmptyMeta>No due date</EmptyMeta>
+              <span className="text-sm text-muted-foreground">No due date</span>
             )}
-          </MetaValue>
-        </MetaGrid>
+          </div>
+        </div>
 
-        <Divider />
+        <Separator />
 
         {/* ── Description ───────────────────────────────────────── */}
-        <SectionHeader>
+        <div className="mb-2 flex items-center gap-2">
           <AlignLeft size={16} aria-hidden="true" />
-          <SectionLabel>Description</SectionLabel>
-        </SectionHeader>
+          <span className="text-sm font-medium text-foreground">Description</span>
+        </div>
         {isEditing ? (
-          <DescriptionTextArea
+          <Textarea
             id="description"
             {...register('description')}
             placeholder="Add a description…"
@@ -906,84 +563,91 @@ export const TaskDetailModal = ({
             rows={3}
             disabled={isSubmitting}
             aria-label="Task description"
+            className="resize-y text-sm"
           />
         ) : task.description ? (
-          <DescriptionView>{task.description}</DescriptionView>
+          <p className="m-0 break-words whitespace-pre-wrap text-sm text-foreground">{task.description}</p>
         ) : (
-          <DescriptionEmpty>No description</DescriptionEmpty>
+          <p className="m-0 text-sm text-muted-foreground">No description</p>
         )}
 
-        <Divider />
+        <Separator />
 
         {/* ── Attachments ───────────────────────────────────────── */}
-        <SectionHeader>
+        <div className="mb-2 flex items-center gap-2">
           <Paperclip size={16} aria-hidden="true" />
-          <SectionLabel>Attachments</SectionLabel>
-        </SectionHeader>
-        <AttachmentEmpty>No attachments</AttachmentEmpty>
+          <span className="text-sm font-medium text-foreground">Attachments</span>
+        </div>
+        <p className="m-0 text-sm text-muted-foreground">No attachments</p>
 
-        <Divider />
+        <Separator />
 
         {/* ── Tabbed Section ────────────────────────────────────── */}
-        <TabBar role="tablist" aria-label="Task details">
-          <Tab
+        <div className="mb-2 flex border-b border-border" role="tablist" aria-label="Task details">
+          <button
             id="tab-subtasks"
             role="tab"
-            $active={activeTab === 'subtasks'}
             aria-selected={activeTab === 'subtasks'}
             aria-controls="tabpanel-subtasks"
             tabIndex={activeTab === 'subtasks' ? 0 : -1}
             onClick={() => setActiveTab('subtasks')}
             onKeyDown={(e) => handleTabKeyDown(e, 'subtasks')}
+            className={cn(
+              'inline-flex items-center gap-1 border-b-2 bg-transparent px-3 py-2 text-sm font-medium transition-colors',
+              activeTab === 'subtasks'
+                ? 'border-primary text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground',
+            )}
           >
-            <ListChecks
-              size={14}
-              style={{ marginRight: spacing.xs, verticalAlign: 'middle' }}
-            />
+            <ListChecks size={14} className="align-middle" />
             Subtasks
             {totalCount > 0 && (
-              <SubtaskCountBadge>
+              <span className="ml-1 rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                 {completedCount}/{totalCount}
-              </SubtaskCountBadge>
+              </span>
             )}
-          </Tab>
-          <Tab
+          </button>
+          <button
             id="tab-comments"
             role="tab"
-            $active={activeTab === 'comments'}
             aria-selected={activeTab === 'comments'}
             aria-controls="tabpanel-comments"
             tabIndex={activeTab === 'comments' ? 0 : -1}
             onClick={() => setActiveTab('comments')}
             onKeyDown={(e) => handleTabKeyDown(e, 'comments')}
+            className={cn(
+              'inline-flex items-center gap-1 border-b-2 bg-transparent px-3 py-2 text-sm font-medium transition-colors',
+              activeTab === 'comments'
+                ? 'border-primary text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground',
+            )}
           >
-            <MessageSquare
-              size={14}
-              style={{ marginRight: spacing.xs, verticalAlign: 'middle' }}
-            />
+            <MessageSquare size={14} className="align-middle" />
             Comments
-          </Tab>
-          <Tab
+          </button>
+          <button
             id="tab-linked"
             role="tab"
-            $active={activeTab === 'linked'}
             aria-selected={activeTab === 'linked'}
             aria-controls="tabpanel-linked"
             tabIndex={activeTab === 'linked' ? 0 : -1}
             onClick={() => setActiveTab('linked')}
             onKeyDown={(e) => handleTabKeyDown(e, 'linked')}
+            className={cn(
+              'inline-flex items-center gap-1 border-b-2 bg-transparent px-3 py-2 text-sm font-medium transition-colors',
+              activeTab === 'linked'
+                ? 'border-primary text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground',
+            )}
           >
-            <Link2
-              size={14}
-              style={{ marginRight: spacing.xs, verticalAlign: 'middle' }}
-            />
+            <Link2 size={14} className="align-middle" />
             Linked Items
-          </Tab>
-        </TabBar>
+          </button>
+        </div>
 
         {/* ── Tab Panels ────────────────────────────────────────── */}
         {activeTab === 'subtasks' && (
-          <TabPanel
+          <div
             id="tabpanel-subtasks"
             role="tabpanel"
             aria-labelledby="tab-subtasks"
@@ -1005,27 +669,27 @@ export const TaskDetailModal = ({
               onSelectAll={selectAll}
               onDeselectAll={deselectAll}
             />
-          </TabPanel>
+          </div>
         )}
 
         {activeTab === 'comments' && (
-          <TabPanel
+          <div
             id="tabpanel-comments"
             role="tabpanel"
             aria-labelledby="tab-comments"
           >
-            <StubText>Comments coming soon</StubText>
-          </TabPanel>
+            <p className="m-0 py-4 text-sm text-muted-foreground">Comments coming soon</p>
+          </div>
         )}
 
         {activeTab === 'linked' && (
-          <TabPanel
+          <div
             id="tabpanel-linked"
             role="tabpanel"
             aria-labelledby="tab-linked"
           >
-            <StubText>Linked items coming soon</StubText>
-          </TabPanel>
+            <p className="m-0 py-4 text-sm text-muted-foreground">Linked items coming soon</p>
+          </div>
         )}
       </>
     );

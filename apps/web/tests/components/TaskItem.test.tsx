@@ -119,7 +119,7 @@ describe('TaskItem', () => {
       render(<TaskItem task={completedTask} {...mockHandlers} />);
 
       const title = screen.getByText('Test Task');
-      expect(title).toHaveStyle({ textDecoration: 'line-through' });
+      expect(title).toHaveClass('line-through');
     });
   });
 

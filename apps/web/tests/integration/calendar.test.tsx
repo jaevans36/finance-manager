@@ -7,8 +7,7 @@ import '@testing-library/jest-dom';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider } from 'styled-components';
-import { lightTheme } from '../../src/styles/theme';
+import { ThemeProvider } from '@finance-manager/ui';
 import { AuthProvider } from '../../src/contexts/AuthContext';
 import { ToastProvider } from '../../src/contexts/ToastContext';
 
@@ -134,7 +133,7 @@ const mockTasks = [
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <BrowserRouter>
-    <ThemeProvider theme={lightTheme}>
+    <ThemeProvider>
       <ToastProvider>
         <AuthProvider>
           {children}

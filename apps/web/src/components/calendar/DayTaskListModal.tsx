@@ -1,343 +1,28 @@
 import { useState } from 'react';
-import styled from 'styled-components';
 import { X, Check, Circle, Calendar as CalendarIcon, MapPin } from 'lucide-react';
+import { cn } from '../../lib/utils';
 import type { CalendarTask } from '../../types/calendar';
 import type { Event } from '../../types/event';
-import { spacing, borderRadius, shadows, mediaQueries, focusRing } from '@finance-manager/ui/styles';
 
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 16px;
-`;
+const INFO_COLOR = '#898989';
 
-const ModalContent = styled.div`
-  background: ${({ theme }) => theme.colors.background};
-  border-radius: ${borderRadius.lg};
-  padding: 24px;
-  max-width: 600px;
-  width: 100%;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: ${shadows.elevated};
+const getBarColour = (pct: number): string => {
+  if (pct >= 66) return 'bg-success';
+  if (pct >= 33) return 'bg-warning';
+  return 'bg-destructive';
+};
 
-  ${mediaQueries.tablet} {
-    padding: 20px;
-    max-height: 90vh;
+const getPriorityBadgeClasses = (priority: string): string => {
+  switch (priority) {
+    case 'Critical':
+    case 'High':
+      return 'bg-destructive/15 text-destructive border-destructive/25';
+    case 'Medium':
+      return 'bg-muted text-foreground border-border';
+    default:
+      return 'bg-secondary text-muted-foreground border-border';
   }
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-`;
-
-const ModalTitle = styled.h2`
-  font-size: 20px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0;
-`;
-
-const CloseButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  border: none;
-  border-radius: ${borderRadius.sm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-    color: ${({ theme }) => theme.colors.text};
-  }
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  ${focusRing}
-`;
-
-const DateDisplay = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  padding: 12px 16px;
-  border-radius: ${borderRadius.lg};
-  margin-bottom: 20px;
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  text-align: center;
-`;
-
-const TaskList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const TaskItem = styled.div<{ $isCompleted: boolean }>`
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 16px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.lg};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  opacity: ${({ $isCompleted }) => ($isCompleted ? 0.6 : 1)};
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.border};
-  }
-`;
-
-const TaskCheckbox = styled.button<{ $isCompleted: boolean }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
-  background: ${({ $isCompleted, theme }) =>
-    $isCompleted ? theme.colors.successText : 'transparent'};
-  border: 2px solid
-    ${({ $isCompleted, theme }) =>
-      $isCompleted ? theme.colors.successText : theme.colors.border};
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 0;
-
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.successText};
-    background: ${({ $isCompleted, theme }) =>
-      $isCompleted ? theme.colors.successText : `${theme.colors.success}20`};
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-    color: ${({ theme }) => theme.colors.buttonText};
-  }
-`;
-
-const TaskContent = styled.div`
-  flex: 1;
-`;
-
-const TaskTitle = styled.h3<{ $isCompleted: boolean }>`
-  font-size: 16px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0 0 4px 0;
-  text-decoration: ${({ $isCompleted }) => ($isCompleted ? 'line-through' : 'none')};
-`;
-
-const TaskMeta = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-`;
-
-const PriorityBadge = styled.span<{ $priority: string }>`
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  border-radius: ${borderRadius.lg};
-  font-size: 12px;
-  font-weight: 600;
-  background: ${({ $priority, theme }) => {
-    switch ($priority) {
-      case 'Critical':
-        return `${theme.colors.error}26`;
-      case 'High':
-        return `${theme.colors.error}26`;
-      case 'Medium':
-        return theme.colors.backgroundTertiary;
-      default:
-        return theme.colors.backgroundSecondary;
-    }
-  }};
-  color: ${({ $priority, theme }) => {
-    switch ($priority) {
-      case 'Critical':
-      case 'High':
-        return theme.colors.errorText;
-      case 'Medium':
-        return theme.colors.text;
-      default:
-        return theme.colors.textSecondary;
-    }
-  }};
-  border: 1px solid ${({ $priority, theme }) => {
-    switch ($priority) {
-      case 'Critical':
-      case 'High':
-        return `${theme.colors.error}40`;
-      case 'Medium':
-        return theme.colors.border;
-      default:
-        return theme.colors.border;
-    }
-  }};
-`;
-
-const GroupBadge = styled.span<{ $color?: string }>`
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  border-radius: ${borderRadius.lg};
-  font-size: 12px;
-  font-weight: 500;
-  background: ${({ $color, theme }) => ($color ? `${$color}20` : theme.colors.backgroundSecondary)};
-  color: ${({ theme }) => theme.colors.text};
-  border: 1px solid ${({ $color, theme }) => ($color ? `${$color}40` : theme.colors.border)};
-`;
-
-const SubtaskProgressRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${spacing.sm};
-  margin-top: ${spacing.xs};
-`;
-
-const SubtaskProgressTrack = styled.div`
-  flex: 1;
-  height: 4px;
-  background-color: ${({ theme }) => theme.colors.backgroundTertiary};
-  border-radius: ${borderRadius.full};
-  overflow: hidden;
-  max-width: 120px;
-`;
-
-const SubtaskProgressFill = styled.div<{ $pct: number }>`
-  height: 100%;
-  width: ${({ $pct }) => $pct}%;
-  border-radius: ${borderRadius.full};
-  transition: width 300ms ease-out;
-  background-color: ${({ $pct, theme }) => {
-    if ($pct >= 66) return theme.colors.success;
-    if ($pct >= 33) return theme.colors.warning;
-    return theme.colors.error;
-  }};
-`;
-
-const SubtaskLabel = styled.span`
-  font-size: 12px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  white-space: nowrap;
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 40px 20px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-
-  svg {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 16px;
-    opacity: 0.3;
-  }
-
-  p {
-    margin: 0;
-    font-size: 14px;
-  }
-`;
-
-const SectionHeader = styled.h3`
-  font-size: 14px;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin: 24px 0 12px 0;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  &:first-of-type {
-    margin-top: 0;
-  }
-`;
-
-const EventList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const EventItem = styled.div`
-  padding: 16px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.lg};
-  border-left: 4px solid ${({ theme }) => theme.colors.info};
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.backgroundTertiary};
-    transform: translateX(2px);
-  }
-`;
-
-const EventTitle = styled.h4`
-  margin: 0 0 8px 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const EventTime = styled.div`
-  font-size: 13px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
-`;
-
-const EventMeta = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-`;
-
-const EventBadge = styled.span<{ $color?: string }>`
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  border-radius: ${borderRadius.lg};
-  font-size: 12px;
-  font-weight: 500;
-  background: ${({ $color, theme }) => ($color ? `${$color}20` : theme.colors.backgroundSecondary)};
-  color: ${({ theme }) => theme.colors.text};
-  border: 1px solid ${({ $color, theme }) => ($color ? `${$color}40` : theme.colors.border)};
-`;
+};
 
 interface DayTaskListModalProps {
   date: Date;
@@ -404,40 +89,62 @@ export const DayTaskListModal = ({
   };
 
   return (
-    <ModalOverlay onClick={onCancel} role="dialog" aria-modal="true">
-      <ModalContent onClick={handleModalClick}>
-        <ModalHeader>
-          <ModalTitle>Tasks for {formatDate(date)}</ModalTitle>
-          <CloseButton onClick={onCancel} aria-label="Close modal">
+    <div
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-4"
+      onClick={onCancel}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        className="max-h-[90vh] w-full max-w-[600px] overflow-y-auto rounded-lg bg-background p-5 shadow-lg md:max-h-[80vh] md:p-6"
+        onClick={handleModalClick}
+      >
+        {/* Header */}
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="m-0 text-xl font-bold text-foreground">Tasks for {formatDate(date)}</h2>
+          <button
+            onClick={onCancel}
+            aria-label="Close modal"
+            className="flex h-8 w-8 items-center justify-center rounded border-none bg-transparent text-muted-foreground transition-all hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&_svg]:h-5 [&_svg]:w-5"
+          >
             <X />
-          </CloseButton>
-        </ModalHeader>
+          </button>
+        </div>
 
-        <DateDisplay>
+        {/* Date summary */}
+        <div className="mb-5 rounded-lg bg-secondary px-4 py-3 text-center text-sm text-muted-foreground">
           {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'} • {events.length} {events.length === 1 ? 'event' : 'events'}
-        </DateDisplay>
+        </div>
 
         {tasks.length === 0 && events.length === 0 ? (
-          <EmptyState>
+          <div className="px-5 py-10 text-center text-muted-foreground [&_p]:m-0 [&_p]:text-sm [&_svg]:mx-auto [&_svg]:mb-4 [&_svg]:h-12 [&_svg]:w-12 [&_svg]:opacity-30">
             <Circle />
             <p>No tasks or events scheduled for this date</p>
-          </EmptyState>
+          </div>
         ) : (
           <>
             {tasks.length > 0 && (
               <>
-                <SectionHeader>
+                <h3 className="mb-3 mt-0 flex items-center gap-2 text-sm font-semibold uppercase text-muted-foreground first-of-type:mt-0 [&_svg]:h-4 [&_svg]:w-4">
                   <Check /> Tasks
-                </SectionHeader>
-                <TaskList>
+                </h3>
+                <div className="flex flex-col gap-3">
                   {tasks.map((task) => (
-                    <TaskItem
+                    <div
                       key={task.id}
-                      $isCompleted={task.isCompleted}
+                      className={cn(
+                        'flex cursor-pointer items-start gap-3 rounded-lg bg-secondary p-4 transition-all hover:bg-border',
+                        task.isCompleted && 'opacity-60',
+                      )}
                       onClick={() => onTaskClick(task)}
                     >
-                      <TaskCheckbox
-                        $isCompleted={task.isCompleted}
+                      <button
+                        className={cn(
+                          'flex h-6 w-6 min-w-[24px] items-center justify-center rounded-full border-2 p-0 transition-all',
+                          task.isCompleted
+                            ? 'border-success-foreground bg-success-foreground'
+                            : 'border-border bg-transparent hover:border-success-foreground hover:bg-success/20',
+                        )}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleToggleTask(task.id, task.isCompleted);
@@ -445,61 +152,112 @@ export const DayTaskListModal = ({
                         disabled={togglingTasks.has(task.id)}
                         aria-label={task.isCompleted ? 'Mark as incomplete' : 'Mark as complete'}
                       >
-                        {task.isCompleted && <Check />}
-                      </TaskCheckbox>
+                        {task.isCompleted && <Check className="h-3.5 w-3.5 text-primary-foreground" />}
+                      </button>
 
-                      <TaskContent>
-                        <TaskTitle $isCompleted={task.isCompleted}>{task.title}</TaskTitle>
-                        <TaskMeta>
-                          <PriorityBadge $priority={task.priority}>{task.priority}</PriorityBadge>
-                          {task.groupName && (
-                            <GroupBadge $color={task.groupColor}>{task.groupName}</GroupBadge>
+                      <div className="flex-1">
+                        <h3
+                          className={cn(
+                            'm-0 mb-1 text-base font-semibold text-foreground',
+                            task.isCompleted && 'line-through',
                           )}
-                        </TaskMeta>
+                        >
+                          {task.title}
+                        </h3>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span
+                            className={cn(
+                              'inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-semibold',
+                              getPriorityBadgeClasses(task.priority),
+                            )}
+                          >
+                            {task.priority}
+                          </span>
+                          {task.groupName && (
+                            <span
+                              className="inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-medium text-foreground"
+                              style={{
+                                backgroundColor: task.groupColor ? `${task.groupColor}20` : undefined,
+                                borderColor: task.groupColor ? `${task.groupColor}40` : undefined,
+                              }}
+                            >
+                              {task.groupName}
+                            </span>
+                          )}
+                        </div>
                         {task.hasSubtasks && task.subtaskCount && task.subtaskCount > 0 && (
-                          <SubtaskProgressRow>
-                            <SubtaskProgressTrack>
-                              <SubtaskProgressFill $pct={task.progressPercentage ?? 0} />
-                            </SubtaskProgressTrack>
-                            <SubtaskLabel>
+                          <div className="mt-1 flex items-center gap-2">
+                            <div className="h-1 max-w-[120px] flex-1 overflow-hidden rounded-full bg-muted">
+                              <div
+                                className={cn(
+                                  'h-full rounded-full transition-[width] duration-300 ease-out',
+                                  getBarColour(task.progressPercentage ?? 0),
+                                )}
+                                style={{ width: `${task.progressPercentage ?? 0}%` }}
+                              />
+                            </div>
+                            <span className="whitespace-nowrap text-xs text-muted-foreground">
                               {task.completedSubtaskCount}/{task.subtaskCount} subtasks
-                            </SubtaskLabel>
-                          </SubtaskProgressRow>
+                            </span>
+                          </div>
                         )}
-                      </TaskContent>
-                    </TaskItem>
+                      </div>
+                    </div>
                   ))}
-                </TaskList>
+                </div>
               </>
             )}
 
             {events.length > 0 && (
               <>
-                <SectionHeader>
+                <h3 className="mb-3 mt-6 flex items-center gap-2 text-sm font-semibold uppercase text-muted-foreground first-of-type:mt-0 [&_svg]:h-4 [&_svg]:w-4">
                   <CalendarIcon /> Events
-                </SectionHeader>
-                <EventList>
+                </h3>
+                <div className="flex flex-col gap-2">
                   {events.map((event) => (
-                    <EventItem key={event.id} onClick={() => onEventClick(event)}>
-                      <EventTitle>{event.title}</EventTitle>
-                      <EventTime>
+                    <div
+                      key={event.id}
+                      className="cursor-pointer rounded-lg border-l-4 bg-secondary p-4 transition-all hover:translate-x-0.5 hover:bg-muted"
+                      style={{ borderLeftColor: INFO_COLOR }}
+                      onClick={() => onEventClick(event)}
+                    >
+                      <h4 className="m-0 mb-2 text-[15px] font-semibold text-foreground">
+                        {event.title}
+                      </h4>
+                      <div className="mb-2 flex items-center gap-1.5 text-[13px] text-muted-foreground">
                         {formatEventTime(event)}
-                      </EventTime>
-                      <EventMeta>
-                        {event.isAllDay && <EventBadge>All Day</EventBadge>}
-                        {event.location && <EventBadge><MapPin size={12} /> {event.location}</EventBadge>}
-                        {event.groupName && (
-                          <EventBadge $color={event.groupColour ?? undefined}>{event.groupName}</EventBadge>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {event.isAllDay && (
+                          <span className="inline-flex items-center rounded-lg border border-border bg-secondary px-2.5 py-1 text-xs font-medium text-foreground">
+                            All Day
+                          </span>
                         )}
-                      </EventMeta>
-                    </EventItem>
+                        {event.location && (
+                          <span className="inline-flex items-center gap-1 rounded-lg border border-border bg-secondary px-2.5 py-1 text-xs font-medium text-foreground">
+                            <MapPin size={12} /> {event.location}
+                          </span>
+                        )}
+                        {event.groupName && (
+                          <span
+                            className="inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-medium text-foreground"
+                            style={{
+                              backgroundColor: event.groupColour ? `${event.groupColour}20` : undefined,
+                              borderColor: event.groupColour ? `${event.groupColour}40` : undefined,
+                            }}
+                          >
+                            {event.groupName}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   ))}
-                </EventList>
+                </div>
               </>
             )}
           </>
         )}
-      </ModalContent>
-    </ModalOverlay>
+      </div>
+    </div>
   );
 };
