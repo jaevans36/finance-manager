@@ -65,6 +65,7 @@ public class TaskGroupService
             Colour = tg.Colour,
             Icon = tg.Icon,
             IsDefault = tg.IsDefault,
+            WipLimit = tg.WipLimit,
             TaskCount = tg.Tasks.Count,
             CreatedAt = tg.CreatedAt,
             UpdatedAt = tg.UpdatedAt
@@ -90,6 +91,7 @@ public class TaskGroupService
             Colour = group.Colour,
             Icon = group.Icon,
             IsDefault = group.IsDefault,
+            WipLimit = group.WipLimit,
             TaskCount = group.Tasks.Count,
             CreatedAt = group.CreatedAt,
             UpdatedAt = group.UpdatedAt
@@ -114,6 +116,7 @@ public class TaskGroupService
             Description = request.Description,
             Colour = request.Colour ?? "#3B82F6",
             Icon = request.Icon,
+            WipLimit = request.WipLimit,
             IsDefault = false,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -133,6 +136,7 @@ public class TaskGroupService
             Colour = group.Colour,
             Icon = group.Icon,
             IsDefault = group.IsDefault,
+            WipLimit = group.WipLimit,
             TaskCount = 0,
             CreatedAt = group.CreatedAt,
             UpdatedAt = group.UpdatedAt
@@ -184,6 +188,11 @@ public class TaskGroupService
             group.Icon = request.Icon;
         }
 
+        if (request.WipLimit.HasValue)
+        {
+            group.WipLimit = request.WipLimit;
+        }
+
         group.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
@@ -199,6 +208,7 @@ public class TaskGroupService
             Colour = group.Colour,
             Icon = group.Icon,
             IsDefault = group.IsDefault,
+            WipLimit = group.WipLimit,
             TaskCount = group.Tasks.Count,
             CreatedAt = group.CreatedAt,
             UpdatedAt = group.UpdatedAt

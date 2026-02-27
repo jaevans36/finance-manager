@@ -1,6 +1,8 @@
 import { apiClient } from './api-client';
 import { statisticsService } from './statisticsService';
 
+export type TaskStatus = 'NotStarted' | 'InProgress' | 'Blocked' | 'Completed';
+
 export interface Task {
   id: string;
   userId: string;
@@ -10,6 +12,9 @@ export interface Task {
   dueDate: string | null;
   completed: boolean;
   completedAt: string | null;
+  status: TaskStatus;
+  startedAt: string | null;
+  blockedReason: string | null;
   groupId: string | null;
   groupName: string | null;
   groupColour: string | null;
@@ -46,6 +51,7 @@ interface TaskQueryParams {
   completed?: boolean;
   startDate?: string;
   endDate?: string;
+  status?: TaskStatus;
 }
 
 export const taskService = {
@@ -98,6 +104,17 @@ export const taskService = {
     // Invalidate statistics cache when tasks are modified
     statisticsService.invalidateCache();
     
+    return response.data;
+  },
+
+  async updateTaskStatus(id: string, status: TaskStatus, blockedReason?: string): Promise<Task> {
+    const response = await apiClient.patch<Task>(`/tasks/${id}/status`, {
+      status,
+      blockedReason,
+    });
+
+    statisticsService.invalidateCache();
+
     return response.data;
   },
 };

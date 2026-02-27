@@ -26,7 +26,9 @@ import { useEditTaskForm } from '../../hooks/forms';
 import type { UpdateTaskInput } from '@finance-manager/schema';
 import { useSubtasks } from '../../hooks/useSubtasks';
 import { SubtaskList } from './SubtaskList';
-import type { Task } from '../../services/taskService';
+import type { Task, TaskStatus } from '../../services/taskService';
+import { StatusBadge } from './StatusBadge';
+import { StatusSelector } from './StatusSelector';
 
 // =============================================================================
 // Types
@@ -49,6 +51,7 @@ interface TaskDetailModalProps {
   onCancel: () => void;
   onDelete?: (id: string) => void;
   onToggleComplete?: (id: string) => void;
+  onStatusChange?: (id: string, status: TaskStatus, blockedReason?: string) => void;
   /** Called whenever subtasks are added, removed, or toggled so the parent can refresh counts */
   onSubtaskChange?: (taskId: string, counts: { subtaskCount: number; completedSubtaskCount: number }) => void;
 }
@@ -102,6 +105,7 @@ export const TaskDetailModal = ({
   onCancel,
   onDelete,
   onToggleComplete,
+  onStatusChange,
   onSubtaskChange,
 }: TaskDetailModalProps) => {
   // ── State ──────────────────────────────────────────────────────────────
@@ -339,19 +343,7 @@ export const TaskDetailModal = ({
           )}
 
           {/* Status badge */}
-          <Badge variant={task.completed ? 'success' : 'secondary'}>
-            {task.completed ? (
-              <>
-                <CheckCircle2 size={12} className="mr-1" />
-                Completed
-              </>
-            ) : (
-              <>
-                <CircleDot size={12} className="mr-1" />
-                Open
-              </>
-            )}
-          </Badge>
+          <StatusBadge status={task.status} />
 
           {/* Priority badge */}
           <Badge variant={getPriorityVariant(task.priority)}>
@@ -477,25 +469,29 @@ export const TaskDetailModal = ({
 
         {/* ── Key Metadata ──────────────────────────────────────── */}
         <div className="grid grid-cols-[20px_auto_1fr] items-center gap-x-3 gap-y-2">
-          {/* Status — only in edit mode; header badges cover view mode */}
-          {isEditing && onToggleComplete && (
+          {/* Status — always visible; editable via StatusSelector */}
+          <span className="flex items-center justify-center text-muted-foreground">
+            <CircleDot size={16} aria-hidden="true" />
+          </span>
+          <span className="text-sm font-medium text-muted-foreground" id="meta-status-label">Status</span>
+          <div className="min-w-0 text-sm text-foreground" aria-labelledby="meta-status-label">
+            {onStatusChange ? (
+              <StatusSelector
+                value={task.status}
+                onChange={(newStatus) => onStatusChange(task.id, newStatus)}
+                disabled={isSubmitting}
+              />
+            ) : (
+              <StatusBadge status={task.status} />
+            )}
+          </div>
+
+          {/* Blocked reason — only shown when status is Blocked */}
+          {task.status === 'Blocked' && task.blockedReason && (
             <>
-              <span className="flex items-center justify-center text-muted-foreground">
-                <CircleDot size={16} aria-hidden="true" />
-              </span>
-              <span className="text-sm font-medium text-muted-foreground" id="meta-status-label">Status</span>
-              <div className="min-w-0 text-sm text-foreground" aria-labelledby="meta-status-label">
-                <select
-                  value={task.completed ? 'completed' : 'open'}
-                  onChange={() => handleToggle()}
-                  disabled={isSubmitting}
-                  aria-label="Task status"
-                  className={metaSelectClasses}
-                >
-                  <option value="open">Open</option>
-                  <option value="completed">Completed</option>
-                </select>
-              </div>
+              <span />
+              <span className="text-sm font-medium text-muted-foreground">Reason</span>
+              <p className="m-0 text-sm text-red-600 dark:text-red-400">{task.blockedReason}</p>
             </>
           )}
 

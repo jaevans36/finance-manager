@@ -3,6 +3,7 @@ using FinanceApi.Features.Tasks.Models;
 using FinanceApi.Features.Tasks.DTOs;
 using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Common.ActivityLogs.Models;
+using FinanceApi.Features.Settings.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinanceApi.Features.Tasks.Services;
@@ -11,6 +12,7 @@ public interface ITaskService
 {
     System.Threading.Tasks.Task<TaskDto> CreateTaskAsync(Guid userId, CreateTaskRequest request);
     System.Threading.Tasks.Task<TaskDto> UpdateTaskAsync(Guid userId, Guid taskId, UpdateTaskRequest request);
+    System.Threading.Tasks.Task<TaskDto> UpdateTaskStatusAsync(Guid userId, Guid taskId, UpdateTaskStatusRequest request);
     System.Threading.Tasks.Task DeleteTaskAsync(Guid userId, Guid taskId);
     System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid userId, Guid taskId, bool includeSubtasks = false);
     System.Threading.Tasks.Task<List<TaskDto>> GetTasksAsync(
@@ -20,7 +22,8 @@ public interface ITaskService
         string? priority = null,
         Guid? groupId = null,
         bool? completed = null,
-        bool? rootOnly = null);
+        bool? rootOnly = null,
+        string? status = null);
     System.Threading.Tasks.Task<List<TaskDto>> GetTasksByDateRangeAsync(Guid userId, DateTime startDate, DateTime endDate);
 }
 
@@ -29,12 +32,14 @@ public class TaskService : ITaskService
     private readonly FinanceDbContext _context;
     private readonly IActivityLogService _activityLogService;
     private readonly TaskGroupService _taskGroupService;
+    private readonly IWipService _wipService;
 
-    public TaskService(FinanceDbContext context, IActivityLogService activityLogService, TaskGroupService taskGroupService)
+    public TaskService(FinanceDbContext context, IActivityLogService activityLogService, TaskGroupService taskGroupService, IWipService wipService)
     {
         _context = context;
         _activityLogService = activityLogService;
         _taskGroupService = taskGroupService;
+        _wipService = wipService;
     }
 
     public async System.Threading.Tasks.Task<TaskDto> CreateTaskAsync(Guid userId, CreateTaskRequest request)
@@ -97,11 +102,13 @@ public class TaskService : ITaskService
             if (request.Completed.Value && !task.CompletedAt.HasValue)
             {
                 task.CompletedAt = DateTime.UtcNow;
+                task.Status = Models.TaskStatus.Completed;
                 await _activityLogService.LogAsync(userId, ActivityType.TaskCompleted, $"Completed task: {task.Title}", null, null);
             }
             else if (!request.Completed.Value)
             {
                 task.CompletedAt = null;
+                task.Status = Models.TaskStatus.NotStarted;
             }
         }
 
@@ -111,6 +118,81 @@ public class TaskService : ITaskService
         await _activityLogService.LogAsync(userId, ActivityType.TaskUpdated, $"Updated task: {task.Title}", null, null);
 
         return await MapToTaskDtoAsync(task);
+    }
+
+    public async System.Threading.Tasks.Task<TaskDto> UpdateTaskStatusAsync(Guid userId, Guid taskId, UpdateTaskStatusRequest request)
+    {
+        var task = await _context.Tasks
+            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
+
+        if (task == null)
+        {
+            throw new KeyNotFoundException("Task not found");
+        }
+
+        if (!Enum.TryParse<Models.TaskStatus>(request.Status, true, out var newStatus))
+        {
+            throw new ArgumentException($"Invalid status: {request.Status}");
+        }
+
+        var oldStatus = task.Status;
+
+        // Validate state transitions
+        ValidateStatusTransition(oldStatus, newStatus);
+
+        // Check WIP limits when transitioning to InProgress
+        if (newStatus == Models.TaskStatus.InProgress && oldStatus != Models.TaskStatus.InProgress)
+        {
+            var canStart = await _wipService.CanStartTaskAsync(userId, task.GroupId);
+            if (!canStart)
+            {
+                throw new InvalidOperationException("WIP limit reached. Complete or remove an in-progress task before starting a new one.");
+            }
+        }
+
+        // Require BlockedReason when transitioning to Blocked
+        if (newStatus == Models.TaskStatus.Blocked && string.IsNullOrWhiteSpace(request.BlockedReason))
+        {
+            throw new ArgumentException("A blocked reason is required when setting status to Blocked");
+        }
+
+        task.Status = newStatus;
+        task.BlockedReason = newStatus == Models.TaskStatus.Blocked ? request.BlockedReason : null;
+
+        // Sync timestamps
+        if (newStatus == Models.TaskStatus.InProgress && !task.StartedAt.HasValue)
+        {
+            task.StartedAt = DateTime.UtcNow;
+        }
+
+        // Sync Completed boolean for backward compatibility
+        if (newStatus == Models.TaskStatus.Completed)
+        {
+            task.Completed = true;
+            task.CompletedAt ??= DateTime.UtcNow;
+        }
+        else if (oldStatus == Models.TaskStatus.Completed)
+        {
+            task.Completed = false;
+            task.CompletedAt = null;
+        }
+
+        task.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        var action = newStatus == Models.TaskStatus.Completed
+            ? ActivityType.TaskCompleted
+            : ActivityType.TaskUpdated;
+        await _activityLogService.LogAsync(userId, action, $"Changed task status to {newStatus}: {task.Title}", null, null);
+
+        return await MapToTaskDtoAsync(task);
+    }
+
+    private static void ValidateStatusTransition(Models.TaskStatus from, Models.TaskStatus to)
+    {
+        // All transitions are allowed, but log could be added for audit
+        // The key constraint is that Blocked requires a reason (handled by caller)
+        // Future: add strict transition rules if needed
     }
 
     public async System.Threading.Tasks.Task DeleteTaskAsync(Guid userId, Guid taskId)
@@ -157,7 +239,8 @@ public class TaskService : ITaskService
         string? priority = null,
         Guid? groupId = null,
         bool? completed = null,
-        bool? rootOnly = null)
+        bool? rootOnly = null,
+        string? status = null)
     {
         var query = _context.Tasks
             .Include(t => t.Group)
@@ -201,6 +284,12 @@ public class TaskService : ITaskService
         if (completed.HasValue)
         {
             query = query.Where(t => t.Completed == completed.Value);
+        }
+
+        // Apply status filter
+        if (!string.IsNullOrEmpty(status) && Enum.TryParse<Models.TaskStatus>(status, true, out var parsedStatus))
+        {
+            query = query.Where(t => t.Status == parsedStatus);
         }
 
         var tasks = await query
@@ -250,6 +339,9 @@ public class TaskService : ITaskService
             DueDate = task.DueDate,
             Completed = task.Completed,
             CompletedAt = task.CompletedAt,
+            Status = task.Status.ToString(),
+            StartedAt = task.StartedAt,
+            BlockedReason = task.BlockedReason,
             GroupId = task.GroupId,
             GroupName = task.Group?.Name,
             GroupColour = task.Group?.Colour,

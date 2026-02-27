@@ -16,6 +16,9 @@ public record CreateTaskGroupRequest
 
     [MaxLength(50, ErrorMessage = "Icon must not exceed 50 characters")]
     public string? Icon { get; init; }
+
+    [Range(1, 50, ErrorMessage = "WIP limit must be between 1 and 50")]
+    public int? WipLimit { get; init; }
 }
 
 public record UpdateTaskGroupRequest
@@ -31,6 +34,9 @@ public record UpdateTaskGroupRequest
 
     [MaxLength(50, ErrorMessage = "Icon must not exceed 50 characters")]
     public string? Icon { get; init; }
+
+    [Range(1, 50, ErrorMessage = "WIP limit must be between 1 and 50")]
+    public int? WipLimit { get; init; }
 }
 
 public record TaskGroupResponse
@@ -41,6 +47,7 @@ public record TaskGroupResponse
     public string Colour { get; init; } = "#3B82F6";
     public string? Icon { get; init; }
     public bool IsDefault { get; init; }
+    public int? WipLimit { get; init; }
     public int TaskCount { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }

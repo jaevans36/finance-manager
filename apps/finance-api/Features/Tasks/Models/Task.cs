@@ -48,6 +48,17 @@ public class Task
     [Column("completed_at")]
     public DateTime? CompletedAt { get; set; }
 
+    [Required]
+    [Column("status")]
+    public TaskStatus Status { get; set; } = TaskStatus.NotStarted;
+
+    [Column("started_at")]
+    public DateTime? StartedAt { get; set; }
+
+    [Column("blocked_reason")]
+    [MaxLength(500)]
+    public string? BlockedReason { get; set; }
+
     [Column("created_at")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -73,4 +84,12 @@ public enum Priority
     Medium,
     High,
     Critical
+}
+
+public enum TaskStatus
+{
+    NotStarted,
+    InProgress,
+    Blocked,
+    Completed
 }

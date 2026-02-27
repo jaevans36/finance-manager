@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
-import { taskService, type Task } from '../../services/taskService';
+import { taskService, type Task, type TaskStatus } from '../../services/taskService';
 import { eventService } from '../../services/eventService';
 import { taskGroupService } from '../../services/taskGroupService';
 import { subtaskService } from '../../services/subtaskService';
@@ -26,6 +26,7 @@ import {
 import { XCircle, ChevronDown, ListTodo, Calendar } from 'lucide-react';
 import { TaskGroup } from '../../types/taskGroup';
 import { DashboardLayout } from '../dashboard/components';
+import { WipCounter } from '../../components/tasks/WipCounter';
 import type { CreateEventRequest } from '../../types/event';
 
 const TasksPage = () => {
@@ -260,6 +261,18 @@ const TasksPage = () => {
     }
   };
 
+  const handleStatusChange = async (id: string, status: TaskStatus, blockedReason?: string) => {
+    try {
+      const updatedTask = await taskService.updateTaskStatus(id, status, blockedReason);
+      setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
+      setEditingTask((prev) => (prev && prev.id === id ? updatedTask : prev));
+      toast.success(`Task status changed to ${status.replace(/([A-Z])/g, ' $1').trim()}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update task status';
+      toast.error(message);
+    }
+  };
+
   const handleGroupCreated = () => {
     loadGroups();
   };
@@ -289,7 +302,10 @@ const TasksPage = () => {
         <main role="main" aria-label="Task management">
           <TaskStatistics tasks={tasks} totalGroups={groups.length} />
 
-          <TaskSearch ref={searchInputRef} value={searchQuery} onChange={setSearchQuery} />
+          <div className="mb-4 flex items-center gap-3">
+            <TaskSearch ref={searchInputRef} value={searchQuery} onChange={setSearchQuery} />
+            <WipCounter />
+          </div>
 
           {showCreateForm ? (
             createType === 'task' ? (
@@ -359,6 +375,7 @@ const TasksPage = () => {
           onCancel={() => setEditingTask(null)}
           onDelete={handleDeleteTask}
           onToggleComplete={handleToggleComplete}
+          onStatusChange={handleStatusChange}
           onSubtaskChange={handleSubtaskChange}
         />
       )}

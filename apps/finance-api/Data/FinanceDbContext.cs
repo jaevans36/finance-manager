@@ -6,6 +6,7 @@ using FinanceApi.Features.Finance.Models;
 using FinanceApi.Features.Common.Sessions.Models;
 using FinanceApi.Features.Common.ActivityLogs.Models;
 using FinanceApi.Features.Common.EmailVerification.Models;
+using FinanceApi.Features.Settings.Models;
 
 namespace FinanceApi.Data;
 
@@ -29,6 +30,7 @@ public class FinanceDbContext : DbContext
     public DbSet<Session> Sessions { get; set; }
     public DbSet<EmailToken> EmailTokens { get; set; }
     public DbSet<ActivityLog> ActivityLogs { get; set; }
+    public DbSet<UserSettings> UserSettings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -192,6 +194,21 @@ public class FinanceDbContext : DbContext
             entity.HasIndex(e => new { e.UserId, e.DueDate });
             entity.HasIndex(e => new { e.UserId, e.Priority });
             entity.HasIndex(e => new { e.UserId, e.Completed, e.CreatedAt });
+            entity.HasIndex(e => new { e.UserId, e.Status });
+        });
+
+        // UserSettings configuration
+        modelBuilder.Entity<UserSettings>(entity =>
+        {
+            entity.ToTable("user_settings");
+            entity.HasKey(e => e.Id);
+
+            entity.HasOne(s => s.User)
+                  .WithOne(u => u.Settings)
+                  .HasForeignKey<UserSettings>(s => s.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.UserId).IsUnique();
         });
 
         // EmailToken configuration

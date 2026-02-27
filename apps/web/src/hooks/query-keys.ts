@@ -68,4 +68,10 @@ export const queryKeys = {
     current: () => [...queryKeys.version.all, 'current'] as const,
     history: () => [...queryKeys.version.all, 'history'] as const,
   },
+
+  settings: {
+    all: ['settings'] as const,
+    current: () => [...queryKeys.settings.all, 'current'] as const,
+    wipSummary: () => [...queryKeys.settings.all, 'wip-summary'] as const,
+  },
 } as const;

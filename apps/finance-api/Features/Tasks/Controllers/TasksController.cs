@@ -28,10 +28,11 @@ public class TasksController : ControllerBase
         [FromQuery] string? priority,
         [FromQuery] Guid? groupId,
         [FromQuery] bool? completed,
-        [FromQuery] bool? rootOnly)
+        [FromQuery] bool? rootOnly,
+        [FromQuery] string? status)
     {
         var userId = GetUserId();
-        var tasks = await _taskService.GetTasksAsync(userId, startDate, endDate, priority, groupId, completed, rootOnly);
+        var tasks = await _taskService.GetTasksAsync(userId, startDate, endDate, priority, groupId, completed, rootOnly, status);
         return Ok(tasks);
     }
 
@@ -89,6 +90,34 @@ public class TasksController : ControllerBase
         catch (KeyNotFoundException)
         {
             return NotFound(new { error = new { message = "Task not found" } });
+        }
+    }
+
+    /// <summary>
+    /// Updates the status of a task (NotStarted, InProgress, Blocked, Completed).
+    /// </summary>
+    [HttpPatch("{id}/status")]
+    public async System.Threading.Tasks.Task<ActionResult<TaskDto>> UpdateTaskStatus(
+        Guid id,
+        [FromBody] UpdateTaskStatusRequest request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var task = await _taskService.UpdateTaskStatusAsync(userId, id, request);
+            return Ok(task);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { error = new { message = "Task not found" } });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = new { message = ex.Message } });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { error = new { message = ex.Message } });
         }
     }
 

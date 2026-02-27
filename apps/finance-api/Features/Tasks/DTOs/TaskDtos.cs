@@ -46,6 +46,9 @@ public class TaskDto
     public DateTime? DueDate { get; set; }
     public bool Completed { get; set; }
     public DateTime? CompletedAt { get; set; }
+    public string Status { get; set; } = "NotStarted";
+    public DateTime? StartedAt { get; set; }
+    public string? BlockedReason { get; set; }
     public Guid? GroupId { get; set; }
     public string? GroupName { get; set; }
     public string? GroupColour { get; set; }
@@ -57,4 +60,15 @@ public class TaskDto
     public List<TaskDto>? Subtasks { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+}
+
+public class UpdateTaskStatusRequest
+{
+    [Required]
+    [RegularExpression("^(NotStarted|InProgress|Blocked|Completed)$",
+        ErrorMessage = "Status must be NotStarted, InProgress, Blocked, or Completed")]
+    public string Status { get; set; } = string.Empty;
+
+    [StringLength(500)]
+    public string? BlockedReason { get; set; }
 }

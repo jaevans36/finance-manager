@@ -3,6 +3,7 @@ using System;
 using FinanceApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FinanceApi.Migrations
 {
     [DbContext(typeof(FinanceDbContext))]
-    partial class FinanceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260227162815_AddTaskStatusFields")]
+    partial class AddTaskStatusFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -546,47 +549,6 @@ namespace FinanceApi.Migrations
                     b.ToTable("transactions", (string)null);
                 });
 
-            modelBuilder.Entity("FinanceApi.Features.Settings.Models.UserSettings", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("DefaultTaskStatus")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("default_task_status");
-
-                    b.Property<bool>("EnableWipWarnings")
-                        .HasColumnType("boolean")
-                        .HasColumnName("enable_wip_warnings");
-
-                    b.Property<int?>("GlobalWipLimit")
-                        .HasColumnType("integer")
-                        .HasColumnName("global_wip_limit");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("user_settings", (string)null);
-                });
-
             modelBuilder.Entity("FinanceApi.Features.Tasks.Models.Task", b =>
                 {
                     b.Property<Guid>("Id")
@@ -731,10 +693,6 @@ namespace FinanceApi.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
-                    b.Property<int?>("WipLimit")
-                        .HasColumnType("integer")
-                        .HasColumnName("wip_limit");
-
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
@@ -834,17 +792,6 @@ namespace FinanceApi.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("FinanceApi.Features.Settings.Models.UserSettings", b =>
-                {
-                    b.HasOne("FinanceApi.Features.Auth.Models.User", "User")
-                        .WithOne("Settings")
-                        .HasForeignKey("FinanceApi.Features.Settings.Models.UserSettings", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("FinanceApi.Features.Tasks.Models.Task", b =>
                 {
                     b.HasOne("FinanceApi.Features.Tasks.Models.TaskGroup", "Group")
@@ -888,8 +835,6 @@ namespace FinanceApi.Migrations
                     b.Navigation("EmailTokens");
 
                     b.Navigation("Sessions");
-
-                    b.Navigation("Settings");
 
                     b.Navigation("TaskGroups");
 

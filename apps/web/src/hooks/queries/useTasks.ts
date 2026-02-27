@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { taskService, type Task } from '@/services/taskService';
+import { taskService, type Task, type TaskStatus } from '@/services/taskService';
 import { queryKeys } from '../query-keys';
 
 interface TaskQueryParams {
@@ -8,6 +8,7 @@ interface TaskQueryParams {
   completed?: boolean;
   startDate?: string;
   endDate?: string;
+  status?: TaskStatus;
 }
 
 interface CreateTaskInput {
@@ -96,6 +97,23 @@ export function useToggleTask() {
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.statistics.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.settings.wipSummary() });
+    },
+  });
+}
+
+/** Update task status (NotStarted, InProgress, Blocked, Completed) */
+export function useUpdateTaskStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, status, blockedReason }: { id: string; status: TaskStatus; blockedReason?: string }) =>
+      taskService.updateTaskStatus(id, status, blockedReason),
+    onSuccess: (_data: Task, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.statistics.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.settings.wipSummary() });
     },
   });
 }
