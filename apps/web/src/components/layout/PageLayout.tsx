@@ -1,40 +1,7 @@
-import styled from 'styled-components';
-import { mediaQueries } from '@finance-manager/ui/styles';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { ContentContainer, IconButton, Heading1 } from '@finance-manager/ui';
-
-const Header = styled.div`
-  margin-bottom: 30px;
-`;
-
-const HeaderTop = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 10px;
-`;
-
-const Subtitle = styled.p`
-  font-size: 16px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin: 8px 0 0 0;
-`;
-
-const HeaderActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 16px;
-
-  ${mediaQueries.tablet} {
-    flex-wrap: wrap;
-  }
-`;
-
-const Content = styled.div`
-  /* Content wrapper for additional styling if needed */
-`;
+import { cn } from '../../lib/utils';
+import { Button } from '../ui/button';
 
 interface PageLayoutProps {
   /** Page title displayed as H1 */
@@ -59,33 +26,21 @@ interface PageLayoutProps {
   loadingComponent?: React.ReactNode;
   /** Custom error component */
   errorComponent?: React.ReactNode;
+  /** Optional className for the outer wrapper */
+  className?: string;
 }
-
-const LoadingMessage = styled.div`
-  text-align: center;
-  padding: 40px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 16px;
-`;
-
-const ErrorMessage = styled.div`
-  text-align: center;
-  padding: 40px;
-  color: ${({ theme }) => theme.colors.error};
-  font-size: 16px;
-`;
 
 /**
  * PageLayout - Consistent layout template for all application pages
- * 
+ *
  * Provides:
- * - Consistent ContentContainer wrapper
- * - Optional back button with customizable destination
+ * - Consistent container wrapper (max-w-6xl, centred, responsive padding)
+ * - Optional back button with customisable destination
  * - Page title (H1)
  * - Optional header actions area (filters, buttons, etc.)
  * - Loading and error states
- * - Responsive behavior
- * 
+ * - Responsive behaviour
+ *
  * @example
  * ```tsx
  * <PageLayout
@@ -110,41 +65,55 @@ export const PageLayout = ({
   error,
   loadingComponent,
   errorComponent,
+  className,
 }: PageLayoutProps) => {
   const navigate = useNavigate();
 
   if (loading) {
     return (
-      <ContentContainer>
-        {loadingComponent || <LoadingMessage>Loading...</LoadingMessage>}
-      </ContentContainer>
+      <div className={cn('mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-[10px] md:w-[95%]', className)}>
+        {loadingComponent || (
+          <p className="text-center py-10 text-muted-foreground text-base">Loading...</p>
+        )}
+      </div>
     );
   }
 
   if (error) {
     return (
-      <ContentContainer>
-        {errorComponent || <ErrorMessage>{error}</ErrorMessage>}
-      </ContentContainer>
+      <div className={cn('mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-[10px] md:w-[95%]', className)}>
+        {errorComponent || (
+          <p className="text-center py-10 text-destructive text-base">{error}</p>
+        )}
+      </div>
     );
   }
 
   return (
-    <ContentContainer>
-      <Header>
+    <div className={cn('mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-[10px] md:w-[95%]', className)}>
+      <header className="mb-[30px]">
         {showBackButton && (
-          <HeaderTop>
-            <IconButton onClick={() => navigate(backButtonPath)}>
+          <div className="flex items-center gap-[15px] mb-[10px]">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(backButtonPath)}
+              className="flex items-center gap-2"
+            >
               <ArrowLeft size={18} />
               {backButtonText}
-            </IconButton>
-          </HeaderTop>
+            </Button>
+          </div>
         )}
-        <Heading1 style={{ margin: 0 }}>{title}</Heading1>
-        {subtitle && <Subtitle>{subtitle}</Subtitle>}
-        {headerActions && <HeaderActions>{headerActions}</HeaderActions>}
-      </Header>
-      <Content>{children}</Content>
-    </ContentContainer>
+        <h1 className="text-[32px] font-bold text-foreground m-0">{title}</h1>
+        {subtitle && (
+          <p className="text-base text-muted-foreground mt-2 mb-0">{subtitle}</p>
+        )}
+        {headerActions && (
+          <div className="flex items-center gap-3 mt-4 flex-wrap">{headerActions}</div>
+        )}
+      </header>
+      <div>{children}</div>
+    </div>
   );
 };
