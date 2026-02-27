@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { XCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
+import { useLoginForm } from '../../hooks/forms';
+import type { LoginInput } from '@finance-manager/schema';
 import { 
   FormGroup, 
   Label, 
@@ -43,42 +45,21 @@ const SignupText = styled.p`
 `;
 
 export const LoginForm = () => {
-  const [emailOrUsername, setEmailOrUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState('');
-
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useLoginForm();
 
-    if (!emailOrUsername) {
-      newErrors.emailOrUsername = 'Email or username is required';
-    }
-
-    if (!password) {
-      newErrors.password = 'Password is required';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: LoginInput) => {
     setApiError('');
 
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsLoading(true);
-
     try {
-      const response = await authService.login(emailOrUsername, password);
+      const response = await authService.login(data.emailOrUsername, data.password);
       login(response.token, response.user);
       navigate('/dashboard');
     } catch (error: unknown) {
@@ -87,8 +68,6 @@ export const LoginForm = () => {
       } else {
         setApiError('Login failed. Please check your credentials.');
       }
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -103,26 +82,22 @@ export const LoginForm = () => {
         </Alert>
       )}
 
-      <form onSubmit={handleSubmit} aria-label="Login form">
+      <form onSubmit={handleSubmit(onSubmit)} aria-label="Login form">
         <FormGroup>
           <Label htmlFor="emailOrUsername">Email or Username</Label>
           <Input
             id="emailOrUsername"
             type="text"
-            value={emailOrUsername}
-            onChange={(e) => {
-              setEmailOrUsername(e.target.value);
-              setErrors({ ...errors, emailOrUsername: '' });
-            }}
+            {...register('emailOrUsername')}
             autoComplete="username"
             hasError={!!errors.emailOrUsername}
-            disabled={isLoading}
+            disabled={isSubmitting}
             placeholder="Enter your email or username"
             aria-required="true"
             aria-invalid={!!errors.emailOrUsername}
             aria-describedby={errors.emailOrUsername ? 'email-error' : undefined}
           />
-          {errors.emailOrUsername && <ErrorText>{errors.emailOrUsername}</ErrorText>}
+          {errors.emailOrUsername && <ErrorText>{errors.emailOrUsername.message}</ErrorText>}
         </FormGroup>
 
         <FormGroup>
@@ -130,26 +105,22 @@ export const LoginForm = () => {
           <Input
             id="password"
             type="password"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              setErrors({ ...errors, password: '' });
-            }}
+            {...register('password')}
             autoComplete="current-password"
             hasError={!!errors.password}
-            disabled={isLoading}
+            disabled={isSubmitting}
             placeholder="Enter your password"
           />
-          {errors.password && <ErrorText>{errors.password}</ErrorText>}
+          {errors.password && <ErrorText>{errors.password.message}</ErrorText>}
         </FormGroup>
 
         <Button 
           type="submit" 
-          disabled={isLoading} 
-          $isLoading={isLoading}
+          disabled={isSubmitting} 
+          $isLoading={isSubmitting}
           fullWidth
         >
-          {isLoading ? 'Signing in...' : 'Sign In'}
+          {isSubmitting ? 'Signing in...' : 'Sign In'}
         </Button>
       </form>
 

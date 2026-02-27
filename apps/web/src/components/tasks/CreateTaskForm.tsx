@@ -13,6 +13,8 @@ import {
 } from '@finance-manager/ui';
 import { XCircle, Plus, X } from 'lucide-react';
 import { spacing, borderRadius } from '@finance-manager/ui/styles';
+import { useCreateTaskForm } from '../../hooks/forms';
+import type { CreateTaskInput } from '@finance-manager/schema';
 
 const Subheading = styled.h2`
   color: ${({ theme }) => theme.colors.text};
@@ -133,17 +135,16 @@ const AddSubtaskButton = styled.button`
 `;
 
 export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupId, onSubtasksCreated }: CreateTaskFormProps) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState<'Low' | 'Medium' | 'High' | 'Critical'>('Medium');
-  const [dueDate, setDueDate] = useState('');
-  const [groupId, setGroupId] = useState<string>(selectedGroupId || '');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useCreateTaskForm({
+    groupId: selectedGroupId || '',
+  });
+  const [apiError, setApiError] = useState('');
   const [subtaskTitles, setSubtaskTitles] = useState<string[]>([]);
   const [subtaskInput, setSubtaskInput] = useState('');
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
   const subtaskInputRef = useRef<HTMLInputElement>(null);
+
+  const watchedTitle = watch('title');
 
   const handleAddSubtask = useCallback(() => {
     const trimmed = subtaskInput.trim();
@@ -171,59 +172,45 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
     [handleAddSubtask],
   );
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (!title.trim()) {
-      setError('Title is required');
-      return;
-    }
-
-    setIsSubmitting(true);
+  const onFormSubmit = async (data: CreateTaskInput) => {
+    setApiError('');
 
     try {
       await onSubmit({
-        title: title.trim(),
-        description: description.trim() || undefined,
-        priority,
-        dueDate: dueDate || undefined,
-        groupId: groupId || undefined,
+        title: data.title.trim(),
+        description: data.description?.trim() || undefined,
+        priority: data.priority || undefined,
+        dueDate: data.dueDate || undefined,
+        groupId: data.groupId || undefined,
         subtaskTitles: subtaskTitles.length > 0 ? subtaskTitles : undefined,
       });
       // Reset form
-      setTitle('');
-      setDescription('');
-      setPriority('Medium');
-      setDueDate('');
-      setGroupId(selectedGroupId || '');
+      reset({ title: '', description: '', priority: 'Medium', dueDate: '', groupId: selectedGroupId || '' });
       setSubtaskTitles([]);
       setSubtaskInput('');
       setIsAddingSubtask(false);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Task creation error:', err);
       if (err instanceof Error) {
-        setError(err.message);
+        setApiError(err.message);
       } else if (typeof err === 'object' && err !== null && 'response' in err) {
         const axiosError = err as { response?: { data?: { error?: { message?: string } } } };
-        setError(axiosError.response?.data?.error?.message || 'Failed to create task');
+        setApiError(axiosError.response?.data?.error?.message || 'Failed to create task');
       } else {
-        setError('Failed to create task');
+        setApiError('Failed to create task');
       }
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginBottom: '30px' }} aria-label="Create new task form">
+    <form onSubmit={handleSubmit(onFormSubmit)} style={{ marginBottom: '30px' }} aria-label="Create new task form">
       <Card style={{ padding: '20px' }}>
         <Subheading id="create-task-heading">Create New Task</Subheading>
 
-        {error && (
+        {apiError && (
           <Alert variant="error" style={{ marginBottom: '15px' }}>
             <XCircle size={16} />
-            <span>{error}</span>
+            <span>{apiError}</span>
           </Alert>
         )}
 
@@ -232,23 +219,22 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
           <Input
             id="title"
             aria-required="true"
-            aria-invalid={!!error && !title.trim()}
+            aria-invalid={!!errors.title}
             type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            {...register('title')}
             placeholder="Enter task title"
             maxLength={200}
             disabled={isSubmitting}
           />
-          <ErrorText>{title.length}/200</ErrorText>
+          {errors.title && <ErrorText>{errors.title.message}</ErrorText>}
+          <ErrorText>{(watchedTitle ?? '').length}/200</ErrorText>
         </FormGroup>
 
         <FormGroup>
           <Label htmlFor="description">Description</Label>
           <TextArea
             id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            {...register('description')}
             placeholder="Enter task description"
             maxLength={2000}
             rows={3}
@@ -259,8 +245,7 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
           <Input
             as="select"
             id="group"
-            value={groupId}
-            onChange={(e) => setGroupId(e.target.value)}
+            {...register('groupId')}
             disabled={isSubmitting}
           >
             <option value="">Select a group...</option>
@@ -280,8 +265,7 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
             <Input
               as="select"
               id="priority"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value as 'Low' | 'Medium' | 'High' | 'Critical')}
+              {...register('priority')}
               disabled={isSubmitting}
             >
               <option value="Low">Low</option>
@@ -296,8 +280,7 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
             <Input
               id="dueDate"
               type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
+              {...register('dueDate')}
               min={new Date().toISOString().split('T')[0]}
               disabled={isSubmitting}
             />

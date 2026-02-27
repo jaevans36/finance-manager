@@ -145,7 +145,7 @@ describe('CreateTaskForm', () => {
 
       fireEvent.change(titleInput, { target: { value: 'Test Task' } });
       fireEvent.change(descriptionTextarea, { target: { value: 'Test Description' } });
-      fireEvent.change(prioritySelect, { target: { value: 'HIGH' } });
+      fireEvent.change(prioritySelect, { target: { value: 'High' } });
       fireEvent.change(dueDateInput, { target: { value: '2024-12-31' } });
 
       const form = container.querySelector('form')!;

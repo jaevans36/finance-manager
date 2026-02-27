@@ -4,6 +4,8 @@ import styled from 'styled-components';
 import { focusRing } from '@finance-manager/ui/styles';
 import { authService } from '../../services/authService';
 import { getErrorMessage } from '../../utils/errorHelpers';
+import { useForgotPasswordForm } from '../../hooks/forms';
+import type { ForgotPasswordInput } from '@finance-manager/schema';
 import {
   CenteredContainer,
   FormCard,
@@ -38,23 +40,25 @@ const LinkContainer = styled.div`
 `;
 
 const ForgotPasswordPage = () => {
-  const [email, setEmail] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [apiError, setApiError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsSubmitting(true);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForgotPasswordForm();
+
+  const onSubmit = async (data: ForgotPasswordInput) => {
+    setApiError('');
 
     try {
-      await authService.requestPasswordReset(email);
+      await authService.requestPasswordReset(data.email);
+      setSubmittedEmail(data.email);
       setSuccess(true);
     } catch (err: unknown) {
-      setError(getErrorMessage(err, 'Failed to send reset email'));
-    } finally {
-      setIsSubmitting(false);
+      setApiError(getErrorMessage(err, 'Failed to send reset email'));
     }
   };
 
@@ -64,7 +68,7 @@ const ForgotPasswordPage = () => {
         <FormCard>
           <Heading2 style={{ textAlign: 'center' }}>Check your email</Heading2>
           <CenteredText>
-            We&apos;ve sent password reset instructions to <strong>{email}</strong>
+            We&apos;ve sent password reset instructions to <strong>{submittedEmail}</strong>
           </CenteredText>
           <Alert variant="success">
             If an account exists with this email, you will receive a password reset link shortly.
@@ -85,20 +89,19 @@ const ForgotPasswordPage = () => {
         <CenteredText>
           Enter your email address and we&apos;ll send you a link to reset your password.
         </CenteredText>
-        <form onSubmit={handleSubmit}>
-          {error && <Alert variant="error">{error}</Alert>}
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {apiError && <Alert variant="error">{apiError}</Alert>}
           <FormGroup>
             <Input
               id="email-address"
-              name="email"
               type="email"
               autoComplete="email"
-              required
               placeholder="Email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              {...register('email')}
+              hasError={!!errors.email}
               disabled={isSubmitting}
             />
+            {errors.email && <Alert variant="error">{errors.email.message}</Alert>}
           </FormGroup>
           <Button type="submit" disabled={isSubmitting} fullWidth>
             {isSubmitting ? 'Sending...' : 'Send reset link'}

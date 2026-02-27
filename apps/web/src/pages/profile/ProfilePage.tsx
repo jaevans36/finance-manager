@@ -7,6 +7,7 @@ import { authService } from '../../services/authService';
 import { Container, Card, Heading1, Text, TextSecondary, Button, Flex, Input } from '@finance-manager/ui';
 import { UserIcon, MailIcon, CalendarIcon, LogOutIcon, ArrowLeftIcon, EditIcon, CheckIcon, XIcon } from 'lucide-react';
 import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
+import { useProfileForm } from '../../hooks/forms';
 
 const ProfileHeader = styled.div`
   margin-bottom: 30px;
@@ -150,30 +151,31 @@ const ProfilePage = () => {
   const { user, logout, login } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
+  const { register, watch, setValue, reset, formState: { errors: formErrors } } = useProfileForm();
   const [editingUsername, setEditingUsername] = useState(false);
-  const [newUsername, setNewUsername] = useState('');
   const [usernameChecking, setUsernameChecking] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [usernameMessage, setUsernameMessage] = useState('');
   const [saving, setSaving] = useState(false);
 
+  const watchedUsername = watch('username');
   const isTemporaryUsername = user?.username.startsWith('user_');
 
   useEffect(() => {
-    if (!newUsername || newUsername === user?.username) {
+    if (!watchedUsername || watchedUsername === user?.username) {
       setUsernameAvailable(null);
       setUsernameMessage('');
       return;
     }
 
     const timer = setTimeout(async () => {
-      if (newUsername.length < 3 || newUsername.length > 20) {
+      if (watchedUsername.length < 3 || watchedUsername.length > 20) {
         setUsernameAvailable(false);
         setUsernameMessage('Username must be 3-20 characters');
         return;
       }
 
-      if (!/^[a-zA-Z0-9_-]+$/.test(newUsername)) {
+      if (!/^[a-zA-Z0-9_-]+$/.test(watchedUsername)) {
         setUsernameAvailable(false);
         setUsernameMessage('Only letters, numbers, _ and - allowed');
         return;
@@ -181,10 +183,10 @@ const ProfilePage = () => {
 
       try {
         setUsernameChecking(true);
-        const result = await authService.checkUsername(newUsername);
+        const result = await authService.checkUsername(watchedUsername);
         setUsernameAvailable(result.available);
         setUsernameMessage(result.message);
-      } catch (error) {
+      } catch {
         setUsernameAvailable(false);
         setUsernameMessage('Error checking username');
       } finally {
@@ -193,35 +195,35 @@ const ProfilePage = () => {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [newUsername, user?.username]);
+  }, [watchedUsername, user?.username]);
 
   const handleEditUsername = () => {
-    setNewUsername(user?.username || '');
+    setValue('username', user?.username || '');
     setEditingUsername(true);
   };
 
   const handleCancelEdit = () => {
     setEditingUsername(false);
-    setNewUsername('');
+    reset({ username: '' });
     setUsernameAvailable(null);
     setUsernameMessage('');
   };
 
   const handleSaveUsername = async () => {
-    if (!user || !usernameAvailable) return;
+    if (!user || !usernameAvailable || !watchedUsername) return;
 
     try {
       setSaving(true);
-      await authService.updateUsername(newUsername);
+      await authService.updateUsername(watchedUsername);
       
       // Update local user data
-      const updatedUser = { ...user, username: newUsername.toLowerCase() };
+      const updatedUser = { ...user, username: watchedUsername.toLowerCase() };
       const token = localStorage.getItem('accessToken') || '';
       login(token, updatedUser);
       
       toast.success('Username updated successfully!');
       setEditingUsername(false);
-      setNewUsername('');
+      reset({ username: '' });
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to update username';
       toast.error(message);
@@ -261,8 +263,7 @@ const ProfilePage = () => {
               <UsernameInputContainer>
                 <Input
                   type="text"
-                  value={newUsername}
-                  onChange={(e) => setNewUsername(e.target.value)}
+                  {...register('username')}
                   placeholder="Enter new username"
                   disabled={saving}
                   style={{ width: '250px' }}
@@ -287,7 +288,7 @@ const ProfilePage = () => {
                   Cancel
                 </Button>
               </UsernameInputContainer>
-              {newUsername && usernameMessage && (
+              {watchedUsername && usernameMessage && (
                 <UsernameHint $available={usernameAvailable === true}>
                   {usernameMessage}
                 </UsernameHint>

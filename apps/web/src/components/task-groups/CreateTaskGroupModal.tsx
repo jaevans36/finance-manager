@@ -1,10 +1,12 @@
-import { useState } from 'react';
 import styled from 'styled-components';
 import { borderRadius, focusRing, shadows, mediaQueries } from '@finance-manager/ui/styles';
 import { useToast } from '../../contexts/ToastContext';
 import { taskGroupService } from '../../services/taskGroupService';
-import { Button, Input, TextArea, FormGroup, Label, Alert, Flex } from '@finance-manager/ui';
+import { useTaskGroupForm } from '../../hooks/forms';
+import type { CreateTaskGroupInput } from '@finance-manager/schema';
+import { Button, Input, TextArea, FormGroup, Label, ErrorText, Alert, Flex } from '@finance-manager/ui';
 import { XCircleIcon } from 'lucide-react';
+import { useState } from 'react';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -93,38 +95,34 @@ export const CreateTaskGroupModal = ({
   onSuccess
 }: CreateTaskGroupModalProps) => {
   const toast = useToast();
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [colour, setColour] = useState(COLOUR_OPTIONS[0]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useTaskGroupForm();
 
-    if (!name.trim()) {
-      setError('Group name is required');
-      return;
-    }
+  const selectedColour = watch('colour') || COLOUR_OPTIONS[0];
 
-    setLoading(true);
+  const onSubmit = async (data: CreateTaskGroupInput) => {
+    setApiError(null);
 
     try {
       await taskGroupService.createGroup({
-        name: name.trim(),
-        description: description.trim() || undefined,
-        colour,
+        name: data.name.trim(),
+        description: data.description?.trim() || undefined,
+        colour: data.colour || COLOUR_OPTIONS[0],
       });
       toast.success('Task group created successfully');
       onSuccess();
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       const errorMessage = error.response?.data?.message || 'Failed to create task group';
-      setError(errorMessage);
+      setApiError(errorMessage);
       toast.error(errorMessage);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -133,37 +131,37 @@ export const CreateTaskGroupModal = ({
       <ModalContent onClick={(e) => e.stopPropagation()}>
         <ModalHeader>Create Task Group</ModalHeader>
 
-        {error && (
+        {apiError && (
           <Alert variant="error" style={{ marginBottom: '16px' }}>
             <XCircleIcon size={16} />
-            {error}
+            {apiError}
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <FormGroup>
             <Label htmlFor="name">Group Name *</Label>
             <Input
               id="name"
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              {...register('name')}
               placeholder="e.g., House Renovation"
               maxLength={100}
-              required
+              hasError={!!errors.name}
             />
+            {errors.name && <ErrorText>{errors.name.message}</ErrorText>}
           </FormGroup>
 
           <FormGroup>
             <Label htmlFor="description">Description (Optional)</Label>
             <TextArea
               id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              {...register('description')}
               placeholder="Describe this group..."
               maxLength={500}
               rows={3}
             />
+            {errors.description && <ErrorText>{errors.description.message}</ErrorText>}
           </FormGroup>
 
           <FormGroup>
@@ -174,8 +172,8 @@ export const CreateTaskGroupModal = ({
                   key={option}
                   type="button"
                   $colour={option}
-                  $selected={colour === option}
-                  onClick={() => setColour(option)}
+                  $selected={selectedColour === option}
+                  onClick={() => setValue('colour', option)}
                 />
               ))}
             </ColourOptions>
@@ -186,7 +184,7 @@ export const CreateTaskGroupModal = ({
               type="button"
               variant="secondary"
               onClick={onClose}
-              disabled={loading}
+              disabled={isSubmitting}
               style={{ flex: 1 }}
             >
               Cancel
@@ -194,10 +192,10 @@ export const CreateTaskGroupModal = ({
             <Button
               type="submit"
               variant="primary"
-              disabled={loading || !name.trim()}
+              disabled={isSubmitting}
               style={{ flex: 1 }}
             >
-              {loading ? 'Creating...' : 'Create Group'}
+              {isSubmitting ? 'Creating...' : 'Create Group'}
             </Button>
           </Flex>
         </form>

@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
 import { CheckIcon, XCircleIcon } from 'lucide-react';
 import styled from 'styled-components';
 import { borderRadius, focusRing, spacing } from '@finance-manager/ui/styles';
+import { useRegisterForm } from '../../hooks/forms';
+import type { RegisterInput } from '@finance-manager/schema';
 
 const FormContainer = styled.div`
   max-width: 400px;
@@ -148,12 +150,12 @@ const UsernameHint = styled.div<{ available: boolean }>`
 `;
 
 export const RegisterForm = () => {
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useRegisterForm();
   const [apiError, setApiError] = useState('');
   const [usernameChecking, setUsernameChecking] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
@@ -161,6 +163,9 @@ export const RegisterForm = () => {
 
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const watchedUsername = watch('username');
+  const watchedPassword = watch('password');
 
   // Debounced username check
   const checkUsernameAvailability = useCallback(async (usernameToCheck: string) => {
@@ -181,7 +186,7 @@ export const RegisterForm = () => {
       const result = await authService.checkUsername(usernameToCheck);
       setUsernameAvailable(result.available);
       setUsernameMessage(result.message);
-    } catch (error) {
+    } catch {
       setUsernameAvailable(false);
       setUsernameMessage('Error checking username');
     } finally {
@@ -190,78 +195,34 @@ export const RegisterForm = () => {
   }, []);
 
   useEffect(() => {
-    if (!username) {
+    if (!watchedUsername) {
       setUsernameAvailable(null);
       setUsernameMessage('');
       return;
     }
 
     const timer = setTimeout(() => {
-      checkUsernameAvailability(username);
+      checkUsernameAvailability(watchedUsername);
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [username, checkUsernameAvailability]);
+  }, [watchedUsername, checkUsernameAvailability]);
 
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    // Email validation
-    if (!email) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Invalid email address';
-    }
-
-    // Username validation
-    if (!username) {
-      newErrors.username = 'Username is required';
-    } else if (usernameAvailable === false) {
-      newErrors.username = usernameMessage || 'Username is not available';
-    } else if (usernameAvailable === null) {
-      newErrors.username = 'Please wait for username validation';
-    }
-
-    // Password validation
-    if (!password) {
-      newErrors.password = 'Password is required';
-    } else {
-      if (password.length < 8) {
-        newErrors.password = 'Password must be at least 8 characters long';
-      } else if (!/[A-Z]/.test(password)) {
-        newErrors.password = 'Password must contain at least one uppercase letter';
-      } else if (!/[a-z]/.test(password)) {
-        newErrors.password = 'Password must contain at least one lowercase letter';
-      } else if (!/[0-9]/.test(password)) {
-        newErrors.password = 'Password must contain at least one number';
-      } else if (!/[^A-Za-z0-9]/.test(password)) {
-        newErrors.password = 'Password must contain at least one special character';
-      }
-    }
-
-    // Confirm password validation
-    if (!confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onFormSubmit = async (data: RegisterInput) => {
     setApiError('');
 
-    if (!validateForm()) {
+    // Additional async check: username must be available
+    if (usernameAvailable === false) {
+      setApiError(usernameMessage || 'Username is not available');
+      return;
+    }
+    if (usernameAvailable === null) {
+      setApiError('Please wait for username validation');
       return;
     }
 
-    setIsLoading(true);
-
     try {
-      const response = await authService.register(email, username, password);
+      const response = await authService.register(data.email, data.username, data.password);
       login(response.token, response.user);
       navigate('/dashboard');
     } catch (error: unknown) {
@@ -270,20 +231,18 @@ export const RegisterForm = () => {
       } else {
         setApiError('Registration failed. Please try again.');
       }
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const getPasswordStrength = (): string => {
-    if (!password) return '';
-    if (password.length < 8) return 'Weak';
+    if (!watchedPassword) return '';
+    if (watchedPassword.length < 8) return 'Weak';
     
     let strength = 0;
-    if (/[A-Z]/.test(password)) strength++;
-    if (/[a-z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    if (/[A-Z]/.test(watchedPassword)) strength++;
+    if (/[a-z]/.test(watchedPassword)) strength++;
+    if (/[0-9]/.test(watchedPassword)) strength++;
+    if (/[^A-Za-z0-9]/.test(watchedPassword)) strength++;
 
     if (strength === 4) return 'Strong';
     if (strength >= 2) return 'Medium';
@@ -298,21 +257,17 @@ export const RegisterForm = () => {
       
       {apiError && <ErrorAlert>{apiError}</ErrorAlert>}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onFormSubmit)}>
         <FormGroup>
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             type="email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setErrors({ ...errors, email: '' });
-            }}
+            {...register('email')}
             hasError={!!errors.email}
-            disabled={isLoading}
+            disabled={isSubmitting}
           />
-          {errors.email && <ErrorText>{errors.email}</ErrorText>}
+          {errors.email && <ErrorText>{errors.email.message}</ErrorText>}
         </FormGroup>
 
         <FormGroup>
@@ -321,27 +276,23 @@ export const RegisterForm = () => {
             <Input
               id="username"
               type="text"
-              value={username}
-              onChange={(e) => {
-                setUsername(e.target.value);
-                setErrors({ ...errors, username: '' });
-              }}
+              {...register('username')}
               hasError={!!errors.username}
-              disabled={isLoading}
+              disabled={isSubmitting}
               placeholder="Choose a unique username"
             />
-            {username && !usernameChecking && usernameAvailable !== null && (
+            {watchedUsername && !usernameChecking && usernameAvailable !== null && (
               <UsernameIcon available={usernameAvailable}>
                 {usernameAvailable ? <CheckIcon size={18} /> : <XCircleIcon size={18} />}
               </UsernameIcon>
             )}
           </UsernameInputContainer>
-          {username && usernameMessage && (
+          {watchedUsername && usernameMessage && (
             <UsernameHint available={usernameAvailable === true}>
               {usernameMessage}
             </UsernameHint>
           )}
-          {errors.username && <ErrorText>{errors.username}</ErrorText>}
+          {errors.username && <ErrorText>{errors.username.message}</ErrorText>}
         </FormGroup>
 
         <FormGroup>
@@ -349,22 +300,18 @@ export const RegisterForm = () => {
           <Input
             id="password"
             type="password"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              setErrors({ ...errors, password: '' });
-            }}
+            {...register('password')}
             hasError={!!errors.password}
-            disabled={isLoading}
+            disabled={isSubmitting}
           />
-          {password && (
+          {watchedPassword && (
             <PasswordStrengthText>
               Password strength: <StrengthIndicator strength={passwordStrength}>
                 {passwordStrength}
               </StrengthIndicator>
             </PasswordStrengthText>
           )}
-          {errors.password && <ErrorText>{errors.password}</ErrorText>}
+          {errors.password && <ErrorText>{errors.password.message}</ErrorText>}
         </FormGroup>
 
         <FormGroup>
@@ -372,19 +319,15 @@ export const RegisterForm = () => {
           <Input
             id="confirmPassword"
             type="password"
-            value={confirmPassword}
-            onChange={(e) => {
-              setConfirmPassword(e.target.value);
-              setErrors({ ...errors, confirmPassword: '' });
-            }}
+            {...register('confirmPassword')}
             hasError={!!errors.confirmPassword}
-            disabled={isLoading}
+            disabled={isSubmitting}
           />
-          {errors.confirmPassword && <ErrorText>{errors.confirmPassword}</ErrorText>}
+          {errors.confirmPassword && <ErrorText>{errors.confirmPassword.message}</ErrorText>}
         </FormGroup>
 
-        <SubmitButton type="submit" disabled={isLoading} isLoading={isLoading}>
-          {isLoading ? 'Creating account...' : 'Register'}
+        <SubmitButton type="submit" disabled={isSubmitting} isLoading={isSubmitting}>
+          {isSubmitting ? 'Creating account...' : 'Register'}
         </SubmitButton>
       </form>
 

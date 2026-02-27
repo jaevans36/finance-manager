@@ -12,6 +12,8 @@ import {
   Tab,
   TabPanel,
 } from '@finance-manager/ui';
+import { useEditTaskForm } from '../../hooks/forms';
+import type { UpdateTaskInput } from '@finance-manager/schema';
 import {
   X,
   XCircle,
@@ -463,15 +465,18 @@ export const TaskDetailModal = ({
   const [activeTab, setActiveTab] = useState<TabId>('subtasks');
   const [showOverflow, setShowOverflow] = useState(false);
 
-  // Edit-mode form state
-  const [title, setTitle] = useState(task.title);
-  const [description, setDescription] = useState(task.description || '');
-  const [priority, setPriority] = useState<Priority>(task.priority);
-  const [dueDate, setDueDate] = useState(
-    task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
-  );
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  // Edit-mode form state (React Hook Form)
+  const { register, handleSubmit: rhfHandleSubmit, watch, reset: resetForm, formState: { errors: formErrors, isSubmitting } } = useEditTaskForm({
+    title: task.title,
+    description: task.description || '',
+    priority: task.priority,
+    dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
+  });
+  const [apiError, setApiError] = useState('');
+  const watchedTitle = watch('title');
+
+  // Merge RHF ref with our titleInputRef
+  const { ref: titleRegRef, ...titleRegRest } = register('title');
 
   const overflowRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
@@ -563,42 +568,32 @@ export const TaskDetailModal = ({
 
   const handleStartEdit = () => {
     // Reset form state to current task values
-    setTitle(task.title);
-    setDescription(task.description || '');
-    setPriority(task.priority);
-    setDueDate(
-      task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
-    );
-    setError('');
+    resetForm({
+      title: task.title,
+      description: task.description || '',
+      priority: task.priority,
+      dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
+    });
+    setApiError('');
     setIsEditing(true);
   };
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    setError('');
+    setApiError('');
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (!title.trim()) {
-      setError('Title is required');
-      return;
-    }
-
-    setIsSubmitting(true);
+  const onSave = async (data: UpdateTaskInput) => {
+    setApiError('');
     try {
       await onSubmit(task.id, {
-        title: title.trim(),
-        description: description.trim() || undefined,
-        priority,
-        dueDate: dueDate || undefined,
+        title: data.title?.trim() || task.title,
+        description: data.description?.trim() || undefined,
+        priority: data.priority as Priority || undefined,
+        dueDate: data.dueDate || undefined,
       });
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to update task');
-    } finally {
-      setIsSubmitting(false);
+      setApiError(err instanceof Error ? err.message : 'Failed to update task');
     }
   };
 
@@ -640,7 +635,7 @@ export const TaskDetailModal = ({
         {/* Wrap in form only in edit mode so Enter submits */}
         {isEditing ? (
           <form
-            onSubmit={handleSave}
+            onSubmit={rhfHandleSubmit(onSave)}
             aria-label="Edit task form"
             style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flex: 1, minHeight: 0 }}
           >
@@ -787,13 +782,13 @@ export const TaskDetailModal = ({
     return (
       <>
         {/* Error alert (edit mode) */}
-        {error && (
+        {apiError && (
           <Alert
             variant="error"
             style={{ marginBottom: spacing.lg, marginTop: spacing.lg }}
           >
             <XCircle size={16} />
-            <span>{error}</span>
+            <span>{apiError}</span>
           </Alert>
         )}
 
@@ -802,19 +797,22 @@ export const TaskDetailModal = ({
           {isEditing ? (
             <>
               <TitleInput
-                ref={titleInputRef}
+                ref={(el) => {
+                  titleRegRef(el);
+                  (titleInputRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
+                }}
                 id="task-title"
                 type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                {...titleRegRest}
                 placeholder="Task title"
                 maxLength={200}
                 disabled={isSubmitting}
                 aria-required="true"
-                aria-invalid={!title.trim()}
+                aria-invalid={!!formErrors.title}
                 aria-label="Task title"
               />
-              <CharCount>{title.length}/200</CharCount>
+              {formErrors.title && <CharCount style={{ color: 'inherit' }}>{formErrors.title.message}</CharCount>}
+              <CharCount>{(watchedTitle ?? '').length}/200</CharCount>
             </>
           ) : (
             <TitleView id="task-detail-title">{task.title}</TitleView>
@@ -856,8 +854,7 @@ export const TaskDetailModal = ({
               <MetaValue aria-labelledby="meta-priority-label">
                 <MetaSelect
                   id="priority"
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value as Priority)}
+                  {...register('priority')}
                   disabled={isSubmitting}
                   aria-label="Task priority"
                 >
@@ -880,8 +877,7 @@ export const TaskDetailModal = ({
               <MetaDateInput
                 id="dueDate"
                 type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
+                {...register('dueDate')}
                 min={new Date().toISOString().split('T')[0]}
                 disabled={isSubmitting}
                 aria-label="Due date"
@@ -904,8 +900,7 @@ export const TaskDetailModal = ({
         {isEditing ? (
           <DescriptionTextArea
             id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            {...register('description')}
             placeholder="Add a description…"
             maxLength={2000}
             rows={3}

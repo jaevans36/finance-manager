@@ -202,9 +202,10 @@ describe('CalendarPage', () => {
       renderCalendarPage();
       
       await waitFor(() => {
-        const groupSelect = screen.getByLabelText('Group:') as HTMLSelectElement;
-        fireEvent.change(groupSelect, { target: { value: 'group1' } });
+        expect(screen.getByLabelText('Group:')).toBeInTheDocument();
       });
+
+      fireEvent.change(screen.getByLabelText('Group:') as HTMLSelectElement, { target: { value: 'group1' } });
 
       await waitFor(() => {
         const tileContent = screen.getByTestId('tile-content-mid-month');

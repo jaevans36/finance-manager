@@ -14,6 +14,8 @@ import {
 import { XCircle } from 'lucide-react';
 import type { Event, CreateEventRequest } from '../../types/event';
 import type { TaskGroup } from '../../types/taskGroup';
+import { useCreateEventForm } from '../../hooks/forms';
+import type { CreateEventInput } from '@finance-manager/schema';
 
 const Subheading = styled.h2`
   color: ${({ theme }) => theme.colors.text};
@@ -45,96 +47,65 @@ interface EventFormProps {
 export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormProps) => {
   const isEditing = !!event;
   
-  const [title, setTitle] = useState(event?.title || '');
-  const [description, setDescription] = useState(event?.description || '');
-  const [startDate, setStartDate] = useState(
-    event?.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : ''
-  );
-  const [endDate, setEndDate] = useState(
-    event?.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : ''
-  );
-  const [isAllDay, setIsAllDay] = useState(event?.isAllDay || false);
-  const [location, setLocation] = useState(event?.location || '');
-  const [reminderMinutes, setReminderMinutes] = useState<string>(
-    event?.reminderMinutes?.toString() || ''
-  );
-  const [groupId, setGroupId] = useState<string>(event?.groupId || '');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors, isSubmitting } } = useCreateEventForm({
+    title: event?.title || '',
+    description: event?.description || '',
+    startDate: event?.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : '',
+    endDate: event?.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : '',
+    isAllDay: event?.isAllDay || false,
+    location: event?.location || '',
+    reminderMinutes: event?.reminderMinutes ?? undefined,
+    groupId: event?.groupId || '',
+  });
+
+  const [apiError, setApiError] = useState('');
+
+  const watchedTitle = watch('title');
+  const watchedDescription = watch('description');
+  const watchedLocation = watch('location');
+  const watchedStartDate = watch('startDate');
+  const watchedEndDate = watch('endDate');
 
   // Auto-set end date to 1 hour after start if empty
   useEffect(() => {
-    if (startDate && !endDate) {
-      const start = new Date(startDate);
+    if (watchedStartDate && !watchedEndDate) {
+      const start = new Date(watchedStartDate);
       const end = new Date(start.getTime() + 60 * 60 * 1000); // +1 hour
-      setEndDate(end.toISOString().slice(0, 16));
+      setValue('endDate', end.toISOString().slice(0, 16));
     }
-  }, [startDate, endDate]);
+  }, [watchedStartDate, watchedEndDate, setValue]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  const onFormSubmit = async (data: CreateEventInput) => {
+    setApiError('');
 
-    if (!title.trim()) {
-      setError('Title is required');
-      return;
-    }
-
-    if (!startDate) {
-      setError('Start date is required');
-      return;
-    }
-
-    if (!endDate) {
-      setError('End date is required');
-      return;
-    }
-
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (end < start) {
-      setError('End date must be after start date');
-      return;
-    }
-
-    setIsSubmitting(true);
+    const start = new Date(data.startDate);
+    const end = new Date(data.endDate);
 
     try {
       await onSubmit({
-        title: title.trim(),
-        description: description.trim() || undefined,
+        title: data.title.trim(),
+        description: data.description?.trim() || undefined,
         startDate: start.toISOString(),
         endDate: end.toISOString(),
-        isAllDay,
-        location: location.trim() || undefined,
-        reminderMinutes: reminderMinutes ? parseInt(reminderMinutes, 10) : undefined,
-        groupId: groupId || undefined,
+        isAllDay: data.isAllDay,
+        location: data.location?.trim() || undefined,
+        reminderMinutes: data.reminderMinutes ?? undefined,
+        groupId: data.groupId || undefined,
       });
       
       if (!isEditing) {
-        // Reset form for create mode
-        setTitle('');
-        setDescription('');
-        setStartDate('');
-        setEndDate('');
-        setIsAllDay(false);
-        setLocation('');
-        setReminderMinutes('');
-        setGroupId('');
+        reset();
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Event operation error:', err);
       if (err instanceof Error) {
-        setError(err.message);
+        setApiError(err.message);
       } else if (typeof err === 'object' && err !== null && 'response' in err) {
         const axiosError = err as { response?: { data?: { error?: { message?: string } } } };
-        setError(axiosError.response?.data?.error?.message || `Failed to ${isEditing ? 'update' : 'create'} event`);
+        setApiError(axiosError.response?.data?.error?.message || `Failed to ${isEditing ? 'update' : 'create'} event`);
       } else {
-        setError(`Failed to ${isEditing ? 'update' : 'create'} event`);
+        setApiError(`Failed to ${isEditing ? 'update' : 'create'} event`);
       }
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -147,14 +118,14 @@ export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormP
   ];
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginBottom: '30px' }} aria-label={`${isEditing ? 'Edit' : 'Create'} event form`}>
+    <form onSubmit={handleSubmit(onFormSubmit)} style={{ marginBottom: '30px' }} aria-label={`${isEditing ? 'Edit' : 'Create'} event form`}>
       <Card style={{ padding: '20px' }}>
         <Subheading>{isEditing ? 'Edit Event' : 'Create New Event'}</Subheading>
 
-        {error && (
+        {apiError && (
           <Alert variant="error" style={{ marginBottom: '15px' }}>
             <XCircle size={16} />
-            <span>{error}</span>
+            <span>{apiError}</span>
           </Alert>
         )}
 
@@ -163,29 +134,28 @@ export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormP
           <Input
             id="title"
             aria-required="true"
-            aria-invalid={!!error && !title.trim()}
+            aria-invalid={!!errors.title}
             type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            {...register('title')}
             placeholder="Enter event title"
             maxLength={200}
             disabled={isSubmitting}
           />
-          <ErrorText>{title.length}/200</ErrorText>
+          {errors.title && <ErrorText>{errors.title.message}</ErrorText>}
+          <ErrorText>{(watchedTitle ?? '').length}/200</ErrorText>
         </FormGroup>
 
         <FormGroup>
           <Label htmlFor="description">Description</Label>
           <TextArea
             id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            {...register('description')}
             placeholder="Enter event description"
             maxLength={5000}
             rows={3}
             disabled={isSubmitting}
           />
-          <ErrorText>{description.length}/5000</ErrorText>
+          <ErrorText>{(watchedDescription ?? '').length}/5000</ErrorText>
         </FormGroup>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
@@ -195,10 +165,10 @@ export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormP
               id="startDate"
               aria-required="true"
               type="datetime-local"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              {...register('startDate')}
               disabled={isSubmitting}
             />
+            {errors.startDate && <ErrorText>{errors.startDate.message}</ErrorText>}
           </FormGroup>
 
           <FormGroup>
@@ -207,11 +177,11 @@ export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormP
               id="endDate"
               aria-required="true"
               type="datetime-local"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              min={startDate}
+              {...register('endDate')}
+              min={watchedStartDate}
               disabled={isSubmitting}
             />
+            {errors.endDate && <ErrorText>{errors.endDate.message}</ErrorText>}
           </FormGroup>
         </div>
 
@@ -219,8 +189,7 @@ export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormP
           <CheckboxLabel>
             <input
               type="checkbox"
-              checked={isAllDay}
-              onChange={(e) => setIsAllDay(e.target.checked)}
+              {...register('isAllDay')}
               disabled={isSubmitting}
             />
             All-day event
@@ -232,13 +201,12 @@ export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormP
           <Input
             id="location"
             type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            {...register('location')}
             placeholder="Add location (optional)"
             maxLength={500}
             disabled={isSubmitting}
           />
-          <ErrorText>{location.length}/500</ErrorText>
+          <ErrorText>{(watchedLocation ?? '').length}/500</ErrorText>
         </FormGroup>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
@@ -247,8 +215,7 @@ export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormP
             <Input
               as="select"
               id="reminder"
-              value={reminderMinutes}
-              onChange={(e) => setReminderMinutes(e.target.value)}
+              {...register('reminderMinutes')}
               disabled={isSubmitting}
             >
               {reminderOptions.map((option) => (
@@ -264,8 +231,7 @@ export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormP
             <Input
               as="select"
               id="group"
-              value={groupId}
-              onChange={(e) => setGroupId(e.target.value)}
+              {...register('groupId')}
               disabled={isSubmitting}
             >
               <option value="">No group</option>

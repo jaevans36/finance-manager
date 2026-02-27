@@ -4,6 +4,8 @@ import styled from 'styled-components';
 import { focusRing } from '@finance-manager/ui/styles';
 import { authService } from '../../services/authService';
 import { getErrorMessage } from '../../utils/errorHelpers';
+import { useResetPasswordForm } from '../../hooks/forms';
+import type { ResetPasswordInput } from '@finance-manager/schema';
 import {
   CenteredContainer,
   FormCard,
@@ -11,6 +13,7 @@ import {
   Text,
   FormGroup,
   Input,
+  ErrorText,
   Button,
   Alert,
   LoadingSpinner,
@@ -44,18 +47,21 @@ const LinkContainer = styled.div`
 const ResetPasswordPage = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [apiError, setApiError] = useState('');
   const [isVerifying, setIsVerifying] = useState(true);
   const [tokenValid, setTokenValid] = useState(false);
   const [email, setEmail] = useState('');
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useResetPasswordForm();
+
   useEffect(() => {
     const verifyToken = async () => {
       if (!token) {
-        setError('Invalid reset link');
+        setApiError('Invalid reset link');
         setIsVerifying(false);
         return;
       }
@@ -67,10 +73,10 @@ const ResetPasswordPage = () => {
           setEmail(result.email);
         }
         if (!result.valid) {
-          setError('This reset link is invalid or has expired');
+          setApiError('This reset link is invalid or has expired');
         }
       } catch (err: unknown) {
-        setError('Failed to verify reset link');
+        setApiError('Failed to verify reset link');
         setTokenValid(false);
       } finally {
         setIsVerifying(false);
@@ -80,31 +86,16 @@ const ResetPasswordPage = () => {
     verifyToken();
   }, [token]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
-      return;
-    }
-
-    setIsSubmitting(true);
+  const onSubmit = async (data: ResetPasswordInput) => {
+    setApiError('');
 
     try {
-      await authService.resetPassword(token!, password);
+      await authService.resetPassword(token!, data.password);
       navigate('/login', { 
         state: { message: 'Password reset successfully. Please log in with your new password.' } 
       });
     } catch (err: unknown) {
-      setError(getErrorMessage(err, 'Failed to reset password'));
-    } finally {
-      setIsSubmitting(false);
+      setApiError(getErrorMessage(err, 'Failed to reset password'));
     }
   };
 
@@ -122,7 +113,7 @@ const ResetPasswordPage = () => {
       <CenteredContainer>
         <FormCard>
           <Heading2 style={{ textAlign: 'center' }}>Invalid Reset Link</Heading2>
-          <Alert variant="error">{error}</Alert>
+          <Alert variant="error">{apiError}</Alert>
           <LinkContainer>
             <StyledLink to="/forgot-password">Request a new reset link</StyledLink>
             <StyledLink to="/login">Return to login</StyledLink>
@@ -141,35 +132,31 @@ const ResetPasswordPage = () => {
             for <strong>{email}</strong>
           </CenteredText>
         )}
-        <form onSubmit={handleSubmit}>
-          {error && <Alert variant="error">{error}</Alert>}
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {apiError && <Alert variant="error">{apiError}</Alert>}
           <FormGroup>
             <Input
               id="password"
-              name="password"
               type="password"
               autoComplete="new-password"
-              required
               placeholder="New password (min. 8 characters)"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              {...register('password')}
+              hasError={!!errors.password}
               disabled={isSubmitting}
-              minLength={8}
             />
+            {errors.password && <ErrorText>{errors.password.message}</ErrorText>}
           </FormGroup>
           <FormGroup>
             <Input
               id="confirm-password"
-              name="confirm-password"
               type="password"
               autoComplete="new-password"
-              required
               placeholder="Confirm new password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              {...register('confirmPassword')}
+              hasError={!!errors.confirmPassword}
               disabled={isSubmitting}
-              minLength={8}
             />
+            {errors.confirmPassword && <ErrorText>{errors.confirmPassword.message}</ErrorText>}
           </FormGroup>
           <Button type="submit" disabled={isSubmitting} fullWidth>
             {isSubmitting ? 'Resetting password...' : 'Reset password'}

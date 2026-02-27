@@ -4,6 +4,8 @@ import { X, ListTodo, Calendar } from 'lucide-react';
 import { borderRadius, shadows, mediaQueries, focusRing } from '../../styles/layout';
 import { Button, Input, FormGroup, Label, Alert } from '@finance-manager/ui';
 import type { CreateEventRequest } from '../../types/event';
+import { useCreateTaskForm } from '../../hooks/forms';
+import type { CreateTaskInput } from '@finance-manager/schema';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -117,44 +119,38 @@ interface QuickAddTaskModalProps {
 
 export const QuickAddTaskModal = ({ date, onSubmitTask, onSubmitEvent, onCancel }: QuickAddTaskModalProps) => {
   const [type, setType] = useState<'task' | 'event'>('task');
-  const [title, setTitle] = useState('');
-  const [priority, setPriority] = useState<'Low' | 'Medium' | 'High' | 'Critical'>('Medium');
-  const [dueDate, setDueDate] = useState(date.toISOString().split('T')[0]);
+  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useCreateTaskForm({
+    dueDate: date.toISOString().split('T')[0],
+  });
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('10:00');
   const [isAllDay, setIsAllDay] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [apiError, setApiError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  const watchedDueDate = watch('dueDate');
 
-    if (!title.trim()) {
-      setError('Title is required');
-      return;
-    }
-
-    setIsSubmitting(true);
+  const onFormSubmit = async (data: CreateTaskInput) => {
+    setApiError('');
 
     try {
       if (type === 'task') {
         await onSubmitTask({
-          title: title.trim(),
-          priority,
-          dueDate,
+          title: data.title.trim(),
+          priority: data.priority || 'Medium',
+          dueDate: data.dueDate || date.toISOString().split('T')[0],
         });
       } else {
         // Event submission
+        const eventDate = data.dueDate || date.toISOString().split('T')[0];
         const startDate = isAllDay 
-          ? `${dueDate}T00:00:00Z`
-          : `${dueDate}T${startTime}:00Z`;
+          ? `${eventDate}T00:00:00Z`
+          : `${eventDate}T${startTime}:00Z`;
         const endDate = isAllDay
-          ? `${dueDate}T23:59:59Z`
-          : `${dueDate}T${endTime}:00Z`;
+          ? `${eventDate}T23:59:59Z`
+          : `${eventDate}T${endTime}:00Z`;
 
         await onSubmitEvent({
-          title: title.trim(),
+          title: data.title.trim(),
           startDate,
           endDate,
           isAllDay,
@@ -162,8 +158,7 @@ export const QuickAddTaskModal = ({ date, onSubmitTask, onSubmitEvent, onCancel 
       }
       onCancel();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : `Failed to create ${type}`);
-      setIsSubmitting(false);
+      setApiError(err instanceof Error ? err.message : `Failed to create ${type}`);
     }
   };
 
@@ -190,25 +185,25 @@ export const QuickAddTaskModal = ({ date, onSubmitTask, onSubmitEvent, onCancel 
           </TypeButton>
         </TypeSelector>
 
-        {error && (
+        {apiError && (
           <Alert variant="error" style={{ marginBottom: '16px' }}>
-            {error}
+            {apiError}
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onFormSubmit)}>
           <FormGroup>
             <Label htmlFor="item-title">{type === 'task' ? 'Task' : 'Event'} Title *</Label>
             <Input
               id="item-title"
               type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              {...register('title')}
               placeholder={type === 'task' ? 'What needs to be done?' : 'Event name?'}
               maxLength={200}
               disabled={isSubmitting}
               autoFocus
             />
+            {errors.title && <span style={{ color: 'red', fontSize: '12px' }}>{errors.title.message}</span>}
           </FormGroup>
 
           {type === 'task' ? (
@@ -218,8 +213,7 @@ export const QuickAddTaskModal = ({ date, onSubmitTask, onSubmitEvent, onCancel 
                 <Input
                   as="select"
                   id="task-priority"
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value as 'Low' | 'Medium' | 'High' | 'Critical')}
+                  {...register('priority')}
                   disabled={isSubmitting}
                 >
                   <option value="Low">Low</option>
@@ -234,8 +228,7 @@ export const QuickAddTaskModal = ({ date, onSubmitTask, onSubmitEvent, onCancel 
                 <Input
                   id="task-due-date"
                   type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
+                  {...register('dueDate')}
                   disabled={isSubmitting}
                 />
               </FormGroup>
@@ -247,8 +240,7 @@ export const QuickAddTaskModal = ({ date, onSubmitTask, onSubmitEvent, onCancel 
                 <Input
                   id="event-date"
                   type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
+                  {...register('dueDate')}
                   disabled={isSubmitting}
                 />
               </FormGroup>
