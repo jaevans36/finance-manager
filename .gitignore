@@ -62,10 +62,6 @@ tmp-test-output.txt
 # Vite cache
 .vite/
 
-# Agent skills and lock files
-.agents/
-skills-lock.json
-
 # .NET build artifacts
 bin/
 obj/
