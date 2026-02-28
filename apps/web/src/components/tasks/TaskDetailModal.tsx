@@ -498,7 +498,7 @@ export const TaskDetailModal = ({
             {onStatusChange ? (
               <StatusSelector
                 value={task.status}
-                onChange={(newStatus) => onStatusChange(task.id, newStatus)}
+                onChange={(newStatus, blockedReason) => onStatusChange(task.id, newStatus, blockedReason)}
                 disabled={isSubmitting}
               />
             ) : (
