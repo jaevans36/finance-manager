@@ -97,7 +97,10 @@ export const TaskItem = memo(({
           {task.energyLevel && <EnergyBadge energy={task.energyLevel} size="sm" showLabel />}
           {isOverdue && <Badge variant="destructive">OVERDUE</Badge>}
           {task.hasSubtasks && (
-            <Badge variant="secondary" className="px-1.5 py-0.5 text-[10px]">
+            <Badge
+              variant={task.completedSubtaskCount === task.subtaskCount ? 'success' : 'secondary'}
+              className="px-1.5 py-0.5 text-[10px]"
+            >
               {task.completedSubtaskCount}/{task.subtaskCount} ✓
             </Badge>
           )}
