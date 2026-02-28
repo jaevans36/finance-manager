@@ -511,7 +511,7 @@ export const TaskDetailModal = ({
             <>
               <span />
               <span className="text-sm font-medium text-muted-foreground">Reason</span>
-              <p className="m-0 text-sm text-red-600 dark:text-red-400">{task.blockedReason}</p>
+              <p className="m-0 text-sm text-destructive">{task.blockedReason}</p>
             </>
           )}
 

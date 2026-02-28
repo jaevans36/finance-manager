@@ -3,10 +3,10 @@ import { Circle, Loader2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import type { TaskStatus } from '@/services/taskService';
 
 const statusOptions: { value: TaskStatus; label: string; icon: typeof Circle; colour: string }[] = [
-  { value: 'NotStarted', label: 'Not Started', icon: Circle, colour: 'text-slate-500' },
-  { value: 'InProgress', label: 'In Progress', icon: Loader2, colour: 'text-blue-500' },
-  { value: 'Blocked', label: 'Blocked', icon: AlertTriangle, colour: 'text-red-500' },
-  { value: 'Completed', label: 'Completed', icon: CheckCircle2, colour: 'text-green-500' },
+  { value: 'NotStarted', label: 'Not Started', icon: Circle, colour: 'text-muted-foreground' },
+  { value: 'InProgress', label: 'In Progress', icon: Loader2, colour: 'text-brand' },
+  { value: 'Blocked', label: 'Blocked', icon: AlertTriangle, colour: 'text-destructive' },
+  { value: 'Completed', label: 'Completed', icon: CheckCircle2, colour: 'text-success' },
 ];
 
 interface StatusSelectorProps {

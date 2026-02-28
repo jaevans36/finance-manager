@@ -199,7 +199,7 @@ const EventsPage = () => {
       )}
 
       {!loading && events.length === 0 && !showForm && (
-        <div className="px-5 py-[60px] text-center text-muted-foreground">
+        <div className="px-5 py-16 text-center text-muted-foreground">
           <Calendar size={64} strokeWidth={1.5} className="mx-auto mb-4 opacity-50" />
           <h3 className="m-0 mb-2 text-lg font-semibold text-foreground">No events yet</h3>
           <p className="m-0 mb-6 text-sm">

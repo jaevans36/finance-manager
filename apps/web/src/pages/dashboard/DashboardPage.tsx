@@ -175,7 +175,7 @@ const DashboardPage = () => {
           <div className="flex items-center justify-between">
             <StatIcon color="primary"><CheckCircle size={24} /></StatIcon>
           </div>
-          <div className="text-[32px] font-bold text-foreground">{stats.completedTasks}/{stats.totalTasks}</div>
+          <div className="font-display text-display-lg text-foreground">{stats.completedTasks}/{stats.totalTasks}</div>
           <div className="text-sm font-medium text-muted-foreground">Tasks Completed</div>
         </button>
 
@@ -186,7 +186,7 @@ const DashboardPage = () => {
           <div className="flex items-center justify-between">
             <StatIcon color="success"><Calendar size={24} /></StatIcon>
           </div>
-          <div className="text-[32px] font-bold text-foreground">{stats.upcomingEvents}</div>
+          <div className="font-display text-display-lg text-foreground">{stats.upcomingEvents}</div>
           <div className="text-sm font-medium text-muted-foreground">Upcoming Events</div>
         </button>
 
@@ -197,7 +197,7 @@ const DashboardPage = () => {
           <div className="flex items-center justify-between">
             <StatIcon color="warning"><Clock size={24} /></StatIcon>
           </div>
-          <div className="text-[32px] font-bold text-foreground">{stats.dueTodayCount}</div>
+          <div className="font-display text-display-lg text-foreground">{stats.dueTodayCount}</div>
           <div className="text-sm font-medium text-muted-foreground">Due Today</div>
         </button>
 
@@ -208,48 +208,48 @@ const DashboardPage = () => {
           <div className="flex items-center justify-between">
             <StatIcon color="error"><AlertCircle size={24} /></StatIcon>
           </div>
-          <div className="text-[32px] font-bold text-foreground">{stats.overdueCount}</div>
+          <div className="font-display text-display-lg text-foreground">{stats.overdueCount}</div>
           <div className="text-sm font-medium text-muted-foreground">Overdue Tasks</div>
         </button>
       </div>
 
       {/* Quick Actions */}
-      <h2 className="m-0 mb-4 text-xl font-semibold text-foreground">Quick Actions</h2>
+      <h2 className="m-0 mb-4 font-display text-display-sm text-foreground">Quick Actions</h2>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-8">
         <button
           onClick={() => navigate('/tasks')}
           className="flex items-center gap-3 rounded-lg border border-border bg-secondary p-5 text-left transition-all hover:translate-x-1 hover:border-primary hover:bg-primary/15"
         >
           <ListTodo size={20} />
-          <span className="text-[15px] font-medium text-foreground">View All Tasks</span>
+          <span className="text-body-lg font-medium text-foreground">View All Tasks</span>
         </button>
         <button
           onClick={() => navigate('/calendar')}
           className="flex items-center gap-3 rounded-lg border border-border bg-secondary p-5 text-left transition-all hover:translate-x-1 hover:border-primary hover:bg-primary/15"
         >
           <Calendar size={20} />
-          <span className="text-[15px] font-medium text-foreground">Open Calendar</span>
+          <span className="text-body-lg font-medium text-foreground">Open Calendar</span>
         </button>
         <button
           onClick={() => navigate('/weekly-progress')}
           className="flex items-center gap-3 rounded-lg border border-border bg-secondary p-5 text-left transition-all hover:translate-x-1 hover:border-primary hover:bg-primary/15"
         >
           <TrendingUp size={20} />
-          <span className="text-[15px] font-medium text-foreground">Weekly Progress</span>
+          <span className="text-body-lg font-medium text-foreground">Weekly Progress</span>
         </button>
         <button
           onClick={() => navigate('/tasks')}
           className="flex items-center gap-3 rounded-lg border border-border bg-secondary p-5 text-left transition-all hover:translate-x-1 hover:border-primary hover:bg-primary/15"
         >
           <FolderKanban size={20} />
-          <span className="text-[15px] font-medium text-foreground">Manage Groups</span>
+          <span className="text-body-lg font-medium text-foreground">Manage Groups</span>
         </button>
       </div>
 
       {/* Upcoming Events */}
       {upcomingEvents.length > 0 && (
         <div className="mb-8 rounded-lg border border-border bg-secondary p-6">
-          <h2 className="m-0 mb-4 text-xl font-semibold text-foreground">Upcoming Events</h2>
+          <h2 className="m-0 mb-4 font-display text-display-sm text-foreground">Upcoming Events</h2>
           {upcomingEvents.map(event => (
             <div
               key={event.id}
@@ -270,7 +270,7 @@ const DashboardPage = () => {
       {/* Priority Tasks */}
       {recentTasks.length > 0 && (
         <div className="mb-8 rounded-lg border border-border bg-secondary p-6">
-          <h2 className="m-0 mb-4 text-xl font-semibold text-foreground">Priority Tasks</h2>
+          <h2 className="m-0 mb-4 font-display text-display-sm text-foreground">Priority Tasks</h2>
           {recentTasks.map(task => (
             <div
               key={task.id}

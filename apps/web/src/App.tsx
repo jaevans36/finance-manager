@@ -59,8 +59,12 @@ function App() {
           <ToastProvider>
             <AuthProvider>
               <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <a href="#main-content" className="skip-to-content">
+                Skip to content
+              </a>
               <AppHeader />
               {showWhatsNew && <WhatsNewModal onClose={handleCloseWhatsNew} />}
+              <main id="main-content">
               <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
                 <Routes>
                 <Route path="/login" element={<LoginPage />} />
@@ -176,6 +180,7 @@ function App() {
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
               </Suspense>
+              </main>
             </BrowserRouter>
           </AuthProvider>
         </ToastProvider>

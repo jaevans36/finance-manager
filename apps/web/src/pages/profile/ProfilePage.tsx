@@ -123,16 +123,16 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-[10px] md:w-[95%]">
+    <div className="mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-2.5 md:w-[95%]">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-foreground">Profile</h1>
+        <h1 className="font-display text-display tracking-tight text-foreground">Profile</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">Manage your account information</p>
       </div>
 
       <div className="mb-5 rounded-lg border border-border bg-card p-8 md:p-5">
         {/* Username Section */}
         <div className="mb-6 last:mb-0">
-          <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground md:text-[13px]">
+          <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground md:text-body-sm">
             <UserIcon size={20} />
             Username {isTemporaryUsername && <span className="text-warning">(Temporary)</span>}
           </div>
@@ -144,7 +144,7 @@ const ProfilePage = () => {
                   {...register('username')}
                   placeholder="Enter new username"
                   disabled={saving}
-                  className="w-[250px] md:w-full"
+                  className="w-64 md:w-full"
                 />
                 <Button
                   variant="default"
@@ -179,7 +179,7 @@ const ProfilePage = () => {
               <span className="text-base font-medium text-foreground">@{user.username}</span>
               <button
                 onClick={handleEditUsername}
-                className="flex items-center gap-1.5 rounded border border-border bg-card px-3 py-1.5 text-[13px] text-muted-foreground transition-all hover:border-primary hover:bg-accent hover:text-primary [&_svg]:h-3.5 [&_svg]:w-3.5"
+                className="flex items-center gap-1.5 rounded border border-border bg-card px-3 py-1.5 text-body-sm text-muted-foreground transition-all hover:border-primary hover:bg-accent hover:text-primary [&_svg]:h-3.5 [&_svg]:w-3.5"
               >
                 <EditIcon />
                 {isTemporaryUsername ? 'Set Username' : 'Edit'}
@@ -190,32 +190,32 @@ const ProfilePage = () => {
 
         {/* Email Section */}
         <div className="mb-6 last:mb-0">
-          <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground md:text-[13px]">
+          <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground md:text-body-sm">
             <MailIcon size={20} />
             Email Address
           </div>
-          <div className="pl-7 text-base font-medium text-foreground md:pl-0 md:text-[15px]">{user.email}</div>
+          <div className="pl-7 text-base font-medium text-foreground md:pl-0 md:text-body-lg">{user.email}</div>
         </div>
 
         {/* Created At */}
         {user.createdAt && (
           <div className="mb-6 last:mb-0">
-            <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground md:text-[13px]">
+            <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground md:text-body-sm">
               <CalendarIcon size={20} />
               Account Created
             </div>
-            <div className="pl-7 text-base font-medium text-foreground md:pl-0 md:text-[15px]">{formatDate(user.createdAt)}</div>
+            <div className="pl-7 text-base font-medium text-foreground md:pl-0 md:text-body-lg">{formatDate(user.createdAt)}</div>
           </div>
         )}
 
         {/* Last Login */}
         {user.lastLoginAt && (
           <div className="mb-6 last:mb-0">
-            <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground md:text-[13px]">
+            <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground md:text-body-sm">
               <CalendarIcon size={20} />
               Last Login
             </div>
-            <div className="pl-7 text-base font-medium text-foreground md:pl-0 md:text-[15px]">{formatDate(user.lastLoginAt)}</div>
+            <div className="pl-7 text-base font-medium text-foreground md:pl-0 md:text-body-lg">{formatDate(user.lastLoginAt)}</div>
           </div>
         )}
 

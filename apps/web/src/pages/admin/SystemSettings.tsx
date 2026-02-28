@@ -71,7 +71,7 @@ const SystemSettings = () => {
             </div>
             <div className="flex-1">
               <div className="mb-1 text-sm font-semibold text-warning">Read-Only Configuration</div>
-              <div className="text-[13px] leading-relaxed text-foreground">
+              <div className="text-body-sm leading-relaxed text-foreground">
                 These settings are currently read-only and loaded from configuration files. 
                 To modify them, update the appsettings.json or appsettings.Development.json files 
                 and restart the API. Future updates will allow dynamic configuration changes.
@@ -90,8 +90,8 @@ const SystemSettings = () => {
               </div>
               <div className="flex items-center justify-between py-4 first:pt-0 last:border-b-0 last:pb-0">
                 <div className="flex-1">
-                  <div className="mb-1 text-[15px] font-medium text-foreground">Current Environment</div>
-                  <div className="text-[13px] text-muted-foreground">
+                  <div className="mb-1 text-body-lg font-medium text-foreground">Current Environment</div>
+                  <div className="text-body-sm text-muted-foreground">
                     The runtime environment the API is currently running in
                   </div>
                 </div>

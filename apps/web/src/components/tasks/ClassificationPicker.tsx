@@ -8,14 +8,14 @@ const levels: Array<{ value: 'Low' | 'Medium' | 'High'; label: string }> = [
 ];
 
 const urgencyColours: Record<string, string> = {
-  Low: 'bg-green-100 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700',
-  Medium: 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700',
-  High: 'bg-red-100 text-red-700 border-red-300 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700',
+  Low: 'bg-success/10 text-success-foreground border-success/30 dark:bg-success/10 dark:text-success',
+  Medium: 'bg-warning/10 text-warning-foreground border-warning/30 dark:bg-warning/10 dark:text-warning',
+  High: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/10 dark:text-destructive',
 };
 
 const importanceColours: Record<string, string> = {
-  Low: 'bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600',
-  Medium: 'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700',
+  Low: 'bg-muted text-muted-foreground border-border',
+  Medium: 'bg-brand-muted text-brand-muted-foreground border-brand/30',
   High: 'bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700',
 };
 

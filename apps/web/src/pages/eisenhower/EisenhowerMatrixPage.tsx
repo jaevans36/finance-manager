@@ -44,32 +44,32 @@ const quadrantConfig: Record<string, {
     title: 'Do First',
     subtitle: 'Urgent & Important',
     icon: AlertTriangle,
-    borderColour: 'border-red-300 dark:border-red-700',
-    headerBg: 'bg-red-50 dark:bg-red-950/30',
+    borderColour: 'border-destructive/30 dark:border-destructive/40',
+    headerBg: 'bg-destructive/5 dark:bg-destructive/10',
     key: 'q1DoFirst',
   },
   Q2: {
     title: 'Schedule',
     subtitle: 'Not Urgent & Important',
     icon: Clock,
-    borderColour: 'border-blue-300 dark:border-blue-700',
-    headerBg: 'bg-blue-50 dark:bg-blue-950/30',
+    borderColour: 'border-brand/30 dark:border-brand/40',
+    headerBg: 'bg-brand/5 dark:bg-brand/10',
     key: 'q2Schedule',
   },
   Q3: {
     title: 'Delegate',
     subtitle: 'Urgent & Not Important',
     icon: Users,
-    borderColour: 'border-amber-300 dark:border-amber-700',
-    headerBg: 'bg-amber-50 dark:bg-amber-950/30',
+    borderColour: 'border-warning/30 dark:border-warning/40',
+    headerBg: 'bg-warning/5 dark:bg-warning/10',
     key: 'q3Delegate',
   },
   Q4: {
     title: 'Eliminate',
     subtitle: 'Not Urgent & Not Important',
     icon: Trash2,
-    borderColour: 'border-slate-300 dark:border-slate-600',
-    headerBg: 'bg-slate-50 dark:bg-slate-900/50',
+    borderColour: 'border-border',
+    headerBg: 'bg-muted',
     key: 'q4Eliminate',
   },
 };
@@ -84,10 +84,10 @@ interface MatrixTaskCardProps {
 }
 
 const priorityColour: Record<string, string> = {
-  Critical: 'text-red-600 dark:text-red-400',
-  High: 'text-orange-600 dark:text-orange-400',
-  Medium: 'text-blue-600 dark:text-blue-400',
-  Low: 'text-slate-500 dark:text-slate-400',
+  Critical: 'text-destructive',
+  High: 'text-warning',
+  Medium: 'text-brand',
+  Low: 'text-muted-foreground',
 };
 
 const MatrixTaskCard = ({ task, onClick }: MatrixTaskCardProps) => {
@@ -111,7 +111,7 @@ const MatrixTaskCard = ({ task, onClick }: MatrixTaskCardProps) => {
           {task.priority}
         </span>
         {task.dueDate && (
-          <span className={cn('text-[10px]', isOverdue ? 'font-semibold text-red-600 dark:text-red-400' : 'text-muted-foreground')}>
+          <span className={cn('text-[10px]', isOverdue ? 'font-semibold text-destructive' : 'text-muted-foreground')}>
             {new Date(task.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
           </span>
         )}
@@ -241,9 +241,9 @@ const UnclassifiedSection = ({
                   }
                   className={cn(
                     'flex w-full items-center gap-1 rounded-md px-2 py-1',
-                    'border border-amber-200 bg-amber-50 text-[10px] text-amber-700',
-                    'transition-colors hover:bg-amber-100',
-                    'dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300 dark:hover:bg-amber-950/50',
+                    'border border-warning/20 bg-warning/5 text-[10px] text-warning-foreground',
+                    'transition-colors hover:bg-warning/10',
+                    'dark:border-warning/20 dark:bg-warning/10 dark:text-warning dark:hover:bg-warning/15',
                   )}
                 >
                   <Sparkles className="h-3 w-3" />
@@ -405,7 +405,7 @@ const EisenhowerMatrixPage = () => {
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary">{totalClassified} classified</Badge>
           {totalUnclassified > 0 && (
-            <Badge variant="outline" className="text-amber-600 dark:text-amber-400">
+            <Badge variant="outline" className="text-warning">
               {totalUnclassified} unclassified
             </Badge>
           )}
@@ -423,7 +423,7 @@ const EisenhowerMatrixPage = () => {
 
       {/* Error State */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">
+        <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive dark:border-destructive/20 dark:bg-destructive/10">
           Failed to load matrix: {error instanceof Error ? error.message : 'Unknown error'}
         </div>
       )}

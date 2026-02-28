@@ -5,22 +5,22 @@ const quadrantConfig: Record<Quadrant, { label: string; shortLabel: string; clas
   Q1: {
     label: 'Do First',
     shortLabel: 'Q1',
-    className: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+    className: 'bg-destructive/10 text-destructive dark:bg-destructive/10 dark:text-destructive',
   },
   Q2: {
     label: 'Schedule',
     shortLabel: 'Q2',
-    className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+    className: 'bg-brand-muted text-brand-muted-foreground',
   },
   Q3: {
     label: 'Delegate',
     shortLabel: 'Q3',
-    className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+    className: 'bg-warning/10 text-warning-foreground dark:bg-warning/10 dark:text-warning',
   },
   Q4: {
     label: 'Eliminate',
     shortLabel: 'Q4',
-    className: 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400',
+    className: 'bg-muted text-muted-foreground',
   },
 };
 

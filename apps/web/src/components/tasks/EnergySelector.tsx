@@ -12,19 +12,19 @@ const energyOptions: Array<{
     value: 'Low',
     label: 'Low',
     description: 'Routine tasks',
-    activeClass: 'bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-700',
+    activeClass: 'bg-success/10 text-success-foreground border-success/30 dark:bg-success/10 dark:text-success',
   },
   {
     value: 'Medium',
     label: 'Medium',
     description: 'Moderate focus',
-    activeClass: 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700',
+    activeClass: 'bg-warning/10 text-warning-foreground border-warning/30 dark:bg-warning/10 dark:text-warning',
   },
   {
     value: 'High',
     label: 'High',
     description: 'Deep work',
-    activeClass: 'bg-red-100 text-red-700 border-red-300 dark:bg-red-900/40 dark:text-red-300 dark:border-red-700',
+    activeClass: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/10 dark:text-destructive',
   },
 ];
 

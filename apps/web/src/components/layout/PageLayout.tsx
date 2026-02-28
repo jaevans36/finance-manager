@@ -71,7 +71,7 @@ export const PageLayout = ({
 
   if (loading) {
     return (
-      <div className={cn('mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-[10px] md:w-[95%]', className)}>
+      <div className={cn('mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-2.5 md:w-[95%]', className)}>
         {loadingComponent || (
           <p className="text-center py-10 text-muted-foreground text-base">Loading...</p>
         )}
@@ -81,7 +81,7 @@ export const PageLayout = ({
 
   if (error) {
     return (
-      <div className={cn('mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-[10px] md:w-[95%]', className)}>
+      <div className={cn('mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-2.5 md:w-[95%]', className)}>
         {errorComponent || (
           <p className="text-center py-10 text-destructive text-base">{error}</p>
         )}
@@ -90,10 +90,10 @@ export const PageLayout = ({
   }
 
   return (
-    <div className={cn('mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-[10px] md:w-[95%]', className)}>
-      <header className="mb-[30px]">
+    <div className={cn('mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-2.5 md:w-[95%]', className)}>
+      <header className="mb-8">
         {showBackButton && (
-          <div className="flex items-center gap-[15px] mb-[10px]">
+          <div className="flex items-center gap-4 mb-2">
             <Button
               variant="outline"
               size="sm"
@@ -105,7 +105,7 @@ export const PageLayout = ({
             </Button>
           </div>
         )}
-        <h1 className="text-[32px] font-bold text-foreground m-0">{title}</h1>
+        <h1 className="font-display text-display-lg tracking-tight text-foreground">{title}</h1>
         {subtitle && (
           <p className="text-base text-muted-foreground mt-2 mb-0">{subtitle}</p>
         )}

@@ -192,20 +192,20 @@ const UserManagement = () => {
       {stats && (
         <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6">
           <div className="rounded-lg border border-border bg-card p-5">
-            <div className="text-[28px] font-bold text-foreground mb-1">{stats.totalUsers}</div>
-            <div className="text-[13px] text-muted-foreground">Total Users</div>
+            <div className="font-display text-display font-bold text-foreground mb-1">{stats.totalUsers}</div>
+            <div className="text-body-sm text-muted-foreground">Total Users</div>
           </div>
           <div className="rounded-lg border border-border bg-card p-5">
-            <div className="text-[28px] font-bold text-foreground mb-1">{stats.adminUsers}</div>
-            <div className="text-[13px] text-muted-foreground">Administrators</div>
+            <div className="font-display text-display font-bold text-foreground mb-1">{stats.adminUsers}</div>
+            <div className="text-body-sm text-muted-foreground">Administrators</div>
           </div>
           <div className="rounded-lg border border-border bg-card p-5">
-            <div className="text-[28px] font-bold text-foreground mb-1">{stats.verifiedUsers}</div>
-            <div className="text-[13px] text-muted-foreground">Verified</div>
+            <div className="font-display text-display font-bold text-foreground mb-1">{stats.verifiedUsers}</div>
+            <div className="text-body-sm text-muted-foreground">Verified</div>
           </div>
           <div className="rounded-lg border border-border bg-card p-5">
-            <div className="text-[28px] font-bold text-foreground mb-1">{stats.unverifiedUsers}</div>
-            <div className="text-[13px] text-muted-foreground">Unverified</div>
+            <div className="font-display text-display font-bold text-foreground mb-1">{stats.unverifiedUsers}</div>
+            <div className="text-body-sm text-muted-foreground">Unverified</div>
           </div>
         </div>
       )}
@@ -267,7 +267,7 @@ const UserManagement = () => {
         </button>
       </div>
 
-      {error && <div className="mt-2 text-[13px] text-destructive">{error}</div>}
+      {error && <div className="mt-2 text-body-sm text-destructive">{error}</div>}
 
       {isLoading ? (
         <div>Loading users...</div>
@@ -287,7 +287,7 @@ const UserManagement = () => {
               <tr key={user.id} className="border-b border-border last:border-b-0 hover:bg-background">
                 <td className="p-4 text-sm text-foreground">
                   <div className="font-medium text-foreground">{user.email}</div>
-                  <div className="mt-0.5 text-[13px] text-muted-foreground">@{user.username}</div>
+                  <div className="mt-0.5 text-body-sm text-muted-foreground">@{user.username}</div>
                 </td>
                 <td className="p-4 text-sm text-foreground">
                   <div className="flex items-center gap-2">
@@ -416,7 +416,7 @@ const UserManagement = () => {
             Mark email as verified
           </label>
         </div>
-        {formError && <div className="mt-2 text-[13px] text-destructive">{formError}</div>}
+        {formError && <div className="mt-2 text-body-sm text-destructive">{formError}</div>}
         <div className="mt-6 flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setShowCreateModal(false)}>
             Cancel
@@ -473,7 +473,7 @@ const UserManagement = () => {
             Email verified
           </label>
         </div>
-        {formError && <div className="mt-2 text-[13px] text-destructive">{formError}</div>}
+        {formError && <div className="mt-2 text-body-sm text-destructive">{formError}</div>}
         <div className="mt-6 flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setShowEditModal(false)}>
             Cancel
@@ -498,7 +498,7 @@ const UserManagement = () => {
           Are you sure you want to delete <strong>{selectedUser?.username}</strong>?
           This action cannot be undone and will remove all their data.
         </p>
-        {formError && <div className="mt-2 text-[13px] text-destructive">{formError}</div>}
+        {formError && <div className="mt-2 text-body-sm text-destructive">{formError}</div>}
         <div className="mt-6 flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
             Cancel
@@ -529,7 +529,7 @@ const UserManagement = () => {
             placeholder="Min. 8 characters"
           />
         </div>
-        {formError && <div className="mt-2 text-[13px] text-destructive">{formError}</div>}
+        {formError && <div className="mt-2 text-body-sm text-destructive">{formError}</div>}
         <div className="mt-6 flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setShowResetPasswordModal(false)}>
             Cancel

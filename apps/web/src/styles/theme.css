@@ -44,12 +44,18 @@
     --destructive-foreground: 0 0% 100%; /* white text on red */
 
     /* ── Success ─────────────────────────────────────── */
-    --success: 154 100% 65%;           /* #4DFFBC */
-    --success-foreground: 155 78% 20%; /* #0A5C38 */
+    --success: 160 84% 39%;            /* #10B981 — better WCAG contrast */
+    --success-foreground: 0 0% 100%;   /* white text on green */
 
-    /* ── Warning (mapped to destructive per spec) ────── */
-    --warning: 0 100% 65%;             /* #FF4D4D */
-    --warning-foreground: 0 68% 36%;   /* #9B1C1C */
+    /* ── Warning (amber — distinct from destructive) ── */
+    --warning: 38 92% 50%;             /* #F59E0B amber */
+    --warning-foreground: 26 90% 20%;  /* #612A00 dark amber text */
+
+    /* ── Brand (teal — visual identity accent) ────────── */
+    --brand: 174 72% 46%;              /* #21B8A4 teal */
+    --brand-foreground: 0 0% 100%;     /* white text on teal */
+    --brand-muted: 174 60% 95%;        /* #E6FAF7 light teal bg */
+    --brand-muted-foreground: 174 72% 30%; /* #1A7A6D dark teal text */
 
     /* ── Border / Input / Ring ───────────────────────── */
     --border: 0 0% 85%;                /* #D9D9D9 */
@@ -94,12 +100,18 @@
     --destructive-foreground: 0 0% 91%; /* light text on red */
 
     /* ── Success ─────────────────────────────────────── */
-    --success: 154 100% 65%;           /* #4DFFBC */
-    --success-foreground: 154 100% 65%; /* #4DFFBC (self on dark bg) */
+    --success: 160 84% 39%;            /* #10B981 */
+    --success-foreground: 160 84% 39%; /* self-coloured on dark bg */
 
     /* ── Warning ─────────────────────────────────────── */
-    --warning: 0 100% 65%;             /* #FF4D4D */
-    --warning-foreground: 0 100% 77%;  /* #FF8A8A */
+    --warning: 38 92% 56%;             /* #FBBF24 slightly lighter for dark */
+    --warning-foreground: 38 92% 56%;  /* self-coloured on dark bg */
+
+    /* ── Brand ────────────────────────────────────────── */
+    --brand: 174 72% 50%;              /* #26CCBA lighter teal for dark */
+    --brand-foreground: 0 0% 10%;      /* dark text on teal */
+    --brand-muted: 174 40% 18%;        /* #1A3D38 dark teal surface */
+    --brand-muted-foreground: 174 72% 65%; /* #4DE6D4 light teal text */
 
     /* ── Border / Input / Ring ───────────────────────── */
     --border: 0 0% 20%;                /* #333333 */

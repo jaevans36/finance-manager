@@ -15,8 +15,8 @@ import type { Task } from '../../services/taskService';
 import type { Event } from '../../types/event';
 import type { TaskGroup } from '../../types/taskGroup';
 
-/** Fallback colour for info badges (matches legacy theme.colors.info) */
-const INFO_COLOR = '#898989';
+/** Fallback colour for info badges — uses muted-foreground design token */
+const INFO_COLOR = 'hsl(var(--muted-foreground))';
 
 const CalendarPage = () => {
   const { showToast } = useToast();
@@ -441,7 +441,7 @@ const CalendarPage = () => {
           <div className="flex flex-col items-center justify-center px-6 py-12 text-center text-muted-foreground">
             <h3 className="mb-2 text-xl font-semibold text-foreground">No Tasks or Events This Month</h3>
             <p className="mb-4 text-sm">Click on any date to create a task or event</p>
-            <div className="mt-4 rounded-sm bg-secondary px-4 py-3 text-[13px] text-muted-foreground">
+            <div className="mt-4 rounded-sm bg-secondary px-4 py-3 text-body-sm text-muted-foreground">
               <kbd className="mx-0.5 inline-block rounded-sm border border-border bg-background px-1.5 py-0.5 font-mono text-xs font-semibold">←</kbd>{' '}
               <kbd className="mx-0.5 inline-block rounded-sm border border-border bg-background px-1.5 py-0.5 font-mono text-xs font-semibold">→</kbd> Navigate months •{' '}
               <kbd className="mx-0.5 inline-block rounded-sm border border-border bg-background px-1.5 py-0.5 font-mono text-xs font-semibold">Enter</kbd> Quick add task •{' '}

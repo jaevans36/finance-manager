@@ -5,18 +5,18 @@ import type { EnergyLevel } from '@/services/taskService';
 const energyConfig: Record<EnergyLevel, { label: string; className: string; dotClassName: string }> = {
   High: {
     label: 'High Energy',
-    className: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-    dotClassName: 'bg-red-500',
+    className: 'bg-destructive/10 text-destructive dark:bg-destructive/10 dark:text-destructive',
+    dotClassName: 'bg-destructive',
   },
   Medium: {
     label: 'Medium Energy',
-    className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-    dotClassName: 'bg-amber-500',
+    className: 'bg-warning/10 text-warning-foreground dark:bg-warning/10 dark:text-warning',
+    dotClassName: 'bg-warning',
   },
   Low: {
     label: 'Low Energy',
-    className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-    dotClassName: 'bg-emerald-500',
+    className: 'bg-success/10 text-success-foreground dark:bg-success/10 dark:text-success',
+    dotClassName: 'bg-success',
   },
 };
 

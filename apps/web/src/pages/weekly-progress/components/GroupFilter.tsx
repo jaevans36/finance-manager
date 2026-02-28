@@ -18,7 +18,7 @@ export const GroupFilter = ({
       <span className="text-xs text-muted-foreground font-medium">{label}</span>
       <button
         className={cn(
-          'px-3 py-1.5 border rounded-lg text-[13px] cursor-pointer transition-all duration-200 whitespace-nowrap hover:scale-105 hover:border-primary',
+          'px-3 py-1.5 border rounded-lg text-body-sm cursor-pointer transition-all duration-200 whitespace-nowrap hover:scale-105 hover:border-primary',
           selectedGroup === null
             ? 'border-primary bg-primary text-primary-foreground'
             : 'border-border bg-transparent text-foreground',
@@ -31,7 +31,7 @@ export const GroupFilter = ({
         <button
           key={group}
           className={cn(
-            'px-3 py-1.5 border rounded-lg text-[13px] cursor-pointer transition-all duration-200 whitespace-nowrap hover:scale-105 hover:border-primary',
+            'px-3 py-1.5 border rounded-lg text-body-sm cursor-pointer transition-all duration-200 whitespace-nowrap hover:scale-105 hover:border-primary',
             selectedGroup === group
               ? 'border-primary bg-primary text-primary-foreground'
               : 'border-border bg-transparent text-foreground',

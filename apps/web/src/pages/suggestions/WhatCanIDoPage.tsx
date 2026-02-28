@@ -61,10 +61,10 @@ const SuggestionCard = ({
 }) => {
   const getPriorityColour = (priority: string) => {
     switch (priority) {
-      case 'Critical': return 'text-red-600 dark:text-red-400';
-      case 'High': return 'text-orange-600 dark:text-orange-400';
-      case 'Medium': return 'text-blue-600 dark:text-blue-400';
-      case 'Low': return 'text-slate-500 dark:text-slate-400';
+      case 'Critical': return 'text-destructive';
+      case 'High': return 'text-warning';
+      case 'Medium': return 'text-brand';
+      case 'Low': return 'text-muted-foreground';
       default: return 'text-muted-foreground';
     }
   };
@@ -107,7 +107,7 @@ const SuggestionCard = ({
 
       <div className="flex items-center gap-2 shrink-0">
         {isInProgress ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+          <span className="inline-flex items-center gap-1 rounded-full bg-brand-muted px-2.5 py-1 text-xs font-medium text-brand-muted-foreground">
             <Play className="h-3 w-3" /> In Progress
           </span>
         ) : (
@@ -249,7 +249,7 @@ const WhatCanIDoPage = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-            <Sparkles className="h-6 w-6 text-amber-500" />
+            <Sparkles className="h-6 w-6 text-warning" />
             What Can I Do Now?
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -286,10 +286,10 @@ const WhatCanIDoPage = () => {
                     'flex items-center gap-2 rounded-lg border-2 px-4 py-2.5 transition-all',
                     isActive
                       ? option.value === 'Low'
-                        ? 'border-emerald-400 bg-emerald-50 dark:border-emerald-600 dark:bg-emerald-900/30'
+                        ? 'border-success/40 bg-success/5 dark:border-success/40 dark:bg-success/10'
                         : option.value === 'Medium'
-                          ? 'border-amber-400 bg-amber-50 dark:border-amber-600 dark:bg-amber-900/30'
-                          : 'border-red-400 bg-red-50 dark:border-red-600 dark:bg-red-900/30'
+                          ? 'border-warning/40 bg-warning/5 dark:border-warning/40 dark:bg-warning/10'
+                          : 'border-destructive/40 bg-destructive/5 dark:border-destructive/40 dark:bg-destructive/10'
                       : 'border-border bg-background hover:bg-muted',
                   )}
                 >
@@ -354,8 +354,8 @@ const WhatCanIDoPage = () => {
 
       {/* WIP Limit Warning */}
       {atWipLimit && (
-        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 dark:border-amber-700 dark:bg-amber-900/20">
-          <p className="text-sm text-amber-700 dark:text-amber-300">
+        <div className="rounded-lg border border-warning/30 bg-warning/5 px-4 py-3 dark:border-warning/30 dark:bg-warning/10">
+          <p className="text-sm text-warning-foreground dark:text-warning">
             <strong>WIP limit reached</strong> — you have {wipSummary?.inProgressCount} tasks in progress.
             Complete one before starting another.
           </p>
@@ -365,7 +365,7 @@ const WhatCanIDoPage = () => {
       {/* In Progress Tasks (shown first) */}
       {inProgressTasks.length > 0 && (
         <div className="space-y-2">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-brand">
             Currently Working On ({inProgressTasks.length})
           </h2>
           <div className="space-y-2">

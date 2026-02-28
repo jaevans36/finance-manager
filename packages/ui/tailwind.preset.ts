@@ -59,6 +59,12 @@ const preset: Config = {
           DEFAULT: 'hsl(var(--warning))',
           foreground: 'hsl(var(--warning-foreground))',
         },
+        brand: {
+          DEFAULT: 'hsl(var(--brand))',
+          foreground: 'hsl(var(--brand-foreground))',
+          muted: 'hsl(var(--brand-muted))',
+          'muted-foreground': 'hsl(var(--brand-muted-foreground))',
+        },
       },
 
       /* ── Border Radius (matches borderRadius tokens) ────────── */
@@ -76,7 +82,7 @@ const preset: Config = {
       /* ── Font Family ────────────────────────────────────────── */
       fontFamily: {
         sans: [
-          'Inter',
+          '"IBM Plex Sans"',
           'system-ui',
           '-apple-system',
           'BlinkMacSystemFont',
@@ -84,8 +90,26 @@ const preset: Config = {
           'Roboto',
           'sans-serif',
         ],
+        display: [
+          '"DM Sans"',
+          '"IBM Plex Sans"',
+          'system-ui',
+          'sans-serif',
+        ],
       },
-
+      /* ── Typography Scale ───────────────────────────────────── */
+      fontSize: {
+        'display-lg': ['2rem', { lineHeight: '2.5rem', fontWeight: '700' }],     /* 32px */
+        'display':    ['1.5rem', { lineHeight: '2rem', fontWeight: '600' }],      /* 24px */
+        'display-sm': ['1.25rem', { lineHeight: '1.75rem', fontWeight: '600' }],  /* 20px */
+        'heading':    ['1.125rem', { lineHeight: '1.625rem', fontWeight: '600' }],/* 18px */
+        'heading-sm': ['1rem', { lineHeight: '1.5rem', fontWeight: '600' }],      /* 16px */
+        'body-lg':    ['1rem', { lineHeight: '1.5rem', fontWeight: '400' }],      /* 16px */
+        'body':       ['0.875rem', { lineHeight: '1.375rem', fontWeight: '400' }],/* 14px */
+        'body-sm':    ['0.8125rem', { lineHeight: '1.25rem', fontWeight: '400' }],/* 13px */
+        'caption':    ['0.75rem', { lineHeight: '1rem', fontWeight: '400' }],     /* 12px */
+        'badge':      ['0.6875rem', { lineHeight: '1rem', fontWeight: '500' }],   /* 11px */
+      },
       /* ── Keyframes & Animations ─────────────────────────────── */
       keyframes: {
         'accordion-down': {
