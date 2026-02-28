@@ -14,7 +14,6 @@ import type {
   TaskStatus,
   UrgencyLevel,
   ImportanceLevel,
-  Quadrant,
   MatrixResponse,
   ClassificationSuggestion,
 } from '../../services/taskService';
