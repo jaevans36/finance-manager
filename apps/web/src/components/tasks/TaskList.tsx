@@ -11,6 +11,7 @@ interface TaskListProps {
   onToggleComplete: (id: string) => void;
   onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
+  onSubtaskChange?: (taskId: string, counts: { subtaskCount: number; completedSubtaskCount: number }) => void;
 }
 
 const EXPANDED_STORAGE_KEY = 'finance-manager:expanded-subtasks';
@@ -38,8 +39,10 @@ const writeExpandedIds = (ids: Set<string>) => {
 /** Wrapper that renders the SubtaskList for a single parent task */
 const SubtaskListContainer = ({
   parentTask,
+  onSubtaskChange,
 }: {
   parentTask: Task;
+  onSubtaskChange?: (taskId: string, counts: { subtaskCount: number; completedSubtaskCount: number }) => void;
 }) => {
   const {
     subtasks,
@@ -56,7 +59,7 @@ const SubtaskListContainer = ({
     toggleSelected,
     selectAll,
     deselectAll,
-  } = useSubtasks(parentTask.id);
+  } = useSubtasks(parentTask.id, onSubtaskChange);
 
   return (
     <SubtaskList
@@ -85,6 +88,7 @@ export const TaskList = ({
   onToggleComplete,
   onEdit,
   onDelete,
+  onSubtaskChange,
 }: TaskListProps) => {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(readExpandedIds);
 
@@ -143,6 +147,7 @@ export const TaskList = ({
               <div className="border-t border-border px-3 pb-3 pt-2">
                 <SubtaskListContainer
                   parentTask={task}
+                  onSubtaskChange={onSubtaskChange}
                 />
               </div>
             )}

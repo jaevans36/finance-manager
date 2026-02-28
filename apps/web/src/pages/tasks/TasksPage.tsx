@@ -400,6 +400,7 @@ const TasksPage = () => {
               onToggleComplete={handleToggleComplete}
               onEdit={setEditingTask}
               onDelete={handleDeleteTask}
+              onSubtaskChange={handleSubtaskChange}
             />
           )}
         </main>

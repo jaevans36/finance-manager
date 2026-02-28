@@ -23,7 +23,10 @@ interface UseSubtasksReturn {
   deselectAll: () => void;
 }
 
-export const useSubtasks = (parentTaskId: string): UseSubtasksReturn => {
+export const useSubtasks = (
+  parentTaskId: string,
+  onSubtaskChange?: (taskId: string, counts: { subtaskCount: number; completedSubtaskCount: number }) => void,
+): UseSubtasksReturn => {
   const queryClient = useQueryClient();
   const [subtasks, setSubtasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -223,6 +226,17 @@ export const useSubtasks = (parentTaskId: string): UseSubtasksReturn => {
   const deselectAll = useCallback(() => {
     setSelectedIds(new Set());
   }, []);
+
+  // Notify parent whenever subtask counts change
+  useEffect(() => {
+    if (!isLoading) {
+      const completedCount = subtasks.filter((s) => s.completed).length;
+      onSubtaskChange?.(parentTaskId, {
+        subtaskCount: subtasks.length,
+        completedSubtaskCount: completedCount,
+      });
+    }
+  }, [subtasks, isLoading, parentTaskId, onSubtaskChange]);
 
   return {
     subtasks,
