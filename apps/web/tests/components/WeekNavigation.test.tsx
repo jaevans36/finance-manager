@@ -319,7 +319,7 @@ describe('WeeklyProgressPage - Week Navigation (T239)', () => {
 
       // Title should be visible
       await waitFor(() => {
-        expect(screen.getByText('Weekly Progress Dashboard')).toBeInTheDocument();
+        expect(screen.getByText('Progress')).toBeInTheDocument();
       });
     });
 

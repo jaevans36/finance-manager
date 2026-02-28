@@ -98,11 +98,11 @@ const getPriorityVariant = (
 // Tailwind CSS class constants
 // =============================================================================
 
-const overlayClasses = 'fixed inset-0 z-[1100] flex items-center justify-center bg-black/50';
-const modalClasses = 'flex w-[95%] max-w-[680px] flex-col overflow-hidden rounded-lg border border-border bg-card shadow-lg max-h-[95vh] md:w-[90%] md:max-h-[90vh]';
-const headerClasses = 'flex items-center justify-between gap-2 px-4 py-3 md:px-6 md:py-4';
-const bodyClasses = 'flex-1 overflow-y-auto px-4 pb-3 pt-0 md:px-6 md:pb-4';
-const footerClasses = 'flex justify-end gap-2 border-t border-border bg-secondary px-4 py-3 md:px-6 md:py-4';
+const overlayClasses = 'fixed inset-0 z-[1100] flex items-center justify-center bg-black/80';
+const modalClasses = 'flex w-[95%] max-w-[680px] flex-col overflow-hidden rounded-lg border border-border bg-card shadow-xl max-h-[95vh] md:w-[90%] md:max-h-[90vh]';
+const headerClasses = 'flex items-center justify-between gap-2 px-5 py-3.5 md:px-7 md:py-4';
+const bodyClasses = 'flex-1 overflow-y-auto space-y-5 px-5 pb-4 pt-1 md:px-7 md:pb-5';
+const footerClasses = 'flex justify-end gap-2 border-t border-border bg-secondary px-5 py-3.5 md:px-7 md:py-4';
 const actionButtonClasses = 'flex h-8 w-8 items-center justify-center rounded border-none bg-transparent text-muted-foreground transition-all hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 const metaSelectClasses = 'w-full rounded border border-input bg-background px-2 py-1 text-sm font-normal text-foreground focus:border-ring focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60';
 
@@ -488,7 +488,7 @@ export const TaskDetailModal = ({
         <Separator />
 
         {/* ── Key Metadata ──────────────────────────────────────── */}
-        <div className="grid grid-cols-[20px_auto_1fr] items-center gap-x-3 gap-y-2">
+        <div className="grid grid-cols-[20px_auto_1fr] items-center gap-x-3 gap-y-3">
           {/* Status — always visible; editable via StatusSelector */}
           <span className="flex items-center justify-center text-muted-foreground">
             <CircleDot size={16} aria-hidden="true" />

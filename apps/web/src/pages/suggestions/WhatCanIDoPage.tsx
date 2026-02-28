@@ -8,6 +8,7 @@ import { EnergyBadge } from '../../components/tasks/EnergyBadge';
 import { QuadrantBadge } from '../../components/tasks/QuadrantBadge';
 import { formatDuration } from '../../components/tasks/DurationInput';
 import { TaskDetailModal } from '../../components/tasks/TaskDetailModal';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { taskService } from '../../services/taskService';
 import type { Task, EnergyLevel, TaskStatus, UrgencyLevel, ImportanceLevel } from '../../services/taskService';
 
@@ -32,10 +33,10 @@ const savePreferences = (prefs: Preferences) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
 };
 
-const energyOptions: Array<{ value: EnergyLevel; label: string; icon: string; description: string }> = [
-  { value: 'Low', label: 'Low Energy', icon: '🟢', description: 'Routine, admin tasks' },
-  { value: 'Medium', label: 'Medium Energy', icon: '🟡', description: 'Moderate focus tasks' },
-  { value: 'High', label: 'High Energy', icon: '🔴', description: 'Deep work, complex tasks' },
+const energyOptions: Array<{ value: EnergyLevel; label: string; colour: string; description: string }> = [
+  { value: 'Low', label: 'Low Energy', colour: 'bg-success', description: 'Routine, admin tasks' },
+  { value: 'Medium', label: 'Medium Energy', colour: 'bg-warning', description: 'Moderate focus tasks' },
+  { value: 'High', label: 'High Energy', colour: 'bg-destructive', description: 'Deep work, complex tasks' },
 ];
 
 const timeOptions = [
@@ -244,18 +245,10 @@ const WhatCanIDoPage = () => {
   const availableTasks = suggestions.filter((t) => t.status !== 'InProgress');
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 p-6 md:p-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
-            <Sparkles className="h-6 w-6 text-warning" />
-            What Can I Do Now?
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Select your current energy level and available time to get personalised task suggestions.
-          </p>
-        </div>
+    <PageLayout
+      title="Suggestions"
+      subtitle="Select your current energy level and available time to get personalised task suggestions."
+      headerActions={
         <button
           type="button"
           onClick={() => refetch()}
@@ -264,7 +257,9 @@ const WhatCanIDoPage = () => {
         >
           <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
         </button>
-      </div>
+      }
+    >
+      <div className="space-y-6">
 
       {/* Filters */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">
@@ -293,7 +288,7 @@ const WhatCanIDoPage = () => {
                       : 'border-border bg-background hover:bg-muted',
                   )}
                 >
-                  <span className="text-lg">{option.icon}</span>
+                  <span className={cn('inline-block h-3 w-3 rounded-full', option.colour)} />
                   <div className="text-left">
                     <div className="text-sm font-medium text-foreground">{option.label}</div>
                     <div className="text-xs text-muted-foreground">{option.description}</div>
@@ -422,7 +417,8 @@ const WhatCanIDoPage = () => {
           onClassificationChange={handleClassificationChange}
         />
       )}
-    </div>
+      </div>
+    </PageLayout>
   );
 };
 

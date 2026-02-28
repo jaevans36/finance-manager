@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Skeleton } from '../../components/ui/Skeleton';
 import { Separator } from '../../components/ui/separator';
 import { TaskDetailModal } from '../../components/tasks/TaskDetailModal';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { taskService } from '../../services/taskService';
 import type {
   Task,
@@ -365,18 +366,10 @@ const EisenhowerMatrixPage = () => {
   const totalUnclassified = matrix?.unclassified.length ?? 0;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-4 p-4 sm:p-6">
-      {/* Page Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="flex items-center gap-2 text-xl font-semibold text-foreground">
-            <LayoutGrid className="h-5 w-5" />
-            Eisenhower Matrix
-          </h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            Prioritise tasks by urgency and importance
-          </p>
-        </div>
+    <PageLayout
+      title="Eisenhower Matrix"
+      subtitle="Prioritise tasks by urgency and importance"
+      headerActions={
         <div className="flex items-center gap-2">
           {totalUnclassified > 0 && suggestions.length > 0 && (
             <Button
@@ -398,7 +391,9 @@ const EisenhowerMatrixPage = () => {
             {showCompleted ? 'Hide completed' : 'Show completed'}
           </Button>
         </div>
-      </div>
+      }
+    >
+      <div className="space-y-4">
 
       {/* Summary Badges */}
       {matrix && (
@@ -466,7 +461,8 @@ const EisenhowerMatrixPage = () => {
           onClassificationChange={handleClassificationChange}
         />
       )}
-    </div>
+      </div>
+    </PageLayout>
   );
 };
 

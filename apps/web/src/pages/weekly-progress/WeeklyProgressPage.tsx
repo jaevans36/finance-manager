@@ -6,6 +6,7 @@ import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { statisticsService } from '../../services/statisticsService';
 import { taskService, type Task } from '../../services/taskService';
 import { taskGroupService } from '../../services/taskGroupService';
@@ -255,24 +256,19 @@ const WeeklyProgressPage = () => {
 
   if (loading || !stats) {
     return (
-      <div className="mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-[10px] md:w-[95%]">
-        <div className="bg-card rounded-lg p-5 min-h-[200px] flex items-center justify-center">Loading statistics...</div>
-      </div>
+      <PageLayout title="Progress" loading={true} />
     );
   }
 
   if (error) {
     return (
-      <div className="mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-[10px] md:w-[95%]">
-        <div className="mb-8">
-          <h1 className="m-0 text-2xl font-semibold">Weekly Progress Dashboard</h1>
-        </div>
+      <PageLayout title="Progress">
         <ErrorDisplay 
           message={error}
           onRetry={() => loadData()}
           title="Failed to Load Statistics"
         />
-      </div>
+      </PageLayout>
     );
   }
 
@@ -358,10 +354,10 @@ const WeeklyProgressPage = () => {
   ];
 
   return (
-    <div className="mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-[10px] md:w-[95%]">
-      <div className="mb-8">
-        <h1 className="m-0 text-2xl font-semibold">Weekly Progress Dashboard</h1>
-        <div className="flex flex-col items-start gap-5 mt-5 flex-wrap md:flex-row md:items-center md:justify-between">
+    <PageLayout
+      title="Progress"
+      headerActions={
+        <div className="flex flex-col items-start gap-4 flex-wrap md:flex-row md:items-center">
           <div className="flex items-center gap-4 flex-wrap">
             <ViewModeSelector
               currentMode={viewMode}
@@ -417,7 +413,8 @@ const WeeklyProgressPage = () => {
             )}
           </div>
         </div>
-      </div>
+      }
+    >
 
       {/* Group Filter Section */}
       {groups.length > 0 && (
@@ -638,7 +635,7 @@ const WeeklyProgressPage = () => {
           )}
         </div>
       )}
-    </div>
+    </PageLayout>
   );
 };
 

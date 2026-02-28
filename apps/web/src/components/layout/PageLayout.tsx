@@ -17,7 +17,7 @@ interface PageLayoutProps {
   /** Optional actions to display below the title (filters, buttons, etc.) */
   headerActions?: React.ReactNode;
   /** Main page content */
-  children: React.ReactNode;
+  children?: React.ReactNode;
   /** Optional loading state */
   loading?: boolean;
   /** Optional error message */
