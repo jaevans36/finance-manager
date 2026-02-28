@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { taskService, type Task, type TaskStatus, type UrgencyLevel, type ImportanceLevel } from '@/services/taskService';
+import { taskService, type Task, type TaskStatus, type UrgencyLevel, type ImportanceLevel, type EnergyLevel } from '@/services/taskService';
 import { queryKeys } from '../query-keys';
 
 interface TaskQueryParams {
@@ -174,5 +174,67 @@ export function useAutoClassifyPreview() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.autoClassify() });
     },
+  });
+}
+
+/** Set energy level for a task */
+export function useSetEnergy() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, energyLevel }: { id: string; energyLevel: EnergyLevel }) =>
+      taskService.setEnergy(id, energyLevel),
+    onSuccess: (_data: Task, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.energyDistribution() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.suggestions() });
+    },
+  });
+}
+
+/** Set estimated minutes for a task */
+export function useSetEstimate() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, estimatedMinutes }: { id: string; estimatedMinutes: number }) =>
+      taskService.setEstimate(id, estimatedMinutes),
+    onSuccess: (_data: Task, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.suggestions() });
+    },
+  });
+}
+
+/** Bulk set energy level for multiple tasks */
+export function useBulkSetEnergy() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (items: Array<{ taskId: string; energyLevel: EnergyLevel }>) =>
+      taskService.bulkSetEnergy(items),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.energyDistribution() });
+    },
+  });
+}
+
+/** Get smart task suggestions filtered by energy and time */
+export function useSuggestions(params?: { energy?: EnergyLevel; maxMinutes?: number }, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.tasks.suggestions(params as Record<string, unknown>),
+    queryFn: () => taskService.getSuggestions(params),
+    enabled,
+  });
+}
+
+/** Get energy distribution statistics */
+export function useEnergyDistribution() {
+  return useQuery({
+    queryKey: queryKeys.tasks.energyDistribution(),
+    queryFn: () => taskService.getEnergyDistribution(),
   });
 }

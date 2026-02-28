@@ -15,6 +15,8 @@ import {
   MessageSquare,
   CheckCircle2,
   LayoutGrid,
+  Zap,
+  Clock,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Input } from '../../components/ui/input';
@@ -27,11 +29,14 @@ import { useEditTaskForm } from '../../hooks/forms';
 import type { UpdateTaskInput } from '@finance-manager/schema';
 import { useSubtasks } from '../../hooks/useSubtasks';
 import { SubtaskList } from './SubtaskList';
-import type { Task, TaskStatus, UrgencyLevel, ImportanceLevel } from '../../services/taskService';
+import type { Task, TaskStatus, UrgencyLevel, ImportanceLevel, EnergyLevel } from '../../services/taskService';
 import { StatusBadge } from './StatusBadge';
 import { StatusSelector } from './StatusSelector';
 import { QuadrantBadge } from './QuadrantBadge';
 import { ClassificationPicker } from './ClassificationPicker';
+import { EnergyBadge } from './EnergyBadge';
+import { EnergySelector } from './EnergySelector';
+import { DurationInput, formatDuration } from './DurationInput';
 
 // =============================================================================
 // Types
@@ -56,6 +61,8 @@ interface TaskDetailModalProps {
   onToggleComplete?: (id: string) => void;
   onStatusChange?: (id: string, status: TaskStatus, blockedReason?: string) => void;
   onClassificationChange?: (id: string, urgency: UrgencyLevel | null, importance: ImportanceLevel | null) => void;
+  onEnergyChange?: (id: string, energy: EnergyLevel | null) => void;
+  onEstimateChange?: (id: string, minutes: number | null) => void;
   /** Called whenever subtasks are added, removed, or toggled so the parent can refresh counts */
   onSubtaskChange?: (taskId: string, counts: { subtaskCount: number; completedSubtaskCount: number }) => void;
 }
@@ -111,6 +118,8 @@ export const TaskDetailModal = ({
   onToggleComplete,
   onStatusChange,
   onClassificationChange,
+  onEnergyChange,
+  onEstimateChange,
   onSubtaskChange,
 }: TaskDetailModalProps) => {
   // ── State ──────────────────────────────────────────────────────────────
@@ -353,6 +362,9 @@ export const TaskDetailModal = ({
           {/* Quadrant badge */}
           {task.quadrant && <QuadrantBadge quadrant={task.quadrant} showLabel />}
 
+          {/* Energy badge */}
+          {task.energyLevel && <EnergyBadge energy={task.energyLevel} showLabel showIcon />}
+
           {/* Priority badge */}
           <Badge variant={getPriorityVariant(task.priority)}>
             <Flag size={12} className="mr-1" />
@@ -524,6 +536,48 @@ export const TaskDetailModal = ({
                   <span className="text-muted-foreground">Unclassified</span>
                 )}
               </div>
+            )}
+          </div>
+
+          {/* Energy Level */}
+          <span className="flex items-center justify-center text-muted-foreground">
+            <Zap size={16} aria-hidden="true" />
+          </span>
+          <span className="text-sm font-medium text-muted-foreground" id="meta-energy-label">Energy</span>
+          <div className="min-w-0 text-sm text-foreground" aria-labelledby="meta-energy-label">
+            {onEnergyChange ? (
+              <EnergySelector
+                value={task.energyLevel}
+                onChange={(energy) => onEnergyChange(task.id, energy)}
+                disabled={isSubmitting}
+              />
+            ) : (
+              <div className="flex items-center gap-2">
+                {task.energyLevel ? (
+                  <EnergyBadge energy={task.energyLevel} showLabel showIcon />
+                ) : (
+                  <span className="text-muted-foreground">Unset</span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Estimated Duration */}
+          <span className="flex items-center justify-center text-muted-foreground">
+            <Clock size={16} aria-hidden="true" />
+          </span>
+          <span className="text-sm font-medium text-muted-foreground" id="meta-estimate-label">Estimate</span>
+          <div className="min-w-0 text-sm text-foreground" aria-labelledby="meta-estimate-label">
+            {onEstimateChange ? (
+              <DurationInput
+                value={task.estimatedMinutes}
+                onChange={(minutes) => onEstimateChange(task.id, minutes)}
+                disabled={isSubmitting}
+              />
+            ) : (
+              <span className={task.estimatedMinutes ? 'text-foreground' : 'text-muted-foreground'}>
+                {task.estimatedMinutes ? formatDuration(task.estimatedMinutes) : 'Unset'}
+              </span>
             )}
           </div>
 

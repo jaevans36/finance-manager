@@ -7,6 +7,7 @@ import { Button } from '../ui/button';
 import { SubtaskProgress } from './SubtaskProgress';
 import { StatusBadge } from './StatusBadge';
 import { QuadrantBadge } from './QuadrantBadge';
+import { EnergyBadge } from './EnergyBadge';
 
 interface TaskItemProps {
   task: Task;
@@ -93,6 +94,7 @@ export const TaskItem = memo(({
           <Badge variant={getPriorityVariant(task.priority)}>{task.priority}</Badge>
           <StatusBadge status={task.status} size="sm" />
           {task.quadrant && <QuadrantBadge quadrant={task.quadrant} size="sm" />}
+          {task.energyLevel && <EnergyBadge energy={task.energyLevel} size="sm" showLabel />}
           {isOverdue && <Badge variant="destructive">OVERDUE</Badge>}
           {task.hasSubtasks && (
             <Badge variant="secondary" className="px-1.5 py-0.5 text-[10px]">

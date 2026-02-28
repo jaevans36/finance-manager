@@ -213,6 +213,98 @@ public class TasksController : ControllerBase
         return Ok(suggestions);
     }
 
+    /// <summary>
+    /// Set the energy level for a task (Low, Medium, High).
+    /// </summary>
+    [HttpPatch("{id}/energy")]
+    public async System.Threading.Tasks.Task<ActionResult<TaskDto>> SetEnergy(
+        Guid id,
+        [FromBody] SetEnergyRequest request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var task = await _taskService.SetEnergyAsync(userId, id, request);
+            return Ok(task);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { error = new { message = "Task not found" } });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = new { message = ex.Message } });
+        }
+    }
+
+    /// <summary>
+    /// Set the estimated duration for a task in minutes.
+    /// </summary>
+    [HttpPatch("{id}/estimate")]
+    public async System.Threading.Tasks.Task<ActionResult<TaskDto>> SetEstimate(
+        Guid id,
+        [FromBody] SetEstimateRequest request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var task = await _taskService.SetEstimateAsync(userId, id, request);
+            return Ok(task);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { error = new { message = "Task not found" } });
+        }
+    }
+
+    /// <summary>
+    /// Bulk set energy level for multiple tasks.
+    /// </summary>
+    [HttpPost("bulk-energy")]
+    public async System.Threading.Tasks.Task<ActionResult<List<TaskDto>>> BulkSetEnergy(
+        [FromBody] BulkEnergyRequest request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var tasks = await _taskService.BulkSetEnergyAsync(userId, request);
+            return Ok(tasks);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = new { message = ex.Message } });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = new { message = ex.Message } });
+        }
+    }
+
+    /// <summary>
+    /// Get task suggestions filtered by energy level and available time.
+    /// Returns up to 10 non-completed tasks matching the criteria, sorted by urgency, due date, and priority.
+    /// </summary>
+    [HttpGet("suggestions")]
+    public async System.Threading.Tasks.Task<ActionResult<List<TaskDto>>> GetSuggestions(
+        [FromQuery] string? energy,
+        [FromQuery] int? maxMinutes)
+    {
+        var userId = GetUserId();
+        var suggestions = await _taskService.GetSuggestionsAsync(userId, energy, maxMinutes);
+        return Ok(suggestions);
+    }
+
+    /// <summary>
+    /// Get energy level distribution statistics across all root tasks.
+    /// </summary>
+    [HttpGet("energy-distribution")]
+    public async System.Threading.Tasks.Task<ActionResult<EnergyDistributionDto>> GetEnergyDistribution()
+    {
+        var userId = GetUserId();
+        var distribution = await _taskService.GetEnergyDistributionAsync(userId);
+        return Ok(distribution);
+    }
+
     private Guid GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;

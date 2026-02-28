@@ -16,6 +16,11 @@ public interface ITaskService
     System.Threading.Tasks.Task<TaskDto> ClassifyTaskAsync(Guid userId, Guid taskId, ClassifyTaskRequest request);
     System.Threading.Tasks.Task<List<TaskDto>> BulkClassifyAsync(Guid userId, BulkClassifyRequest request);
     System.Threading.Tasks.Task<MatrixResponse> GetMatrixAsync(Guid userId, Guid? groupId = null, string? priority = null, bool includeCompleted = false);
+    System.Threading.Tasks.Task<TaskDto> SetEnergyAsync(Guid userId, Guid taskId, SetEnergyRequest request);
+    System.Threading.Tasks.Task<TaskDto> SetEstimateAsync(Guid userId, Guid taskId, SetEstimateRequest request);
+    System.Threading.Tasks.Task<List<TaskDto>> BulkSetEnergyAsync(Guid userId, BulkEnergyRequest request);
+    System.Threading.Tasks.Task<List<TaskDto>> GetSuggestionsAsync(Guid userId, string? energy = null, int? maxMinutes = null);
+    System.Threading.Tasks.Task<EnergyDistributionDto> GetEnergyDistributionAsync(Guid userId);
     System.Threading.Tasks.Task DeleteTaskAsync(Guid userId, Guid taskId);
     System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid userId, Guid taskId, bool includeSubtasks = false);
     System.Threading.Tasks.Task<List<TaskDto>> GetTasksAsync(
@@ -67,6 +72,8 @@ public class TaskService : ITaskService
             Description = request.Description,
             Priority = priority,
             DueDate = request.DueDate.HasValue ? DateTime.SpecifyKind(request.DueDate.Value, DateTimeKind.Utc) : null,
+            EnergyLevel = Enum.TryParse<Models.EnergyLevel>(request.EnergyLevel, true, out var energy) ? energy : null,
+            EstimatedMinutes = request.EstimatedMinutes,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -98,6 +105,13 @@ public class TaskService : ITaskService
         if (request.DueDate.HasValue) task.DueDate = DateTime.SpecifyKind(request.DueDate.Value, DateTimeKind.Utc);
 
         if (request.GroupId.HasValue) task.GroupId = request.GroupId;
+
+        if (request.EnergyLevel != null && Enum.TryParse<Models.EnergyLevel>(request.EnergyLevel, true, out var energyLevel))
+        {
+            task.EnergyLevel = energyLevel;
+        }
+
+        if (request.EstimatedMinutes.HasValue) task.EstimatedMinutes = request.EstimatedMinutes;
 
         if (request.Completed.HasValue)
         {
@@ -354,6 +368,152 @@ public class TaskService : ITaskService
         };
     }
 
+    public async System.Threading.Tasks.Task<TaskDto> SetEnergyAsync(Guid userId, Guid taskId, SetEnergyRequest request)
+    {
+        var task = await _context.Tasks
+            .Include(t => t.Group)
+            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
+
+        if (task == null)
+        {
+            throw new KeyNotFoundException("Task not found");
+        }
+
+        if (!Enum.TryParse<Models.EnergyLevel>(request.EnergyLevel, true, out var energyLevel))
+        {
+            throw new ArgumentException($"Invalid energy level: {request.EnergyLevel}");
+        }
+
+        task.EnergyLevel = energyLevel;
+        task.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return await MapToTaskDtoAsync(task);
+    }
+
+    public async System.Threading.Tasks.Task<TaskDto> SetEstimateAsync(Guid userId, Guid taskId, SetEstimateRequest request)
+    {
+        var task = await _context.Tasks
+            .Include(t => t.Group)
+            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
+
+        if (task == null)
+        {
+            throw new KeyNotFoundException("Task not found");
+        }
+
+        task.EstimatedMinutes = request.EstimatedMinutes;
+        task.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return await MapToTaskDtoAsync(task);
+    }
+
+    public async System.Threading.Tasks.Task<List<TaskDto>> BulkSetEnergyAsync(Guid userId, BulkEnergyRequest request)
+    {
+        var taskIds = request.Items.Select(i => i.TaskId).ToList();
+        var tasks = await _context.Tasks
+            .Include(t => t.Group)
+            .Where(t => t.UserId == userId && taskIds.Contains(t.Id))
+            .ToListAsync();
+
+        var foundIds = tasks.Select(t => t.Id).ToHashSet();
+        var missingIds = taskIds.Where(id => !foundIds.Contains(id)).ToList();
+        if (missingIds.Count > 0)
+        {
+            throw new KeyNotFoundException($"Tasks not found: {string.Join(", ", missingIds)}");
+        }
+
+        foreach (var item in request.Items)
+        {
+            if (!Enum.TryParse<Models.EnergyLevel>(item.EnergyLevel, true, out var energyLevel))
+            {
+                throw new ArgumentException($"Invalid energy level: {item.EnergyLevel}");
+            }
+
+            var task = tasks.First(t => t.Id == item.TaskId);
+            task.EnergyLevel = energyLevel;
+            task.UpdatedAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+
+        var result = new List<TaskDto>();
+        foreach (var task in tasks)
+        {
+            result.Add(await MapToTaskDtoAsync(task));
+        }
+
+        return result;
+    }
+
+    public async System.Threading.Tasks.Task<List<TaskDto>> GetSuggestionsAsync(Guid userId, string? energy = null, int? maxMinutes = null)
+    {
+        var query = _context.Tasks
+            .Include(t => t.Group)
+            .Where(t => t.UserId == userId && t.Status != Models.TaskStatus.Completed && !t.Completed);
+
+        // Filter by energy level: include tasks at or below the selected energy level, plus untagged tasks
+        if (!string.IsNullOrEmpty(energy) && Enum.TryParse<Models.EnergyLevel>(energy, true, out var selectedEnergy))
+        {
+            query = query.Where(t => t.EnergyLevel == null || t.EnergyLevel <= selectedEnergy);
+        }
+
+        // Filter by max minutes: include tasks within duration limit, plus unestimated tasks
+        if (maxMinutes.HasValue)
+        {
+            query = query.Where(t => t.EstimatedMinutes == null || t.EstimatedMinutes <= maxMinutes.Value);
+        }
+
+        // Sort: Urgency (Q1 first via urgency+importance desc) → DueDate asc (nulls last) → Priority desc
+        var tasks = await query
+            .OrderByDescending(t => t.Urgency)
+            .ThenByDescending(t => t.Importance)
+            .ThenBy(t => t.DueDate.HasValue ? 0 : 1)
+            .ThenBy(t => t.DueDate)
+            .ThenByDescending(t => t.Priority)
+            .Take(10)
+            .ToListAsync();
+
+        var result = new List<TaskDto>();
+        foreach (var task in tasks)
+        {
+            result.Add(await MapToTaskDtoAsync(task));
+        }
+
+        return result;
+    }
+
+    public async System.Threading.Tasks.Task<EnergyDistributionDto> GetEnergyDistributionAsync(Guid userId)
+    {
+        var tasks = await _context.Tasks
+            .Where(t => t.UserId == userId && t.ParentTaskId == null)
+            .Select(t => new { t.EnergyLevel, t.Completed })
+            .ToListAsync();
+
+        var highTasks = tasks.Where(t => t.EnergyLevel == Models.EnergyLevel.High).ToList();
+        var mediumTasks = tasks.Where(t => t.EnergyLevel == Models.EnergyLevel.Medium).ToList();
+        var lowTasks = tasks.Where(t => t.EnergyLevel == Models.EnergyLevel.Low).ToList();
+        var untagged = tasks.Where(t => t.EnergyLevel == null).ToList();
+
+        return new EnergyDistributionDto
+        {
+            HighEnergyCount = highTasks.Count,
+            MediumEnergyCount = mediumTasks.Count,
+            LowEnergyCount = lowTasks.Count,
+            UntaggedCount = untagged.Count,
+            HighEnergyCompletionRate = highTasks.Count > 0
+                ? Math.Round((decimal)highTasks.Count(t => t.Completed) / highTasks.Count * 100, 1)
+                : 0,
+            MediumEnergyCompletionRate = mediumTasks.Count > 0
+                ? Math.Round((decimal)mediumTasks.Count(t => t.Completed) / mediumTasks.Count * 100, 1)
+                : 0,
+            LowEnergyCompletionRate = lowTasks.Count > 0
+                ? Math.Round((decimal)lowTasks.Count(t => t.Completed) / lowTasks.Count * 100, 1)
+                : 0,
+        };
+    }
+
     public async System.Threading.Tasks.Task DeleteTaskAsync(Guid userId, Guid taskId)
     {
         var task = await _context.Tasks
@@ -504,6 +664,8 @@ public class TaskService : ITaskService
             Urgency = task.Urgency?.ToString(),
             Importance = task.Importance?.ToString(),
             Quadrant = ComputeQuadrant(task.Urgency, task.Importance),
+            EnergyLevel = task.EnergyLevel?.ToString(),
+            EstimatedMinutes = task.EstimatedMinutes,
             GroupId = task.GroupId,
             GroupName = task.Group?.Name,
             GroupColour = task.Group?.Colour,

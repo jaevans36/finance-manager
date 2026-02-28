@@ -19,6 +19,8 @@ export const queryKeys = {
     matrix: (params?: Record<string, unknown>) => [...queryKeys.tasks.all, 'matrix', params] as const,
     suggestion: (id: string) => [...queryKeys.tasks.all, 'suggestion', id] as const,
     autoClassify: () => [...queryKeys.tasks.all, 'auto-classify'] as const,
+    suggestions: (params?: Record<string, unknown>) => [...queryKeys.tasks.all, 'suggestions', params] as const,
+    energyDistribution: () => [...queryKeys.tasks.all, 'energy-distribution'] as const,
   },
 
   subtasks: {

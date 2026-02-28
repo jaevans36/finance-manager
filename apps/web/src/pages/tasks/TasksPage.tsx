@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
-import { taskService, type Task, type TaskStatus, type UrgencyLevel, type ImportanceLevel } from '../../services/taskService';
+import { taskService, type Task, type TaskStatus, type UrgencyLevel, type ImportanceLevel, type EnergyLevel } from '../../services/taskService';
 import { eventService } from '../../services/eventService';
 import { taskGroupService } from '../../services/taskGroupService';
 import { subtaskService } from '../../services/subtaskService';
@@ -285,6 +285,32 @@ const TasksPage = () => {
     }
   };
 
+  const handleEnergyChange = async (id: string, energy: EnergyLevel | null) => {
+    if (!energy) return;
+    try {
+      const updatedTask = await taskService.setEnergy(id, energy);
+      setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
+      setEditingTask((prev) => (prev && prev.id === id ? updatedTask : prev));
+      toast.success('Energy level updated');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update energy level';
+      toast.error(message);
+    }
+  };
+
+  const handleEstimateChange = async (id: string, minutes: number | null) => {
+    if (!minutes) return;
+    try {
+      const updatedTask = await taskService.setEstimate(id, minutes);
+      setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
+      setEditingTask((prev) => (prev && prev.id === id ? updatedTask : prev));
+      toast.success('Estimate updated');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update estimate';
+      toast.error(message);
+    }
+  };
+
   const handleGroupCreated = () => {
     loadGroups();
   };
@@ -363,7 +389,6 @@ const TasksPage = () => {
               </DropdownMenu>
             </div>
           )}
-
           {loading ? (
             <div role="status" aria-label="Loading tasks">
               <TaskSkeleton count={5} />
@@ -389,6 +414,8 @@ const TasksPage = () => {
           onToggleComplete={handleToggleComplete}
           onStatusChange={handleStatusChange}
           onClassificationChange={handleClassificationChange}
+          onEnergyChange={handleEnergyChange}
+          onEstimateChange={handleEstimateChange}
           onSubtaskChange={handleSubtaskChange}
         />
       )}

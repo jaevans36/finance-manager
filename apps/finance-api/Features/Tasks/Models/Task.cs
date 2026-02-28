@@ -65,6 +65,13 @@ public class Task
     [Column("importance")]
     public ImportanceLevel? Importance { get; set; }
 
+    [Column("energy_level")]
+    public EnergyLevel? EnergyLevel { get; set; }
+
+    [Column("estimated_minutes")]
+    [Range(1, 480)]
+    public int? EstimatedMinutes { get; set; }
+
     [Column("created_at")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -108,6 +115,13 @@ public enum UrgencyLevel
 }
 
 public enum ImportanceLevel
+{
+    Low,
+    Medium,
+    High
+}
+
+public enum EnergyLevel
 {
     Low,
     Medium,
