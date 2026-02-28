@@ -57,6 +57,14 @@ prisma/migrations/
 # Test artifacts
 test-db.js
 test-output.txt
+tmp-test-output.txt
+
+# Vite cache
+.vite/
+
+# Agent skills and lock files
+.agents/
+skills-lock.json
 
 # .NET build artifacts
 bin/
