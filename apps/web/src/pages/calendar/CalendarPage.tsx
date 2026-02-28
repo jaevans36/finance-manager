@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '../../contexts/ToastContext';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { PageLayout } from '../../components/layout/PageLayout';
@@ -302,6 +302,28 @@ const CalendarPage = () => {
     }
   };
 
+  const handleSubtaskChange = useCallback(
+    (taskId: string, counts: { subtaskCount: number; completedSubtaskCount: number }) => {
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === taskId
+            ? {
+                ...t,
+                subtaskCount: counts.subtaskCount,
+                completedSubtaskCount: counts.completedSubtaskCount,
+                hasSubtasks: counts.subtaskCount > 0,
+                progressPercentage:
+                  counts.subtaskCount > 0
+                    ? Math.round((counts.completedSubtaskCount / counts.subtaskCount) * 100)
+                    : 0,
+              }
+            : t,
+        ),
+      );
+    },
+    [],
+  );
+
   const handleBadgeClick = (e: React.MouseEvent, date: Date) => {
     e.stopPropagation();
     setSelectedDate(date);
@@ -504,6 +526,7 @@ const CalendarPage = () => {
             setShowEditTask(false);
             setSelectedTask(null);
           }}
+          onSubtaskChange={handleSubtaskChange}
         />
       )}
 

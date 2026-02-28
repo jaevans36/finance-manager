@@ -59,6 +59,7 @@ function App() {
           <ToastProvider>
             <AuthProvider>
               <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <div className="font-sans text-foreground antialiased">
               <a href="#main-content" className="skip-to-content">
                 Skip to content
               </a>
@@ -181,6 +182,7 @@ function App() {
                 </Routes>
               </Suspense>
               </main>
+              </div>
             </BrowserRouter>
           </AuthProvider>
         </ToastProvider>

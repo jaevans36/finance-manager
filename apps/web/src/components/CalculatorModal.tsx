@@ -11,11 +11,11 @@ const btnBase =
   'flex items-center justify-center rounded-sm border border-border p-4 text-lg font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-px hover:shadow-md active:translate-y-0';
 
 const btnVariants: Record<string, string> = {
-  number: 'bg-card text-foreground',
-  operator: 'bg-primary text-white',
-  equals: 'bg-green-600 text-white',
-  clear: 'bg-destructive text-white',
-  copy: 'bg-blue-500 text-white',
+  number: 'bg-card text-foreground hover:bg-accent',
+  operator: 'bg-primary text-primary-foreground',
+  equals: 'bg-success text-success-foreground',
+  clear: 'bg-destructive text-destructive-foreground',
+  copy: 'bg-brand text-brand-foreground',
 };
 
 const CalculatorModal = ({ onClose }: CalculatorModalProps) => {
@@ -107,11 +107,11 @@ const CalculatorModal = ({ onClose }: CalculatorModalProps) => {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-black/50 p-4"
+      className="fixed inset-0 z-[1100] flex items-center justify-center overflow-y-auto bg-black/80 p-4"
       onClick={onClose}
     >
       <div
-        className="m-auto w-[400px] max-w-[90vw] max-h-[90vh] rounded-lg bg-card shadow-lg"
+        className="m-auto w-[400px] max-w-[90vw] max-h-[90vh] rounded-lg border border-border bg-card shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
