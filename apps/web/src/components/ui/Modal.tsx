@@ -39,7 +39,7 @@ export const Modal = ({ isOpen, onClose, title, children, className }: ModalProp
 
   return (
     <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-5"
+      className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/50 p-5"
       onClick={handleOverlayClick}
     >
       <div

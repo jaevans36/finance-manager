@@ -65,7 +65,7 @@ export const CreateTaskGroupModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50"
+      className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/50"
       onClick={onClose}
     >
       <div

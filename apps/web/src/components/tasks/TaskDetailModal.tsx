@@ -98,7 +98,7 @@ const getPriorityVariant = (
 // Tailwind CSS class constants
 // =============================================================================
 
-const overlayClasses = 'fixed inset-0 z-[1000] flex items-center justify-center bg-black/50';
+const overlayClasses = 'fixed inset-0 z-[1100] flex items-center justify-center bg-black/50';
 const modalClasses = 'flex w-[95%] max-w-[680px] flex-col overflow-hidden rounded-lg border border-border bg-card shadow-lg max-h-[95vh] md:w-[90%] md:max-h-[90vh]';
 const headerClasses = 'flex items-center justify-between gap-2 px-4 py-3 md:px-6 md:py-4';
 const bodyClasses = 'flex-1 overflow-y-auto px-4 pb-3 pt-0 md:px-6 md:pb-4';
