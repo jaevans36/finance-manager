@@ -13,7 +13,7 @@ const btnBase =
 const btnVariants: Record<string, string> = {
   number: 'bg-card text-foreground hover:bg-accent',
   operator: 'bg-primary text-primary-foreground',
-  equals: 'bg-success text-success-foreground',
+  equals: 'bg-success text-white',
   clear: 'bg-destructive text-destructive-foreground',
   copy: 'bg-brand text-brand-foreground',
 };

@@ -8,7 +8,7 @@ const levels: Array<{ value: 'Low' | 'Medium' | 'High'; label: string }> = [
 ];
 
 const urgencyColours: Record<string, string> = {
-  Low: 'bg-success/10 text-success-foreground border-success/30 dark:bg-success/10 dark:text-success',
+  Low: 'bg-success/10 text-success-foreground border-success/30',
   Medium: 'bg-warning/10 text-warning-foreground border-warning/30 dark:bg-warning/10 dark:text-warning',
   High: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/10 dark:text-destructive',
 };

@@ -25,7 +25,7 @@ const statusConfig: Record<TaskStatus, {
   Completed: {
     label: 'Completed',
     icon: CheckCircle2,
-    className: 'bg-success/10 text-success-foreground dark:bg-success/10 dark:text-success',
+    className: 'bg-success/10 text-success-foreground',
   },
 };
 

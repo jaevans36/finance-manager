@@ -12,7 +12,7 @@ const energyOptions: Array<{
     value: 'Low',
     label: 'Low',
     description: 'Routine tasks',
-    activeClass: 'bg-success/10 text-success-foreground border-success/30 dark:bg-success/10 dark:text-success',
+    activeClass: 'bg-success/10 text-success-foreground border-success/30',
   },
   {
     value: 'Medium',

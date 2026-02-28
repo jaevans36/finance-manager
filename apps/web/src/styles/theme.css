@@ -45,7 +45,7 @@
 
     /* ── Success ─────────────────────────────────────── */
     --success: 160 84% 39%;            /* #10B981 — better WCAG contrast */
-    --success-foreground: 0 0% 100%;   /* white text on green */
+    --success-foreground: 160 84% 25%; /* #0D7A54 dark green — readable on tinted bg */
 
     /* ── Warning (amber — distinct from destructive) ── */
     --warning: 38 92% 50%;             /* #F59E0B amber */

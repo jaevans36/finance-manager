@@ -82,15 +82,17 @@ const formatDate = (iso: string): string => {
 
 const getPriorityVariant = (
   p: Priority,
-): 'destructive' | 'warning' | 'outline' => {
+): 'destructive' | 'warning' | 'success' | 'secondary' => {
   switch (p) {
     case 'Critical':
     case 'High':
       return 'destructive';
     case 'Medium':
       return 'warning';
+    case 'Low':
+      return 'success';
     default:
-      return 'outline';
+      return 'secondary';
   }
 };
 
