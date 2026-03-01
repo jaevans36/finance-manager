@@ -1453,3 +1453,114 @@ Each task includes:
 | Frontend Component | T798 | 3h |
 | Frontend Tests | T799 | 2h |
 | **Total** | **8 tasks** | **27h (~1 week)** |
+---
+
+## Phase 25: Production Deployment & Infrastructure (Priority: P2)
+
+**Purpose**: Harden the application for public internet deployment with proper security, monitoring, CI/CD, and operational readiness. This phase covers everything needed to move from a LAN-only deployment to a fully production-ready service.
+
+**Estimated Effort**: 4 weeks (32 tasks total)
+
+**Dependencies**: LAN deployment guide complete (see `docs/guides/LAN_DEPLOYMENT.md`). Application feature-complete for initial release.
+
+**Spec**: `specs/platform/production-deployment.md` (to be created)
+
+### Security Hardening (Week 1, Days 1-3)
+
+- [ ] T800 [P] [Security] Generate and configure strong JWT secret via environment variable / secret manager - 2h
+- [ ] T801 [P] [Security] Enable JWT issuer and audience validation in `Program.cs` - 2h
+- [ ] T802 [Security] Enforce HTTPS — set `RequireHttpsMetadata = true`, configure HSTS headers - 3h
+- [ ] T803 [Security] Implement account lockout after failed login attempts (5 failures → 15 min lock) - 4h
+- [ ] T804 [Security] Add CSRF protection for state-changing endpoints - 3h
+- [ ] T805 [Security] Audit and harden Content-Security-Policy headers in `SecurityHeadersMiddleware` - 3h
+- [ ] T806 [Security] Remove Swagger UI from non-development environments (verify current gating) - 1h
+- [ ] T807 [Security] Implement API key rotation mechanism for JWT secrets - 4h
+- [ ] T808 [Security] Add sensitive data masking in all log outputs (passwords, tokens, PII) - 3h
+- [ ] T809 [Security] Conduct dependency vulnerability scan (`dotnet list package --vulnerable`, `pnpm audit`) - 2h
+
+### TLS & Domain Setup (Week 1, Days 4-5)
+
+- [ ] T810 [P] [Infra] Purchase and configure a domain name (DNS A/CNAME records) - 2h
+- [ ] T811 [Infra] Set up TLS certificates via Let's Encrypt (Caddy auto-HTTPS or certbot) - 3h
+- [ ] T812 [Infra] Update CORS configuration with production domain(s) - 1h
+- [ ] T813 [Infra] Configure HTTP → HTTPS redirect in reverse proxy - 1h
+
+### Containerisation & Orchestration (Week 2, Days 1-3)
+
+- [ ] T814 [P] [Infra] Create multi-stage Dockerfile for .NET API (`build` → `runtime` stages) - 3h
+- [ ] T815 [P] [Infra] Create Dockerfile for frontend (nginx serving static build) - 2h
+- [ ] T816 [Infra] Create production `docker-compose.prod.yml` with all services (db, api, web, proxy) - 4h
+- [ ] T817 [Infra] Add health check endpoints to API (`/health`, `/health/ready`) for orchestrati - 3h
+- [ ] T818 [Infra] Configure Docker volume backup strategy for PostgreSQL data - 2h
+
+### CI/CD Pipeline (Week 2, Days 4-5 + Week 3, Day 1)
+
+- [ ] T819 [P] [CI/CD] Create GitHub Actions workflow for automated testing on PR (lint, unit, integration) - 4h
+- [ ] T820 [P] [CI/CD] Create GitHub Actions workflow for E2E tests (Playwright in Docker) - 4h
+- [ ] T821 [CI/CD] Create build and push workflow for Docker images (GitHub Container Registry) - 3h
+- [ ] T822 [CI/CD] Create deployment workflow (staging → production promotion) - 4h
+- [ ] T823 [CI/CD] Add version tagging and CHANGELOG automation to release workflow - 2h
+
+### Database Production Readiness (Week 3, Days 2-4)
+
+- [ ] T824 [P] [Database] Configure PostgreSQL connection pooling (PgBouncer or Npgsql pooling) - 3h
+- [ ] T825 [Database] Implement automated database backup schedule (daily full, hourly WAL) - 4h
+- [ ] T826 [Database] Create and test database restore procedure with documentation - 3h
+- [ ] T827 [Database] Add database migration rollback scripts for each migration - 3h
+- [ ] T828 [Database] Configure database encryption at rest - 2h
+
+### Monitoring, Logging & Observability (Week 3, Day 5 + Week 4, Days 1-2)
+
+- [ ] T829 [P] [Monitoring] Set up centralised logging (Serilog → Seq, or ELK stack, or cloud provider) - 4h
+- [ ] T830 [Monitoring] Add application performance monitoring (APM) — response times, error rates - 4h
+- [ ] T831 [Monitoring] Configure uptime monitoring and alerting (health check polling) - 2h
+- [ ] T832 [Monitoring] Create operational dashboard (Grafana or cloud equivalent) - 4h
+
+### Documentation & Go-Live (Week 4, Days 3-5)
+
+- [ ] T833 [P] [Docs] Write production runbook (startup, shutdown, rollback, incident response) - 4h
+- [ ] T834 [P] [Docs] Write disaster recovery plan (RTO/RPO targets, recovery steps) - 3h
+- [ ] T835 [Docs] Create security audit checklist and complete final audit - 4h
+- [ ] T836 [Docs] Write user-facing privacy policy and data handling documentation - 3h
+- [ ] T837 [Go-Live] Perform load testing (k6 or Artillery) — target 100 concurrent users - 4h
+- [ ] T838 [Go-Live] Execute go-live checklist (DNS cutover, smoke tests, monitoring verification) - 3h
+
+**Checkpoint**: Application is deployed on a public URL with HTTPS, automated CI/CD, monitoring, backups, and full operational documentation
+
+### Success Criteria
+
+- Application accessible via HTTPS on a public domain
+- All traffic encrypted in transit (TLS 1.2+)
+- JWT secrets managed via environment variables / secret manager (no hardcoded values)
+- Account lockout prevents brute-force attacks
+- Automated CI/CD: push to `main` triggers build → test → deploy pipeline
+- Database backups run daily with tested restore procedure
+- Centralised logging with alerting on error rate spikes
+- Health check endpoints return correct status
+- Load test confirms 100 concurrent users with <500ms p95 response time
+- Zero critical/high vulnerabilities in dependency scan
+- All documentation (runbook, DR plan, security audit) complete and reviewed
+
+### Time Estimate Breakdown
+
+| Category | Tasks | Total Time |
+|----------|-------|------------|
+| Security Hardening | T800–T809 | 27h |
+| TLS & Domain | T810–T813 | 7h |
+| Containerisation | T814–T818 | 14h |
+| CI/CD Pipeline | T819–T823 | 17h |
+| Database Production | T824–T828 | 15h |
+| Monitoring | T829–T832 | 14h |
+| Documentation & Go-Live | T833–T838 | 21h |
+| **Total** | **39 tasks** | **115h (~4 weeks)** |
+
+### Risk Register
+
+| Risk | Likelihood | Impact | Mitigation |
+|---|---|---|---|
+| TLS certificate renewal failure | Low | High | Caddy auto-renew; monitoring alert 14 days before expiry |
+| Database corruption / data loss | Low | Critical | Daily backups + WAL archiving; tested restore procedure |
+| Secret key leak | Low | Critical | Environment variables only; no secrets in source control |
+| DDoS / abuse | Medium | High | Rate limiting + cloud WAF; IP allowlisting if needed |
+| Dependency vulnerability | Medium | Medium | Automated `dependabot` alerts; weekly audit schedule |
+| Deployment failure | Medium | Medium | Blue-green deployment; instant rollback via previous container image |

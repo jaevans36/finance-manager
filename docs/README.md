@@ -175,6 +175,10 @@ All completed phases now have dedicated documentation folders:
 - **[reference/security-audit.md](reference/security-audit.md)** - Security review
 - **[reference/v2-implementation-summary.md](reference/v2-implementation-summary.md)** - v2.0 summary
 - **[reference/PRISMA-CLIENT-FIX.md](reference/PRISMA-CLIENT-FIX.md)** - Historical fixes
+
+### Deployment
+- **[guides/LAN_DEPLOYMENT.md](guides/LAN_DEPLOYMENT.md)** - **📘 LAN deployment guide** (Caddy, custom hostname, firewall)
+- **[Production Deployment Spec](../specs/platform/production-deployment.md)** - Phase 25: production hardening plan
 ---
 
 ## 📖 Documentation Maintenance
