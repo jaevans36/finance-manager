@@ -1455,83 +1455,107 @@ Each task includes:
 | **Total** | **8 tasks** | **27h (~1 week)** |
 ---
 
-## Phase 25: Production Deployment & Infrastructure (Priority: P2)
+## Phase 25: Environments, Release Process & Production Deployment (Priority: P2)
 
-**Purpose**: Harden the application for public internet deployment with proper security, monitoring, CI/CD, and operational readiness. This phase covers everything needed to move from a LAN-only deployment to a fully production-ready service.
+**Purpose**: Establish professional environment management (Dev/UAT/Production), database separation, release process with quality gates, and production deployment infrastructure. This phase transforms the project from a single-environment development setup into a multi-environment, auditable delivery pipeline.
 
-**Estimated Effort**: 4 weeks (32 tasks total)
+**Estimated Effort**: 5 weeks (45 tasks total)
 
-**Dependencies**: LAN deployment guide complete (see `docs/guides/LAN_DEPLOYMENT.md`). Application feature-complete for initial release.
+**Dependencies**: Application feature-complete for initial UAT release.
 
-**Spec**: `specs/platform/production-deployment.md` (to be created)
+**Spec**: `specs/platform/production-deployment.md`, `docs/guides/ENVIRONMENTS_AND_RELEASES.md`
 
-### Security Hardening (Week 1, Days 1-3)
+### Environment Setup & Database Separation (Week 1, Days 1-3)
 
-- [ ] T800 [P] [Security] Generate and configure strong JWT secret via environment variable / secret manager - 2h
-- [ ] T801 [P] [Security] Enable JWT issuer and audience validation in `Program.cs` - 2h
-- [ ] T802 [Security] Enforce HTTPS — set `RequireHttpsMetadata = true`, configure HSTS headers - 3h
-- [ ] T803 [Security] Implement account lockout after failed login attempts (5 failures → 15 min lock) - 4h
-- [ ] T804 [Security] Add CSRF protection for state-changing endpoints - 3h
-- [ ] T805 [Security] Audit and harden Content-Security-Policy headers in `SecurityHeadersMiddleware` - 3h
-- [ ] T806 [Security] Remove Swagger UI from non-development environments (verify current gating) - 1h
-- [ ] T807 [Security] Implement API key rotation mechanism for JWT secrets - 4h
-- [ ] T808 [Security] Add sensitive data masking in all log outputs (passwords, tokens, PII) - 3h
-- [ ] T809 [Security] Conduct dependency vulnerability scan (`dotnet list package --vulnerable`, `pnpm audit`) - 2h
+- [ ] T800 [P] [Infra] Create `finance_manager_uat` database on existing PostgreSQL container - 1h
+- [ ] T801 [P] [Infra] Create `appsettings.Uat.json` with UAT-specific configuration (git-ignored) - 1h
+- [ ] T802 [P] [Infra] Create `apps/web/.env.uat` for UAT frontend build configuration - 1h
+- [ ] T803 [Infra] Implement `scripts/sync-db.ps1` — refresh Dev database from UAT (pg_dump/pg_restore) - 3h
+- [ ] T804 [Infra] Implement `scripts/deploy-uat.ps1` — automated UAT build, test, deploy, health check - 4h
+- [ ] T805 [Infra] Implement `scripts/backup-uat-db.ps1` — UAT database backup with 7-day retention - 2h
+- [ ] T806 [Infra] Configure Windows Scheduled Task for nightly Dev←UAT database sync (02:00) - 1h
+- [ ] T807 [Infra] Configure Windows Scheduled Task for nightly UAT database backup (02:00) - 1h
+- [ ] T808 [Infra] Update existing `scripts/reset-db.ps1` to support environment parameter - 2h
+- [ ] T809 [Infra] Move CORS allowed origins to `appsettings.json` (config-driven, not hardcoded) - 2h
 
-### TLS & Domain Setup (Week 1, Days 4-5)
+### Release Process & Quality Gates (Week 1, Days 4-5)
 
-- [ ] T810 [P] [Infra] Purchase and configure a domain name (DNS A/CNAME records) - 2h
-- [ ] T811 [Infra] Set up TLS certificates via Let's Encrypt (Caddy auto-HTTPS or certbot) - 3h
-- [ ] T812 [Infra] Update CORS configuration with production domain(s) - 1h
-- [ ] T813 [Infra] Configure HTTP → HTTPS redirect in reverse proxy - 1h
+- [ ] T810 [P] [Process] Document release checklist in `ENVIRONMENTS_AND_RELEASES.md` (pre-release, UAT, production gates) - 2h
+- [ ] T811 [P] [Process] Create UAT smoke test checklist (10 manual verification steps) - 1h
+- [ ] T812 [Process] Create self-review checklist for PRs (code quality, security, testing) - 2h
+- [ ] T813 [Process] Update BRANCHING-STRATEGY.md to reflect UAT deployment stage between develop and main - 1h
 
-### Containerisation & Orchestration (Week 2, Days 1-3)
+### Security Hardening (Week 2, Days 1-3)
 
-- [ ] T814 [P] [Infra] Create multi-stage Dockerfile for .NET API (`build` → `runtime` stages) - 3h
-- [ ] T815 [P] [Infra] Create Dockerfile for frontend (nginx serving static build) - 2h
-- [ ] T816 [Infra] Create production `docker-compose.prod.yml` with all services (db, api, web, proxy) - 4h
-- [ ] T817 [Infra] Add health check endpoints to API (`/health`, `/health/ready`) for orchestrati - 3h
-- [ ] T818 [Infra] Configure Docker volume backup strategy for PostgreSQL data - 2h
+- [ ] T814 [P] [Security] Generate and configure strong JWT secret for UAT via environment variable - 2h
+- [ ] T815 [P] [Security] Enable JWT issuer and audience validation in `Program.cs` - 2h
+- [ ] T816 [Security] Enforce HTTPS for Production — set `RequireHttpsMetadata = true`, configure HSTS headers - 3h
+- [ ] T817 [Security] Implement account lockout after failed login attempts (5 failures → 15 min lock) - 4h
+- [ ] T818 [Security] Add CSRF protection for state-changing endpoints - 3h
+- [ ] T819 [Security] Audit and harden Content-Security-Policy headers in `SecurityHeadersMiddleware` - 3h
+- [ ] T820 [Security] Remove Swagger UI from non-Development environments (verify current gating) - 1h
+- [ ] T821 [Security] Implement API key rotation mechanism for JWT secrets - 4h
+- [ ] T822 [Security] Add sensitive data masking in all log outputs (passwords, tokens, PII) - 3h
+- [ ] T823 [Security] Conduct dependency vulnerability scan (`dotnet list package --vulnerable`, `pnpm audit`) - 2h
 
-### CI/CD Pipeline (Week 2, Days 4-5 + Week 3, Day 1)
+### TLS & Domain Setup (Week 2, Days 4-5)
 
-- [ ] T819 [P] [CI/CD] Create GitHub Actions workflow for automated testing on PR (lint, unit, integration) - 4h
-- [ ] T820 [P] [CI/CD] Create GitHub Actions workflow for E2E tests (Playwright in Docker) - 4h
-- [ ] T821 [CI/CD] Create build and push workflow for Docker images (GitHub Container Registry) - 3h
-- [ ] T822 [CI/CD] Create deployment workflow (staging → production promotion) - 4h
-- [ ] T823 [CI/CD] Add version tagging and CHANGELOG automation to release workflow - 2h
+- [ ] T824 [P] [Infra] Purchase and configure a domain name (DNS A/CNAME records) - 2h
+- [ ] T825 [Infra] Set up TLS certificates via Let's Encrypt (Caddy auto-HTTPS or certbot) - 3h
+- [ ] T826 [Infra] Update CORS configuration with production domain(s) - 1h
+- [ ] T827 [Infra] Configure HTTP → HTTPS redirect in reverse proxy - 1h
 
-### Database Production Readiness (Week 3, Days 2-4)
+### Containerisation & Orchestration (Week 3, Days 1-3)
 
-- [ ] T824 [P] [Database] Configure PostgreSQL connection pooling (PgBouncer or Npgsql pooling) - 3h
-- [ ] T825 [Database] Implement automated database backup schedule (daily full, hourly WAL) - 4h
-- [ ] T826 [Database] Create and test database restore procedure with documentation - 3h
-- [ ] T827 [Database] Add database migration rollback scripts for each migration - 3h
-- [ ] T828 [Database] Configure database encryption at rest - 2h
+- [ ] T828 [P] [Infra] Create multi-stage Dockerfile for .NET API (`build` → `runtime` stages) - 3h
+- [ ] T829 [P] [Infra] Create Dockerfile for frontend (nginx serving static build) - 2h
+- [ ] T830 [Infra] Create production `docker-compose.prod.yml` with all services (db, api, web, proxy) - 4h
+- [ ] T831 [Infra] Add health check endpoints to API (`/health`, `/health/ready`) for orchestration - 3h
+- [ ] T832 [Infra] Configure Docker volume backup strategy for PostgreSQL data - 2h
 
-### Monitoring, Logging & Observability (Week 3, Day 5 + Week 4, Days 1-2)
+### CI/CD Pipeline (Week 3, Days 4-5 + Week 4, Day 1)
 
-- [ ] T829 [P] [Monitoring] Set up centralised logging (Serilog → Seq, or ELK stack, or cloud provider) - 4h
-- [ ] T830 [Monitoring] Add application performance monitoring (APM) — response times, error rates - 4h
-- [ ] T831 [Monitoring] Configure uptime monitoring and alerting (health check polling) - 2h
-- [ ] T832 [Monitoring] Create operational dashboard (Grafana or cloud equivalent) - 4h
+- [ ] T833 [P] [CI/CD] Create GitHub Actions workflow for automated testing on PR (lint, unit, integration) - 4h
+- [ ] T834 [P] [CI/CD] Create GitHub Actions workflow for E2E tests (Playwright in Docker) - 4h
+- [ ] T835 [CI/CD] Create build and push workflow for Docker images (GitHub Container Registry) - 3h
+- [ ] T836 [CI/CD] Create deployment workflow (staging → production promotion) - 4h
+- [ ] T837 [CI/CD] Add version tagging and CHANGELOG automation to release workflow - 2h
 
-### Documentation & Go-Live (Week 4, Days 3-5)
+### Database Production Readiness (Week 4, Days 2-4)
 
-- [ ] T833 [P] [Docs] Write production runbook (startup, shutdown, rollback, incident response) - 4h
-- [ ] T834 [P] [Docs] Write disaster recovery plan (RTO/RPO targets, recovery steps) - 3h
-- [ ] T835 [Docs] Create security audit checklist and complete final audit - 4h
-- [ ] T836 [Docs] Write user-facing privacy policy and data handling documentation - 3h
-- [ ] T837 [Go-Live] Perform load testing (k6 or Artillery) — target 100 concurrent users - 4h
-- [ ] T838 [Go-Live] Execute go-live checklist (DNS cutover, smoke tests, monitoring verification) - 3h
+- [ ] T838 [P] [Database] Configure PostgreSQL connection pooling (PgBouncer or Npgsql pooling) - 3h
+- [ ] T839 [Database] Implement automated production database backup (daily full, hourly WAL) - 4h
+- [ ] T840 [Database] Create and test database restore procedure with documentation - 3h
+- [ ] T841 [Database] Add database migration rollback scripts for each migration - 3h
+- [ ] T842 [Database] Configure database encryption at rest - 2h
 
-**Checkpoint**: Application is deployed on a public URL with HTTPS, automated CI/CD, monitoring, backups, and full operational documentation
+### Monitoring, Logging & Observability (Week 4, Day 5 + Week 5, Days 1-2)
+
+- [ ] T843 [P] [Monitoring] Set up centralised logging (Serilog → Seq, or ELK stack, or cloud provider) - 4h
+- [ ] T844 [Monitoring] Add application performance monitoring (APM) — response times, error rates - 4h
+- [ ] T845 [Monitoring] Configure uptime monitoring and alerting (health check polling) - 2h
+- [ ] T846 [Monitoring] Create operational dashboard (Grafana or cloud equivalent) - 4h
+
+### Documentation & Go-Live (Week 5, Days 3-5)
+
+- [ ] T847 [P] [Docs] Write production runbook (startup, shutdown, rollback, incident response) - 4h
+- [ ] T848 [P] [Docs] Write disaster recovery plan (RTO/RPO targets, recovery steps) - 3h
+- [ ] T849 [Docs] Create security audit checklist and complete final audit - 4h
+- [ ] T850 [Docs] Write user-facing privacy policy and data handling documentation - 3h
+- [ ] T851 [Go-Live] Perform load testing (k6 or Artillery) — target 100 concurrent users - 4h
+- [ ] T852 [Go-Live] Execute go-live checklist (DNS cutover, smoke tests, monitoring verification) - 3h
+
+**Checkpoint**: Application deployed with separate Dev/UAT/Production environments, automated release process with quality gates, and full operational readiness
 
 ### Success Criteria
 
-- Application accessible via HTTPS on a public domain
-- All traffic encrypted in transit (TLS 1.2+)
-- JWT secrets managed via environment variables / secret manager (no hardcoded values)
+- Three separate databases (Dev, Test, UAT) with isolated data
+- Dev database refreshed from UAT nightly (automated) or on demand
+- UAT deployable via single script (`deploy-uat.ps1`) with rollback capability
+- All releases pass through quality gates (PR → UAT → Production)
+- Release checklist enforced before every deployment
+- Application accessible via HTTPS on a public domain (Production)
+- JWT secrets managed via environment variables (no hardcoded values)
 - Account lockout prevents brute-force attacks
 - Automated CI/CD: push to `main` triggers build → test → deploy pipeline
 - Database backups run daily with tested restore procedure
@@ -1539,28 +1563,32 @@ Each task includes:
 - Health check endpoints return correct status
 - Load test confirms 100 concurrent users with <500ms p95 response time
 - Zero critical/high vulnerabilities in dependency scan
-- All documentation (runbook, DR plan, security audit) complete and reviewed
+- All documentation (runbook, DR plan, security audit, release process) complete
 
 ### Time Estimate Breakdown
 
 | Category | Tasks | Total Time |
 |----------|-------|------------|
-| Security Hardening | T800–T809 | 27h |
-| TLS & Domain | T810–T813 | 7h |
-| Containerisation | T814–T818 | 14h |
-| CI/CD Pipeline | T819–T823 | 17h |
-| Database Production | T824–T828 | 15h |
-| Monitoring | T829–T832 | 14h |
-| Documentation & Go-Live | T833–T838 | 21h |
-| **Total** | **39 tasks** | **115h (~4 weeks)** |
+| Environment Setup & DB Separation | T800–T809 | 18h |
+| Release Process & Quality Gates | T810–T813 | 6h |
+| Security Hardening | T814–T823 | 27h |
+| TLS & Domain | T824–T827 | 7h |
+| Containerisation | T828–T832 | 14h |
+| CI/CD Pipeline | T833–T837 | 17h |
+| Database Production | T838–T842 | 15h |
+| Monitoring | T843–T846 | 14h |
+| Documentation & Go-Live | T847–T852 | 21h |
+| **Total** | **53 tasks** | **139h (~5 weeks)** |
 
 ### Risk Register
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
+| UAT data corruption during sync | Low | Medium | Backup UAT before every sync; tested restore procedure |
 | TLS certificate renewal failure | Low | High | Caddy auto-renew; monitoring alert 14 days before expiry |
 | Database corruption / data loss | Low | Critical | Daily backups + WAL archiving; tested restore procedure |
 | Secret key leak | Low | Critical | Environment variables only; no secrets in source control |
 | DDoS / abuse | Medium | High | Rate limiting + cloud WAF; IP allowlisting if needed |
 | Dependency vulnerability | Medium | Medium | Automated `dependabot` alerts; weekly audit schedule |
-| Deployment failure | Medium | Medium | Blue-green deployment; instant rollback via previous container image |
+| Deployment failure | Medium | Medium | Automated rollback via `deploy-uat.ps1 -Rollback`; blue-green for production |
+| Dev/UAT data drift | Medium | Low | Nightly sync + on-demand refresh script |

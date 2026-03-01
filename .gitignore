@@ -20,6 +20,11 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.uat
+
+# ASP.NET environment-specific config (may contain secrets)
+appsettings.Uat.json
+appsettings.Production.json
 
 # Logs
 logs
@@ -53,6 +58,10 @@ prisma/migrations/
 .cache
 .temp
 *.tsbuildinfo
+
+# Deployment artefacts
+deploy/
+backups/
 
 # Test artifacts
 test-db.js

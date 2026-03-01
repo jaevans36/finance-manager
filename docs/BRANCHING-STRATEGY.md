@@ -1,8 +1,9 @@
 # Branching Strategy — Finance Manager
 
-> **Last Updated**: 2026-02-26
+> **Last Updated**: 2026-03-01
 > **ADR**: ADR-020
 > **Status**: Active
+> **See also**: [Environments & Releases](guides/ENVIRONMENTS_AND_RELEASES.md) for full deployment and quality gate details
 
 ---
 
@@ -18,6 +19,18 @@ This project follows a **modified GitFlow** branching model with phase-based fea
 | `develop` | Integration branch for completed phases | Permanent | `main` (on release) |
 | `phase-XX/description` | Single phase of work | Days to weeks | `develop` |
 | `hotfix/description` | Urgent fixes for production | Hours to days | `main` + `develop` |
+
+### Branch–Environment Mapping
+
+Each branch type maps to a deployment environment:
+
+| Branch | Environment | Database | Auto-Deploy? |
+|--------|-------------|----------|-------------|
+| `phase-XX/*` | Dev (local) | `finance_manager_dev` | Manual (`start-dev.ps1`) |
+| `develop` | **UAT** | `finance_manager_uat` | Via `deploy-uat.ps1` |
+| `main` | Production | `finance_manager_prod` | Via CI/CD pipeline (future) |
+
+> **Note**: UAT is the current "live" LAN deployment — see [Environments & Releases](guides/ENVIRONMENTS_AND_RELEASES.md) for full details on environment strategy, database management, and quality gates.
 
 ## Branch Naming Convention
 
@@ -129,8 +142,20 @@ git checkout -b hotfix/auth-token-expiry
 
 ## Release Process
 
+### UAT Deployment (after each phase merge)
+
+When a phase branch is squash-merged into `develop`, deploy to UAT:
+
+1. Run `.\scripts\deploy-uat.ps1` — builds, tests, migrates, deploys, health-checks
+2. Perform UAT smoke test checklist (see [Environments & Releases — UAT Gate](guides/ENVIRONMENTS_AND_RELEASES.md))
+3. If issues found, fix on a new phase branch and repeat
+4. If smoke test passes, the change is UAT-verified
+
+### Production Release (version cut)
+
 1. All planned phases for the release are merged into `develop`
-2. Final testing on `develop` (run full test suite)
+2. UAT smoke test passes on `develop`
+3. Final testing on `develop` (run full test suite)
 3. Update version files:
    - `VERSION.json` (version, releaseDate, changelog)
    - `CHANGELOG.md` (new section)
@@ -169,7 +194,7 @@ Configure these rules on the remote (GitHub):
 
 ## Current State
 
-As of 2026-02-26, the project is transitioning to this strategy:
+As of 2026-03-01, the project is transitioning to this strategy:
 
 1. **Existing branch `001-todo-app`** contains all work through Phase 49
 2. This will be merged into `main` to establish the baseline

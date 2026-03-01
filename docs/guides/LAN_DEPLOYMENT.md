@@ -1,10 +1,13 @@
 # LAN Deployment Guide
 
 **Created**: 2026-02-14
+**Last Updated**: 2026-03-01
 **Status**: Active
-**Scope**: Local network (LAN) only — not internet-facing
+**Scope**: UAT environment — local network (LAN) only, not internet-facing
 
-> **⚠️ Important**: This guide is for deploying Finance Manager on your local home/office network only. A full security audit has not been completed. Do **not** expose this deployment to the public internet. See [Phase 25: Production Deployment](#production-deployment-phase) in specs for the future production plan.
+> **Context**: This guide covers the one-time setup for the UAT environment on your local network. For the full environment strategy, database management, and release process, see the [Environments, Release & Deployment Guide](ENVIRONMENTS_AND_RELEASES.md).
+
+> **⚠️ Important**: This deployment is for UAT (User Acceptance Testing) on a trusted LAN. A full security audit has not been completed. Do **not** expose this to the public internet.
 
 ---
 
@@ -150,11 +153,21 @@ You should see replies from your LAN IP.
 
 ## Step 3: Configure the Database
 
-The existing Docker Compose file works as-is for LAN deployment. However, you should change the default credentials.
+The existing Docker Compose file runs a single PostgreSQL container. For UAT, you'll use a separate database (`finance_manager_uat`) on the same container, keeping it isolated from the Dev database.
 
-### 3a. Update Docker Compose credentials
+> **See**: [Database Management](ENVIRONMENTS_AND_RELEASES.md#2-database-management) for the full multi-database strategy.
 
-Edit `docker-compose.yml`:
+### 3a. Create the UAT Database
+
+The UAT database runs alongside the Dev database on the same PostgreSQL container. Create it:
+
+```powershell
+docker exec finance-manager-db psql -U postgres -c "CREATE DATABASE finance_manager_uat;"
+```
+
+### 3b. Update Docker Compose credentials (optional but recommended)
+
+For the UAT database, consider using stronger credentials than the Dev defaults. Edit `docker-compose.yml` or set credentials via environment variable when connecting:
 
 ```yaml
 services:
@@ -181,17 +194,22 @@ services:
 
 ### 3b. Update the Connection String
 
-Edit `apps/finance-api/appsettings.json` (or create an `appsettings.Lan.json` override):
+Create `apps/finance-api/appsettings.Uat.json` (add this file to `.gitignore`):
 
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=finance_manager;Username=financemanager;Password=<same-strong-password>"
+    "DefaultConnection": "Host=localhost;Port=5432;Database=finance_manager_uat;Username=postgres;Password=password"
+  },
+  "RateLimit": {
+    "Enabled": true,
+    "MaxRequestsPerMinute": 60,
+    "MaxRequestsPerHour": 1000
   }
 }
 ```
 
-### 3c. Start the Database & Apply Migrations
+### 3c. Apply Migrations to UAT Database
 
 ```powershell
 docker-compose up -d
@@ -432,7 +450,14 @@ Get-NetFirewallRule -DisplayName "Finance Manager*" | Format-Table DisplayName, 
 
 ## Step 8: Start Everything
 
-Here's the full startup sequence:
+For the initial setup, use the full startup sequence below. For subsequent deployments, use the UAT deployment script:
+
+```powershell
+# Subsequent deployments — use the automated script:
+.\scripts\deploy-uat.ps1
+```
+
+For the first time or manual startup:
 
 ```powershell
 # 1. Start the database
@@ -535,7 +560,7 @@ This LAN deployment provides **basic security** suitable for a trusted home/offi
 - Data loss if the host machine fails (no off-site backups)
 - Brute-force attacks (rate limiting helps, but no account lockout)
 
-> **See**: [Phase 25: Production Deployment](../specs/001-todo-app/tasks.md) for the full production hardening plan.
+> **See**: [Environments, Release & Deployment Guide](ENVIRONMENTS_AND_RELEASES.md) for the full production hardening plan (Phase 25).
 
 ---
 

@@ -120,20 +120,26 @@ All completed phases now have dedicated documentation folders:
 
 ## 🚀 Deployment & Operations
 
+### Environments & Release Process
+- **[guides/ENVIRONMENTS_AND_RELEASES.md](guides/ENVIRONMENTS_AND_RELEASES.md)** - **📘 Single source of truth** for environment strategy (Dev/UAT/Production), database management, release process, quality gates, rollback procedures, and go-live checklist
+- **[guides/LAN_DEPLOYMENT.md](guides/LAN_DEPLOYMENT.md)** - Step-by-step UAT setup guide (Caddy, custom hostname, firewall)
+- **[Production Deployment Spec](../specs/platform/production-deployment.md)** - Phase 25: production infrastructure and security hardening
+
 ### CI/CD
 - **[operations/CI-CD.md](operations/CI-CD.md)** - Continuous integration setup
-- **[view-logs.ps1](../scripts/view-logs.ps1)** - Log viewing script
 - GitHub Actions workflows in `.github/workflows/`
+
+### Branching & Versioning
+- **[BRANCHING-STRATEGY.md](BRANCHING-STRATEGY.md)** - Modified GitFlow with phase branches
+- **[VERSION-MANAGEMENT.md](VERSION-MANAGEMENT.md)** - Semantic versioning and changelog
 
 ### Logging & Monitoring
 - **[operations/LOGGING.md](operations/LOGGING.md)** - Logging strategy
 - **[operations/error-logging-monitoring.md](operations/error-logging-monitoring.md)** - Error tracking
+- **[view-logs.ps1](../scripts/view-logs.ps1)** - Log viewing script
 
 ### Email Configuration
 - **[operations/EMAIL-SETUP.md](operations/EMAIL-SETUP.md)** - Email service setup
-
-### Deployment Plans
-- **[specs/applications/todo/enhancements.md](../specs/applications/todo/enhancements.md)** - Phase 5: Deployment specs
 
 ---
 
@@ -175,10 +181,6 @@ All completed phases now have dedicated documentation folders:
 - **[reference/security-audit.md](reference/security-audit.md)** - Security review
 - **[reference/v2-implementation-summary.md](reference/v2-implementation-summary.md)** - v2.0 summary
 - **[reference/PRISMA-CLIENT-FIX.md](reference/PRISMA-CLIENT-FIX.md)** - Historical fixes
-
-### Deployment
-- **[guides/LAN_DEPLOYMENT.md](guides/LAN_DEPLOYMENT.md)** - **📘 LAN deployment guide** (Caddy, custom hostname, firewall)
-- **[Production Deployment Spec](../specs/platform/production-deployment.md)** - Phase 25: production hardening plan
 ---
 
 ## 📖 Documentation Maintenance
@@ -239,7 +241,7 @@ All completed phases now have dedicated documentation folders:
 
 ---
 
-**Last Updated**: 2026-01-14  
+**Last Updated**: 2026-03-01  
 **Maintained By**: Development Team
 
 For questions or suggestions about documentation, please discuss in team meetings or create issues in the repository.

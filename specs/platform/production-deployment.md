@@ -1,18 +1,21 @@
 # Production Deployment Specification
 
 **Created**: 2026-02-14
+**Last Updated**: 2026-03-01
 **Status**: Draft
 **Priority**: P2
 **Phase**: 25
-**Dependencies**: LAN deployment operational, all application features stable
+**Dependencies**: UAT environment operational, application feature-complete for initial release
+
+> **Parent document**: [Environments, Release & Deployment Guide](../../docs/guides/ENVIRONMENTS_AND_RELEASES.md) — covers the full environment strategy, database management, and release process across Dev, UAT, and Production.
+>
+> This spec focuses specifically on the **Production environment** infrastructure and security hardening tasks.
 
 ---
 
 ## Overview
 
-This specification defines the requirements and approach for deploying Finance Manager as a publicly accessible, production-grade application. It covers security hardening, infrastructure, CI/CD, monitoring, and operational readiness.
-
-The application is currently deployed on a local network only (see `docs/guides/LAN_DEPLOYMENT.md`). This phase transitions from LAN → production with full security, automation, and observability.
+This specification defines the requirements for transitioning Finance Manager from the current UAT (LAN) deployment to a publicly accessible, production-grade application. It covers security hardening, infrastructure, CI/CD, monitoring, and operational readiness.
 
 ---
 
