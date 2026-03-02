@@ -156,15 +156,17 @@ When a phase branch is squash-merged into `develop`, deploy to UAT:
 1. All planned phases for the release are merged into `develop`
 2. UAT smoke test passes on `develop`
 3. Final testing on `develop` (run full test suite)
-3. Update version files:
-   - `VERSION.json` (version, releaseDate, changelog)
-   - `CHANGELOG.md` (new section)
-   - `apps/web/package.json` (version field)
-   - `apps/finance-api/FinanceApi.csproj` (`<Version>` tag)
-4. Commit: `chore: bump version to v0.X.0`
-5. Merge `develop` → `main`
-6. Tag: `git tag -a v0.X.0 -m "Release v0.X.0: Description"`
-7. Push: `git push origin main --tags`
+4. Merge `develop` → `main`
+5. **release-please** automatically creates a Release PR with:
+   - Version bump (from conventional commits: `feat:` → minor, `fix:` → patch)
+   - Updated CHANGELOG.md
+   - Synced version in `package.json`, `VERSION.json`, `apps/web/package.json`, `FinanceApi.csproj`
+6. Review the Release PR — edit changelog or version if needed
+7. Merge the Release PR → release-please creates a **GitHub Release** + **git tag**
+8. (Optional) Update `VERSION.json` metadata (codename, description, changelog array) in a follow-up commit
+
+> **Config files**: `release-please-config.json`, `.release-please-manifest.json`
+> **Workflow**: `.github/workflows/release-please.yml`
 
 ## Version Mapping
 
@@ -215,8 +217,11 @@ git commit -m "feat: description (TXXX)"
 git push -u origin phase-XX/description
 # Create PR → develop (squash merge)
 
+# Deploy to UAT
+.\scripts\deploy-uat.ps1
+
 # Cut a release
-git checkout main && git merge develop
-git tag -a vX.Y.Z -m "Release vX.Y.Z: Description"
-git push origin main --tags
+git checkout main && git merge develop && git push origin main
+# release-please will create a Release PR automatically
+# Merge the Release PR to publish the release + tag
 ```

@@ -295,21 +295,21 @@ Create `apps/finance-api/appsettings.Uat.json` (add to `.gitignore`):
 ┌──────────────────────────▼──────────────────────────────────────────┐
 │  GATE: Release Preparation                                          │
 │                                                                     │
-│  1. Run full test suite against UAT database                       │
-│  2. Update version files:                                           │
-│     - VERSION.json                                                  │
-│     - CHANGELOG.md                                                  │
-│     - apps/web/package.json                                        │
-│     - apps/finance-api/FinanceApi.csproj                           │
-│  3. Commit: "chore: bump version to vX.Y.Z"                       │
-│  4. Final code review of version bump                               │
+│  1. Merge develop → main                                           │
+│  2. release-please automatically creates a Release PR with:        │
+│     - Version bump (based on conventional commits)                 │
+│     - CHANGELOG.md update                                           │
+│     - Synced version in package.json, VERSION.json, .csproj        │
+│  3. Review Release PR — edit changelog/version if needed           │
+│  4. Merge Release PR → creates GitHub Release + git tag            │
+│  See: release-please-config.json, .release-please-manifest.json    │
 └──────────────────────────┬──────────────────────────────────────────┘
                            │
 ┌──────────────────────────▼──────────────────────────────────────────┐
 │  GATE: Production Deployment                                        │
 │                                                                     │
 │  1. Merge develop → main                                           │
-│  2. Tag: git tag -a vX.Y.Z -m "Release vX.Y.Z: Description"      │
+│  2. release-please creates GitHub Release + git tag automatically  │
 │  3. Deploy to production (manual now, CI/CD future)                │
 │  4. Run production smoke tests                                      │
 │  5. Monitor for 30 minutes post-deploy                              │
@@ -331,7 +331,7 @@ Before every release, the following must be verified:
 - [ ] No ESLint errors or warnings
 - [ ] No `any` types introduced
 - [ ] Dependency audit clean (`pnpm audit`, `dotnet list package --vulnerable`)
-- [ ] CHANGELOG.md updated with user-facing changes
+- [ ] CHANGELOG.md updated with user-facing changes (or rely on release-please auto-generation)
 - [ ] Phase completion documentation written (`docs/phases/`)
 
 #### Pre-Release (UAT)
