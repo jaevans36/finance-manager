@@ -15,7 +15,7 @@
 
 ## Overview
 
-This specification defines the requirements for transitioning Finance Manager from the current UAT (LAN) deployment to a publicly accessible, production-grade application. It covers security hardening, infrastructure, CI/CD, monitoring, and operational readiness.
+This specification defines the requirements for transitioning Life Manager from the current UAT (LAN) deployment to a publicly accessible, production-grade application. It covers security hardening, infrastructure, CI/CD, monitoring, and operational readiness.
 
 ---
 
@@ -146,7 +146,7 @@ FROM node:20-alpine AS build
 WORKDIR /app
 COPY . .
 RUN corepack enable && pnpm install --frozen-lockfile
-RUN pnpm --filter @finance-manager/web build
+RUN pnpm --filter @life-manager/web build
 
 FROM nginx:alpine
 COPY --from=build /app/apps/web/dist /usr/share/nginx/html
@@ -297,7 +297,7 @@ GET /health/ready  → 200 OK (database connected, services ready)
 
 ### US-25.1: Secure Public Access (P1)
 
-**As a** user, **I want** to access Finance Manager securely over the internet **so that** I can manage my tasks and finances from anywhere.
+**As a** user, **I want** to access Life Manager securely over the internet **so that** I can manage my tasks and finances from anywhere.
 
 **Acceptance Criteria**:
 1. **Given** a user navigates to the production URL, **When** the page loads, **Then** the connection is encrypted (HTTPS, TLS 1.2+)

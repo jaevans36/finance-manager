@@ -4,7 +4,7 @@ import { XCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
 import { useLoginForm } from '../../hooks/forms';
-import type { LoginInput } from '@finance-manager/schema';
+import type { LoginInput } from '@life-manager/schema';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';

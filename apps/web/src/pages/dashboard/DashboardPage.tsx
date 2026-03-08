@@ -6,15 +6,18 @@ import { eventService } from '../../services/eventService';
 import { taskGroupService } from '../../services/taskGroupService';
 import { PageLayout } from '../../components/layout/PageLayout';
 import { cn } from '../../lib/utils';
-import { 
-  CheckCircle, 
-  Calendar, 
-  FolderKanban, 
-  ListTodo, 
+import {
+  CheckCircle,
+  Calendar,
+  FolderKanban,
+  ListTodo,
   TrendingUp,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Plus,
+  Sparkles
 } from 'lucide-react';
+import { Button } from '../../components/ui/button';
 import type { Event } from '../../types/event';
 
 interface StatIconProps {
@@ -290,6 +293,35 @@ const DashboardPage = () => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Onboarding — shown only when user has no tasks yet */}
+      {!loading && stats.totalTasks === 0 && (
+        <div className="rounded-lg border border-dashed border-border bg-secondary/50 p-8 text-center">
+          <div className="mb-4 flex justify-center">
+            <div className="flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Sparkles size={28} />
+            </div>
+          </div>
+          <h2 className="mb-2 font-display text-display-sm text-foreground">Welcome — let's get started</h2>
+          <p className="mb-6 text-sm text-muted-foreground">
+            Create your first task, add it to a group, and try the calendar view to see your week at a glance.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Button onClick={() => navigate('/tasks')}>
+              <Plus size={16} className="mr-2" />
+              Create your first task
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/calendar')}>
+              <Calendar size={16} className="mr-2" />
+              Open calendar
+            </Button>
+          </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            Tip: Press <kbd className="rounded border border-border bg-muted px-1 font-mono text-xs">N</kbd> on the Tasks page to create a task,
+            or <kbd className="rounded border border-border bg-muted px-1 font-mono text-xs">/</kbd> to search.
+          </p>
         </div>
       )}
     </PageLayout>

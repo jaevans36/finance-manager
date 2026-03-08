@@ -27,7 +27,7 @@
 
 ### Infrastructure: Tailwind Installation & Configuration (Days 1-2)
 
-- [ ] T1257 [P] [US1] Install Tailwind CSS, PostCSS, autoprefixer in `apps/web/` — `pnpm --filter @finance-manager/web add -D tailwindcss postcss autoprefixer` - 1h
+- [ ] T1257 [P] [US1] Install Tailwind CSS, PostCSS, autoprefixer in `apps/web/` — `pnpm --filter @life-manager/web add -D tailwindcss postcss autoprefixer` - 1h
 - [ ] T1258 [P] [US1] Install utility packages: `clsx`, `tailwind-merge`, `class-variance-authority` in `apps/web/` - 1h
 - [ ] T1259 [US1] Create PostCSS config at `apps/web/postcss.config.js` with Tailwind and autoprefixer plugins - 1h
 - [ ] T1260 [US1] Create shared Tailwind preset at `packages/ui/tailwind.preset.ts` mapping existing design tokens (spacing, colours, border-radius, typography, shadows) to Tailwind config - 4h
@@ -111,7 +111,7 @@
 
 ## Phase 50: React Hook Form & Zod Validation (Priority: P2)
 
-**Purpose**: Replace manual form state management with React Hook Form and Zod schemas. Shared schemas live in `@finance-manager/schema` for frontend-backend consistency.  
+**Purpose**: Replace manual form state management with React Hook Form and Zod schemas. Shared schemas live in `@life-manager/schema` for frontend-backend consistency.  
 **Estimated Effort**: 1.5 weeks (22 tasks)  
 **Dependencies**: Phase 49 (mutations from TanStack Query used in form submissions)
 
@@ -149,7 +149,7 @@
 
 - [ ] T1321 [US3] Write Jest tests for Zod schemas — validate correct/invalid inputs for all schemas in `packages/schema/` (`packages/schema/tests/`) - 3h
 
-**Checkpoint**: All forms use React Hook Form with Zod validation. Shared schemas in `@finance-manager/schema` can be used by both frontend and backend. No manual `useState` form state management remains.
+**Checkpoint**: All forms use React Hook Form with Zod validation. Shared schemas in `@life-manager/schema` can be used by both frontend and backend. No manual `useState` form state management remains.
 
 ---
 

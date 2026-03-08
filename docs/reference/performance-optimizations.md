@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the performance optimizations implemented to improve initial load times and runtime performance of the Finance Manager web application.
+This document outlines the performance optimizations implemented to improve initial load times and runtime performance of the Life Manager web application.
 
 ## Implemented Optimizations
 

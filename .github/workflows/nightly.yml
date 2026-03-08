@@ -62,7 +62,7 @@ jobs:
         run: pnpm exec playwright install chromium
 
       - name: Build shared packages
-        run: pnpm --filter @finance-manager/schema build
+        run: pnpm --filter @life-manager/schema build
 
       - name: Run database migrations
         working-directory: apps/api
@@ -186,7 +186,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build shared packages
-        run: pnpm --filter @finance-manager/schema build
+        run: pnpm --filter @life-manager/schema build
 
       - name: Run database migrations
         working-directory: apps/api

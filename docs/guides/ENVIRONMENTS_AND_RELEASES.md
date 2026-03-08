@@ -3,7 +3,7 @@
 **Created**: 2026-03-01
 **Last Updated**: 2026-03-01
 **Status**: Active
-**Owner**: Finance Manager Engineering
+**Owner**: Life Manager Engineering
 
 > Single source of truth for environment management, database strategy, release process, and deployment procedures. All team members must follow these processes.
 
@@ -32,7 +32,7 @@
 
 ### Overview
 
-Finance Manager follows a three-environment model that mirrors professional software delivery:
+Life Manager follows a three-environment model that mirrors professional software delivery:
 
 | Environment | Purpose | Audience | Data | URL |
 |---|---|---|---|---|
@@ -105,9 +105,9 @@ This ensures that what passes UAT will behave identically in production.
 
 | Database | Container Name | Port | Database Name | Purpose |
 |---|---|---|---|---|
-| **Dev** | `finance-manager-db` | 5432 | `finance_manager_dev` | Development work — safe to destroy and rebuild |
-| **Test** | `finance-manager-db` | 5432 | `finance_manager_test` | Automated test suites (CI, integration tests) |
-| **UAT** | `finance-manager-db` | 5432 | `finance_manager_uat` | User acceptance testing — persistent data |
+| **Dev** | `life-manager-db` | 5432 | `finance_manager_dev` | Development work — safe to destroy and rebuild |
+| **Test** | `life-manager-db` | 5432 | `finance_manager_test` | Automated test suites (CI, integration tests) |
+| **UAT** | `life-manager-db` | 5432 | `finance_manager_uat` | User acceptance testing — persistent data |
 
 > **Note**: All three databases run on the same PostgreSQL container in the current single-host setup. In production, each environment will have its own isolated database instance.
 
@@ -647,9 +647,9 @@ All UAT items, plus:
 1. Ensure Docker is running
 2. Restore from latest backup:
    ```powershell
-   docker exec -i finance-manager-db psql -U postgres -c "DROP DATABASE IF EXISTS finance_manager_uat;"
-   docker exec -i finance-manager-db psql -U postgres -c "CREATE DATABASE finance_manager_uat;"
-   docker exec -i finance-manager-db psql -U postgres finance_manager_uat < backups/uat/latest.sql
+   docker exec -i life-manager-db psql -U postgres -c "DROP DATABASE IF EXISTS finance_manager_uat;"
+   docker exec -i life-manager-db psql -U postgres -c "CREATE DATABASE finance_manager_uat;"
+   docker exec -i life-manager-db psql -U postgres finance_manager_uat < backups/uat/latest.sql
    ```
 3. Verify: `dotnet ef database update` (should report "No migrations to apply")
 4. Restart services
@@ -713,7 +713,7 @@ Current — single PostgreSQL container serving Dev, Test, and UAT databases:
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: finance-manager-db
+    container_name: life-manager-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -742,7 +742,7 @@ volumes:
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: finance-manager-db-prod
+    container_name: life-manager-db-prod
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER}
@@ -762,7 +762,7 @@ services:
     build:
       context: ./apps/finance-api
       dockerfile: Dockerfile
-    container_name: finance-manager-api
+    container_name: life-manager-api
     restart: unless-stopped
     depends_on:
       postgres:
@@ -776,7 +776,7 @@ services:
 
   caddy:
     image: caddy:2-alpine
-    container_name: finance-manager-proxy
+    container_name: life-manager-proxy
     restart: unless-stopped
     depends_on:
       - api

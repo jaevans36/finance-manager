@@ -45,14 +45,14 @@ if (-not (Test-Path $BackupDir)) {
 }
 
 # Check Docker is running
-$containerStatus = docker ps --filter "name=finance-manager-db" --format "{{.Status}}" 2>&1
+$containerStatus = docker ps --filter "name=life-manager-db" --format "{{.Status}}" 2>&1
 if (-not $containerStatus -or $containerStatus -notlike "*Up*") {
     Write-Log "Database container is not running" "ERROR"
     exit 1
 }
 
 # Check UAT database exists
-$uatExists = docker exec finance-manager-db psql -U postgres -lqt 2>&1 | Select-String "finance_manager_uat"
+$uatExists = docker exec life-manager-db psql -U postgres -lqt 2>&1 | Select-String "finance_manager_uat"
 if (-not $uatExists) {
     Write-Log "UAT database (finance_manager_uat) does not exist" "ERROR"
     exit 1
@@ -65,15 +65,15 @@ $backupPath = "$BackupDir\$backupFile"
 $containerDumpPath = "/tmp/$backupFile"
 
 Write-Log "Dumping UAT database to $backupFile..."
-docker exec finance-manager-db pg_dump -U postgres -d finance_manager_uat -F p -f $containerDumpPath 2>&1
+docker exec life-manager-db pg_dump -U postgres -d finance_manager_uat -F p -f $containerDumpPath 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Log "Database dump failed" "ERROR"
     exit 1
 }
 
 # Copy from container to host
-docker cp "finance-manager-db:$containerDumpPath" $backupPath 2>&1
-docker exec finance-manager-db rm -f $containerDumpPath 2>&1 | Out-Null
+docker cp "life-manager-db:$containerDumpPath" $backupPath 2>&1
+docker exec life-manager-db rm -f $containerDumpPath 2>&1 | Out-Null
 
 if (-not (Test-Path $backupPath)) {
     Write-Log "Backup file not found after copy" "ERROR"

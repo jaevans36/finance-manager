@@ -184,7 +184,7 @@ This index maps features from the original `spec-v2-enhancements.md` to their ne
 
 **Tasks**: `platform/database-abstraction-tasks.md` (T1105-T1126, 22 tasks, ~2.5 weeks)
 
-### Phase 38-40 - Project Rename (Finance Manager → Life Manager)
+### Phase 38-40 - Project Rename (Life Manager → Life Manager)
 
 | Phase | Feature | Location |
 |-------|---------|----------|

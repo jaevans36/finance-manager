@@ -306,7 +306,7 @@ npm install -D @types/react-grid-layout
    - Microsoft Outlook sync
    - Two-way synchronization
 
-4. **Finance Manager** (Phase 19, 8 weeks)
+4. **Life Manager** (Phase 19, 8 weeks)
    - CSV import for transactions
    - Budget tracking
    - Financial insights

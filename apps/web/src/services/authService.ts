@@ -91,4 +91,20 @@ export const authService = {
       email,
     });
   },
+
+  async exportData(): Promise<void> {
+    const response = await apiClient.get('/auth/export-data', {
+      responseType: 'blob',
+    });
+    const blob = new Blob([response.data as BlobPart], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    const date = new Date().toISOString().slice(0, 10);
+    anchor.href = url;
+    anchor.download = `life-manager-export-${date}.json`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  },
 };

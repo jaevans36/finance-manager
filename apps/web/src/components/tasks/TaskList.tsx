@@ -14,7 +14,7 @@ interface TaskListProps {
   onSubtaskChange?: (taskId: string, counts: { subtaskCount: number; completedSubtaskCount: number }) => void;
 }
 
-const EXPANDED_STORAGE_KEY = 'finance-manager:expanded-subtasks';
+const EXPANDED_STORAGE_KEY = 'life-manager:expanded-subtasks';
 
 /** Read persisted expanded task IDs from localStorage */
 const readExpandedIds = (): Set<string> => {

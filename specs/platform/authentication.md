@@ -6,7 +6,7 @@
 
 ## Overview
 
-The Finance Manager platform uses a centralized authentication system shared by all applications. User accounts, sessions, and permissions are managed at the platform level.
+The Life Manager platform uses a centralized authentication system shared by all applications. User accounts, sessions, and permissions are managed at the platform level.
 
 ## Features
 
@@ -85,7 +85,7 @@ Subject: Reset Your Password
 ```
 Hi {{username}},
 
-You requested to reset your password for Finance Manager.
+You requested to reset your password for Life Manager.
 
 Click the link below to set a new password:
 {{resetLink}}
@@ -95,7 +95,7 @@ This link will expire in 1 hour.
 If you didn't request this, please ignore this email.
 
 Thanks,
-Finance Manager Team
+Life Manager Team
 ```
 
 ## Email Verification
@@ -371,7 +371,7 @@ interface AvatarProps {
     }
   },
   "from": {
-    "name": "Finance Manager",
+    "name": "Life Manager",
     "email": "noreply@financemanager.com"
   }
 }

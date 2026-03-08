@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Finance Manager** - Comprehensive documentation for developers, testers, and maintainers.
+**Life Manager** - Comprehensive documentation for developers, testers, and maintainers.
 
 ---
 
@@ -157,7 +157,7 @@ All completed phases now have dedicated documentation folders:
 ## 🎨 Design & UI
 
 ### Design System & Shared UI Package
-- **[guides/DESIGN_SYSTEM_USAGE.md](guides/DESIGN_SYSTEM_USAGE.md)** - **📘 Complete guide** for using `@finance-manager/ui`
+- **[guides/DESIGN_SYSTEM_USAGE.md](guides/DESIGN_SYSTEM_USAGE.md)** - **📘 Complete guide** for using `@life-manager/ui`
 - **[packages/ui/README.md](../packages/ui/README.md)** - Package documentation
 - **[packages/ui/src/components/README.md](../packages/ui/src/components/README.md)** - Component library reference
 - **Live Examples** - Navigate to `/design-system` in any app

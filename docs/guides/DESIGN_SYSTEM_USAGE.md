@@ -5,7 +5,7 @@
 > and are supported via `StyledThemeProvider` — see [Legacy Support](#legacy-support).
 
 **Last Updated**: February 28, 2026
-**Package**: `@finance-manager/ui`
+**Package**: `@life-manager/ui`
 **Location**: `packages/ui/`
 
 ## 📚 Table of Contents
@@ -25,7 +25,7 @@
 ## Overview
 
 The design system provides a **single source of truth** for visual consistency
-across all Finance Manager applications. It is built on:
+across all Life Manager applications. It is built on:
 
 | Layer | Technology | Location |
 |-------|-----------|----------|
@@ -431,4 +431,4 @@ const Box = styled.div`
 ---
 
 **Last Updated**: February 28, 2026
-**Maintained By**: Finance Manager Team
+**Maintained By**: Life Manager Team

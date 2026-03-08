@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useTheme } from '@finance-manager/ui';
+import { useTheme } from '@life-manager/ui';
 import { cn } from '../lib/utils';
 import { Button } from './ui/button';
 import {
@@ -82,7 +82,7 @@ export const AppHeader = () => {
           className="flex items-center gap-2 text-xl font-bold text-primary transition-colors hover:text-success md:text-lg"
         >
           <LayoutDashboard size={24} />
-          Finance Manager
+          Life Manager
         </button>
 
         <DropdownMenu>

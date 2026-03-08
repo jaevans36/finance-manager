@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 /**
- * Shared Tailwind CSS preset for the Finance Manager platform.
+ * Shared Tailwind CSS preset for the Life Manager platform.
  *
  * Maps the existing design tokens (spacing, border-radius, shadows, colours)
  * to Tailwind utility classes so that all applications share a single

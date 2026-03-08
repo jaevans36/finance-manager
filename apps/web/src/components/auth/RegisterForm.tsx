@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
 import { CheckIcon, XCircleIcon } from 'lucide-react';
 import { useRegisterForm } from '../../hooks/forms';
-import type { RegisterInput } from '@finance-manager/schema';
+import type { RegisterInput } from '@life-manager/schema';
 import { cn } from '../../lib/utils';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';

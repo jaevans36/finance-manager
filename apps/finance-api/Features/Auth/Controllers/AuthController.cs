@@ -198,6 +198,77 @@ public class AuthController : ControllerBase
         return Ok(new { username = user.Username, message = "Username updated successfully." });
     }
 
+    /// <summary>
+    /// Exports all data belonging to the authenticated user as a JSON archive.
+    /// </summary>
+    [HttpGet("export-data")]
+    [Authorize]
+    public async Task<IActionResult> ExportData()
+    {
+        var userId = GetUserId();
+
+        var user = await _context.Users
+            .Where(u => u.Id == userId)
+            .Select(u => new { u.Id, u.Username, u.Email, u.CreatedAt })
+            .FirstOrDefaultAsync();
+
+        if (user is null) return NotFound();
+
+        var tasks = await _context.Tasks
+            .Where(t => t.UserId == userId)
+            .OrderBy(t => t.CreatedAt)
+            .Select(t => new
+            {
+                t.Id, t.Title, t.Description, t.Priority, t.Status,
+                t.DueDate, t.Completed, t.CompletedAt,
+                t.Urgency, t.Importance, t.EnergyLevel, t.EstimatedMinutes,
+                t.GroupId, t.ParentTaskId, t.CreatedAt, t.UpdatedAt
+            })
+            .ToListAsync();
+
+        var taskGroups = await _context.TaskGroups
+            .Where(g => g.UserId == userId)
+            .OrderBy(g => g.CreatedAt)
+            .Select(g => new { g.Id, g.Name, g.Colour, g.WipLimit, g.CreatedAt })
+            .ToListAsync();
+
+        var events = await _context.Events
+            .Where(e => e.UserId == userId)
+            .OrderBy(e => e.StartDate)
+            .Select(e => new
+            {
+                e.Id, e.Title, e.Description, e.StartDate, e.EndDate,
+                e.IsAllDay, e.RecurrenceRule, e.CreatedAt, e.UpdatedAt
+            })
+            .ToListAsync();
+
+        var settings = await _context.UserSettings
+            .Where(s => s.UserId == userId)
+            .Select(s => new { s.GlobalWipLimit, s.DefaultTaskStatus, s.EnableWipWarnings })
+            .FirstOrDefaultAsync();
+
+        var export = new
+        {
+            exportedAt = DateTime.UtcNow,
+            version = "1.0",
+            user,
+            settings,
+            summary = new
+            {
+                totalTasks = tasks.Count,
+                totalTaskGroups = taskGroups.Count,
+                totalEvents = events.Count
+            },
+            taskGroups,
+            tasks,
+            events
+        };
+
+        var fileName = $"life-manager-export-{DateTime.UtcNow:yyyy-MM-dd}.json";
+        Response.Headers["Content-Disposition"] = $"attachment; filename=\"{fileName}\"";
+        return new JsonResult(export);
+    }
+
     private Guid GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;

@@ -26,7 +26,7 @@ import { Button } from '../../components/ui/button';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { Separator } from '../../components/ui/separator';
 import { useEditTaskForm } from '../../hooks/forms';
-import type { UpdateTaskInput } from '@finance-manager/schema';
+import type { UpdateTaskInput } from '@life-manager/schema';
 import { useSubtasks } from '../../hooks/useSubtasks';
 import { SubtaskList } from './SubtaskList';
 import type { Task, TaskStatus, UrgencyLevel, ImportanceLevel, EnergyLevel } from '../../services/taskService';

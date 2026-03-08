@@ -2,7 +2,7 @@
 
 ## Overview
 
-Swagger UI is now fully configured for the Finance Manager API, providing interactive API documentation with authentication support.
+Swagger UI is now fully configured for the Life Manager API, providing interactive API documentation with authentication support.
 
 ## Access Points
 
@@ -27,12 +27,12 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Finance Manager API",
+        Title = "Life Manager API",
         Version = "v1",
         Description = "A comprehensive personal finance management API...",
         Contact = new OpenApiContact
         {
-            Name = "Finance Manager Team",
+            Name = "Life Manager Team",
             Email = "support@financemanager.com"
         }
     });

@@ -72,7 +72,7 @@ const DesignSystemPage = () => {
     <div className="mx-auto w-4/5 max-w-6xl px-5 pt-5 pb-8 md:w-[95%] md:px-[10px]">
       <h1 className="text-2xl font-semibold">Design System</h1>
       <p className="text-sm mt-1">
-        Complete design system and component library for Finance Manager applications.
+        Complete design system and component library for Life Manager applications.
       </p>
 
       {/* Colour Palette */}

@@ -2,7 +2,7 @@ import { cn } from '../../lib/utils';
 import { useToast } from '../../contexts/ToastContext';
 import { taskGroupService } from '../../services/taskGroupService';
 import { useTaskGroupForm } from '../../hooks/forms';
-import type { CreateTaskGroupInput } from '@finance-manager/schema';
+import type { CreateTaskGroupInput } from '@life-manager/schema';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';

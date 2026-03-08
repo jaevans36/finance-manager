@@ -6,7 +6,7 @@
 
 ## Overview
 
-Comprehensive structured logging and error monitoring system implemented using Serilog for the Finance Manager .NET Core API. Provides request/response logging, error tracking, and diagnostic capabilities for both development and production environments.
+Comprehensive structured logging and error monitoring system implemented using Serilog for the Life Manager .NET Core API. Provides request/response logging, error tracking, and diagnostic capabilities for both development and production environments.
 
 ## Logging Architecture
 

@@ -57,7 +57,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build shared packages
-        run: pnpm --filter @finance-manager/schema build
+        run: pnpm --filter @life-manager/schema build
 
       - name: Run database migrations
         working-directory: apps/api
@@ -116,7 +116,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build shared packages
-        run: pnpm --filter @finance-manager/schema build
+        run: pnpm --filter @life-manager/schema build
 
       - name: Run frontend tests
         working-directory: apps/web
@@ -179,7 +179,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build shared packages
-        run: pnpm --filter @finance-manager/schema build
+        run: pnpm --filter @life-manager/schema build
 
       - name: Install Playwright browsers
         working-directory: apps/web
@@ -246,7 +246,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build shared packages
-        run: pnpm --filter @finance-manager/schema build
+        run: pnpm --filter @life-manager/schema build
 
       - name: Run linting (API)
         working-directory: apps/api
@@ -288,7 +288,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build shared packages
-        run: pnpm --filter @finance-manager/schema build
+        run: pnpm --filter @life-manager/schema build
 
       - name: Run React Doctor
         working-directory: apps/web
@@ -329,7 +329,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build shared packages
-        run: pnpm --filter @finance-manager/schema build
+        run: pnpm --filter @life-manager/schema build
 
       - name: Build API
         working-directory: apps/api

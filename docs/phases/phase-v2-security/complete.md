@@ -114,8 +114,8 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
-FROM_EMAIL=noreply@finance-manager.com
-FROM_NAME="Finance Manager"
+FROM_EMAIL=noreply@life-manager.app
+FROM_NAME="Life Manager"
 APP_URL=http://localhost:5173
 
 # Existing variables

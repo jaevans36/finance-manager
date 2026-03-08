@@ -10,7 +10,7 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const THEME_STORAGE_KEY = 'finance-manager-theme';
+const THEME_STORAGE_KEY = 'life-manager-theme';
 
 interface ThemeProviderProps {
   children: React.ReactNode;

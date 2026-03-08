@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider } from '@finance-manager/ui';
+import { ThemeProvider } from '@life-manager/ui';
 import { ToastProvider } from '../../src/contexts/ToastContext';
 
 // Mock api-client before importing services

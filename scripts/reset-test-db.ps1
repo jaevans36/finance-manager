@@ -9,7 +9,7 @@ Set-Location "C:\Projects\Finance Manager"
 
 # Check if database is running
 Write-Host "Checking database status..." -ForegroundColor Yellow
-$containerStatus = docker ps --filter "name=finance-manager-db" --format "{{.Status}}"
+$containerStatus = docker ps --filter "name=life-manager-db" --format "{{.Status}}"
 if (-not $containerStatus) {
     Write-Host "[X] Database container is not running" -ForegroundColor Red
     Write-Host "Run .\start-dev.ps1 first to start the database" -ForegroundColor Yellow

@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider } from '@finance-manager/ui';
+import { ThemeProvider } from '@life-manager/ui';
 import CalendarPage from '../../src/pages/calendar/CalendarPage';
 import { ToastProvider } from '../../src/contexts/ToastContext';
 import { taskService } from '../../src/services/taskService';

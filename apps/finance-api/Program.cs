@@ -202,6 +202,25 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Health check — no auth required
+app.MapGet("/api/health", (FinanceDbContext db) =>
+{
+    try
+    {
+        db.Database.CanConnect();
+        return Results.Ok(new
+        {
+            status = "healthy",
+            version = "1.0.0",
+            timestamp = DateTime.UtcNow
+        });
+    }
+    catch
+    {
+        return Results.Json(new { status = "unhealthy", timestamp = DateTime.UtcNow }, statusCode: 503);
+    }
+});
+
 app.Run();
 }
 catch (Exception ex)

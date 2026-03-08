@@ -13,7 +13,7 @@
 
 import React, { ReactElement } from 'react';
 import { render, RenderOptions, RenderResult } from '@testing-library/react';
-import { ThemeProvider } from '@finance-manager/ui';
+import { ThemeProvider } from '@life-manager/ui';
 import { BrowserRouter } from 'react-router-dom';
 import { ToastProvider } from '../../src/contexts/ToastContext';
 

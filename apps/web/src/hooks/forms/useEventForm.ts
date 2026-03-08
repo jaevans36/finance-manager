@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createEventSchema, updateEventSchema, type CreateEventInput, type UpdateEventInput } from '@finance-manager/schema';
+import { createEventSchema, updateEventSchema, type CreateEventInput, type UpdateEventInput } from '@life-manager/schema';
 
 export function useCreateEventForm(defaultValues?: Partial<CreateEventInput>) {
   return useForm<CreateEventInput>({

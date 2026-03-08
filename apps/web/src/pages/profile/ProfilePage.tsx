@@ -5,7 +5,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { authService } from '../../services/authService';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
-import { UserIcon, MailIcon, CalendarIcon, LogOutIcon, ArrowLeftIcon, EditIcon, CheckIcon, XIcon } from 'lucide-react';
+import { UserIcon, MailIcon, CalendarIcon, LogOutIcon, ArrowLeftIcon, EditIcon, CheckIcon, XIcon, DownloadIcon } from 'lucide-react';
 import { useProfileForm } from '../../hooks/forms';
 import { cn } from '../../lib/utils';
 
@@ -34,6 +34,7 @@ const ProfilePage = () => {
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [usernameMessage, setUsernameMessage] = useState('');
   const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const watchedUsername = watch('username');
   const isTemporaryUsername = user?.username.startsWith('user_');
@@ -112,6 +113,18 @@ const ProfilePage = () => {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleExportData = async () => {
+    try {
+      setExporting(true);
+      await authService.exportData();
+      toast.success('Your data has been downloaded');
+    } catch {
+      toast.error('Failed to export data — please try again');
+    } finally {
+      setExporting(false);
+    }
   };
 
   const handleBackToDashboard = () => {
@@ -224,6 +237,10 @@ const ProfilePage = () => {
           <Button variant="secondary" onClick={handleBackToDashboard}>
             <ArrowLeftIcon size={18} />
             Back to Dashboard
+          </Button>
+          <Button variant="outline" onClick={handleExportData} disabled={exporting}>
+            <DownloadIcon size={18} />
+            {exporting ? 'Exporting...' : 'Export my data'}
           </Button>
           <Button variant="destructive" onClick={handleLogout}>
             <LogOutIcon size={18} />

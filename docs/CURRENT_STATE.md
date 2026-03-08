@@ -1,95 +1,108 @@
-# Current State — Finance Manager Platform
+# Current State
 
-> **Last Updated**: 2026-02-25  
-> **Version**: 0.15.0  
-> **Branch**: `001-todo-app`  
-> **Latest Commit**: `9e92c1c`
+> **Last Updated**: 2026-03-08 | **Version**: 0.15.0 | **Branch**: `phase-50/test-infra-and-query-migration`
 
 ---
 
-## What Is Built
+## What Has Been Built
 
-The To Do application is the only implemented application. It includes:
+The To Do / productivity application is the active MVP. It is feature-complete for the v1.0 launch target.
 
-- User registration/login with JWT auth, email verification, password reset
-- Task CRUD with priorities (Low/Medium/High/Critical), due dates, groups, subtasks
-- Calendar events with recurrence, colour coding, calendar view
-- Weekly progress tracking with statistics and charts
-- Admin dashboard with user management and system configuration
-- Version history API parsing CHANGELOG.md
-- Full design system with light/dark themes (WCAG AAA)
-- Rate limiting and OWASP security headers
+### Core Features (Complete)
+
+- **Authentication** — Register, login, logout, JWT refresh tokens, password reset (email flow), email verification, account lockout after 5 failed attempts
+- **Multi-device session management** — View and revoke active sessions per device
+- **Task management** — Full CRUD, priorities (P1–P5), due dates, bulk operations
+- **Task groups** — Organise tasks into groups with configurable WIP limits
+- **Subtasks** — Nested subtasks with inline toggle and progress badge
+- **Calendar view** — Day / week / month navigation
+- **Events** — Full CRUD with RRULE-based recurrence
+- **Weekly progress** — Charts and statistics dashboard
+- **Eisenhower Matrix** — 4-quadrant urgency/importance classification
+- **Energy tagging** — 1–10 energy level scale with smart suggestions
+- **Status workflow** — NotStarted → InProgress → Blocked → Completed
+- **Admin dashboard** — User management, system statistics, activity logs
+- **Theme** — Full light/dark mode (WCAG AAA compliant design system)
+- **Version history** — In-app changelog via `/version` route
+
+### Technical Foundation (Complete)
+
+- **Frontend**: React 18 + TypeScript 5.7 + Vite; fully migrated to Tailwind CSS + shadcn/ui; TanStack Query for server state; React Hook Form + Zod for forms
+- **Backend**: .NET 8 / C# Web API; EF Core 8 + PostgreSQL 15; JWT auth; Serilog; rate limiting; security headers (OWASP)
+- **Design system**: `@life-manager/ui` package with Tailwind design tokens; zero styled-components remaining
+- **Shared schema**: `@life-manager/schema` with Zod validation schemas
+- **Tests**: 300+ tests passing (Jest + React Testing Library + Playwright + xUnit)
+- **CI**: GitHub Actions (PR checks, nightly extended suite, release-please)
+
+---
 
 ## What Is Currently Being Built
 
-**Frontend modernisation** has been scoped and specified (Phase 48-54, 132 tasks, T1257-T1388). The plan replaces styled-components with Tailwind CSS + shadcn/ui, adopts TanStack Query for server state, and introduces React Hook Form + Zod for form handling. Implementation has not started.
+**Phase 50: Test Infrastructure & Query Migration** (`phase-50/test-infra-and-query-migration`)
 
-Most recent completed work:
+- Aligning test suite to current component architecture after Tailwind migration
+- Migrating remaining hand-rolled `queryCache.ts` patterns to TanStack Query
+- Consolidating query hooks in `hooks/queries/`
 
-1. **Design system overhaul** (Phase 13) — completed, committed `0c1edea`
-   - Replaced EditTaskModal with TaskDetailModal (view/edit modes)
-   - Migrated all emoji to Lucide icons
-   - Standardised design tokens across all components
-2. **Platform specifications** — completed, committed `0d816e2`
-   - 8 feature specs with task breakdowns (T800-T1256, 457 tasks)
-   - Applications: Fitness, Weather, Finance
-   - Platform: Auth Service, Microservices, Test Automation, DB Abstraction, Project Rename
-3. **React Doctor + dead code cleanup** — completed, committed `c1613d2` + `9e92c1c`
-   - Installed react-doctor (score: 91/100)
-   - Deleted 16 unused files, migrated 21 files to `@finance-manager/ui`
-   - Removed 36 unused exports, 11 unused types, 1 duplicate export
-4. **Frontend modernisation spec** — completed, committed (pending)
-   - Full SpecKit specification and 132-task breakdown for Phases 48-54
-   - ADR-016 through ADR-019 for technology decisions
+---
 
-## Next Logical Step
+## What Comes Next (MVP v1.0 Gaps)
 
-**Phase 48** (Tailwind CSS & shadcn/ui Foundation) — the first phase of the frontend modernisation. This installs Tailwind alongside styled-components and sets up shadcn/ui for new component development. Can run in parallel with Phase 49 (TanStack Query).
+These items must be complete before tagging v1.0.0:
 
-Alternatively, Phase 14 (Fitness: Workout Tracking) or Phase 22 (Auth Service Extraction) if feature delivery is prioritised over tech debt.
+### P1 — Must Have
 
-## Active Constraints
+- [x] Task search / filter across all groups — client-side search + keyboard shortcut `/` already in TasksPage
+- [x] Empty state / onboarding for new users — dashboard shows getting-started panel when totalTasks === 0
+- [x] 404 error page — `pages/errors/NotFoundPage.tsx` + catch-all route in App.tsx
+- [x] Data export — `GET /api/v1/auth/export-data` endpoint + "Export my data" button on Profile page
+- [x] `.env.example` files — `apps/web/.env.example` and `apps/finance-api/appsettings.Production.example.json`
+- [x] PostgreSQL backup + restore scripts — `scripts/backup-db.ps1` and `scripts/restore-db.ps1`
+- [x] `GET /api/health` endpoint — returns `{ status, version, timestamp }`, DB connectivity check
+- [x] `docs/guides/PRODUCTION-SETUP.md` — step-by-step self-hosted setup guide
 
-| Constraint | Detail |
-|-----------|--------|
-| Monolith | All backend features in single `FinanceApi` project |
-| Single DB | All entities in one PostgreSQL database |
-| JWT symmetric | Using HS256 with shared secret, not RS256/JWKS |
-| No OAuth | No third-party login (Google, GitHub, etc.) |
-| No CI/CD | GitHub Actions files exist but pipelines not fully configured |
-| Finance models exist | Account, Transaction, Category, Budget entities created but no controllers/services |
+### P2 — Should Have
+
+- [ ] Keyboard shortcuts for task operations
+- [ ] Due-date browser notifications (Service Worker)
+- [ ] Task categories / labels (already spec'd as Phase 14)
+
+---
 
 ## Known Technical Debt
 
-- **styled-components throughout** — 62 files import styled-components (planned removal in Phase 48-53)
-- `Finance/Models/` has entity stubs but no implementation — will conflict with Phase 41 finance microservice
-- `apiClient` base URL falls back to `localhost:5000` but API runs on port `3000` (Vite proxy handles this)
-- Some test files in `tests/` directory may need updating after TaskDetailModal refactor
-- Empty copilot prompt files in `copilot/chat-modes/` and `copilot/prompts/`
-- Hand-rolled `queryCache.ts` — will be replaced by TanStack Query (Phase 49)
+| Item | Detail | Plan |
+| ---- | ------ | ---- |
+| Finance models | `Features/Finance/` contains placeholder models only | Phase 41+ |
+| Package name | `@life-manager/*` needs rename to `@life-manager/*` | Work Stream 3 |
+| Project name | All references to "Life Manager" in UI and docs | Work Stream 3 |
+| Auth service extraction | Auth is currently embedded in monolith | Phase 22–24 |
+| Microservices | Single .NET monolith | Phase 25–27 |
 
-## Active Refactoring Directions
-
-1. **Frontend modernisation**: Specified in Phase 48-54. Tailwind CSS + shadcn/ui replacing styled-components, TanStack Query for server state, React Hook Form + Zod for forms.
-2. **Monolith → Microservices**: Specified in Phase 25-27, not started. YARP gateway, service isolation, event bus.
-3. **Auth extraction**: Specified in Phase 22-24. Will create standalone auth service with OAuth/MFA.
-4. **Project rename**: Finance Manager → Life Manager (Phase 38-40). Awaiting decision on timing.
-
-## Trade-offs in Effect
-
-| Decision | Trade-off |
-|----------|-----------|
-| Feature folders over layer folders | Some cross-cutting code duplicated across features |
-| styled-components over CSS Modules | Runtime CSS generation, larger bundle, but full theme support. **Superseded by ADR-016**: migrating to Tailwind CSS + shadcn/ui |
-| EF Core InMemory for tests | Fast tests but doesn't catch DB-specific issues (constraints, indexes) |
-| Single branch (`001-todo-app`) | All work on one branch — will need branching strategy before team scaling |
-| PostgreSQL only | Simple setup but no multi-engine support yet (Phase 36-37) |
+---
 
 ## Environment
 
 | Service | Port | Notes |
-|---------|------|-------|
+| ------- | ---- | ----- |
 | React (Vite) | 5173 | Dev server with HMR |
-| .NET API | 3000 | Via `dotnet run` |
+| .NET API | 5000 | Via `dotnet run` |
 | PostgreSQL | 5432 | Docker container |
-| Vite proxy | `/api` → `:3000` | Transparent API proxying |
+| Vite proxy | `/api` → `:5000` | Transparent API proxying |
+
+---
+
+## Phase History (Summary)
+
+| Phases | Milestone | Version |
+| ------ | --------- | ------- |
+| 1–10 | Core Todo app (auth, tasks, groups, subtasks, password reset, email verification, sessions, activity logging) | 0.1–0.10 |
+| 11 | Weekly progress dashboard | 0.11.0 |
+| 12 | Calendar view | 0.12.0 |
+| 13 | Events foundation | 0.13.0 |
+| v2 security | Multi-device sessions, account lockout, security headers, rate limiting | — |
+| 48–51 | Frontend modernisation (Tailwind + shadcn/ui, TanStack Query, React Hook Form + Zod) | — |
+| 55 | Task status workflow + WIP limits | — |
+| 56 | Eisenhower Matrix | — |
+| 57 | Energy tagging + smart suggestions | — |
+| 50 (current) | Test infra alignment + query migration | 0.15.0 |

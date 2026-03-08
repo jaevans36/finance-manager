@@ -2,7 +2,7 @@
 
 ## What We've Created
 
-To improve styling consistency and reusability across the Finance Manager application, we've implemented a comprehensive design system with the following components:
+To improve styling consistency and reusability across the Life Manager application, we've implemented a comprehensive design system with the following components:
 
 ### 1. Typography System (`src/styles/typography.ts`)
 

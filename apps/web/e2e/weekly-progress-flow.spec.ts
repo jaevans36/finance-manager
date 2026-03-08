@@ -34,7 +34,7 @@ test.describe('Weekly Progress Dashboard E2E Flow (T245)', () => {
     // Step 1: Register new user
     await test.step('User Registration', async () => {
       await page.goto('/register');
-      await expect(page).toHaveTitle(/Finance Manager/);
+      await expect(page).toHaveTitle(/Life Manager/);
 
       await page.fill('#email', testUser.email);
       await page.fill('#password', testUser.password);

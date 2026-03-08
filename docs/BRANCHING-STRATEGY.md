@@ -1,4 +1,4 @@
-# Branching Strategy — Finance Manager
+# Branching Strategy — Life Manager
 
 > **Last Updated**: 2026-03-01
 > **ADR**: ADR-020

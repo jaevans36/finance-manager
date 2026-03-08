@@ -54,7 +54,7 @@ Write-Log "Starting UAT -> Dev database sync"
 
 # Step 1: Check Docker is running
 Write-Log "Checking Docker and database container..."
-$containerStatus = docker ps --filter "name=finance-manager-db" --format "{{.Status}}" 2>&1
+$containerStatus = docker ps --filter "name=life-manager-db" --format "{{.Status}}" 2>&1
 if (-not $containerStatus -or $containerStatus -notlike "*Up*") {
     Write-Log "Database container is not running. Start it with .\scripts\start-dev.ps1" "ERROR"
     exit 1
@@ -63,10 +63,10 @@ Write-Log "Database container is running" "OK"
 
 # Step 2: Check UAT database exists
 Write-Log "Checking UAT database exists..."
-$uatExists = docker exec finance-manager-db psql -U postgres -lqt 2>&1 | Select-String "finance_manager_uat"
+$uatExists = docker exec life-manager-db psql -U postgres -lqt 2>&1 | Select-String "finance_manager_uat"
 if (-not $uatExists) {
     Write-Log "UAT database (finance_manager_uat) does not exist. Create it first." "ERROR"
-    Write-Log "Run: docker exec finance-manager-db psql -U postgres -c 'CREATE DATABASE finance_manager_uat;'" "INFO"
+    Write-Log "Run: docker exec life-manager-db psql -U postgres -c 'CREATE DATABASE finance_manager_uat;'" "INFO"
     Write-Log "Then apply migrations with ASPNETCORE_ENVIRONMENT=Uat" "INFO"
     exit 1
 }
@@ -75,7 +75,7 @@ Write-Log "UAT database found" "OK"
 # Step 3: Dump UAT database
 Write-Log "Dumping UAT database..."
 $dumpFile = "/tmp/uat_dump.sql"
-$dumpResult = docker exec finance-manager-db pg_dump -U postgres -d finance_manager_uat -F c -f $dumpFile 2>&1
+$dumpResult = docker exec life-manager-db pg_dump -U postgres -d finance_manager_uat -F c -f $dumpFile 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Log "Failed to dump UAT database: $dumpResult" "ERROR"
     exit 1
@@ -84,8 +84,8 @@ Write-Log "UAT database dumped successfully" "OK"
 
 # Step 4: Drop Dev database
 Write-Log "Dropping Dev database..."
-docker exec finance-manager-db psql -U postgres -c "SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'finance_manager_dev' AND pid <> pg_backend_pid();" 2>&1 | Out-Null
-docker exec finance-manager-db psql -U postgres -c "DROP DATABASE IF EXISTS finance_manager_dev;" 2>&1
+docker exec life-manager-db psql -U postgres -c "SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'finance_manager_dev' AND pid <> pg_backend_pid();" 2>&1 | Out-Null
+docker exec life-manager-db psql -U postgres -c "DROP DATABASE IF EXISTS finance_manager_dev;" 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Log "Failed to drop Dev database" "ERROR"
     exit 1
@@ -94,19 +94,19 @@ Write-Log "Dev database dropped" "OK"
 
 # Step 5: Create Dev database and restore
 Write-Log "Creating Dev database and restoring from UAT dump..."
-docker exec finance-manager-db psql -U postgres -c "CREATE DATABASE finance_manager_dev;" 2>&1
-docker exec finance-manager-db pg_restore -U postgres -d finance_manager_dev $dumpFile 2>&1
+docker exec life-manager-db psql -U postgres -c "CREATE DATABASE finance_manager_dev;" 2>&1
+docker exec life-manager-db pg_restore -U postgres -d finance_manager_dev $dumpFile 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Log "pg_restore completed with warnings (this is often normal for custom format dumps)" "WARN"
 }
 Write-Log "Dev database restored from UAT" "OK"
 
 # Step 6: Clean up dump file
-docker exec finance-manager-db rm -f $dumpFile 2>&1 | Out-Null
+docker exec life-manager-db rm -f $dumpFile 2>&1 | Out-Null
 
 # Step 7: Verify
 Write-Log "Verifying Dev database..."
-$tableCount = docker exec finance-manager-db psql -U postgres -d finance_manager_dev -t -c "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public';" 2>&1
+$tableCount = docker exec life-manager-db psql -U postgres -d finance_manager_dev -t -c "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public';" 2>&1
 $tableCount = $tableCount.Trim()
 Write-Log "Dev database has $tableCount tables" "OK"
 

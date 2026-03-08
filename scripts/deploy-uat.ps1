@@ -7,7 +7,7 @@
 #   .\scripts\deploy-uat.ps1 -SkipTests   # Skip test suite (use with caution)
 #
 # Prerequisites:
-#   - Docker running with finance-manager-db container
+#   - Docker running with life-manager-db container
 #   - UAT database (finance_manager_uat) exists with migrations applied
 #   - Caddy installed and configured (see docs/guides/ENVIRONMENTS_AND_RELEASES.md)
 #

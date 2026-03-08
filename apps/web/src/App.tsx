@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider } from '@finance-manager/ui';
+import { ThemeProvider } from '@life-manager/ui';
 import { Loader2 } from 'lucide-react';
 import { QueryProvider } from './providers/QueryProvider';
 import { AuthProvider } from './contexts/AuthContext';
@@ -32,6 +32,7 @@ const DesignSystemPage = lazy(() => import('./pages/design-system/DesignSystemPa
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const UserManagement = lazy(() => import('./pages/admin/UserManagement'));
 const SystemSettings = lazy(() => import('./pages/admin/SystemSettings'));
+const NotFoundPage = lazy(() => import('./pages/errors/NotFoundPage'));
 
 function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(false);
@@ -179,6 +180,7 @@ function App() {
                   }
                 />
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </Suspense>
               </main>

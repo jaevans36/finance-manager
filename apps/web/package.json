@@ -1,8 +1,8 @@
 {
-  "name": "@finance-manager/web",
-  "version": "0.15.0",
+  "name": "@life-manager/web",
+  "version": "1.0.0",
   "private": true,
-  "description": "React frontend for Finance Manager",
+  "description": "React frontend for Life Manager",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -24,7 +24,7 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
-    "@finance-manager/ui": "workspace:*",
+    "@life-manager/ui": "workspace:*",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-checkbox": "^1.3.3",
     "@radix-ui/react-dialog": "^1.1.15",

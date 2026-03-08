@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { authService } from '../../services/authService';
 import { getErrorMessage } from '../../utils/errorHelpers';
 import { useResetPasswordForm } from '../../hooks/forms';
-import type { ResetPasswordInput } from '@finance-manager/schema';
+import type { ResetPasswordInput } from '@life-manager/schema';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';

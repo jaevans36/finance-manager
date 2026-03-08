@@ -5,7 +5,7 @@ import {
   resetPasswordSchema,
   type ForgotPasswordInput,
   type ResetPasswordInput,
-} from '@finance-manager/schema';
+} from '@life-manager/schema';
 
 export function useForgotPasswordForm() {
   return useForm<ForgotPasswordInput>({

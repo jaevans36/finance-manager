@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "AI Contract — Finance Manager Platform",
+  "title": "AI Contract — Life Manager Platform",
   "description": "Machine-readable rules and constraints for AI agents working on this repository.",
   "version": "1.0.0",
   "lastUpdated": "2026-02-25",
@@ -43,12 +43,12 @@
     },
     "sharedPackages": [
       {
-        "name": "@finance-manager/ui",
+        "name": "@life-manager/ui",
         "path": "packages/ui/",
         "purpose": "Design tokens, themes, shared components"
       },
       {
-        "name": "@finance-manager/schema",
+        "name": "@life-manager/schema",
         "path": "packages/schema/",
         "purpose": "Zod validation schemas, shared types"
       }
@@ -88,7 +88,7 @@
       "id": "RULE-004",
       "scope": "frontend",
       "rule": "Never hardcode colour values, spacing, or font sizes",
-      "enforce": "Use design tokens from @finance-manager/ui/styles and theme.colors.* (current) or Tailwind utility classes (after Phase 48)",
+      "enforce": "Use design tokens from @life-manager/ui/styles and theme.colors.* (current) or Tailwind utility classes (after Phase 48)",
       "severity": "error"
     },
     {

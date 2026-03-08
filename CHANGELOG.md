@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the To Do Manager application will be documented in this file.
+All notable changes to Life Manager will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -10,6 +10,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Major (X.0.0)**: Breaking changes, major architecture changes, significant feature additions
 - **Minor (0.X.0)**: New features, enhancements, non-breaking changes
 - **Patch (0.0.X)**: Bug fixes, minor improvements, documentation updates
+
+---
+
+## [1.0.0] - 2026-03-08 "MVP Launch — Life Manager"
+
+### Added
+- **Project Rename** — Finance Manager is now Life Manager; all packages, imports, UI text, docs, and container names updated
+- **Health Check** — `GET /api/health` returns status, version, and DB connectivity (used by monitoring and production setup guide)
+- **Data Export** — `GET /api/v1/auth/export-data` downloads all user data (tasks, groups, events, settings) as a JSON file
+- **404 Page** — Not Found page with back/dashboard navigation for any unmatched route
+- **Onboarding panel** — Empty-state welcome on dashboard when no tasks exist, with quick-start actions
+- **Production setup** — `.env.example`, `appsettings.Production.example.json`, `scripts/backup-db.ps1`, `scripts/restore-db.ps1`, `docs/guides/PRODUCTION-SETUP.md`
+- **CLAUDE.md** — Single AI context file replaces scattered SpecKit + Copilot instructions
+
+### Changed
+- Archived `.specify/` (SpecKit) to `_archive/speckit/`
+- `docs/CURRENT_STATE.md` rewritten to reflect actual v1.0 state
+- `README.md` fully updated with correct stack, scripts, and getting-started steps
 
 ---
 
@@ -89,7 +107,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Design System page now admin-only access
 
 - **Design System Package**
-  - Created @finance-manager/ui shared package in packages/ui/
+  - Created @life-manager/ui shared package in packages/ui/
   - Migrated all design tokens (typography, spacing, theme, colors)
   - Migrated all UI components (Button, Card, Input, Badge, Alert, etc.)
   - Migrated ThemeContext and theme provider
@@ -100,7 +118,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Documentation**
   - Comprehensive design system usage guide (docs/guides/DESIGN_SYSTEM_USAGE.md)
   - Updated Copilot instructions with mandatory design system standards
-  - Package READMEs for @finance-manager/ui
+  - Package READMEs for @life-manager/ui
   - Documentation index reorganized with design system section
 
 - **Developer Experience**

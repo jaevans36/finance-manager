@@ -7,7 +7,7 @@ import { Button } from '../../components/ui/button';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import type { CreateEventRequest } from '../../types/event';
 import { useCreateTaskForm } from '../../hooks/forms';
-import type { CreateTaskInput } from '@finance-manager/schema';
+import type { CreateTaskInput } from '@life-manager/schema';
 
 interface QuickAddTaskModalProps {
   date: Date;

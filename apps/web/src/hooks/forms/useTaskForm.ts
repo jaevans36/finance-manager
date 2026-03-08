@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createTaskSchema, updateTaskSchema } from '@finance-manager/schema';
-import type { CreateTaskInput, UpdateTaskInput } from '@finance-manager/schema';
+import { createTaskSchema, updateTaskSchema } from '@life-manager/schema';
+import type { CreateTaskInput, UpdateTaskInput } from '@life-manager/schema';
 
 export function useCreateTaskForm(defaultValues?: Partial<CreateTaskInput>) {
   return useForm<CreateTaskInput>({

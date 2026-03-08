@@ -1188,9 +1188,9 @@ CREATE INDEX idx_email_logs_status ON email_logs(delivery_status);
 
 ### User Story 6.1 - Unified Application Portal (Priority: P1)
 
-Users need a central hub dashboard that provides quick access to all applications in the Finance Manager stack, replacing the current To Do-centric dashboard with a true application launcher.
+Users need a central hub dashboard that provides quick access to all applications in the Life Manager stack, replacing the current To Do-centric dashboard with a true application launcher.
 
-**Why this priority**: As the platform grows to include multiple tools (To Do, Finance Manager, future applications), users need a unified entry point to navigate between applications. This architectural change establishes proper separation of concerns.
+**Why this priority**: As the platform grows to include multiple tools (To Do, Life Manager, future applications), users need a unified entry point to navigate between applications. This architectural change establishes proper separation of concerns.
 
 **Independent Test**: Can be fully tested by logging in, viewing the hub dashboard with application tiles, clicking through to different applications, and returning to the hub.
 
@@ -1238,7 +1238,7 @@ The hub dashboard includes a quick stats section showing aggregated metrics acro
 2. **Given** a user completes a task in the To Do application, **When** they return to the hub, **Then** the quick stats refresh automatically or display a "refresh" button to update stats
 3. **Given** the quick stats widget, **When** displaying metrics, **Then** each stat includes a small icon, the metric value (large font), and a label (secondary text)
 4. **Given** a user clicks on a quick stat (e.g., "Tasks This Week"), **When** activated, **Then** they navigate to the relevant section in the To Do app with appropriate filters applied
-5. **Given** future applications are added (e.g., Finance Manager), **When** they become active, **Then** the quick stats expand to include metrics from those apps (e.g., "Transactions This Month")
+5. **Given** future applications are added (e.g., Life Manager), **When** they become active, **Then** the quick stats expand to include metrics from those apps (e.g., "Transactions This Month")
 6. **Given** a user with no data yet, **When** they view quick stats, **Then** they see empty states with encouraging messages like "Start your first task" or "Track your first transaction"
 
 ---
@@ -1297,7 +1297,7 @@ The hub dashboard greets users with personalized messages based on time of day, 
 3. **Given** a user logs in between 18:00-04:59, **When** the hub loads, **Then** they see "Good evening, [Username]" in the welcome header
 4. **Given** a user completes a notable achievement (e.g., 100 tasks completed), **When** they return to the hub, **Then** a celebration message displays: "🎉 Congratulations! You've completed 100 tasks!"
 5. **Given** a user hasn't logged in for 7+ days, **When** they return, **Then** the hub displays: "Welcome back, [Username]! You've been away for [X] days. Here's what you missed:" with summary stats
-6. **Given** a user on their first login, **When** they land on the hub, **Then** they see an onboarding card: "Welcome to Finance Manager! Let's get you started" with quick setup links
+6. **Given** a user on their first login, **When** they land on the hub, **Then** they see an onboarding card: "Welcome to Life Manager! Let's get you started" with quick setup links
 7. **Given** a user during their birthday (if profile date set), **When** they log in, **Then** the hub displays a birthday message with a special icon/animation
 
 ---
@@ -1987,7 +1987,7 @@ const InfoBar = styled.div`
 
 **Icon Design Requirements** (flat style):
 - **To Do Manager**: Checkmark circle with tick (solid green)
-- **Finance Manager**: Pie chart or coins icon (solid blue)
+- **Life Manager**: Pie chart or coins icon (solid blue)
 - **Admin Panel**: Settings gear icon (solid orange)
 - **Future Apps**: Placeholder icon template (outline style with question mark)
 - All icons: 64x64px, SVG format, 2-colour maximum, geometric shapes, no gradients

@@ -131,7 +131,7 @@ This feature will implement a proper API-driven version history system that read
             },
             {
               "category": "Design System",
-              "description": "Created @finance-manager/ui shared package",
+              "description": "Created @life-manager/ui shared package",
               "type": "feat"
             }
           ]

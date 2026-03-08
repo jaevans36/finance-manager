@@ -162,7 +162,7 @@ The existing Docker Compose file runs a single PostgreSQL container. For UAT, yo
 The UAT database runs alongside the Dev database on the same PostgreSQL container. Create it:
 
 ```powershell
-docker exec finance-manager-db psql -U postgres -c "CREATE DATABASE finance_manager_uat;"
+docker exec life-manager-db psql -U postgres -c "CREATE DATABASE finance_manager_uat;"
 ```
 
 ### 3b. Update Docker Compose credentials (optional but recommended)
@@ -173,7 +173,7 @@ For the UAT database, consider using stronger credentials than the Dev defaults.
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: finance-manager-db
+    container_name: life-manager-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: financemanager
@@ -387,7 +387,7 @@ Create a `Caddyfile` in the project root (or `deploy/` folder):
 ```caddyfile
 http://finance.local {
     # Serve the React SPA
-    root * C:/Projects/Finance Manager/apps/web/dist
+    root * C:/Projects/Life Manager/apps/web/dist
     file_server
 
     # Proxy API requests to the .NET backend
@@ -425,7 +425,7 @@ Run PowerShell **as Administrator**:
 ```powershell
 # Allow HTTP traffic from LAN only
 New-NetFirewallRule `
-    -DisplayName "Finance Manager - LAN HTTP" `
+    -DisplayName "Life Manager - LAN HTTP" `
     -Direction Inbound `
     -Protocol TCP `
     -LocalPort 80 `
@@ -434,7 +434,7 @@ New-NetFirewallRule `
     -Profile Private
 
 # Verify the rule was created
-Get-NetFirewallRule -DisplayName "Finance Manager*" | Format-Table DisplayName, Enabled, Direction
+Get-NetFirewallRule -DisplayName "Life Manager*" | Format-Table DisplayName, Enabled, Direction
 ```
 
 > **Adjust the subnet**: Replace `192.168.1.0/24` with your actual LAN subnet. Common subnets:
@@ -464,7 +464,7 @@ For the first time or manual startup:
 docker-compose up -d
 
 # 2. Wait for database to be healthy
-while (-not (docker ps --filter "name=finance-manager-db" --format "{{.Status}}" | Select-String "healthy")) {
+while (-not (docker ps --filter "name=life-manager-db" --format "{{.Status}}" | Select-String "healthy")) {
     Write-Host "Waiting for database..." -ForegroundColor Yellow
     Start-Sleep -Seconds 2
 }
@@ -477,7 +477,7 @@ Start-Process -NoNewWindow -FilePath "dotnet" -ArgumentList "deploy/api/FinanceA
 Start-Process -NoNewWindow -FilePath "caddy" -ArgumentList "run", "--config", "Caddyfile"
 
 Write-Host ""
-Write-Host "Finance Manager is running at: http://finance.local" -ForegroundColor Green
+Write-Host "Life Manager is running at: http://finance.local" -ForegroundColor Green
 ```
 
 > **Tip**: You can wrap this in a `scripts/start-lan.ps1` script for convenience.
@@ -488,7 +488,7 @@ Write-Host "Finance Manager is running at: http://finance.local" -ForegroundColo
 
 From the **host machine**:
 
-- [ ] `docker ps` shows `finance-manager-db` as healthy
+- [ ] `docker ps` shows `life-manager-db` as healthy
 - [ ] `curl http://localhost:5000/api/version/current` returns version JSON
 - [ ] `curl http://finance.local` returns the React app HTML
 - [ ] `curl http://finance.local/api/version/current` returns version JSON (via Caddy proxy)
@@ -514,7 +514,7 @@ From **another device on the LAN**:
 
 ### "Connection refused" from another device
 
-- Check Windows Firewall rule is active: `Get-NetFirewallRule -DisplayName "Finance Manager*"`
+- Check Windows Firewall rule is active: `Get-NetFirewallRule -DisplayName "Life Manager*"`
 - Verify Caddy is running: `caddy status`
 - Ensure the firewall rule uses the correct subnet
 
@@ -572,7 +572,7 @@ For a more self-contained deployment, you can add the API and Caddy to Docker Co
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: finance-manager-db
+    container_name: life-manager-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: financemanager
@@ -590,7 +590,7 @@ services:
     build:
       context: ./apps/finance-api
       dockerfile: Dockerfile
-    container_name: finance-manager-api
+    container_name: life-manager-api
     restart: unless-stopped
     depends_on:
       postgres:
@@ -603,7 +603,7 @@ services:
 
   caddy:
     image: caddy:2-alpine
-    container_name: finance-manager-proxy
+    container_name: life-manager-proxy
     restart: unless-stopped
     depends_on:
       - api

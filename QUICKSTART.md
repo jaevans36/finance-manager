@@ -1,4 +1,4 @@
-# 🚀 Quick Start Guide - Finance Manager
+# 🚀 Quick Start Guide - Life Manager
 
 ## Prerequisites Checklist
 - ✅ Node.js 20.x or higher
@@ -139,7 +139,7 @@ pnpm prisma migrate reset
 
 ### Database Shell Access
 ```powershell
-docker exec -it finance-manager-db psql -U postgres -d finance_manager_dev
+docker exec -it life-manager-db psql -U postgres -d finance_manager_dev
 ```
 
 ## API Endpoints
@@ -162,7 +162,7 @@ docker exec -it finance-manager-db psql -U postgres -d finance_manager_dev
 
 ## Project Structure
 ```
-Finance Manager/
+Life Manager/
 ├── apps/
 │   ├── api/              # Backend Express API
 │   │   ├── src/

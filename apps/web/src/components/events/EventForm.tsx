@@ -3,7 +3,7 @@ import { XCircle } from 'lucide-react';
 import type { Event, CreateEventRequest } from '../../types/event';
 import type { TaskGroup } from '../../types/taskGroup';
 import { useCreateEventForm } from '../../hooks/forms';
-import type { CreateEventInput } from '@finance-manager/schema';
+import type { CreateEventInput } from '@life-manager/schema';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';

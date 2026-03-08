@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import { XCircle, Plus, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCreateTaskForm } from '../../hooks/forms';
-import type { CreateTaskInput } from '@finance-manager/schema';
+import type { CreateTaskInput } from '@life-manager/schema';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
