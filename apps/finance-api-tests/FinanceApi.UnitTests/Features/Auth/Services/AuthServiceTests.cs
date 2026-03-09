@@ -73,7 +73,7 @@ public class AuthServiceTests : IDisposable
             .Returns(hashedPassword);
 
         _mockTokenService
-            .Setup(x => x.GenerateAccessToken(It.IsAny<Guid>(), request.Email))
+            .Setup(x => x.GenerateAccessToken(It.IsAny<Guid>(), request.Email, It.IsAny<bool>()))
             .Returns(token);
 
         // Act - Execute the method being tested
@@ -101,7 +101,7 @@ public class AuthServiceTests : IDisposable
         _mockPasswordHasher.Verify(x => x.HashPassword(request.Password), Times.Once);
 
         // Verify token was generated
-        _mockTokenService.Verify(x => x.GenerateAccessToken(savedUser.Id, request.Email), Times.Once);
+        _mockTokenService.Verify(x => x.GenerateAccessToken(savedUser.Id, request.Email, It.IsAny<bool>()), Times.Once);
     }
 
     [Fact]
@@ -150,7 +150,7 @@ public class AuthServiceTests : IDisposable
 
         var request = new LoginRequest
         {
-            Email = "test@example.com",
+            EmailOrUsername = "test@example.com",
             Password = "Password123!"
         };
 
@@ -159,7 +159,7 @@ public class AuthServiceTests : IDisposable
             .Returns(true);
 
         _mockTokenService
-            .Setup(x => x.GenerateAccessToken(user.Id, user.Email))
+            .Setup(x => x.GenerateAccessToken(user.Id, user.Email, It.IsAny<bool>()))
             .Returns("jwt_token");
 
         // Act
@@ -192,7 +192,7 @@ public class AuthServiceTests : IDisposable
 
         var request = new LoginRequest
         {
-            Email = "test@example.com",
+            EmailOrUsername = "test@example.com",
             Password = "WrongPassword"
         };
 
@@ -227,7 +227,7 @@ public class AuthServiceTests : IDisposable
 
         var request = new LoginRequest
         {
-            Email = "test@example.com",
+            EmailOrUsername = "test@example.com",
             Password = "WrongPassword"
         };
 
@@ -264,7 +264,7 @@ public class AuthServiceTests : IDisposable
 
         var request = new LoginRequest
         {
-            Email = "test@example.com",
+            EmailOrUsername = "test@example.com",
             Password = "Password123!"
         };
 
@@ -294,7 +294,7 @@ public class AuthServiceTests : IDisposable
 
         var request = new LoginRequest
         {
-            Email = "test@example.com",
+            EmailOrUsername = "test@example.com",
             Password = "Password123!"
         };
 
