@@ -32,6 +32,7 @@ const DesignSystemPage = lazy(() => import('./pages/design-system/DesignSystemPa
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const UserManagement = lazy(() => import('./pages/admin/UserManagement'));
 const SystemSettings = lazy(() => import('./pages/admin/SystemSettings'));
+const AdminLogs = lazy(() => import('./pages/admin/AdminLogs'));
 const NotFoundPage = lazy(() => import('./pages/errors/NotFoundPage'));
 
 function App() {
@@ -176,6 +177,14 @@ function App() {
                   element={
                     <AdminRoute>
                       <SystemSettings />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/logs"
+                  element={
+                    <AdminRoute>
+                      <AdminLogs />
                     </AdminRoute>
                   }
                 />

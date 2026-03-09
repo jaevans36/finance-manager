@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -113,6 +114,7 @@ builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>(
 builder.Services.AddScoped<IChangelogParser, ChangelogParser>();
 builder.Services.AddScoped<IVersionService, VersionService>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
+builder.Services.AddSingleton<FinanceApi.Features.Admin.Services.LogReaderService>();
 builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 builder.Services.AddScoped<IWipService, WipService>();
 builder.Services.AddScoped<IClassificationSuggestionService, ClassificationSuggestionService>();
@@ -145,15 +147,27 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// Configure CORS
-var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-    ?? new[] { "http://localhost:5173" };
+// Configure CORS — use GetChildren() for reliable env-var array binding
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .GetChildren()
+    .Select(c => c.Value)
+    .Where(v => !string.IsNullOrWhiteSpace(v))
+    .ToArray();
+if (allowedOrigins.Length == 0)
+{
+    allowedOrigins = new[] { "http://localhost:5173" };
+}
+
+var allowedOriginsSet = new HashSet<string>(
+    allowedOrigins.Where(o => o is not null).Select(o => o!),
+    StringComparer.OrdinalIgnoreCase);
 
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(corsBuilder =>
     {
-        corsBuilder.WithOrigins(allowedOrigins)
+        corsBuilder.SetIsOriginAllowed(origin => allowedOriginsSet.Contains(origin))
                    .AllowAnyMethod()
                    .AllowAnyHeader()
                    .AllowCredentials();
@@ -202,6 +216,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Trust the X-Forwarded-Proto header from the nginx reverse proxy so that
+// HSTS and other HTTPS-aware features work correctly behind the proxy.
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+});
 
 app.UseCors();
 

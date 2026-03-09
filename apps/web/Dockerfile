@@ -5,24 +5,23 @@ RUN npm install -g pnpm@10
 
 WORKDIR /app
 
-# Copy workspace manifests first for better layer caching
+# Copy workspace config
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY packages/ui/package.json packages/ui/
-COPY packages/schema/package.json packages/schema/
-COPY apps/web/package.json apps/web/
 
-# Install all workspace dependencies
-RUN pnpm install --frozen-lockfile
+# VERSION.json is at the repo root and imported by the app
+COPY VERSION.json ./
 
-# Copy source
-COPY packages/ui/ packages/ui/
-COPY packages/schema/ packages/schema/
+# Copy all workspace package sources so pnpm can link them correctly
+COPY packages/ packages/
 COPY apps/web/ apps/web/
+
+# Install all workspace dependencies (workspace symlinks need source to exist)
+RUN pnpm install --frozen-lockfile
 
 # VITE_API_URL is baked in at build time.
 # Default: http://localhost:5000 (same-machine access).
 # For LAN access from other devices, set to your machine's hostname or IP:
-#   e.g. http://192.168.1.100:5000
+#   VITE_API_URL: http://192.168.1.100:5000
 ARG VITE_API_URL=http://localhost:5000
 ENV VITE_API_URL=$VITE_API_URL
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Users, Activity, BarChart3, Shield, UserCog, Settings } from 'lucide-react';
+import { Users, Activity, BarChart3, Shield, UserCog, Settings, Terminal } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { userManagementService, type UserStats } from '../../services/userManagementService';
@@ -130,6 +130,16 @@ const AdminDashboard = () => {
               <Activity size={24} />
             </div>
             <span className="text-sm font-medium text-center">Version History</span>
+          </button>
+
+          <button
+            onClick={() => navigate('/admin/logs')}
+            className="flex flex-col items-center gap-3 rounded-lg border border-border bg-card p-5 text-foreground transition-all duration-200 hover:bg-primary/10 hover:border-primary hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/20 text-primary">
+              <Terminal size={24} />
+            </div>
+            <span className="text-sm font-medium text-center">View Logs</span>
           </button>
         </div>
       </div>
