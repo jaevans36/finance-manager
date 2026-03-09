@@ -28,7 +28,7 @@ const ProfilePage = () => {
   const { user, logout, login } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
-  const { register, watch, setValue, reset, formState: { errors: formErrors } } = useProfileForm();
+  const { register, watch, setValue, reset } = useProfileForm();
   const [editingUsername, setEditingUsername] = useState(false);
   const [usernameChecking, setUsernameChecking] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   BookOpen, ListTodo, FolderKanban, Calendar, BarChart3,
   Users, Settings, ChevronRight, Hash,
@@ -101,16 +100,12 @@ function GettingStartedSection() {
 
       <H3>Keyboard shortcuts</H3>
       <div className="mb-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
-        {[
-          [<Kbd>N</Kbd>, 'Open create task / event form'],
-          [<Kbd>/</Kbd>, 'Focus search box'],
-          [<Kbd>Esc</Kbd>, 'Close form or clear search focus'],
-        ].map(([key, desc], i) => (
-          <>
-            <span key={`k-${i}`} className="flex items-center">{key}</span>
-            <span key={`d-${i}`} className="text-muted-foreground">{desc}</span>
-          </>
-        ))}
+        <span className="flex items-center"><Kbd>N</Kbd></span>
+        <span className="text-muted-foreground">Open create task / event form</span>
+        <span className="flex items-center"><Kbd>/</Kbd></span>
+        <span className="text-muted-foreground">Focus search box</span>
+        <span className="flex items-center"><Kbd>Esc</Kbd></span>
+        <span className="text-muted-foreground">Close form or clear search focus</span>
       </div>
     </>
   );
@@ -133,14 +128,14 @@ function TasksSection() {
         <><strong>Priority</strong> — Low / Medium / High / Critical. Drives default sort order.</>,
         <><strong>Energy level</strong> — Low / Medium / High. Use the Suggestions page to find tasks that match your current energy.</>,
         <><strong>Estimated time</strong> — in minutes (1–480). Shown alongside energy on suggestion views.</>,
-        <><strong>Group</strong> — which task group this task belongs to. Defaults to "Uncategorised".</>,
+        <><strong>Group</strong> — which task group this task belongs to. Defaults to &ldquo;Uncategorised&rdquo;.</>,
       ]} />
 
       <H3>Task status</H3>
       <P>Every task has a status that moves through a lifecycle:</P>
       <Ul items={[
         <><Badge variant="info">Not started</Badge> — default for new tasks.</>,
-        <><Badge variant="info">In progress</Badge> — you're actively working on it. Counts towards group WIP limits.</>,
+        <><Badge variant="info">In progress</Badge> — you&apos;re actively working on it. Counts towards group WIP limits.</>,
         <><Badge variant="warning">Blocked</Badge> — requires a reason; surfaced prominently in list views.</>,
         <><Badge variant="success">Completed</Badge> — done. Syncs the completed checkbox automatically.</>,
       ]} />
@@ -181,7 +176,7 @@ function GroupsSection() {
 
       <H3>WIP limits</H3>
       <P>
-        A WIP (Work-In-Progress) limit caps how many tasks in a group can be "In progress"
+        A WIP (Work-In-Progress) limit caps how many tasks in a group can be &ldquo;In progress&rdquo;
         simultaneously. If you try to start a task that would exceed the limit, the app
         will warn you. This encourages focus and prevents overloading.
       </P>
@@ -234,7 +229,7 @@ function ProgressSection() {
         helping you spot patterns and maintain momentum.
       </P>
 
-      <H3>What's tracked</H3>
+      <H3>What&apos;s tracked</H3>
       <Ul items={[
         'Tasks completed each day for the current and past weeks.',
         'Current streak — consecutive days with at least one task completed.',
@@ -258,7 +253,7 @@ function SharingSection() {
       <H2>Sharing groups</H2>
       <P>
         You can share task groups with other Life Manager users. Shared groups and their
-        tasks appear in the recipient's task list automatically.
+        tasks appear in the recipient&apos;s task list automatically.
       </P>
 
       <H3>Sharing a group</H3>

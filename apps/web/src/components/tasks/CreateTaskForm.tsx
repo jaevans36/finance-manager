@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
 import { XCircle, Plus, X } from 'lucide-react';
-import { cn } from '../../lib/utils';
 import { useCreateTaskForm } from '../../hooks/forms';
 import type { CreateTaskInput } from '@life-manager/schema';
 import { Button } from '../ui/button';
@@ -26,7 +25,7 @@ interface CreateTaskFormProps {
   onSubtasksCreated?: (taskId: string, titles: string[]) => Promise<void>;
 }
 
-export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupId, onSubtasksCreated }: CreateTaskFormProps) => {
+export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupId, onSubtasksCreated: _onSubtasksCreated }: CreateTaskFormProps) => {
   const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useCreateTaskForm({
     groupId: selectedGroupId || '',
   });

@@ -42,10 +42,6 @@ const AdminLogs = () => {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  if (!user?.isAdmin) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
   const fetchLogs = useCallback(async () => {
     try {
       setError(null);
@@ -75,6 +71,10 @@ const AdminLogs = () => {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [entries]);
+
+  if (!user?.isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <PageLayout

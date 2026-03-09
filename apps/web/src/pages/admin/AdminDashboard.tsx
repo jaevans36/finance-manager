@@ -4,7 +4,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { userManagementService, type UserStats } from '../../services/userManagementService';
 import { PageLayout } from '../../components/layout/PageLayout';
-import { cn } from '../../lib/utils';
 
 const AdminDashboard = () => {
   const { user } = useAuth();

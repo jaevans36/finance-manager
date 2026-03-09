@@ -304,7 +304,7 @@ const DashboardPage = () => {
               <Sparkles size={28} />
             </div>
           </div>
-          <h2 className="mb-2 font-display text-display-sm text-foreground">Welcome — let's get started</h2>
+          <h2 className="mb-2 font-display text-display-sm text-foreground">Welcome &mdash; let&apos;s get started</h2>
           <p className="mb-6 text-sm text-muted-foreground">
             Create your first task, add it to a group, and try the calendar view to see your week at a glance.
           </p>

@@ -19,7 +19,6 @@ import type {
   ClassificationSuggestion,
 } from '../../services/taskService';
 import {
-  LayoutGrid,
   Sparkles,
   AlertTriangle,
   Clock,

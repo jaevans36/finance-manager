@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { Sparkles, Zap, Clock, Play, Coffee, ChevronRight, RefreshCw } from 'lucide-react';
+import { Zap, Clock, Play, Coffee, ChevronRight, RefreshCw } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import { useSuggestions, useUpdateTaskStatus } from '../../hooks/queries/useTasks';
 import { useWipSummary } from '../../hooks/queries/useSettings';
