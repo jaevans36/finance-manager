@@ -1,7 +1,7 @@
 # Validation Checklist (T161)
 
 **Date:** 28 December 2025  
-**Purpose:** Validate Finance Manager To Do application against functional requirements  
+**Purpose:** Validate Life Manager To Do application against functional requirements  
 **API:** .NET Core 8.0 on http://localhost:5000  
 **Frontend:** React 18.2 + Vite on http://localhost:5173  
 **Swagger UI:** http://localhost:5000/swagger

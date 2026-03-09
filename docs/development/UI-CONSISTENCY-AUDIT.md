@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-The frontend codebase has a well-designed shared UI package (`@finance-manager/ui`) with design tokens for spacing, typography, and theming. However, adoption is **inconsistent**. Several files bypass the design system entirely, duplicate shared components, or use hardcoded values where tokens should be used.
+The frontend codebase has a well-designed shared UI package (`@life-manager/ui`) with design tokens for spacing, typography, and theming. However, adoption is **inconsistent**. Several files bypass the design system entirely, duplicate shared components, or use hardcoded values where tokens should be used.
 
 | Category | Critical | High | Medium | Low | Total |
 |---|---|---|---|---|---|
@@ -237,7 +237,7 @@ gap: 16px;
 margin-bottom: 24px;
 
 // After
-import { spacing } from '@finance-manager/ui/styles';
+import { spacing } from '@life-manager/ui/styles';
 padding: ${spacing.xl};
 gap: ${spacing.lg};
 margin-bottom: ${spacing['2xl']};
@@ -270,11 +270,11 @@ Creates **5 local styled components** that duplicate the shared UI package:
 
 | Local Component | Shared Equivalent | Import From |
 |---|---|---|
-| `FormGroup` | `FormGroup` | `@finance-manager/ui` |
-| `Label` | `Label` | `@finance-manager/ui` |
-| `Input` (custom styled) | `Input` | `@finance-manager/ui` |
-| `ErrorText` | `Alert` with `variant="error"` | `@finance-manager/ui` |
-| `SubmitButton` | `Button` with `variant="primary"` | `@finance-manager/ui` |
+| `FormGroup` | `FormGroup` | `@life-manager/ui` |
+| `Label` | `Label` | `@life-manager/ui` |
+| `Input` (custom styled) | `Input` | `@life-manager/ui` |
+| `ErrorText` | `Alert` with `variant="error"` | `@life-manager/ui` |
+| `SubmitButton` | `Button` with `variant="primary"` | `@life-manager/ui` |
 
 **Current (lines 15–85):**
 ```tsx
@@ -293,7 +293,7 @@ const Label = styled.label`
 
 **Corrected:**
 ```tsx
-import { FormGroup, Label, Input, Button, Alert } from '@finance-manager/ui';
+import { FormGroup, Label, Input, Button, Alert } from '@life-manager/ui';
 // Remove all 5 local styled component definitions
 // Replace <SubmitButton> with <Button variant="primary" type="submit">
 // Replace <ErrorText> with <Alert variant="error">
@@ -307,7 +307,7 @@ import { FormGroup, Label, Input, Button, Alert } from '@finance-manager/ui';
 
 **File:** `components/calendar/DayTaskListModal.tsx` (lines ~50–90)
 
-Creates custom `PriorityBadge` and `GroupBadge` styled components instead of using `Badge` from `@finance-manager/ui`.
+Creates custom `PriorityBadge` and `GroupBadge` styled components instead of using `Badge` from `@life-manager/ui`.
 
 **Current:**
 ```tsx
@@ -326,7 +326,7 @@ const GroupBadge = styled.span<{ $color?: string }>`
 
 **Corrected:**
 ```tsx
-import { Badge } from '@finance-manager/ui';
+import { Badge } from '@life-manager/ui';
 // Use <Badge variant="primary">{priority}</Badge>
 // Use <Badge style based on group colour>
 ```
@@ -357,7 +357,7 @@ const SearchInput = styled.input`
 
 **Corrected:**
 ```tsx
-import { Badge, Input } from '@finance-manager/ui';
+import { Badge, Input } from '@life-manager/ui';
 // Use <Badge> with appropriate variant
 // Use <Input> for search
 ```
@@ -368,11 +368,11 @@ import { Badge, Input } from '@finance-manager/ui';
 
 **File:** `components/charts/ChartContainer.tsx` (lines ~30–60)
 
-Creates a custom `LoadingContainer` with spinning animation instead of using `LoadingSpinner` from `@finance-manager/ui`.
+Creates a custom `LoadingContainer` with spinning animation instead of using `LoadingSpinner` from `@life-manager/ui`.
 
 **Corrected:**
 ```tsx
-import { LoadingSpinner } from '@finance-manager/ui';
+import { LoadingSpinner } from '@life-manager/ui';
 ```
 
 ---
@@ -423,8 +423,8 @@ return (
 **Corrected:**
 ```tsx
 import styled from 'styled-components';
-import { Card, Heading2, Button, Input, FormGroup, Label } from '@finance-manager/ui';
-import { spacing, typography } from '@finance-manager/ui/styles';
+import { Card, Heading2, Button, Input, FormGroup, Label } from '@life-manager/ui';
+import { spacing, typography } from '@life-manager/ui/styles';
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -571,7 +571,7 @@ if (loading) {
 
 **Corrected:**
 ```tsx
-import { LoadingSpinner } from '@finance-manager/ui';
+import { LoadingSpinner } from '@life-manager/ui';
 
 if (loading) {
   return (
@@ -602,7 +602,7 @@ return (
 
 **Corrected:**
 ```tsx
-import { Alert, Button, Heading1 } from '@finance-manager/ui';
+import { Alert, Button, Heading1 } from '@life-manager/ui';
 
 return (
   <div role="alert" aria-live="assertive" style={{ padding: '20px', textAlign: 'center' }}>
@@ -878,7 +878,7 @@ These files demonstrate correct patterns and should be used as references when f
 
 | File | Why It's Exemplary |
 |---|---|
-| [CalculatorModal.tsx](apps/web/src/components/CalculatorModal.tsx) | Imports and uses `spacing` and `typography` tokens from `@finance-manager/ui/styles` |
+| [CalculatorModal.tsx](apps/web/src/components/CalculatorModal.tsx) | Imports and uses `spacing` and `typography` tokens from `@life-manager/ui/styles` |
 | [ThemeToggle.tsx](apps/web/src/components/ThemeToggle.tsx) | Proper theme colours, `aria-label`, clean component pattern |
 | [TaskGroupItem.tsx](apps/web/src/components/task-groups/TaskGroupItem.tsx) | Uses shared `Badge`, `Text`; has keyboard/ARIA support |
 | [PageLayout.tsx](apps/web/src/components/layout/PageLayout.tsx) | Consistent page wrapper with loading/error states |
@@ -894,8 +894,8 @@ These files demonstrate correct patterns and should be used as references when f
 | Pattern | Current State | Target State |
 |---|---|---|
 | **Styling system** | Mixed styled-components + Tailwind | styled-components only |
-| **Spacing** | Hardcoded px (98% of files) | `spacing.*` tokens from `@finance-manager/ui/styles` |
-| **Typography** | Hardcoded font-size/weight | `typography.*` mixins from `@finance-manager/ui/styles` |
+| **Spacing** | Hardcoded px (98% of files) | `spacing.*` tokens from `@life-manager/ui/styles` |
+| **Typography** | Hardcoded font-size/weight | `typography.*` mixins from `@life-manager/ui/styles` |
 | **Colours** | Mix of theme.colors + hardcoded hex | `theme.colors.*` exclusively |
 | **Shadows** | Hardcoded `rgba(0,0,0,...)` | `theme.colors.shadow` or `shadows.*` tokens |
 | **Border radius** | Random values (4–16px) | `borderRadius.*` token scale |

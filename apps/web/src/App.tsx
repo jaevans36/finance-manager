@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, LoadingSpinner } from '@finance-manager/ui';
+import { ThemeProvider } from '@life-manager/ui';
+import { Loader2 } from 'lucide-react';
 import { QueryProvider } from './providers/QueryProvider';
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -24,11 +25,16 @@ const ResendVerificationPage = lazy(() => import('./pages/auth/ResendVerificatio
 const WeeklyProgressPage = lazy(() => import('./pages/weekly-progress/WeeklyProgressPage'));
 const CalendarPage = lazy(() => import('./pages/calendar/CalendarPage'));
 const EventsPage = lazy(() => import('./pages/events/EventsPage'));
+const EisenhowerMatrixPage = lazy(() => import('./pages/eisenhower/EisenhowerMatrixPage'));
+const WhatCanIDoPage = lazy(() => import('./pages/suggestions/WhatCanIDoPage'));
 const VersionHistoryPage = lazy(() => import('./pages/version/VersionHistoryPage'));
 const DesignSystemPage = lazy(() => import('./pages/design-system/DesignSystemPage'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const UserManagement = lazy(() => import('./pages/admin/UserManagement'));
 const SystemSettings = lazy(() => import('./pages/admin/SystemSettings'));
+const AdminLogs = lazy(() => import('./pages/admin/AdminLogs'));
+const HelpPage = lazy(() => import('./pages/help/HelpPage'));
+const NotFoundPage = lazy(() => import('./pages/errors/NotFoundPage'));
 
 function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(false);
@@ -56,9 +62,14 @@ function App() {
           <ToastProvider>
             <AuthProvider>
               <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <div className="font-sans text-foreground antialiased">
+              <a href="#main-content" className="skip-to-content">
+                Skip to content
+              </a>
               <AppHeader />
               {showWhatsNew && <WhatsNewModal onClose={handleCloseWhatsNew} />}
-              <Suspense fallback={<LoadingSpinner />}>
+              <main id="main-content">
+              <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
                 <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
@@ -115,6 +126,22 @@ function App() {
                   }
                 />
                 <Route
+                  path="/matrix"
+                  element={
+                    <ProtectedRoute>
+                      <EisenhowerMatrixPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/suggestions"
+                  element={
+                    <ProtectedRoute>
+                      <WhatCanIDoPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/version-history"
                   element={
                     <ProtectedRoute>
@@ -154,9 +181,28 @@ function App() {
                     </AdminRoute>
                   }
                 />
+                <Route
+                  path="/admin/logs"
+                  element={
+                    <AdminRoute>
+                      <AdminLogs />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/help"
+                  element={
+                    <ProtectedRoute>
+                      <HelpPage />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </Suspense>
+              </main>
+              </div>
             </BrowserRouter>
           </AuthProvider>
         </ToastProvider>

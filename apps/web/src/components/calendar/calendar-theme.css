@@ -1,0 +1,202 @@
+/**
+ * Theme overrides for react-calendar.
+ * Uses CSS custom-properties from theme.css so styles respond
+ * to light / dark mode automatically.
+ */
+
+.finance-calendar {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100%;
+  min-height: 600px;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--card));
+  font-family: inherit;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* ── Navigation ──────────────────────────────────────── */
+
+.finance-calendar .react-calendar__navigation {
+  display: flex;
+  height: 44px;
+  margin-bottom: 16px;
+}
+
+.finance-calendar .react-calendar__navigation button {
+  background: hsl(var(--secondary));
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: calc(var(--radius) - 2px);
+  transition: all 0.2s ease;
+}
+
+.finance-calendar .react-calendar__navigation button:hover:not(:disabled) {
+  background: hsl(var(--muted));
+  border-color: hsl(var(--primary));
+}
+
+.finance-calendar .react-calendar__navigation button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.finance-calendar .react-calendar__navigation__label {
+  flex-grow: 1;
+  font-size: 18px;
+}
+
+/* ── Weekday labels ──────────────────────────────────── */
+
+.finance-calendar .react-calendar__month-view__weekdays {
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 8px;
+  background: hsl(var(--secondary));
+  padding: 8px 0;
+  border-radius: calc(var(--radius) - 2px);
+}
+
+.finance-calendar .react-calendar__month-view__weekdays abbr {
+  text-decoration: none;
+}
+
+/* ── Day tiles ───────────────────────────────────────── */
+
+.finance-calendar .react-calendar__tile {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 8px 4px;
+  background: hsl(var(--secondary));
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--radius) - 2px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  min-height: 100px;
+}
+
+.finance-calendar .react-calendar__tile:hover:not(:disabled) {
+  background: hsl(var(--muted));
+  border-color: hsl(var(--primary));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.finance-calendar .react-calendar__tile:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.finance-calendar .react-calendar__tile abbr {
+  font-size: 14px;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+/* ── Today's date ────────────────────────────────────── */
+
+.finance-calendar .react-calendar__tile--now {
+  background: hsl(var(--muted));
+  border: 2px solid hsl(var(--primary));
+  font-weight: 700;
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12);
+}
+
+.finance-calendar .react-calendar__tile--now abbr {
+  color: hsl(var(--primary));
+}
+
+/* ── Selected date ───────────────────────────────────── */
+
+.finance-calendar .react-calendar__tile--active {
+  background: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+}
+
+.finance-calendar .react-calendar__tile--active abbr {
+  color: hsl(var(--primary-foreground));
+}
+
+.finance-calendar .react-calendar__tile--active:hover {
+  background: hsl(var(--primary) / 0.85);
+}
+
+/* ── Weekend days ────────────────────────────────────── */
+
+.finance-calendar .react-calendar__month-view__days__day--weekend {
+  background: hsl(var(--muted));
+}
+
+/* ── Neighbouring-month days ─────────────────────────── */
+
+.finance-calendar .react-calendar__month-view__days__day--neighboringMonth {
+  opacity: 0.3;
+}
+
+.finance-calendar .react-calendar__month-view__days__day--neighboringMonth abbr {
+  color: hsl(var(--muted-foreground));
+}
+
+/* ── Month-view grid ─────────────────────────────────── */
+
+.finance-calendar .react-calendar__month-view__days {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+/* ── Responsive — tablet ─────────────────────────────── */
+
+@media (max-width: 768px) {
+  .finance-calendar {
+    padding: 12px;
+    min-height: 500px;
+  }
+
+  .finance-calendar .react-calendar__tile {
+    min-height: 70px;
+    padding: 6px 2px;
+  }
+
+  .finance-calendar .react-calendar__tile abbr {
+    font-size: 12px;
+  }
+
+  .finance-calendar .react-calendar__navigation button {
+    padding: 6px 8px;
+    font-size: 14px;
+  }
+
+  .finance-calendar .react-calendar__navigation__label {
+    font-size: 16px;
+  }
+}
+
+/* ── Responsive — small mobile ───────────────────────── */
+
+@media (max-width: 480px) {
+  .finance-calendar {
+    min-height: 400px;
+  }
+
+  .finance-calendar .react-calendar__tile {
+    min-height: 50px;
+    padding: 4px 2px;
+  }
+
+  .finance-calendar .react-calendar__tile abbr {
+    font-size: 11px;
+  }
+}

@@ -148,7 +148,7 @@ This document provides instructions for testing the Events API backend before in
 After running tests, verify in database:
 ```sql
 -- Connect to database
-docker exec -it finance-manager-db psql -U postgres -d finance_manager_dev
+docker exec -it life-manager-db psql -U postgres -d finance_manager_dev
 
 -- Check events table
 SELECT id, title, start_date, end_date, is_all_day, location, reminder_minutes 

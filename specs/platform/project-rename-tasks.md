@@ -1,4 +1,4 @@
-# Tasks: Project Rename — Finance Manager → Life Manager
+# Tasks: Project Rename — Life Manager → Life Manager
 
 **Input**: `specs/platform/project-rename.md`  
 **Prerequisites**: None (can proceed independently)  
@@ -12,13 +12,13 @@
 
 ## Phase 38: Codebase Rename (Priority: P2)
 
-**Purpose**: Update all code references from Finance Manager to Life Manager  
+**Purpose**: Update all code references from Life Manager to Life Manager  
 **Estimated Effort**: 1 week (14 tasks)  
 **Dependencies**: None
 
 ### Solution & Backend (Days 1-2)
 
-- [ ] T1127 [US1] Rename `Finance Manager.sln` → `Life Manager.sln` and update project references - 2h
+- [ ] T1127 [US1] Rename `Life Manager.sln` → `Life Manager.sln` and update project references - 2h
 - [ ] T1128 [US1] Rename `apps/finance-api/FinanceApi.csproj` → `apps/api/LifeManager.Api.csproj` - 2h
 - [ ] T1129 [US1] Update all C# namespaces: `FinanceApi.*` → `LifeManager.*` across all backend files - 3h
 - [ ] T1130 [US1] Update all `using` statements and assembly references - 2h
@@ -29,7 +29,7 @@
 - [ ] T1132 [P] [US1] Update `apps/web/package.json` name to `@life-manager/web` - 1h
 - [ ] T1133 [P] [US1] Update `packages/ui/package.json` name to `@life-manager/ui` - 1h
 - [ ] T1134 [P] [US1] Update `packages/schema/package.json` name to `@life-manager/schema` - 1h
-- [ ] T1135 [US1] Update all import statements referencing `@finance-manager/*` across frontend - 2h
+- [ ] T1135 [US1] Update all import statements referencing `@life-manager/*` across frontend - 2h
 - [ ] T1136 [US1] Update `pnpm-workspace.yaml` and root `package.json` - 1h
 
 ### Configuration (Days 3-4)
@@ -77,8 +77,8 @@
 **Dependencies**: Phase 38 complete
 
 - [ ] T1149 [US4] Update root `README.md` with new platform name and description - 1h
-- [ ] T1150 [US4] Search and replace "Finance Manager" in all `docs/` files (preserve CHANGELOG history) - 2h
-- [ ] T1151 [US4] Search and replace "Finance Manager" in all `specs/` files - 2h
+- [ ] T1150 [US4] Search and replace "Life Manager" in all `docs/` files (preserve CHANGELOG history) - 2h
+- [ ] T1151 [US4] Search and replace "Life Manager" in all `specs/` files - 2h
 - [ ] T1152 [US4] Update `.github/copilot-instructions.md` with new name references - 1h
 - [ ] T1153 [US4] Update `QUICKSTART.md` with new name and examples - 1h
 - [ ] T1154 [US4] Add CHANGELOG.md entry documenting the rename - 1h

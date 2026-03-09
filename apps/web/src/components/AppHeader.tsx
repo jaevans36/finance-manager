@@ -1,14 +1,22 @@
 import { useState, useEffect } from 'react';
-import styled from 'styled-components';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useTheme } from '@finance-manager/ui';
-import { borderRadius, focusRing, mediaQueries } from '@finance-manager/ui/styles';
-import { 
-  LayoutDashboard, 
-  ListTodo, 
-  Calendar, 
-  BarChart3, 
+import { useTheme } from '@life-manager/ui';
+import { cn } from '../lib/utils';
+import { Button } from './ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
+import {
+  LayoutDashboard,
+  LayoutGrid,
+  ListTodo,
+  Calendar,
+  BarChart3,
   UserIcon,
   LogOut,
   ChevronDown,
@@ -19,353 +27,23 @@ import {
   Moon,
   Calculator,
   Palette,
-  Shield
+  Shield,
+  Sparkles,
+  HelpCircle,
 } from 'lucide-react';
 import CalculatorModal from './CalculatorModal';
-
-const HeaderContainer = styled.header`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  padding: 12px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-
-  ${mediaQueries.tablet} {
-    padding: 12px 16px;
-  }
-`;
-
-const LeftSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 24px;
-
-  ${mediaQueries.tablet} {
-    gap: 12px;
-  }
-`;
-
-const Logo = styled.div`
-  font-size: 20px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.primary};
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.success};
-  }
-
-  ${mediaQueries.tablet} {
-    font-size: 18px;
-  }
-`;
-
-const NavDropdown = styled.div`
-  position: relative;
-`;
-
-const NavButton = styled.button`
-  background: ${({ theme }) => theme.colors.background};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  padding: 8px 16px;
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
-
-  svg {
-    transition: transform 0.2s ease;
-  }
-
-  &[aria-expanded="true"] svg:last-child {
-    transform: rotate(180deg);
-  }
-
-  ${mediaQueries.tablet} {
-    padding: 6px 12px;
-    font-size: 13px;
-  }
-
-  ${focusRing}
-`;
-
-const DropdownMenu = styled.div<{ $isOpen: boolean }>`
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  background: ${({ theme }) => theme.colors.background};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  min-width: 220px;
-  opacity: ${({ $isOpen }) => ($isOpen ? 1 : 0)};
-  visibility: ${({ $isOpen }) => ($isOpen ? 'visible' : 'hidden')};
-  transform: ${({ $isOpen }) => ($isOpen ? 'translateY(0)' : 'translateY(-8px)')};
-  transition: all 0.2s ease;
-  overflow: hidden;
-  z-index: 1001;
-`;
-
-const DropdownItem = styled.button<{ $isActive?: boolean }>`
-  width: 100%;
-  padding: 12px 16px;
-  background: ${({ $isActive, theme }) => 
-    $isActive ? theme.colors.primaryLight : 'transparent'};
-  border: none;
-  color: ${({ $isActive, theme }) => 
-    $isActive ? theme.colors.primary : theme.colors.text};
-  font-size: 14px;
-  font-weight: ${({ $isActive }) => ($isActive ? 600 : 500)};
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  transition: all 0.15s ease;
-  text-align: left;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-  }
-
-  &:first-child {
-    border-radius: ${borderRadius.lg} ${borderRadius.lg} 0 0;
-  }
-
-  &:last-child {
-    border-radius: 0 0 ${borderRadius.lg} ${borderRadius.lg};
-  }
-
-  svg {
-    flex-shrink: 0;
-  }
-
-  ${focusRing}
-`;
-
-const DropdownDivider = styled.div`
-  height: 1px;
-  background: ${({ theme }) => theme.colors.border};
-  margin: 4px 0;
-`;
-
-const RightSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 20px;
-
-  ${mediaQueries.tablet} {
-    gap: 12px;
-  }
-`;
-
-const TimeDisplay = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 14px;
-  font-weight: 500;
-
-  ${mediaQueries.tablet} {
-    display: none;
-  }
-`;
-
-const UserSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 12px;
-  background: ${({ theme }) => theme.colors.background};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.primary};
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-  }
-
-  ${mediaQueries.tablet} {
-    padding: 6px 8px;
-  }
-
-  ${focusRing}
-`;
-
-const UserAvatar = styled.div`
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: ${({ theme }) => theme.colors.primary};
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 14px;
-
-  ${mediaQueries.tablet} {
-    width: 28px;
-    height: 28px;
-    font-size: 12px;
-  }
-`;
-
-const UserInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-
-  ${mediaQueries.tablet} {
-    display: none;
-  }
-`;
-
-const UserName = styled.div`
-  font-size: 14px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.text};
-  line-height: 1.2;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
-
-const AdminBadge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  background: ${({ theme }) => theme.colors.warning};
-  color: ${({ theme }) => theme.colors.buttonText};
-  border-radius: ${borderRadius.sm};
-  cursor: help;
-  transition: transform 0.2s ease;
-
-  &:hover {
-    transform: scale(1.1);
-  }
-`;
-
-const UserGreeting = styled.div`
-  font-size: 12px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  line-height: 1.2;
-`;
-
-const UserDropdown = styled(DropdownMenu)`
-  right: 0;
-  left: auto;
-  min-width: 200px;
-`;
-
-const ThemeButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  background-color: ${({ theme }) => theme.colors.cardBackground};
-  color: ${({ theme }) => theme.colors.text};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px ${({ theme }) => theme.colors.shadow};
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.backgroundSecondary};
-    border-color: ${({ theme }) => theme.colors.primary};
-    transform: scale(1.05);
-  }
-
-  &:active {
-    transform: scale(0.95);
-  }
-
-  &:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.colors.primary};
-    outline-offset: 2px;
-  }
-
-  svg {
-    color: ${({ theme }) => theme.colors.primary};
-    width: 20px;
-    height: 20px;
-    transition: transform 0.3s ease;
-  }
-
-  &:hover svg {
-    transform: rotate(15deg);
-  }
-
-  ${mediaQueries.tablet} {
-    width: 32px;
-    height: 32px;
-  }
-`;
-
-const IconButton = styled(ThemeButton)`
-  svg {
-    transition: none;
-  }
-  
-  &:hover svg {
-    transform: none;
-  }
-`;
 
 export const AppHeader = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
   const { isDarkMode, toggleTheme } = useTheme();
-  const [navOpen, setNavOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showCalculator, setShowCalculator] = useState(false);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest('[data-dropdown]')) {
-        setNavOpen(false);
-        setUserMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
   const getGreeting = () => {
@@ -375,161 +53,166 @@ export const AppHeader = () => {
     return 'Good evening';
   };
 
-  const formatTime = () => {
-    return currentTime.toLocaleTimeString('en-GB', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      second: '2-digit'
-    });
-  };
+  const formatTime = () =>
+    currentTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-  const formatDate = () => {
-    return currentTime.toLocaleDateString('en-GB', { 
-      weekday: 'short', 
-      day: 'numeric', 
-      month: 'short' 
-    });
-  };
+  const formatDate = () =>
+    currentTime.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 
   const navigationItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/tasks', icon: ListTodo, label: 'Tasks' },
+    { path: '/matrix', icon: LayoutGrid, label: 'Matrix' },
+    { path: '/suggestions', icon: Sparkles, label: 'Suggestions' },
     { path: '/events', icon: CalendarClock, label: 'Events' },
     { path: '/calendar', icon: Calendar, label: 'Calendar' },
     { path: '/weekly-progress', icon: BarChart3, label: 'Progress' },
   ];
 
-  const handleNavigate = (path: string) => {
-    navigate(path);
-    setNavOpen(false);
-  };
-
-  const handleLogout = () => {
-    logout();
-    setUserMenuOpen(false);
-  };
-
   if (!user) return null;
 
   return (
-    <HeaderContainer role="banner">
-      <LeftSection>
-        <Logo onClick={() => navigate('/dashboard')}>
+    <header
+      role="banner"
+      className="sticky top-0 z-[1000] flex items-center justify-between border-b border-border bg-secondary/80 px-6 py-3 backdrop-blur-md shadow-sm md:px-4"
+    >
+      {/* Left: Logo + Nav */}
+      <div className="flex items-center gap-6 md:gap-3">
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center gap-2 text-xl font-bold text-primary transition-colors hover:text-success md:text-lg"
+        >
           <LayoutDashboard size={24} />
-          Finance Manager
-        </Logo>
+          Life Manager
+        </button>
 
-        <NavDropdown data-dropdown>
-          <NavButton 
-            onClick={() => setNavOpen(!navOpen)}
-            aria-expanded={navOpen}
-            aria-haspopup="true"
-          >
-            Navigation
-            <ChevronDown size={16} />
-          </NavButton>
-          <DropdownMenu $isOpen={navOpen}>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-2">
+              Navigation
+              <ChevronDown size={16} className="transition-transform duration-200 data-[state=open]:rotate-180" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56">
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
               return (
-                <DropdownItem
+                <DropdownMenuItem
                   key={item.path}
-                  onClick={() => handleNavigate(item.path)}
-                  $isActive={isActive}
-                  aria-current={isActive ? 'page' : undefined}
+                  onClick={() => navigate(item.path)}
+                  className={cn(isActive && 'bg-accent font-semibold')}
                 >
-                  <Icon size={18} />
+                  <Icon size={18} className="mr-2 shrink-0" />
                   {item.label}
-                </DropdownItem>
+                </DropdownMenuItem>
               );
             })}
-            <DropdownDivider />
-            <DropdownItem onClick={() => handleNavigate('/version-history')}>
-              <History size={18} />
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate('/version-history')}>
+              <History size={18} className="mr-2 shrink-0" />
               Version History
-            </DropdownItem>
-          </DropdownMenu>
-        </NavDropdown>
-      </LeftSection>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
-      <RightSection>
-        <TimeDisplay>
+      {/* Right: Time, Calculator, Theme, User */}
+      <div className="flex items-center gap-5 md:gap-3">
+        {/* Time display — hidden on smaller screens */}
+        <div className="hidden items-center gap-2 text-sm font-medium text-muted-foreground lg:flex">
           <Clock size={16} />
-          {formatTime()} • {formatDate()}
-        </TimeDisplay>
+          {formatTime()} &bull; {formatDate()}
+        </div>
 
-        <IconButton 
-          onClick={() => setShowCalculator(true)} 
+        {/* Help button */}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => navigate('/help')}
+          title="Help"
+          aria-label="Open user guide"
+          className={cn('size-9 md:size-8', location.pathname === '/help' && 'border-primary text-primary')}
+        >
+          <HelpCircle size={20} />
+        </Button>
+
+        {/* Calculator button */}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setShowCalculator(true)}
           title="Calculator"
           aria-label="Open calculator"
+          className="size-9 md:size-8"
         >
           <Calculator size={20} />
-        </IconButton>
+        </Button>
 
-        <ThemeButton 
+        {/* Theme toggle */}
+        <Button
+          variant="outline"
+          size="icon"
           onClick={toggleTheme}
           aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="size-9 md:size-8"
         >
           {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-        </ThemeButton>
+        </Button>
 
-        <NavDropdown data-dropdown>
-          <UserSection onClick={() => setUserMenuOpen(!userMenuOpen)}>
-            <UserAvatar>
-              {user.username.charAt(0).toUpperCase()}
-            </UserAvatar>
-            <UserInfo>
-              <UserName>
-                @{user.username}
-                {user.isAdmin && (
-                  <AdminBadge title="Administrator">
-                    <Shield size={14} />
-                  </AdminBadge>
-                )}
-              </UserName>
-              <UserGreeting>{getGreeting()}</UserGreeting>
-            </UserInfo>
-            <ChevronDown size={16} />
-          </UserSection>
-          <UserDropdown $isOpen={userMenuOpen}>
-            <DropdownItem onClick={() => {
-              handleNavigate('/profile');
-              setUserMenuOpen(false);
-            }}>
-              <UserIcon size={18} />
+        {/* User menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-3 rounded-lg border border-border bg-background px-3 py-1.5 transition-colors hover:border-primary hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:px-2">
+              <div className="flex size-8 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground md:size-7 md:text-xs">
+                {user.username.charAt(0).toUpperCase()}
+              </div>
+              <div className="hidden flex-col gap-0.5 lg:flex">
+                <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground leading-tight">
+                  @{user.username}
+                  {user.isAdmin && (
+                    <span
+                      title="Administrator"
+                      className="inline-flex items-center justify-center rounded-sm bg-warning p-1 text-warning-foreground transition-transform hover:scale-110"
+                    >
+                      <Shield size={14} />
+                    </span>
+                  )}
+                </span>
+                <span className="text-xs text-muted-foreground leading-tight">{getGreeting()}</span>
+              </div>
+              <ChevronDown size={16} />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuItem onClick={() => navigate('/profile')}>
+              <UserIcon size={18} className="mr-2 shrink-0" />
               Profile Settings
-            </DropdownItem>
+            </DropdownMenuItem>
             {user.isAdmin && (
               <>
-                <DropdownDivider />
-                <DropdownItem onClick={() => {
-                  handleNavigate('/admin');
-                  setUserMenuOpen(false);
-                }}>
-                  <Shield size={18} />
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/admin')}>
+                  <Shield size={18} className="mr-2 shrink-0" />
                   Admin Dashboard
-                </DropdownItem>
-                <DropdownItem onClick={() => {
-                  handleNavigate('/design-system');
-                  setUserMenuOpen(false);
-                }}>
-                  <Palette size={18} />
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/design-system')}>
+                  <Palette size={18} className="mr-2 shrink-0" />
                   Design System
-                </DropdownItem>
+                </DropdownMenuItem>
               </>
             )}
-            <DropdownDivider />
-            <DropdownItem onClick={handleLogout}>
-              <LogOut size={18} />
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={logout}>
+              <LogOut size={18} className="mr-2 shrink-0" />
               Sign Out
-            </DropdownItem>
-          </UserDropdown>
-        </NavDropdown>
-      </RightSection>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
       {showCalculator && <CalculatorModal onClose={() => setShowCalculator(false)} />}
-    </HeaderContainer>
+    </header>
   );
 };

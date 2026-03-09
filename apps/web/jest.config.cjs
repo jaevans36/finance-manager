@@ -21,13 +21,12 @@ module.exports = {
   ],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-  },
-  globals: {
-    'import.meta': {
-      env: {
-        VITE_API_URL: 'http://localhost:5000',
-      },
-    },
+    // Mock api-client globally — the real module uses import.meta.env which
+    // cannot be parsed by Jest's CommonJS runtime. Tests that need custom
+    // mock behaviour can still override with jest.mock() factory functions.
+    'api-client$': '<rootDir>/tests/__mocks__/api-client.ts',
+    // Path alias matching vite/tsconfig @ alias
+    '^@/(.*)$': '<rootDir>/src/$1',
   },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

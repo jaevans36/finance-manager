@@ -16,6 +16,11 @@ export const queryKeys = {
     list: (params?: Record<string, unknown>) => [...queryKeys.tasks.lists(), params] as const,
     details: () => [...queryKeys.tasks.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.tasks.details(), id] as const,
+    matrix: (params?: Record<string, unknown>) => [...queryKeys.tasks.all, 'matrix', params] as const,
+    suggestion: (id: string) => [...queryKeys.tasks.all, 'suggestion', id] as const,
+    autoClassify: () => [...queryKeys.tasks.all, 'auto-classify'] as const,
+    suggestions: (params?: Record<string, unknown>) => [...queryKeys.tasks.all, 'suggestions', params] as const,
+    energyDistribution: () => [...queryKeys.tasks.all, 'energy-distribution'] as const,
   },
 
   subtasks: {
@@ -67,5 +72,11 @@ export const queryKeys = {
     all: ['version'] as const,
     current: () => [...queryKeys.version.all, 'current'] as const,
     history: () => [...queryKeys.version.all, 'history'] as const,
+  },
+
+  settings: {
+    all: ['settings'] as const,
+    current: () => [...queryKeys.settings.all, 'current'] as const,
+    wipSummary: () => [...queryKeys.settings.all, 'wip-summary'] as const,
   },
 } as const;

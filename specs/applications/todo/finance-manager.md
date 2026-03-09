@@ -1,4 +1,4 @@
-# Feature Specification: Finance Manager - Transaction Import & Budgeting
+# Feature Specification: Life Manager - Transaction Import & Budgeting
 
 **Feature ID**: `012-finance-manager`  
 **Created**: 2026-01-18  
@@ -8,7 +8,7 @@
 
 ## Overview
 
-The **Finance Manager** is the namesake feature of this application: a comprehensive personal finance management system that imports CSV transaction data from banks, categorizes expenses, tracks budgets, and provides financial insights through visualizations. This is the core financial functionality the project was originally conceived for.
+The **Life Manager** is the namesake feature of this application: a comprehensive personal finance management system that imports CSV transaction data from banks, categorizes expenses, tracks budgets, and provides financial insights through visualizations. This is the core financial functionality the project was originally conceived for.
 
 ## Rationale
 
@@ -19,7 +19,7 @@ Personal finance management requires:
 - Visualizing financial trends
 - Identifying overspending and savings opportunities
 
-**Unlike the To Do app**, which handles tasks and events, the Finance Manager focuses on **financial health**.
+**Unlike the To Do app**, which handles tasks and events, the Life Manager focuses on **financial health**.
 
 **Business Value**:
 - Solves real user pain: understanding spending patterns
@@ -302,7 +302,7 @@ interface CategorizationRule {
 - Accounts and budgets in global context
 - Import job status tracked with polling
 
-## Task Breakdown: Phase 23 - Finance Manager (8 weeks)
+## Task Breakdown: Phase 23 - Life Manager (8 weeks)
 
 ### Week 1-2: Backend Foundation (Days 1-10)
 
@@ -471,7 +471,7 @@ interface CategorizationRule {
 - [ ] T1218 Write E2E test for insights dashboard - 5h
 
 **Documentation**
-- [ ] T1219 Write user guide for Finance Manager - 6h
+- [ ] T1219 Write user guide for Life Manager - 6h
 - [ ] T1220 Document CSV import requirements (column formats) - 3h
 - [ ] T1221 Create budgeting best practices guide - 3h
 
@@ -480,7 +480,7 @@ interface CategorizationRule {
 - [ ] T1223 Performance testing (10,000 transactions) - 5h
 - [ ] T1224 Code review and refactoring - 6h
 
-**Checkpoint**: Complete Finance Manager feature
+**Checkpoint**: Complete Life Manager feature
 
 ## Effort Summary
 

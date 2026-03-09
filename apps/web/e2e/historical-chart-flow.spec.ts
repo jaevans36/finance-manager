@@ -33,7 +33,7 @@ test.describe('Historical Completion Chart E2E Flow (T231.18)', () => {
     // Step 1: Register and login
     await test.step('User Registration and Login', async () => {
       await page.goto('/register');
-      await expect(page).toHaveTitle(/Finance Manager/);
+      await expect(page).toHaveTitle(/Life Manager/);
 
       await page.fill('#email', testUser.email);
       await page.fill('#password', testUser.password);

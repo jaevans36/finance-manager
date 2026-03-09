@@ -679,3 +679,16 @@ With multiple developers after Foundation phase completes:
 - Follow TDD where practical - write tests before implementation
 - Use TypeScript strict mode throughout - no `any` types allowed
 - All API responses must follow OpenAPI specification in contracts/api-spec.yaml
+---
+
+## Productivity Frameworks (Phases 55-57)
+
+Phases 55-57 add three productivity frameworks to the task system. Full task breakdowns are in [productivity-frameworks-tasks.md](productivity-frameworks-tasks.md).
+
+| Phase | Feature | Tasks | IDs | Est. Effort | Dependencies |
+|-------|---------|-------|-----|-------------|--------------|
+| 55 | Task Status & WIP Limits | 52 | T1389-T1440 | 2.5 weeks | None |
+| 56 | Eisenhower Matrix | 32 | T1441-T1472 | 2 weeks | Phase 55 |
+| 57 | Energy Tagging & Smart Suggestions | 31 | T1473-T1503 | 1.5 weeks | Phase 55 |
+
+**Specs**: [wip-limits-feature.md](wip-limits-feature.md) · [eisenhower-matrix-feature.md](eisenhower-matrix-feature.md) · [energy-tagging-feature.md](energy-tagging-feature.md)

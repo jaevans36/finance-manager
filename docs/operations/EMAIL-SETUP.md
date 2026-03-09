@@ -2,7 +2,7 @@
 
 ## How It Works
 
-The Finance Manager app uses **nodemailer** to send emails for:
+The Life Manager app uses **nodemailer** to send emails for:
 - Password reset requests
 - Email verification
 - Account lockout notifications  

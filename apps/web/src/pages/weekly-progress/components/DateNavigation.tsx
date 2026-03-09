@@ -1,21 +1,4 @@
-import styled from 'styled-components';
-import { Button, Text } from '@finance-manager/ui';
-import { mediaQueries } from '@finance-manager/ui/styles';
-
-const WeekNavigation = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 15px;
-
-  ${mediaQueries.tablet} {
-    flex-wrap: wrap;
-  }
-`;
-
-const WeekDisplay = styled(Text)`
-  margin: 0;
-  font-weight: 500;
-`;
+import { Button } from '../../../components/ui/button';
 
 interface DateNavigationProps {
   currentStartDate: Date;
@@ -35,17 +18,17 @@ export const DateNavigation = ({
   const todayLabel = viewMode === 'month' ? 'This Month' : 'Today';
 
   return (
-    <WeekNavigation>
-      <Button variant="secondary" size="small" onClick={() => onNavigate('prev')}>
+    <div className="flex items-center gap-4 flex-wrap">
+      <Button variant="secondary" size="sm" onClick={() => onNavigate('prev')}>
         ← Previous
       </Button>
-      <WeekDisplay>{formatDateRange(currentStartDate)}</WeekDisplay>
-      <Button variant="secondary" size="small" onClick={() => onNavigate('next')}>
+      <p className="m-0 font-medium text-sm text-foreground">{formatDateRange(currentStartDate)}</p>
+      <Button variant="secondary" size="sm" onClick={() => onNavigate('next')}>
         Next →
       </Button>
-      <Button variant="secondary" size="small" onClick={onToday}>
+      <Button variant="secondary" size="sm" onClick={onToday}>
         {todayLabel}
       </Button>
-    </WeekNavigation>
+    </div>
   );
 };

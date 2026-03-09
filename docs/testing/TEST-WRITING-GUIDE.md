@@ -1,6 +1,6 @@
 # Test Writing Guide
 
-This guide provides practical examples and best practices for writing tests in the Finance Manager project.
+This guide provides practical examples and best practices for writing tests in the Life Manager project.
 
 **Last Updated**: 2026-01-10
 
@@ -481,10 +481,10 @@ await page.waitForSelector('.success-message'); // Wait for specific condition
 
 ```bash
 # Run specific test file
-pnpm --filter @finance-manager/web test TaskCard.test.tsx
+pnpm --filter @life-manager/web test TaskCard.test.tsx
 
 # Run in watch mode
-pnpm --filter @finance-manager/web test:watch
+pnpm --filter @life-manager/web test:watch
 
 # Debug with Node inspector
 node --inspect-brk node_modules/.bin/jest TaskCard.test.tsx
@@ -494,13 +494,13 @@ node --inspect-brk node_modules/.bin/jest TaskCard.test.tsx
 
 ```bash
 # Run with UI mode
-pnpm --filter @finance-manager/web test:e2e:ui
+pnpm --filter @life-manager/web test:e2e:ui
 
 # Run with debug mode (step through)
-pnpm --filter @finance-manager/web test:e2e:debug
+pnpm --filter @life-manager/web test:e2e:debug
 
 # Run specific test file
-pnpm --filter @finance-manager/web test:e2e user-flow.spec.ts
+pnpm --filter @life-manager/web test:e2e user-flow.spec.ts
 ```
 
 ### Debug Backend Tests

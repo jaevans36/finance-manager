@@ -1190,9 +1190,9 @@ CREATE INDEX idx_email_logs_status ON email_logs(delivery_status);
 
 ### User Story 6.1 - Unified Application Portal (Priority: P1)
 
-Users need a central hub dashboard that provides quick access to all applications in the Finance Manager stack, replacing the current To Do-centric dashboard with a true application launcher.
+Users need a central hub dashboard that provides quick access to all applications in the Life Manager stack, replacing the current To Do-centric dashboard with a true application launcher.
 
-**Why this priority**: As the platform grows to include multiple tools (To Do, Finance Manager, future applications), users need a unified entry point to navigate between applications. This architectural change establishes proper separation of concerns.
+**Why this priority**: As the platform grows to include multiple tools (To Do, Life Manager, future applications), users need a unified entry point to navigate between applications. This architectural change establishes proper separation of concerns.
 
 **Independent Test**: Can be fully tested by logging in, viewing the hub dashboard with application tiles, clicking through to different applications, and returning to the hub.
 
@@ -1240,7 +1240,7 @@ The hub dashboard includes a quick stats section showing aggregated metrics acro
 2. **Given** a user completes a task in the To Do application, **When** they return to the hub, **Then** the quick stats refresh automatically or display a "refresh" button to update stats
 3. **Given** the quick stats widget, **When** displaying metrics, **Then** each stat includes a small icon, the metric value (large font), and a label (secondary text)
 4. **Given** a user clicks on a quick stat (e.g., "Tasks This Week"), **When** activated, **Then** they navigate to the relevant section in the To Do app with appropriate filters applied
-5. **Given** future applications are added (e.g., Finance Manager), **When** they become active, **Then** the quick stats expand to include metrics from those apps (e.g., "Transactions This Month")
+5. **Given** future applications are added (e.g., Life Manager), **When** they become active, **Then** the quick stats expand to include metrics from those apps (e.g., "Transactions This Month")
 6. **Given** a user with no data yet, **When** they view quick stats, **Then** they see empty states with encouraging messages like "Start your first task" or "Track your first transaction"
 
 ---
@@ -1299,7 +1299,7 @@ The hub dashboard greets users with personalized messages based on time of day, 
 3. **Given** a user logs in between 18:00-04:59, **When** the hub loads, **Then** they see "Good evening, [Username]" in the welcome header
 4. **Given** a user completes a notable achievement (e.g., 100 tasks completed), **When** they return to the hub, **Then** a celebration message displays: "🎉 Congratulations! You've completed 100 tasks!"
 5. **Given** a user hasn't logged in for 7+ days, **When** they return, **Then** the hub displays: "Welcome back, [Username]! You've been away for [X] days. Here's what you missed:" with summary stats
-6. **Given** a user on their first login, **When** they land on the hub, **Then** they see an onboarding card: "Welcome to Finance Manager! Let's get you started" with quick setup links
+6. **Given** a user on their first login, **When** they land on the hub, **Then** they see an onboarding card: "Welcome to Life Manager! Let's get you started" with quick setup links
 7. **Given** a user during their birthday (if profile date set), **When** they log in, **Then** the hub displays a birthday message with a special icon/animation
 
 ---
@@ -1503,7 +1503,7 @@ CREATE INDEX idx_profile_images_updated ON user_profile_images(updated_at DESC);
 // Option 1: Local filesystem (development/small deployments)
 const storageConfig = {
   type: 'local',
-  basePath: '/var/www/finance-manager/uploads/avatars',
+  basePath: '/var/www/life-manager/uploads/avatars',
   publicUrl: 'https://your-domain.com/uploads/avatars',
   maxFileSizeBytes: 5 * 1024 * 1024, // 5MB
   allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
@@ -1513,7 +1513,7 @@ const storageConfig = {
 // Option 2: Cloud storage (production recommended)
 const storageConfig = {
   type: 'cloud', // AWS S3, Azure Blob, Google Cloud Storage
-  bucket: 'finance-manager-avatars',
+  bucket: 'life-manager-avatars',
   region: 'us-east-1',
   cdnUrl: 'https://cdn.your-domain.com/avatars',
   maxFileSizeBytes: 5 * 1024 * 1024,
@@ -1989,7 +1989,7 @@ const InfoBar = styled.div`
 
 **Icon Design Requirements** (flat style):
 - **To Do Manager**: Checkmark circle with tick (solid green)
-- **Finance Manager**: Pie chart or coins icon (solid blue)
+- **Life Manager**: Pie chart or coins icon (solid blue)
 - **Admin Panel**: Settings gear icon (solid orange)
 - **Future Apps**: Placeholder icon template (outline style with question mark)
 - All icons: 64x64px, SVG format, 2-colour maximum, geometric shapes, no gradients
@@ -2475,7 +2475,7 @@ The application needs to be production-ready with comprehensive security hardeni
 version: '3.8'
 services:
   web:
-    image: finance-manager-web:latest
+    image: life-manager-web:latest
     restart: unless-stopped
     environment:
       - NODE_ENV=production
@@ -2489,7 +2489,7 @@ services:
       - app-network
     
   api:
-    image: finance-manager-api:latest
+    image: life-manager-api:latest
     restart: unless-stopped
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -2626,10 +2626,10 @@ jobs:
           dotnet restore
       
       - name: Lint frontend
-        run: pnpm --filter @finance-manager/web lint
+        run: pnpm --filter @life-manager/web lint
       
       - name: TypeScript type check
-        run: pnpm --filter @finance-manager/web typecheck
+        run: pnpm --filter @life-manager/web typecheck
       
       - name: Lint backend
         run: dotnet format --verify-no-changes
@@ -2734,10 +2734,10 @@ jobs:
           pnpm install
       
       - name: Run unit tests
-        run: pnpm --filter @finance-manager/web test
+        run: pnpm --filter @life-manager/web test
       
       - name: Run integration tests
-        run: pnpm --filter @finance-manager/web test:integration
+        run: pnpm --filter @life-manager/web test:integration
       
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -2792,18 +2792,18 @@ jobs:
           dotnet restore
       
       - name: Install Playwright browsers
-        run: pnpm --filter @finance-manager/web exec playwright install --with-deps
+        run: pnpm --filter @life-manager/web exec playwright install --with-deps
       
       - name: Build backend
         run: dotnet build --configuration Release
       
       - name: Build frontend
-        run: pnpm --filter @finance-manager/web build
+        run: pnpm --filter @life-manager/web build
       
       - name: Start application
         run: |
           dotnet run --project apps/finance-api --no-build --configuration Release &
-          pnpm --filter @finance-manager/web preview &
+          pnpm --filter @life-manager/web preview &
         env:
           ConnectionStrings__DefaultConnection: "Host=localhost;Database=financemanager_test;Username=test;Password=test123"
           ASPNETCORE_ENVIRONMENT: Test
@@ -2814,7 +2814,7 @@ jobs:
           timeout 60 bash -c 'until curl -f http://localhost:4173; do sleep 2; done'
       
       - name: Run E2E tests
-        run: pnpm --filter @finance-manager/web test:e2e
+        run: pnpm --filter @life-manager/web test:e2e
         env:
           VITE_API_URL: http://localhost:5000
       
@@ -2913,7 +2913,7 @@ jobs:
           username: ${{ secrets.STAGING_USER }}
           key: ${{ secrets.STAGING_SSH_KEY }}
           script: |
-            cd /opt/finance-manager
+            cd /opt/life-manager
             docker compose -f docker-compose.staging.yml pull
             docker compose -f docker-compose.staging.yml up -d
             docker system prune -f
@@ -2925,7 +2925,7 @@ jobs:
           username: ${{ secrets.STAGING_USER }}
           key: ${{ secrets.STAGING_SSH_KEY }}
           script: |
-            docker exec finance-manager-api dotnet ef database update
+            docker exec life-manager-api dotnet ef database update
       
       - name: Health check
         run: |
@@ -2951,8 +2951,8 @@ jobs:
           username: ${{ secrets.PROD_USER }}
           key: ${{ secrets.PROD_SSH_KEY }}
           script: |
-            cd /opt/finance-manager
-            docker exec finance-manager-db pg_dump -U $DB_USER financemanager | gzip > /backups/pre-deploy-$(date +%Y%m%d_%H%M%S).sql.gz
+            cd /opt/life-manager
+            docker exec life-manager-db pg_dump -U $DB_USER financemanager | gzip > /backups/pre-deploy-$(date +%Y%m%d_%H%M%S).sql.gz
       
       - name: Deploy to production server
         uses: appleboy/ssh-action@v1.0.0
@@ -2961,7 +2961,7 @@ jobs:
           username: ${{ secrets.PROD_USER }}
           key: ${{ secrets.PROD_SSH_KEY }}
           script: |
-            cd /opt/finance-manager
+            cd /opt/life-manager
             docker compose pull
             docker compose up -d
             docker system prune -f
@@ -2973,7 +2973,7 @@ jobs:
           username: ${{ secrets.PROD_USER }}
           key: ${{ secrets.PROD_SSH_KEY }}
           script: |
-            docker exec finance-manager-api dotnet ef database update
+            docker exec life-manager-api dotnet ef database update
       
       - name: Health check
         run: |
@@ -3226,7 +3226,7 @@ services:
 # apps/finance-api/Dockerfile
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ["Finance Manager.sln", "./"]
+COPY ["Life Manager.sln", "./"]
 COPY ["apps/finance-api/FinanceApi.csproj", "apps/finance-api/"]
 RUN dotnet restore "apps/finance-api/FinanceApi.csproj"
 COPY . .

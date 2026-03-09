@@ -1,6 +1,5 @@
 import { memo } from 'react';
-import styled from 'styled-components';
-import { borderRadius, spacing } from '@finance-manager/ui/styles';
+import { cn } from '../../lib/utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -18,76 +17,14 @@ interface SubtaskProgressProps {
 }
 
 // ---------------------------------------------------------------------------
-// Styled helpers
+// Helpers
 // ---------------------------------------------------------------------------
 
-const Wrapper = styled.div<{ $compact: boolean }>`
-  display: flex;
-  flex-direction: ${({ $compact }) => ($compact ? 'row' : 'column')};
-  align-items: ${({ $compact }) => ($compact ? 'center' : 'stretch')};
-  gap: ${({ $compact }) => ($compact ? spacing.sm : spacing.xs)};
-  width: 100%;
-`;
-
-const BarTrack = styled.div<{ $compact: boolean }>`
-  flex: 1;
-  height: ${({ $compact }) => ($compact ? '4px' : '8px')};
-  background-color: ${({ theme }) => theme.colors.backgroundTertiary};
-  border-radius: ${borderRadius.full};
-  overflow: hidden;
-  position: relative;
-`;
-
-/**
- * The progress fill bar.
- * Colour shifts from error → warning → success according to percentage.
- */
-const BarFill = styled.div<{ $pct: number }>`
-  height: 100%;
-  width: ${({ $pct }) => $pct}%;
-  border-radius: ${borderRadius.full};
-  transition: width 300ms ease-out, background-color 300ms ease-out;
-  background-color: ${({ $pct, theme }) => {
-    if ($pct >= 66) return theme.colors.success;
-    if ($pct >= 33) return theme.colors.warning;
-    return theme.colors.error;
-  }};
-`;
-
-const ProgressLabel = styled.span<{ $compact: boolean }>`
-  font-size: ${({ $compact }) => ($compact ? '11px' : '12px')};
-  font-weight: 500;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  white-space: nowrap;
-`;
-
-const TooltipWrapper = styled.div`
-  position: relative;
-  width: 100%;
-
-  &:hover > [data-tooltip] {
-    opacity: 1;
-    visibility: visible;
-  }
-`;
-
-const Tooltip = styled.div`
-  position: absolute;
-  bottom: calc(100% + ${spacing.xs});
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: ${({ theme }) => theme.colors.text};
-  color: ${({ theme }) => theme.colors.background};
-  padding: ${spacing.xs} ${spacing.sm};
-  border-radius: ${borderRadius.sm};
-  font-size: 11px;
-  white-space: nowrap;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 200ms ease, visibility 200ms ease;
-  pointer-events: none;
-  z-index: 10;
-`;
+const getBarColour = (pct: number) => {
+  if (pct >= 66) return 'bg-success';
+  if (pct >= 33) return 'bg-warning';
+  return 'bg-destructive';
+};
 
 // ---------------------------------------------------------------------------
 // Component
@@ -105,19 +42,41 @@ export const SubtaskProgress = memo(({
   const remaining = total - completed;
 
   return (
-    <TooltipWrapper>
-      <Wrapper $compact={compact}>
-        <BarTrack $compact={compact} role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
-          <BarFill $pct={pct} />
-        </BarTrack>
-        <ProgressLabel $compact={compact}>
+    <div className="group/tooltip relative w-full">
+      <div
+        className={cn(
+          'flex w-full',
+          compact ? 'flex-row items-center gap-2' : 'flex-col items-stretch gap-1',
+        )}
+      >
+        <div
+          className={cn(
+            'relative flex-1 overflow-hidden rounded-full bg-muted',
+            compact ? 'h-1' : 'h-2',
+          )}
+          role="progressbar"
+          aria-valuenow={pct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div
+            className={cn('h-full rounded-full transition-all duration-300 ease-out', getBarColour(pct))}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <span
+          className={cn(
+            'whitespace-nowrap font-medium text-muted-foreground',
+            compact ? 'text-[11px]' : 'text-xs',
+          )}
+        >
           {completed}/{total} completed ({pct}%)
-        </ProgressLabel>
-      </Wrapper>
-      <Tooltip data-tooltip>
+        </span>
+      </div>
+      <div className="pointer-events-none invisible absolute bottom-[calc(100%+4px)] left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded bg-foreground px-2 py-1 text-[11px] text-background opacity-0 transition-all duration-200 group-hover/tooltip:visible group-hover/tooltip:opacity-100">
         {completed} of {total} subtasks complete &bull; {remaining} remaining
-      </Tooltip>
-    </TooltipWrapper>
+      </div>
+    </div>
   );
 });
 

@@ -48,6 +48,30 @@ public class Task
     [Column("completed_at")]
     public DateTime? CompletedAt { get; set; }
 
+    [Required]
+    [Column("status")]
+    public TaskStatus Status { get; set; } = TaskStatus.NotStarted;
+
+    [Column("started_at")]
+    public DateTime? StartedAt { get; set; }
+
+    [Column("blocked_reason")]
+    [MaxLength(500)]
+    public string? BlockedReason { get; set; }
+
+    [Column("urgency")]
+    public UrgencyLevel? Urgency { get; set; }
+
+    [Column("importance")]
+    public ImportanceLevel? Importance { get; set; }
+
+    [Column("energy_level")]
+    public EnergyLevel? EnergyLevel { get; set; }
+
+    [Column("estimated_minutes")]
+    [Range(1, 480)]
+    public int? EstimatedMinutes { get; set; }
+
     [Column("created_at")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -73,4 +97,33 @@ public enum Priority
     Medium,
     High,
     Critical
+}
+
+public enum TaskStatus
+{
+    NotStarted,
+    InProgress,
+    Blocked,
+    Completed
+}
+
+public enum UrgencyLevel
+{
+    Low,
+    Medium,
+    High
+}
+
+public enum ImportanceLevel
+{
+    Low,
+    Medium,
+    High
+}
+
+public enum EnergyLevel
+{
+    Low,
+    Medium,
+    High
 }

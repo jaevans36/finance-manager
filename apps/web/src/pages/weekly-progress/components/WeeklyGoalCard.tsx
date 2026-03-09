@@ -1,105 +1,72 @@
-import styled from 'styled-components';
-import { Heading3, InputField, Text } from '@finance-manager/ui';
-import { borderRadius } from '@finance-manager/ui/styles';
-
-const GoalSection = styled.div`
-  margin-bottom: 25px;
-  padding: 20px;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  border-radius: ${borderRadius.lg};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  height: 100%;
-`;
-
-const GoalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-`;
-
-const GoalProgressBar = styled.div`
-  width: 100%;
-  height: 24px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.lg};
-  overflow: hidden;
-  position: relative;
-`;
-
-const GoalProgressFill = styled.div<{ $percentage: number; $achieved: boolean }>`
-  height: 100%;
-  background: ${({ $achieved, theme }) => 
-    $achieved ? `linear-gradient(90deg, ${theme.colors.primary} 0%, ${theme.colors.primaryHover} 100%)` : 
-    `linear-gradient(90deg, ${theme.colors.primary} 0%, ${theme.colors.primaryHover} 100%)`
-  };
-  transition: width 0.5s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${({ theme }) => theme.colors.buttonText};
-  font-size: 14px;
-  font-weight: 600;
-  width: ${({ $percentage }) => Math.min($percentage, 100)}%;
-`;
-
-const GoalStats = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-  font-size: 12px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
+import { Input } from '../../../components/ui/input';
 
 interface WeeklyGoalCardProps {
   completedTasks: number;
   weeklyGoal: number;
+  totalTasks: number;
   onUpdateGoal: (goal: number) => void;
 }
 
 export const WeeklyGoalCard = ({
   completedTasks,
   weeklyGoal,
+  totalTasks,
   onUpdateGoal,
 }: WeeklyGoalCardProps) => {
-  const progressPercentage = (completedTasks / weeklyGoal) * 100;
+  const progressPercentage = Math.min((completedTasks / weeklyGoal) * 100, 100);
   const isAchieved = completedTasks >= weeklyGoal;
   const remaining = weeklyGoal - completedTasks;
+  const hasNoTasks = totalTasks === 0;
 
   return (
-    <GoalSection>
-      <GoalHeader>
-        <Heading3 style={{ margin: 0 }}>Weekly Completion Goal</Heading3>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Text style={{ fontSize: '14px' }}>Target:</Text>
-          <InputField
+    <div className="p-5 bg-card rounded-lg border border-border h-full flex flex-col justify-between">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="m-0 text-lg font-semibold">Weekly Completion Goal</h3>
+        <div className="flex items-center gap-2.5">
+          <span className="text-sm text-muted-foreground">Target:</span>
+          <Input
             type="number"
-            min="1"
-            max="1000"
+            min={1}
+            max={1000}
             value={weeklyGoal}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdateGoal(Number.parseInt(e.target.value, 10) || 10)}
-            style={{ width: '80px', textAlign: 'center' }}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onUpdateGoal(Number.parseInt(e.target.value, 10) || 10)
+            }
+            className="w-20 text-center"
           />
-          <Text style={{ fontSize: '14px' }}>tasks</Text>
+          <span className="text-sm text-muted-foreground">tasks</span>
         </div>
-      </GoalHeader>
-      <GoalProgressBar>
-        <GoalProgressFill 
-          $percentage={progressPercentage}
-          $achieved={isAchieved}
-        >
-          {isAchieved ? 'Goal Achieved!' : `${Math.round(progressPercentage)}%`}
-        </GoalProgressFill>
-      </GoalProgressBar>
-      <GoalStats>
-        <span>{completedTasks} / {weeklyGoal} tasks completed</span>
-        <span>
-          {isAchieved 
-            ? `+${completedTasks - weeklyGoal} over goal!` 
-            : `${remaining} remaining`
-          }
-        </span>
-      </GoalStats>
-    </GoalSection>
+      </div>
+
+      {hasNoTasks ? (
+        <div className="flex flex-col gap-3 flex-1 justify-center">
+          <div className="w-full h-3 bg-secondary rounded-full" />
+          <p className="text-sm text-muted-foreground text-center">
+            No tasks for this period — add tasks to start tracking your progress against this goal.
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2.5 flex-1 justify-end">
+          <div className="w-full h-6 bg-secondary rounded-lg overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-primary to-primary/80 transition-[width] duration-500 flex items-center justify-center text-primary-foreground text-sm font-semibold"
+              style={{ width: `${progressPercentage}%` }}
+            >
+              {progressPercentage >= 20 && (isAchieved ? 'Goal Achieved!' : `${Math.round(progressPercentage)}%`)}
+            </div>
+          </div>
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>{completedTasks} / {weeklyGoal} tasks completed</span>
+            <span>
+              {isAchieved
+                ? `+${completedTasks - weeklyGoal} over goal!`
+                : completedTasks === 0
+                  ? 'Start completing tasks'
+                  : `${remaining} to go`}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };

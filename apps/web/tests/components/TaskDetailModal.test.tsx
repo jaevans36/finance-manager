@@ -48,6 +48,12 @@ describe('TaskDetailModal', () => {
     subtaskCount: 0,
     completedSubtaskCount: 0,
     progressPercentage: 0,
+    status: 'NotStarted' as const,
+    startedAt: null,
+    blockedReason: null,
+    urgency: null,
+    importance: null,
+    quadrant: null,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
@@ -89,7 +95,7 @@ describe('TaskDetailModal', () => {
 
     it('should display the task status', () => {
       renderModal();
-      expect(screen.getAllByText('Open').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('Not Started').length).toBeGreaterThanOrEqual(1);
     });
 
     it('should display the task priority', () => {
@@ -170,7 +176,7 @@ describe('TaskDetailModal', () => {
     });
 
     it('should show completed status for completed task', () => {
-      renderModal({ task: { ...mockTask, completed: true } });
+      renderModal({ task: { ...mockTask, completed: true, status: 'Completed' as const } });
       expect(screen.getAllByText('Completed').length).toBeGreaterThanOrEqual(1);
     });
 

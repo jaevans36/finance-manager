@@ -1,116 +1,5 @@
-import styled from 'styled-components';
 import { X, ListTodo, Calendar } from 'lucide-react';
-import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
-
-const FilterBar = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-
-  ${mediaQueries.tablet} {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-`;
-
-const FilterGroup = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const FilterLabel = styled.label`
-  font-size: 14px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const Select = styled.select`
-  padding: 8px 12px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.sm};
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.borderHover};
-  }
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
-`;
-
-const ToggleGroup = styled.div`
-  display: flex;
-  gap: 8px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.sm};
-  padding: 4px;
-`;
-
-const ToggleButton = styled.button<{ $active: boolean }>`
-  padding: 6px 12px;
-  border: none;
-  border-radius: ${borderRadius.sm};
-  background: ${({ $active, theme }) => $active ? theme.colors.primary : 'transparent'};
-  color: ${({ $active, theme }) => $active ? 'white' : theme.colors.text};
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s;
-
-  &:hover {
-    background: ${({ $active, theme }) => $active ? theme.colors.primaryHover : theme.colors.cardBackground};
-  }
-`;
-
-const ClearButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  background: transparent;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.sm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-    border-color: ${({ theme }) => theme.colors.error};
-    color: ${({ theme }) => theme.colors.error};
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-`;
-
-const SummaryText = styled.div`
-  margin-left: auto;
-  font-size: 14px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.primary};
-
-  ${mediaQueries.tablet} {
-    margin-left: 0;
-    text-align: center;
-    padding: 8px;
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-    border-radius: ${borderRadius.sm};
-  }
-`;
+import { cn } from '../../lib/utils';
 
 interface TaskGroup {
   id: string;
@@ -158,33 +47,44 @@ export const CalendarFilters = ({
   };
 
   return (
-    <FilterBar>
-      <FilterGroup>
-        <FilterLabel>Show:</FilterLabel>
-        <ToggleGroup>
-          <ToggleButton
-            $active={showTasks}
+    <div className="mb-6 flex flex-col items-stretch gap-3 md:flex-row md:flex-wrap md:items-center md:gap-4">
+      <div className="flex items-center gap-2">
+        <label className="text-sm font-semibold text-foreground">Show:</label>
+        <div className="flex gap-2 rounded bg-secondary p-1">
+          <button
+            type="button"
+            className={cn(
+              'rounded px-3 py-1.5 text-sm font-medium transition-all',
+              showTasks
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-transparent text-foreground hover:bg-card',
+            )}
             onClick={() => onShowTasksChange(!showTasks)}
-            type="button"
           >
-            <ListTodo size={16} /> Tasks
-          </ToggleButton>
-          <ToggleButton
-            $active={showEvents}
+            <ListTodo size={16} className="mr-1 inline" /> Tasks
+          </button>
+          <button
+            type="button"
+            className={cn(
+              'rounded px-3 py-1.5 text-sm font-medium transition-all',
+              showEvents
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-transparent text-foreground hover:bg-card',
+            )}
             onClick={() => onShowEventsChange(!showEvents)}
-            type="button"
           >
-            <Calendar size={16} /> Events
-          </ToggleButton>
-        </ToggleGroup>
-      </FilterGroup>
+            <Calendar size={16} className="mr-1 inline" /> Events
+          </button>
+        </div>
+      </div>
 
-      <FilterGroup>
-        <FilterLabel htmlFor="group-filter">Group:</FilterLabel>
-        <Select
+      <div className="flex items-center gap-2">
+        <label htmlFor="group-filter" className="text-sm font-semibold text-foreground">Group:</label>
+        <select
           id="group-filter"
           value={selectedGroupId}
           onChange={(e) => onGroupChange(e.target.value)}
+          className="cursor-pointer rounded border border-input bg-secondary px-3 py-2 text-sm text-foreground transition-all hover:border-muted-foreground focus:border-primary focus:outline-none"
         >
           <option value="">All Groups</option>
           {groups.map((group) => (
@@ -192,33 +92,41 @@ export const CalendarFilters = ({
               {group.name}
             </option>
           ))}
-        </Select>
-      </FilterGroup>
+        </select>
+      </div>
 
-      <FilterGroup>
-        <FilterLabel>Priority:</FilterLabel>
-        <ToggleGroup>
+      <div className="flex items-center gap-2">
+        <label className="text-sm font-semibold text-foreground">Priority:</label>
+        <div className="flex gap-2 rounded bg-secondary p-1">
           {['Critical', 'High', 'Medium', 'Low'].map((priority) => (
-            <ToggleButton
+            <button
               key={priority}
-              $active={selectedPriorities.includes(priority)}
-              onClick={() => handlePriorityToggle(priority)}
               type="button"
+              className={cn(
+                'rounded px-3 py-1.5 text-sm font-medium transition-all',
+                selectedPriorities.includes(priority)
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-transparent text-foreground hover:bg-card',
+              )}
+              onClick={() => handlePriorityToggle(priority)}
             >
               {priority}
-            </ToggleButton>
+            </button>
           ))}
-        </ToggleGroup>
-      </FilterGroup>
+        </div>
+      </div>
 
       {hasActiveFilters && (
-        <ClearButton onClick={onClearFilters}>
+        <button
+          onClick={onClearFilters}
+          className="flex items-center gap-1.5 rounded border border-border px-3 py-2 text-sm text-muted-foreground transition-all hover:border-destructive hover:bg-secondary hover:text-destructive [&_svg]:h-4 [&_svg]:w-4"
+        >
           <X />
           Clear Filters
-        </ClearButton>
+        </button>
       )}
 
-      <SummaryText>
+      <div className="rounded bg-secondary p-2 text-center text-sm font-semibold text-primary md:ml-auto md:bg-transparent md:p-0 md:text-left">
         {showTasks && showEvents
           ? `${taskCount} tasks • ${eventCount} events`
           : showTasks
@@ -226,7 +134,7 @@ export const CalendarFilters = ({
           : showEvents
           ? `${eventCount} events`
           : 'No filters active'}
-      </SummaryText>
-    </FilterBar>
+      </div>
+    </div>
   );
 };

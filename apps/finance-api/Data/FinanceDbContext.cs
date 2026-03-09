@@ -6,6 +6,8 @@ using FinanceApi.Features.Finance.Models;
 using FinanceApi.Features.Common.Sessions.Models;
 using FinanceApi.Features.Common.ActivityLogs.Models;
 using FinanceApi.Features.Common.EmailVerification.Models;
+using FinanceApi.Features.Settings.Models;
+using FinanceApi.Features.Tasks.Models;
 
 namespace FinanceApi.Data;
 
@@ -29,6 +31,8 @@ public class FinanceDbContext : DbContext
     public DbSet<Session> Sessions { get; set; }
     public DbSet<EmailToken> EmailTokens { get; set; }
     public DbSet<ActivityLog> ActivityLogs { get; set; }
+    public DbSet<UserSettings> UserSettings { get; set; }
+    public DbSet<TaskGroupShare> TaskGroupShares { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -192,6 +196,24 @@ public class FinanceDbContext : DbContext
             entity.HasIndex(e => new { e.UserId, e.DueDate });
             entity.HasIndex(e => new { e.UserId, e.Priority });
             entity.HasIndex(e => new { e.UserId, e.Completed, e.CreatedAt });
+            entity.HasIndex(e => new { e.UserId, e.Status });
+            entity.HasIndex(e => new { e.UserId, e.Urgency, e.Importance });
+            entity.HasIndex(e => new { e.UserId, e.EnergyLevel });
+            entity.HasIndex(e => new { e.UserId, e.EnergyLevel, e.EstimatedMinutes });
+        });
+
+        // UserSettings configuration
+        modelBuilder.Entity<UserSettings>(entity =>
+        {
+            entity.ToTable("user_settings");
+            entity.HasKey(e => e.Id);
+
+            entity.HasOne(s => s.User)
+                  .WithOne(u => u.Settings)
+                  .HasForeignKey<UserSettings>(s => s.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.UserId).IsUnique();
         });
 
         // EmailToken configuration
@@ -239,6 +261,29 @@ public class FinanceDbContext : DbContext
 
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.CreatedAt);
+        });
+
+        // TaskGroupShare configuration
+        modelBuilder.Entity<TaskGroupShare>(entity =>
+        {
+            entity.ToTable("task_group_shares");
+            entity.HasKey(e => e.Id);
+
+            entity.HasOne(s => s.TaskGroup)
+                  .WithMany(tg => tg.Shares)
+                  .HasForeignKey(s => s.TaskGroupId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(s => s.SharedWithUser)
+                  .WithMany()
+                  .HasForeignKey(s => s.SharedWithUserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(e => e.Permission)
+                  .HasConversion<string>();
+
+            entity.HasIndex(e => new { e.TaskGroupId, e.SharedWithUserId }).IsUnique();
+            entity.HasIndex(e => e.SharedWithUserId);
         });
 
         // Event configuration

@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import styled, { useTheme } from 'styled-components';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '../../contexts/ToastContext';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { PageLayout } from '../../components/layout/PageLayout';
@@ -15,64 +14,11 @@ import { eventService } from '../../services/eventService';
 import type { Task } from '../../services/taskService';
 import type { Event } from '../../types/event';
 import type { TaskGroup } from '../../types/taskGroup';
-import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
 
-const CalendarContainer = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.lg};
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-
-  ${mediaQueries.tablet} {
-    padding: 16px;
-  }
-`;
-
-const EmptyState = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
-
-  h3 {
-    font-size: 20px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: ${({ theme }) => theme.colors.text};
-  }
-
-  p {
-    font-size: 14px;
-    margin-bottom: 16px;
-  }
-`;
-
-const KeyboardHint = styled.div`
-  margin-top: 16px;
-  padding: 12px 16px;
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.sm};
-  font-size: 13px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-
-  kbd {
-    display: inline-block;
-    padding: 2px 6px;
-    margin: 0 2px;
-    background: ${({ theme }) => theme.colors.background};
-    border: 1px solid ${({ theme }) => theme.colors.border};
-    border-radius: ${borderRadius.sm};
-    font-family: monospace;
-    font-size: 12px;
-    font-weight: 600;
-  }
-`;
+/** Fallback colour for info badges — uses muted-foreground design token */
+const INFO_COLOR = 'hsl(var(--muted-foreground))';
 
 const CalendarPage = () => {
-  const theme = useTheme();
   const { showToast } = useToast();
   const [value, setValue] = useState<Date>(new Date());
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -198,7 +144,7 @@ const CalendarPage = () => {
             acc.push({
               id: task.groupId!,
               name: task.groupName!,
-              colour: task.groupColour || theme.colors.textSecondary,
+              colour: task.groupColour || 'hsl(var(--muted-foreground))',
               isDefault: false,
               taskCount: 0,
               createdAt: '',
@@ -356,6 +302,28 @@ const CalendarPage = () => {
     }
   };
 
+  const handleSubtaskChange = useCallback(
+    (taskId: string, counts: { subtaskCount: number; completedSubtaskCount: number }) => {
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === taskId
+            ? {
+                ...t,
+                subtaskCount: counts.subtaskCount,
+                completedSubtaskCount: counts.completedSubtaskCount,
+                hasSubtasks: counts.subtaskCount > 0,
+                progressPercentage:
+                  counts.subtaskCount > 0
+                    ? Math.round((counts.completedSubtaskCount / counts.subtaskCount) * 100)
+                    : 0,
+              }
+            : t,
+        ),
+      );
+    },
+    [],
+  );
+
   const handleBadgeClick = (e: React.MouseEvent, date: Date) => {
     e.stopPropagation();
     setSelectedDate(date);
@@ -456,7 +424,7 @@ const CalendarPage = () => {
         )}
         {showEvents && dayEvents.length > 0 && (
           <EventBadge
-            color={theme.colors.info}
+            color={INFO_COLOR}
             onClick={(e) => handleBadgeClick(e, date)}
             title={tooltipText}
           >
@@ -490,15 +458,18 @@ const CalendarPage = () => {
         />
       }
     >
-      <CalendarContainer>
+      <div className="rounded-lg bg-secondary p-6 shadow-md md:p-4">
         {!hasMonthContent() && !loading && (
-          <EmptyState>
-            <h3>No Tasks or Events This Month</h3>
-            <p>Click on any date to create a task or event</p>
-            <KeyboardHint>
-              <kbd>←</kbd> <kbd>→</kbd> Navigate months • <kbd>Enter</kbd> Quick add task • <kbd>Esc</kbd> Close modal
-            </KeyboardHint>
-          </EmptyState>
+          <div className="flex flex-col items-center justify-center px-6 py-12 text-center text-muted-foreground">
+            <h3 className="mb-2 text-xl font-semibold text-foreground">No Tasks or Events This Month</h3>
+            <p className="mb-4 text-sm">Click on any date to create a task or event</p>
+            <div className="mt-4 rounded-sm bg-secondary px-4 py-3 text-body-sm text-muted-foreground">
+              <kbd className="mx-0.5 inline-block rounded-sm border border-border bg-background px-1.5 py-0.5 font-mono text-xs font-semibold">←</kbd>{' '}
+              <kbd className="mx-0.5 inline-block rounded-sm border border-border bg-background px-1.5 py-0.5 font-mono text-xs font-semibold">→</kbd> Navigate months •{' '}
+              <kbd className="mx-0.5 inline-block rounded-sm border border-border bg-background px-1.5 py-0.5 font-mono text-xs font-semibold">Enter</kbd> Quick add task •{' '}
+              <kbd className="mx-0.5 inline-block rounded-sm border border-border bg-background px-1.5 py-0.5 font-mono text-xs font-semibold">Esc</kbd> Close modal
+            </div>
+          </div>
         )}
         <StyledCalendar
           onChange={(newValue) => {
@@ -518,7 +489,7 @@ const CalendarPage = () => {
           locale="en-GB"
           showNeighboringMonth={true}
         />
-      </CalendarContainer>
+      </div>
 
       {showQuickAdd && selectedDate && (
         <QuickAddTaskModal
@@ -555,6 +526,7 @@ const CalendarPage = () => {
             setShowEditTask(false);
             setSelectedTask(null);
           }}
+          onSubtaskChange={handleSubtaskChange}
         />
       )}
 

@@ -1,54 +1,12 @@
 import { useState } from 'react';
-import styled from 'styled-components';
-import { borderRadius, mediaQueries } from '@finance-manager/ui/styles';
+import { cn } from '../../lib/utils';
+import { Button } from '../ui/button';
 import { TaskGroup } from '../../types/taskGroup';
 import { TaskGroupItem } from './TaskGroupItem';
 import { GroupSkeleton } from './GroupSkeleton';
-import { Button, Text, Flex } from '@finance-manager/ui';
 import { PlusIcon } from 'lucide-react';
 import { CreateTaskGroupModal } from './CreateTaskGroupModal';
-
-const GroupListContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 16px;
-  background-color: ${({ theme }) => theme.colors.background};
-  border-radius: ${borderRadius.lg};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-
-  ${mediaQueries.tablet} {
-    padding: 12px;
-  }
-`;
-
-const GroupListHeader = styled(Flex)`
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-`;
-
-const AllTasksButton = styled.div<{ $isActive: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: ${borderRadius.lg};
-  cursor: pointer;
-  transition: background-color 0.2s;
-  background-color: ${({ $isActive, theme }) =>
-    $isActive ? theme.colors.backgroundSecondary : 'transparent'};
-  margin-bottom: 8px;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.backgroundSecondary};
-  }
-
-  ${mediaQueries.tablet} {
-    padding: 14px;
-    min-height: 48px;
-  }
-`;
+import { ShareGroupModal } from './ShareGroupModal';
 
 interface TaskGroupListProps {
   groups: TaskGroup[];
@@ -66,35 +24,43 @@ export const TaskGroupList = ({
   loading = false
 }: TaskGroupListProps) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [sharingGroup, setSharingGroup] = useState<TaskGroup | null>(null);
 
   if (loading) {
     return (
-      <GroupListContainer>
-        <GroupListHeader>
-          <Text style={{ fontWeight: 600 }}>Task Groups</Text>
-        </GroupListHeader>
+      <div className="flex flex-col gap-1 rounded-lg border border-border bg-background p-4 md:p-3">
+        <div className="mb-3 flex items-center justify-between">
+          <span className="text-sm font-semibold text-foreground">Task Groups</span>
+        </div>
         <GroupSkeleton count={4} />
-      </GroupListContainer>
+      </div>
     );
   }
 
   return (
     <>
-      <GroupListContainer role="navigation" aria-label="Task groups navigation">
-        <GroupListHeader>
-          <Text style={{ fontWeight: 600 }} id="task-groups-heading">Task Groups</Text>
+      <div
+        className="flex flex-col gap-1 rounded-lg border border-border bg-background p-4 md:p-3"
+        role="navigation"
+        aria-label="Task groups navigation"
+      >
+        <div className="mb-3 flex items-center justify-between">
+          <span className="text-sm font-semibold text-foreground" id="task-groups-heading">Task Groups</span>
           <Button
             variant="secondary"
-            size="small"
+            size="sm"
             onClick={() => setIsCreateModalOpen(true)}
             aria-label="Create new task group"
           >
-            <PlusIcon size={16} />
+            <PlusIcon className="size-4" />
           </Button>
-        </GroupListHeader>
+        </div>
 
-        <AllTasksButton
-          $isActive={selectedGroupId === null}
+        <div
+          className={cn(
+            'mb-2 flex cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors hover:bg-secondary md:min-h-12 md:p-3.5',
+            selectedGroupId === null && 'bg-secondary',
+          )}
           onClick={() => onSelectGroup(null)}
           role="button"
           tabIndex={0}
@@ -107,8 +73,8 @@ export const TaskGroupList = ({
             }
           }}
         >
-          <Text style={{ fontWeight: 500 }}>All Tasks</Text>
-        </AllTasksButton>
+          <span className="text-sm font-medium text-foreground">All Tasks</span>
+        </div>
 
         {groups.map((group) => (
           <TaskGroupItem
@@ -116,9 +82,10 @@ export const TaskGroupList = ({
             group={group}
             isActive={selectedGroupId === group.id}
             onClick={() => onSelectGroup(group.id)}
+            onShare={setSharingGroup}
           />
         ))}
-      </GroupListContainer>
+      </div>
 
       {isCreateModalOpen && (
         <CreateTaskGroupModal
@@ -127,6 +94,14 @@ export const TaskGroupList = ({
             setIsCreateModalOpen(false);
             onGroupCreated();
           }}
+        />
+      )}
+
+      {sharingGroup && (
+        <ShareGroupModal
+          groupId={sharingGroup.id}
+          groupName={sharingGroup.name}
+          onClose={() => setSharingGroup(null)}
         />
       )}
     </>

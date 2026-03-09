@@ -7,7 +7,7 @@
 
 ## Overview
 
-The Finance Manager application now has a **centralized theme management system** that ensures consistent styling across all components. This guide explains how to use and maintain it.
+The Life Manager application now has a **centralized theme management system** that ensures consistent styling across all components. This guide explains how to use and maintain it.
 
 ## Architecture
 

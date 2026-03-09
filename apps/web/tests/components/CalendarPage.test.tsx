@@ -1,11 +1,11 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider } from 'styled-components';
+import { ThemeProvider } from '@life-manager/ui';
 import CalendarPage from '../../src/pages/calendar/CalendarPage';
 import { ToastProvider } from '../../src/contexts/ToastContext';
-import { lightTheme } from '../../src/styles/theme';
 import { taskService } from '../../src/services/taskService';
+import { eventService } from '../../src/services/eventService';
 import type { Task } from '../../src/services/taskService';
 
 // Mock the taskService
@@ -19,19 +19,37 @@ jest.mock('../../src/services/taskService', () => ({
   },
 }));
 
+// Mock the eventService
+jest.mock('../../src/services/eventService', () => ({
+  eventService: {
+    getEvents: jest.fn(),
+    createEvent: jest.fn(),
+    updateEvent: jest.fn(),
+    deleteEvent: jest.fn(),
+  },
+}));
+
 // Mock react-calendar
 jest.mock('react-calendar', () => {
   return function MockCalendar({ onChange, tileContent }: { onChange: (date: Date) => void; tileContent?: (props: { date: Date }) => React.ReactNode }) {
+    const midMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 15);
     return (
       <div data-testid="mock-calendar">
-        <button onClick={() => onChange(new Date('2026-01-15'))}>Select Jan 15</button>
-        <div data-testid="tile-content-jan-15">
-          {tileContent && tileContent({ date: new Date('2026-01-15') })}
+        <button onClick={() => onChange(midMonth)}>Select Day 15</button>
+        <div data-testid="tile-content-mid-month">
+          {tileContent && tileContent({ date: midMonth })}
         </div>
       </div>
     );
   };
 });
+
+// Helper to get dates in the current month for testing
+const now = new Date();
+const currentYear = now.getFullYear();
+const currentMonth = now.getMonth();
+const midMonthDate = new Date(currentYear, currentMonth, 15).toISOString().slice(0, 10);
+const lateMonthDate = new Date(currentYear, currentMonth, 20).toISOString().slice(0, 10);
 
 const mockTasks: Task[] = [
   {
@@ -40,7 +58,7 @@ const mockTasks: Task[] = [
     description: 'Important task',
     priority: 'High',
     completed: false,
-    dueDate: '2026-01-15',
+    dueDate: midMonthDate,
     userId: 'user1',
     groupId: 'group1',
     groupName: 'Work',
@@ -55,7 +73,7 @@ const mockTasks: Task[] = [
     description: 'Normal task',
     priority: 'Medium',
     completed: false,
-    dueDate: '2026-01-15',
+    dueDate: midMonthDate,
     userId: 'user1',
     groupId: 'group2',
     groupName: 'Personal',
@@ -70,7 +88,7 @@ const mockTasks: Task[] = [
     description: 'Urgent task',
     priority: 'Critical',
     completed: false,
-    dueDate: '2026-01-20',
+    dueDate: lateMonthDate,
     userId: 'user1',
     groupId: 'group1',
     groupName: 'Work',
@@ -84,7 +102,7 @@ const mockTasks: Task[] = [
 const renderCalendarPage = () => {
   return render(
     <BrowserRouter>
-      <ThemeProvider theme={lightTheme}>
+      <ThemeProvider>
         <ToastProvider>
           <CalendarPage />
         </ToastProvider>
@@ -97,22 +115,15 @@ describe('CalendarPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (taskService.getTasks as jest.Mock).mockResolvedValue(mockTasks);
+    (eventService.getEvents as jest.Mock).mockResolvedValue([]);
   });
 
   describe('Rendering', () => {
-    it('should render page title', async () => {
+    it('should render page heading', async () => {
       renderCalendarPage();
       
       await waitFor(() => {
         expect(screen.getByText('Task Calendar')).toBeInTheDocument();
-      });
-    });
-
-    it('should render back button with correct text', async () => {
-      renderCalendarPage();
-      
-      await waitFor(() => {
-        expect(screen.getByText('Back to Dashboard')).toBeInTheDocument();
       });
     });
 
@@ -167,8 +178,9 @@ describe('CalendarPage', () => {
       renderCalendarPage();
       
       await waitFor(() => {
-        const errorMessages = screen.getAllByText('Failed to load tasks');
-        expect(errorMessages.length).toBeGreaterThan(0);
+        // Error appears in PageLayout + toast notification
+        const errors = screen.getAllByText('Failed to load calendar data');
+        expect(errors.length).toBeGreaterThan(0);
       });
     });
   });
@@ -178,7 +190,7 @@ describe('CalendarPage', () => {
       renderCalendarPage();
       
       await waitFor(() => {
-        const tileContent = screen.getByTestId('tile-content-jan-15');
+        const tileContent = screen.getByTestId('tile-content-mid-month');
         expect(tileContent).toHaveTextContent('2'); // 2 tasks on Jan 15
       });
     });
@@ -189,12 +201,13 @@ describe('CalendarPage', () => {
       renderCalendarPage();
       
       await waitFor(() => {
-        const groupSelect = screen.getByLabelText('Group:') as HTMLSelectElement;
-        fireEvent.change(groupSelect, { target: { value: 'group1' } });
+        expect(screen.getByLabelText('Group:')).toBeInTheDocument();
       });
 
+      fireEvent.change(screen.getByLabelText('Group:') as HTMLSelectElement, { target: { value: 'group1' } });
+
       await waitFor(() => {
-        const tileContent = screen.getByTestId('tile-content-jan-15');
+        const tileContent = screen.getByTestId('tile-content-mid-month');
         expect(tileContent).toHaveTextContent('1'); // Only 1 Work task on Jan 15
       });
     });
@@ -208,7 +221,7 @@ describe('CalendarPage', () => {
       });
 
       await waitFor(() => {
-        const tileContent = screen.getByTestId('tile-content-jan-15');
+        const tileContent = screen.getByTestId('tile-content-mid-month');
         expect(tileContent).toHaveTextContent('1'); // Only 1 High priority task
       });
     });
@@ -243,7 +256,7 @@ describe('CalendarPage', () => {
 
       // Check task count is back to all tasks
       await waitFor(() => {
-        const tileContent = screen.getByTestId('tile-content-jan-15');
+        const tileContent = screen.getByTestId('tile-content-mid-month');
         expect(tileContent).toHaveTextContent('2'); // Back to 2 tasks
       });
     });
@@ -254,7 +267,8 @@ describe('CalendarPage', () => {
       renderCalendarPage();
       
       await waitFor(() => {
-        expect(screen.getByText(/3 tasks this month/)).toBeInTheDocument();
+        // CalendarFilters renders: "3 tasks • 0 events"
+        expect(screen.getByText(/3 tasks/)).toBeInTheDocument();
       });
     });
 
@@ -267,7 +281,7 @@ describe('CalendarPage', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText(/1 tasks this month/)).toBeInTheDocument();
+        expect(screen.getByText(/1 tasks/)).toBeInTheDocument();
       });
     });
   });

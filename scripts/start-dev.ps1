@@ -33,7 +33,7 @@ try {
     $maxAttempts = 30
     $attempt = 0
     while ($attempt -lt $maxAttempts) {
-        $containerStatus = docker ps --filter "name=finance-manager-db" --format "{{.Status}}"
+        $containerStatus = docker ps --filter "name=life-manager-db" --format "{{.Status}}"
         if ($containerStatus -like "*healthy*") {
             Write-Host "[OK] Database is ready" -ForegroundColor Green
             break

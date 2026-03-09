@@ -1,86 +1,16 @@
 import { useEffect } from 'react';
-import styled from 'styled-components';
 import { X } from 'lucide-react';
-import { borderRadius, focusRing, mediaQueries, shadows } from '../../styles/layout';
-
-const Overlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-`;
-
-const ModalContainer = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  padding: 24px;
-  max-width: 500px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: ${shadows.elevated};
-
-  ${mediaQueries.tablet} {
-    width: 95%;
-    padding: 20px;
-    max-height: 95vh;
-  }
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-`;
-
-const ModalTitle = styled.h2`
-  font-size: 20px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: ${borderRadius.sm};
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.background};
-    color: ${({ theme }) => theme.colors.text};
-  }
-
-  ${focusRing}
-`;
-
-const ModalBody = styled.div`
-  color: ${({ theme }) => theme.colors.text};
-`;
+import { cn } from '../../lib/utils';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  className?: string;
 }
 
-export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
+export const Modal = ({ isOpen, onClose, title, children, className }: ModalProps) => {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -108,16 +38,29 @@ export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
   };
 
   return (
-    <Overlay onClick={handleOverlayClick}>
-      <ModalContainer>
-        <ModalHeader>
-          <ModalTitle>{title}</ModalTitle>
-          <CloseButton onClick={onClose} aria-label="Close modal">
+    <div
+      className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/50 p-5"
+      onClick={handleOverlayClick}
+    >
+      <div
+        className={cn(
+          'w-full max-w-[500px] max-h-[90vh] overflow-y-auto rounded-lg border border-border bg-secondary p-6 shadow-lg',
+          'md:w-full md:max-h-[90vh]',
+          className,
+        )}
+      >
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="m-0 text-xl font-semibold text-foreground">{title}</h2>
+          <button
+            onClick={onClose}
+            aria-label="Close modal"
+            className="flex items-center justify-center rounded-sm p-1 text-muted-foreground transition-all duration-200 hover:bg-background hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
             <X size={20} />
-          </CloseButton>
-        </ModalHeader>
-        <ModalBody>{children}</ModalBody>
-      </ModalContainer>
-    </Overlay>
+          </button>
+        </div>
+        <div className="text-foreground">{children}</div>
+      </div>
+    </div>
   );
 };

@@ -264,16 +264,16 @@ Before moving to the next phase:
 .\scripts\run-tests.ps1
 
 # Run specific test suites
-pnpm --filter @finance-manager/web test              # Frontend unit
-pnpm --filter @finance-manager/web test:e2e          # All E2E
-pnpm --filter @finance-manager/web test:e2e:ui       # E2E debug mode
-pnpm --filter @finance-manager/api test              # Backend
+pnpm --filter @life-manager/web test              # Frontend unit
+pnpm --filter @life-manager/web test:e2e          # All E2E
+pnpm --filter @life-manager/web test:e2e:ui       # E2E debug mode
+pnpm --filter @life-manager/api test              # Backend
 
 # Performance tests
-pnpm --filter @finance-manager/web test tests/performance/
+pnpm --filter @life-manager/web test tests/performance/
 
 # Watch mode (for development)
-pnpm --filter @finance-manager/web test:watch
+pnpm --filter @life-manager/web test:watch
 ```
 
 ---

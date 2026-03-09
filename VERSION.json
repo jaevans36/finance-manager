@@ -1,46 +1,52 @@
 {
-  "version": "0.15.0",
-  "releaseDate": "2026-01-29",
-  "codename": "Quick Wins: APIs, Admin & Security",
-  "description": "Version History API, Admin Dashboard, User Management UI, and comprehensive security hardening",
+  "version": "1.0.0",
+  "releaseDate": "2026-03-08",
+  "codename": "MVP Launch — Life Manager",
+  "description": "First stable release. Productivity app with tasks, subtasks, calendar, events, Eisenhower Matrix, and self-hosted LAN deployment.",
   "breaking": false,
   "changelog": [
     {
       "type": "feat",
-      "category": "Version History API",
-      "description": "API-driven version history from CHANGELOG.md with 3 REST endpoints and caching",
+      "category": "Project Rename",
+      "description": "Renamed project from Finance Manager to Life Manager across all packages, docs, and UI",
       "impact": "high"
     },
     {
       "type": "feat",
-      "category": "Admin Dashboard",
-      "description": "Complete admin dashboard with system statistics, quick actions, and activity log",
-      "impact": "high"
-    },
-    {
-      "type": "feat",
-      "category": "User Management",
-      "description": "Admin UI for managing users with search, filters, and permission controls",
-      "impact": "high"
-    },
-    {
-      "type": "feat",
-      "category": "Security",
-      "description": "Rate limiting middleware (60/min, 1000/hour) with sliding window algorithm",
-      "impact": "high"
-    },
-    {
-      "type": "feat",
-      "category": "Security",
-      "description": "Security headers middleware (CSP, HSTS, X-Frame-Options, etc.) following OWASP best practices",
-      "impact": "high"
-    },
-    {
-      "type": "perf",
-      "category": "Caching",
-      "description": "Version history cached for 5 minutes to reduce file I/O",
+      "category": "Health Check",
+      "description": "Added GET /api/health endpoint returning status, version, and DB connectivity",
       "impact": "medium"
+    },
+    {
+      "type": "feat",
+      "category": "Data Export",
+      "description": "Added GET /api/v1/auth/export-data to download all user data as JSON",
+      "impact": "medium"
+    },
+    {
+      "type": "feat",
+      "category": "Error Pages",
+      "description": "Added 404 Not Found page with navigation back to dashboard",
+      "impact": "low"
+    },
+    {
+      "type": "feat",
+      "category": "Onboarding",
+      "description": "Empty-state welcome panel shown on dashboard when no tasks exist",
+      "impact": "low"
+    },
+    {
+      "type": "feat",
+      "category": "Production Setup",
+      "description": "Added .env.example, appsettings.Production.example.json, backup/restore scripts, and PRODUCTION-SETUP.md guide",
+      "impact": "medium"
+    },
+    {
+      "type": "chore",
+      "category": "AI Tooling",
+      "description": "Replaced SpecKit with CLAUDE.md as single AI context file; archived SpecKit to _archive/speckit/",
+      "impact": "low"
     }
   ],
-  "previousVersion": "0.14.0"
+  "previousVersion": "0.15.0"
 }

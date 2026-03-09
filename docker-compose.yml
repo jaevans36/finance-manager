@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: finance-manager-db
+    container_name: life-manager-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres

@@ -5,163 +5,39 @@ import { taskService } from '../../services/taskService';
 import { eventService } from '../../services/eventService';
 import { taskGroupService } from '../../services/taskGroupService';
 import { PageLayout } from '../../components/layout/PageLayout';
-import { 
-  CheckCircle, 
-  Calendar, 
-  FolderKanban, 
-  ListTodo, 
+import { cn } from '../../lib/utils';
+import {
+  CheckCircle,
+  Calendar,
+  FolderKanban,
+  ListTodo,
   TrendingUp,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Plus,
+  Sparkles
 } from 'lucide-react';
-import styled from 'styled-components';
-import { borderRadius } from '@finance-manager/ui/styles';
+import { Button } from '../../components/ui/button';
 import type { Event } from '../../types/event';
-
-
-const DashboardGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 24px;
-  margin-bottom: 32px;
-`;
-
-const StatCard = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  transition: all 0.2s ease;
-  cursor: pointer;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
-`;
-
-const StatHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
 
 interface StatIconProps {
   color?: 'primary' | 'success' | 'warning' | 'error' | 'info';
+  children: React.ReactNode;
 }
 
-const StatIcon = styled.div<StatIconProps>`
-  width: 48px;
-  height: 48px;
-  border-radius: ${borderRadius.lg};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: ${({ theme, color = 'primary' }) => `${theme.colors[color]}15`};
-  color: ${({ theme, color = 'primary' }) => theme.colors[color]};
-`;
+const colorMap: Record<string, string> = {
+  primary: 'bg-primary/15 text-primary',
+  success: 'bg-success/15 text-success',
+  warning: 'bg-warning/15 text-warning',
+  error: 'bg-destructive/15 text-destructive',
+  info: 'bg-primary/15 text-primary',
+};
 
-const StatValue = styled.div`
-  font-size: 32px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.text};
-`;
-
-const StatLabel = styled.div`
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-weight: 500;
-`;
-
-const SectionTitle = styled.h2`
-  font-size: 20px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0 0 16px 0;
-`;
-
-const QuickActionsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 32px;
-`;
-
-const QuickActionCard = styled.button`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.primary}15;
-    border-color: ${({ theme }) => theme.colors.primary};
-    transform: translateX(4px);
-  }
-
-  span {
-    font-size: 15px;
-    font-weight: 500;
-    color: ${({ theme }) => theme.colors.text};
-  }
-`;
-
-const UpcomingSection = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  padding: 24px;
-  margin-bottom: 32px;
-`;
-
-const EventItem = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px;
-  border-radius: ${borderRadius.lg};
-  background: ${({ theme }) => theme.colors.background};
-  margin-bottom: 8px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-const EventDetails = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const EventDate = styled.div`
-  font-size: 12px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-weight: 500;
-`;
-
-const EventTitle = styled.div`
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.text};
-  font-weight: 500;
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 24px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 14px;
-`;
+const StatIcon = ({ color = 'primary', children }: StatIconProps) => (
+  <div className={cn('flex size-12 items-center justify-center rounded-lg', colorMap[color])}>
+    {children}
+  </div>
+);
 
 interface Task {
   id: string;
@@ -291,106 +167,162 @@ const DashboardPage = () => {
       title={`${getGreeting()}, ${user?.username}!`}
       subtitle="Here's your overview for today"
       loading={loading}
-      loadingComponent={<EmptyState>Loading your dashboard...</EmptyState>}
+      loadingComponent={<div className="text-center p-6 text-sm text-muted-foreground">Loading your dashboard...</div>}
     >
-      <DashboardGrid>
-        <StatCard onClick={() => navigate('/tasks')}>
-          <StatHeader>
-            <StatIcon color="primary">
-              <CheckCircle size={24} />
-            </StatIcon>
-          </StatHeader>
-          <StatValue>{stats.completedTasks}/{stats.totalTasks}</StatValue>
-          <StatLabel>Tasks Completed</StatLabel>
-        </StatCard>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-6 mb-8">
+        <button
+          onClick={() => navigate('/tasks')}
+          className="flex cursor-pointer flex-col gap-3 rounded-lg border border-border bg-secondary p-6 text-left transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
+        >
+          <div className="flex items-center justify-between">
+            <StatIcon color="primary"><CheckCircle size={24} /></StatIcon>
+          </div>
+          <div className="font-display text-display-lg text-foreground">{stats.completedTasks}/{stats.totalTasks}</div>
+          <div className="text-sm font-medium text-muted-foreground">Tasks Completed</div>
+        </button>
 
-        <StatCard onClick={() => navigate('/calendar')}>
-          <StatHeader>
-            <StatIcon color="success">
-              <Calendar size={24} />
-            </StatIcon>
-          </StatHeader>
-          <StatValue>{stats.upcomingEvents}</StatValue>
-          <StatLabel>Upcoming Events</StatLabel>
-        </StatCard>
+        <button
+          onClick={() => navigate('/calendar')}
+          className="flex cursor-pointer flex-col gap-3 rounded-lg border border-border bg-secondary p-6 text-left transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
+        >
+          <div className="flex items-center justify-between">
+            <StatIcon color="success"><Calendar size={24} /></StatIcon>
+          </div>
+          <div className="font-display text-display-lg text-foreground">{stats.upcomingEvents}</div>
+          <div className="text-sm font-medium text-muted-foreground">Upcoming Events</div>
+        </button>
 
-        <StatCard onClick={() => navigate('/tasks')}>
-          <StatHeader>
-            <StatIcon color="warning">
-              <Clock size={24} />
-            </StatIcon>
-          </StatHeader>
-          <StatValue>{stats.dueTodayCount}</StatValue>
-          <StatLabel>Due Today</StatLabel>
-        </StatCard>
+        <button
+          onClick={() => navigate('/tasks')}
+          className="flex cursor-pointer flex-col gap-3 rounded-lg border border-border bg-secondary p-6 text-left transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
+        >
+          <div className="flex items-center justify-between">
+            <StatIcon color="warning"><Clock size={24} /></StatIcon>
+          </div>
+          <div className="font-display text-display-lg text-foreground">{stats.dueTodayCount}</div>
+          <div className="text-sm font-medium text-muted-foreground">Due Today</div>
+        </button>
 
-        <StatCard onClick={() => navigate('/tasks')}>
-          <StatHeader>
-            <StatIcon color="error">
-              <AlertCircle size={24} />
-            </StatIcon>
-          </StatHeader>
-          <StatValue>{stats.overdueCount}</StatValue>
-          <StatLabel>Overdue Tasks</StatLabel>
-        </StatCard>
-      </DashboardGrid>
+        <button
+          onClick={() => navigate('/tasks')}
+          className="flex cursor-pointer flex-col gap-3 rounded-lg border border-border bg-secondary p-6 text-left transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
+        >
+          <div className="flex items-center justify-between">
+            <StatIcon color="error"><AlertCircle size={24} /></StatIcon>
+          </div>
+          <div className="font-display text-display-lg text-foreground">{stats.overdueCount}</div>
+          <div className="text-sm font-medium text-muted-foreground">Overdue Tasks</div>
+        </button>
+      </div>
 
-      <SectionTitle>Quick Actions</SectionTitle>
-      <QuickActionsGrid>
-        <QuickActionCard onClick={() => navigate('/tasks')}>
+      {/* Quick Actions */}
+      <h2 className="m-0 mb-4 font-display text-display-sm text-foreground">Quick Actions</h2>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-8">
+        <button
+          onClick={() => navigate('/tasks')}
+          className="flex items-center gap-3 rounded-lg border border-border bg-secondary p-5 text-left transition-all hover:translate-x-1 hover:border-primary hover:bg-primary/15"
+        >
           <ListTodo size={20} />
-          <span>View All Tasks</span>
-        </QuickActionCard>
-        <QuickActionCard onClick={() => navigate('/calendar')}>
+          <span className="text-body-lg font-medium text-foreground">View All Tasks</span>
+        </button>
+        <button
+          onClick={() => navigate('/calendar')}
+          className="flex items-center gap-3 rounded-lg border border-border bg-secondary p-5 text-left transition-all hover:translate-x-1 hover:border-primary hover:bg-primary/15"
+        >
           <Calendar size={20} />
-          <span>Open Calendar</span>
-        </QuickActionCard>
-        <QuickActionCard onClick={() => navigate('/weekly-progress')}>
+          <span className="text-body-lg font-medium text-foreground">Open Calendar</span>
+        </button>
+        <button
+          onClick={() => navigate('/weekly-progress')}
+          className="flex items-center gap-3 rounded-lg border border-border bg-secondary p-5 text-left transition-all hover:translate-x-1 hover:border-primary hover:bg-primary/15"
+        >
           <TrendingUp size={20} />
-          <span>Weekly Progress</span>
-        </QuickActionCard>
-        <QuickActionCard onClick={() => navigate('/tasks')}>
+          <span className="text-body-lg font-medium text-foreground">Weekly Progress</span>
+        </button>
+        <button
+          onClick={() => navigate('/tasks')}
+          className="flex items-center gap-3 rounded-lg border border-border bg-secondary p-5 text-left transition-all hover:translate-x-1 hover:border-primary hover:bg-primary/15"
+        >
           <FolderKanban size={20} />
-          <span>Manage Groups</span>
-        </QuickActionCard>
-      </QuickActionsGrid>
+          <span className="text-body-lg font-medium text-foreground">Manage Groups</span>
+        </button>
+      </div>
 
+      {/* Upcoming Events */}
       {upcomingEvents.length > 0 && (
-        <UpcomingSection>
-          <SectionTitle>Upcoming Events</SectionTitle>
+        <div className="mb-8 rounded-lg border border-border bg-secondary p-6">
+          <h2 className="m-0 mb-4 font-display text-display-sm text-foreground">Upcoming Events</h2>
           {upcomingEvents.map(event => (
-            <EventItem key={event.id}>
-              <EventDetails>
+            <div
+              key={event.id}
+              className="mb-2 flex items-center justify-between rounded-lg bg-background p-3 last:mb-0"
+            >
+              <div className="flex items-center gap-3">
                 <Calendar size={16} />
                 <div>
-                  <EventTitle>{event.title}</EventTitle>
-                  <EventDate>{formatEventDate(event.startDate)}</EventDate>
+                  <div className="text-sm font-medium text-foreground">{event.title}</div>
+                  <div className="text-xs font-medium text-muted-foreground">{formatEventDate(event.startDate)}</div>
                 </div>
-              </EventDetails>
-            </EventItem>
+              </div>
+            </div>
           ))}
-        </UpcomingSection>
+        </div>
       )}
 
+      {/* Priority Tasks */}
       {recentTasks.length > 0 && (
-        <UpcomingSection>
-          <SectionTitle>Priority Tasks</SectionTitle>
+        <div className="mb-8 rounded-lg border border-border bg-secondary p-6">
+          <h2 className="m-0 mb-4 font-display text-display-sm text-foreground">Priority Tasks</h2>
           {recentTasks.map(task => (
-            <EventItem key={task.id} onClick={() => navigate('/tasks')}>
-              <EventDetails>
+            <div
+              key={task.id}
+              onClick={() => navigate('/tasks')}
+              className="mb-2 flex cursor-pointer items-center justify-between rounded-lg bg-background p-3 last:mb-0"
+            >
+              <div className="flex items-center gap-3">
                 <ListTodo size={16} />
                 <div>
-                  <EventTitle>{task.title}</EventTitle>
+                  <div className="text-sm font-medium text-foreground">{task.title}</div>
                   {task.dueDate && (
-                    <EventDate>
+                    <div className="text-xs font-medium text-muted-foreground">
                       Due: {new Date(task.dueDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
-                    </EventDate>
+                    </div>
                   )}
                 </div>
-              </EventDetails>
-            </EventItem>
+              </div>
+            </div>
           ))}
-        </UpcomingSection>
+        </div>
+      )}
+
+      {/* Onboarding — shown only when user has no tasks yet */}
+      {!loading && stats.totalTasks === 0 && (
+        <div className="rounded-lg border border-dashed border-border bg-secondary/50 p-8 text-center">
+          <div className="mb-4 flex justify-center">
+            <div className="flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Sparkles size={28} />
+            </div>
+          </div>
+          <h2 className="mb-2 font-display text-display-sm text-foreground">Welcome &mdash; let&apos;s get started</h2>
+          <p className="mb-6 text-sm text-muted-foreground">
+            Create your first task, add it to a group, and try the calendar view to see your week at a glance.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Button onClick={() => navigate('/tasks')}>
+              <Plus size={16} className="mr-2" />
+              Create your first task
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/calendar')}>
+              <Calendar size={16} className="mr-2" />
+              Open calendar
+            </Button>
+          </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            Tip: Press <kbd className="rounded border border-border bg-muted px-1 font-mono text-xs">N</kbd> on the Tasks page to create a task,
+            or <kbd className="rounded border border-border bg-muted px-1 font-mono text-xs">/</kbd> to search.
+          </p>
+        </div>
       )}
     </PageLayout>
   );

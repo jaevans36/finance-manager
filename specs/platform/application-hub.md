@@ -6,7 +6,7 @@
 
 ## Overview
 
-The Application Hub serves as the main landing page and portal for all applications in the Finance Manager platform. It replaces the original To Do-centric dashboard with a unified entry point that scales as new applications are added.
+The Application Hub serves as the main landing page and portal for all applications in the Life Manager platform. It replaces the original To Do-centric dashboard with a unified entry point that scales as new applications are added.
 
 ## Features
 
@@ -191,7 +191,7 @@ Applications registered in database:
 
 {
   id: 'finance',
-  name: 'Finance Manager',
+  name: 'Life Manager',
   description: 'Track expenses and manage budgets',
   iconPath: '/icons/finance.svg',
   routePath: '/finance',

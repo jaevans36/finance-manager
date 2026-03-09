@@ -32,8 +32,8 @@
     /* Paths */
     "baseUrl": ".",
     "paths": {
-      "@finance-manager/ui": ["./src/index.ts"],
-      "@finance-manager/ui/*": ["./src/*"]
+      "@life-manager/ui": ["./src/index.ts"],
+      "@life-manager/ui/*": ["./src/*"]
     }
   },
   "include": ["src/**/*"],

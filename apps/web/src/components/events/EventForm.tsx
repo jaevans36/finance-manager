@@ -1,39 +1,14 @@
 import { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { 
-  Card, 
-  Button, 
-  Input, 
-  TextArea, 
-  FormGroup, 
-  Label, 
-  ErrorText, 
-  Alert,
-  Flex
-} from '@finance-manager/ui';
 import { XCircle } from 'lucide-react';
 import type { Event, CreateEventRequest } from '../../types/event';
 import type { TaskGroup } from '../../types/taskGroup';
-
-const Subheading = styled.h2`
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0 0 20px 0;
-`;
-
-const CheckboxLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.text};
-  cursor: pointer;
-  
-  input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-  }
-`;
+import { useCreateEventForm } from '../../hooks/forms';
+import type { CreateEventInput } from '@life-manager/schema';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Textarea } from '../ui/textarea';
+import { Label } from '../ui/label';
+import { Alert, AlertDescription } from '../ui/alert';
 
 interface EventFormProps {
   event?: Event;
@@ -45,96 +20,65 @@ interface EventFormProps {
 export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormProps) => {
   const isEditing = !!event;
   
-  const [title, setTitle] = useState(event?.title || '');
-  const [description, setDescription] = useState(event?.description || '');
-  const [startDate, setStartDate] = useState(
-    event?.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : ''
-  );
-  const [endDate, setEndDate] = useState(
-    event?.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : ''
-  );
-  const [isAllDay, setIsAllDay] = useState(event?.isAllDay || false);
-  const [location, setLocation] = useState(event?.location || '');
-  const [reminderMinutes, setReminderMinutes] = useState<string>(
-    event?.reminderMinutes?.toString() || ''
-  );
-  const [groupId, setGroupId] = useState<string>(event?.groupId || '');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors, isSubmitting } } = useCreateEventForm({
+    title: event?.title || '',
+    description: event?.description || '',
+    startDate: event?.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : '',
+    endDate: event?.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : '',
+    isAllDay: event?.isAllDay || false,
+    location: event?.location || '',
+    reminderMinutes: event?.reminderMinutes ?? undefined,
+    groupId: event?.groupId || '',
+  });
+
+  const [apiError, setApiError] = useState('');
+
+  const watchedTitle = watch('title');
+  const watchedDescription = watch('description');
+  const watchedLocation = watch('location');
+  const watchedStartDate = watch('startDate');
+  const watchedEndDate = watch('endDate');
 
   // Auto-set end date to 1 hour after start if empty
   useEffect(() => {
-    if (startDate && !endDate) {
-      const start = new Date(startDate);
+    if (watchedStartDate && !watchedEndDate) {
+      const start = new Date(watchedStartDate);
       const end = new Date(start.getTime() + 60 * 60 * 1000); // +1 hour
-      setEndDate(end.toISOString().slice(0, 16));
+      setValue('endDate', end.toISOString().slice(0, 16));
     }
-  }, [startDate, endDate]);
+  }, [watchedStartDate, watchedEndDate, setValue]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  const onFormSubmit = async (data: CreateEventInput) => {
+    setApiError('');
 
-    if (!title.trim()) {
-      setError('Title is required');
-      return;
-    }
-
-    if (!startDate) {
-      setError('Start date is required');
-      return;
-    }
-
-    if (!endDate) {
-      setError('End date is required');
-      return;
-    }
-
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (end < start) {
-      setError('End date must be after start date');
-      return;
-    }
-
-    setIsSubmitting(true);
+    const start = new Date(data.startDate);
+    const end = new Date(data.endDate);
 
     try {
       await onSubmit({
-        title: title.trim(),
-        description: description.trim() || undefined,
+        title: data.title.trim(),
+        description: data.description?.trim() || undefined,
         startDate: start.toISOString(),
         endDate: end.toISOString(),
-        isAllDay,
-        location: location.trim() || undefined,
-        reminderMinutes: reminderMinutes ? parseInt(reminderMinutes, 10) : undefined,
-        groupId: groupId || undefined,
+        isAllDay: data.isAllDay,
+        location: data.location?.trim() || undefined,
+        reminderMinutes: data.reminderMinutes ?? undefined,
+        groupId: data.groupId || undefined,
       });
       
       if (!isEditing) {
-        // Reset form for create mode
-        setTitle('');
-        setDescription('');
-        setStartDate('');
-        setEndDate('');
-        setIsAllDay(false);
-        setLocation('');
-        setReminderMinutes('');
-        setGroupId('');
+        reset();
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Event operation error:', err);
       if (err instanceof Error) {
-        setError(err.message);
+        setApiError(err.message);
       } else if (typeof err === 'object' && err !== null && 'response' in err) {
         const axiosError = err as { response?: { data?: { error?: { message?: string } } } };
-        setError(axiosError.response?.data?.error?.message || `Failed to ${isEditing ? 'update' : 'create'} event`);
+        setApiError(axiosError.response?.data?.error?.message || `Failed to ${isEditing ? 'update' : 'create'} event`);
       } else {
-        setError(`Failed to ${isEditing ? 'update' : 'create'} event`);
+        setApiError(`Failed to ${isEditing ? 'update' : 'create'} event`);
       }
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -147,126 +91,122 @@ export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormP
   ];
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginBottom: '30px' }} aria-label={`${isEditing ? 'Edit' : 'Create'} event form`}>
-      <Card style={{ padding: '20px' }}>
-        <Subheading>{isEditing ? 'Edit Event' : 'Create New Event'}</Subheading>
+    <form onSubmit={handleSubmit(onFormSubmit)} className="mb-[30px]" aria-label={`${isEditing ? 'Edit' : 'Create'} event form`}>
+      <div className="rounded-lg border border-border bg-card p-5">
+        <h2 className="m-0 mb-5 text-foreground">{isEditing ? 'Edit Event' : 'Create New Event'}</h2>
 
-        {error && (
-          <Alert variant="error" style={{ marginBottom: '15px' }}>
-            <XCircle size={16} />
-            <span>{error}</span>
+        {apiError && (
+          <Alert variant="destructive" className="mb-4">
+            <XCircle className="h-4 w-4" />
+            <AlertDescription>{apiError}</AlertDescription>
           </Alert>
         )}
 
-        <FormGroup>
+        <div className="mb-4 space-y-2">
           <Label htmlFor="title">Title *</Label>
           <Input
             id="title"
             aria-required="true"
-            aria-invalid={!!error && !title.trim()}
+            aria-invalid={!!errors.title}
             type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            {...register('title')}
             placeholder="Enter event title"
             maxLength={200}
             disabled={isSubmitting}
           />
-          <ErrorText>{title.length}/200</ErrorText>
-        </FormGroup>
+          {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
+          <p className="text-sm text-muted-foreground">{(watchedTitle ?? '').length}/200</p>
+        </div>
 
-        <FormGroup>
+        <div className="mb-4 space-y-2">
           <Label htmlFor="description">Description</Label>
-          <TextArea
+          <Textarea
             id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            {...register('description')}
             placeholder="Enter event description"
             maxLength={5000}
             rows={3}
             disabled={isSubmitting}
           />
-          <ErrorText>{description.length}/5000</ErrorText>
-        </FormGroup>
+          <p className="text-sm text-muted-foreground">{(watchedDescription ?? '').length}/5000</p>
+        </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-          <FormGroup>
+        <div className="mb-4 grid grid-cols-2 gap-4">
+          <div className="space-y-2">
             <Label htmlFor="startDate">Start Date & Time *</Label>
             <Input
               id="startDate"
               aria-required="true"
               type="datetime-local"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              {...register('startDate')}
               disabled={isSubmitting}
             />
-          </FormGroup>
+            {errors.startDate && <p className="text-sm text-destructive">{errors.startDate.message}</p>}
+          </div>
 
-          <FormGroup>
+          <div className="space-y-2">
             <Label htmlFor="endDate">End Date & Time *</Label>
             <Input
               id="endDate"
               aria-required="true"
               type="datetime-local"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              min={startDate}
+              {...register('endDate')}
+              min={watchedStartDate}
               disabled={isSubmitting}
             />
-          </FormGroup>
+            {errors.endDate && <p className="text-sm text-destructive">{errors.endDate.message}</p>}
+          </div>
         </div>
 
-        <FormGroup>
-          <CheckboxLabel>
+        <div className="mb-4">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
-              checked={isAllDay}
-              onChange={(e) => setIsAllDay(e.target.checked)}
+              {...register('isAllDay')}
               disabled={isSubmitting}
+              className="h-[18px] w-[18px] cursor-pointer"
             />
             All-day event
-          </CheckboxLabel>
-        </FormGroup>
+          </label>
+        </div>
 
-        <FormGroup>
+        <div className="mb-4 space-y-2">
           <Label htmlFor="location">Location</Label>
           <Input
             id="location"
             type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            {...register('location')}
             placeholder="Add location (optional)"
             maxLength={500}
             disabled={isSubmitting}
           />
-          <ErrorText>{location.length}/500</ErrorText>
-        </FormGroup>
+          <p className="text-sm text-muted-foreground">{(watchedLocation ?? '').length}/500</p>
+        </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-          <FormGroup>
+        <div className="mb-4 grid grid-cols-2 gap-4">
+          <div className="space-y-2">
             <Label htmlFor="reminder">Reminder</Label>
-            <Input
-              as="select"
+            <select
               id="reminder"
-              value={reminderMinutes}
-              onChange={(e) => setReminderMinutes(e.target.value)}
+              {...register('reminderMinutes')}
               disabled={isSubmitting}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {reminderOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
-            </Input>
-          </FormGroup>
+            </select>
+          </div>
 
-          <FormGroup>
+          <div className="space-y-2">
             <Label htmlFor="group">Group</Label>
-            <Input
-              as="select"
+            <select
               id="group"
-              value={groupId}
-              onChange={(e) => setGroupId(e.target.value)}
+              {...register('groupId')}
               disabled={isSubmitting}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="">No group</option>
               {groups.map((group) => (
@@ -274,19 +214,19 @@ export const EventForm = ({ event, onSubmit, onCancel, groups = [] }: EventFormP
                   {group.name}
                 </option>
               ))}
-            </Input>
-          </FormGroup>
+            </select>
+          </div>
         </div>
 
-        <Flex gap={10}>
-          <Button type="submit" variant="primary" $isLoading={isSubmitting}>
+        <div className="flex gap-2.5">
+          <Button type="submit" variant="default" disabled={isSubmitting}>
             {isSubmitting ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update Event' : 'Create Event')}
           </Button>
           <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
             Cancel
           </Button>
-        </Flex>
-      </Card>
+        </div>
+      </div>
     </form>
   );
 };

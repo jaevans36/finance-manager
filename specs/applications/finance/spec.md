@@ -8,7 +8,7 @@
 
 ## Overview
 
-A comprehensive personal finance management application within the Life Manager platform. The Finance Application enables users to track income and expenses, manage budgets, monitor investments, pay bills, set savings goals, import transactions from banks and investment platforms, and receive AI-powered financial insights. This evolves the original Finance Manager concept into a full-featured personal finance suite.
+A comprehensive personal finance management application within the Life Manager platform. The Finance Application enables users to track income and expenses, manage budgets, monitor investments, pay bills, set savings goals, import transactions from banks and investment platforms, and receive AI-powered financial insights. This evolves the original Life Manager concept into a full-featured personal finance suite.
 
 ## Rationale
 

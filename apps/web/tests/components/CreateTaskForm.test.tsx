@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { renderWithProviders } from '../utils/test-utils';
 import { CreateTaskForm } from '../../src/components/tasks/CreateTaskForm';
 
 describe('CreateTaskForm', () => {
@@ -12,7 +13,7 @@ describe('CreateTaskForm', () => {
 
   describe('Rendering', () => {
     it('should render form with all fields', () => {
-      render(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+      renderWithProviders(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
       expect(screen.getByText('Create New Task')).toBeInTheDocument();
       expect(screen.getByLabelText(/title/i)).toBeInTheDocument();
@@ -22,23 +23,23 @@ describe('CreateTaskForm', () => {
     });
 
     it('should render submit and cancel buttons', () => {
-      render(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+      renderWithProviders(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
       expect(screen.getByRole('button', { name: /create task/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
     });
 
-    it('should have MEDIUM as default priority', () => {
-      render(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+    it('should have Medium as default priority', () => {
+      renderWithProviders(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
       const prioritySelect = screen.getByLabelText(/priority/i) as HTMLSelectElement;
-      expect(prioritySelect.value).toBe('MEDIUM');
+      expect(prioritySelect.value).toBe('Medium');
     });
   });
 
   describe('Form Validation', () => {
     it('should show error when submitting without title', async () => {
-      const { container } = render(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+      const { container } = renderWithProviders(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
       const form = container.querySelector('form')!;
       fireEvent.submit(form);
@@ -51,7 +52,7 @@ describe('CreateTaskForm', () => {
     });
 
     it('should show error when submitting with only whitespace title', async () => {
-      const { container } = render(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+      const { container } = renderWithProviders(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
       const titleInput = screen.getByLabelText(/title/i);
       fireEvent.change(titleInput, { target: { value: '   ' } });
@@ -70,7 +71,7 @@ describe('CreateTaskForm', () => {
   describe('Form Submission', () => {
     it('should call onSubmit with title only', async () => {
       mockOnSubmit.mockResolvedValue(undefined);
-      const { container } = render(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+      const { container } = renderWithProviders(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
       const titleInput = screen.getByLabelText(/title/i);
       fireEvent.change(titleInput, { target: { value: 'Test Task' } });
@@ -82,19 +83,20 @@ describe('CreateTaskForm', () => {
         expect(mockOnSubmit).toHaveBeenCalledWith({
           title: 'Test Task',
           description: undefined,
-          priority: 'MEDIUM',
+          priority: 'Medium',
           dueDate: undefined,
+          subtaskTitles: undefined,
         });
       });
     });
 
     it('should call onSubmit with all fields filled', async () => {
       mockOnSubmit.mockResolvedValue(undefined);
-      const { container } = render(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+      const { container } = renderWithProviders(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
       fireEvent.change(screen.getByLabelText(/title/i), { target: { value: 'Complete Task' } });
       fireEvent.change(screen.getByLabelText(/description/i), { target: { value: 'Task details' } });
-      fireEvent.change(screen.getByLabelText(/priority/i), { target: { value: 'HIGH' } });
+      fireEvent.change(screen.getByLabelText(/priority/i), { target: { value: 'High' } });
       fireEvent.change(screen.getByLabelText(/due date/i), { target: { value: '2024-12-31' } });
 
       const form = container.querySelector('form')!;
@@ -104,15 +106,16 @@ describe('CreateTaskForm', () => {
         expect(mockOnSubmit).toHaveBeenCalledWith({
           title: 'Complete Task',
           description: 'Task details',
-          priority: 'HIGH',
+          priority: 'High',
           dueDate: '2024-12-31',
+          subtaskTitles: undefined,
         });
       });
     });
 
     it('should trim whitespace from title and description', async () => {
       mockOnSubmit.mockResolvedValue(undefined);
-      const { container } = render(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+      const { container } = renderWithProviders(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
       fireEvent.change(screen.getByLabelText(/title/i), { target: { value: '  Trimmed Title  ' } });
       fireEvent.change(screen.getByLabelText(/description/i), { target: { value: '  Trimmed Desc  ' } });
@@ -124,15 +127,16 @@ describe('CreateTaskForm', () => {
         expect(mockOnSubmit).toHaveBeenCalledWith({
           title: 'Trimmed Title',
           description: 'Trimmed Desc',
-          priority: 'MEDIUM',
+          priority: 'Medium',
           dueDate: undefined,
+          subtaskTitles: undefined,
         });
       });
     });
 
     it('should reset form after successful submission', async () => {
       mockOnSubmit.mockResolvedValue(undefined);
-      const { container } = render(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+      const { container } = renderWithProviders(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
       const titleInput = screen.getByLabelText(/title/i) as HTMLInputElement;
       const descriptionTextarea = screen.getByLabelText(/description/i) as HTMLTextAreaElement;
@@ -141,7 +145,7 @@ describe('CreateTaskForm', () => {
 
       fireEvent.change(titleInput, { target: { value: 'Test Task' } });
       fireEvent.change(descriptionTextarea, { target: { value: 'Test Description' } });
-      fireEvent.change(prioritySelect, { target: { value: 'HIGH' } });
+      fireEvent.change(prioritySelect, { target: { value: 'High' } });
       fireEvent.change(dueDateInput, { target: { value: '2024-12-31' } });
 
       const form = container.querySelector('form')!;
@@ -150,14 +154,14 @@ describe('CreateTaskForm', () => {
       await waitFor(() => {
         expect(titleInput.value).toBe('');
         expect(descriptionTextarea.value).toBe('');
-        expect(prioritySelect.value).toBe('MEDIUM');
+        expect(prioritySelect.value).toBe('Medium');
         expect(dueDateInput.value).toBe('');
       });
     });
 
     it('should show error message on submission failure', async () => {
       mockOnSubmit.mockRejectedValue(new Error('Network error'));
-      const { container } = render(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+      const { container } = renderWithProviders(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
       const titleInput = screen.getByLabelText(/title/i);
       fireEvent.change(titleInput, { target: { value: 'Test Task' } });
@@ -173,7 +177,7 @@ describe('CreateTaskForm', () => {
 
   describe('Cancel Button', () => {
     it('should call onCancel when cancel button is clicked', () => {
-      render(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+      renderWithProviders(<CreateTaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
       const cancelButton = screen.getByRole('button', { name: /cancel/i });
       fireEvent.click(cancelButton);

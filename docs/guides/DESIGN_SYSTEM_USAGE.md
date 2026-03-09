@@ -1,83 +1,88 @@
-# Design System & Shared UI Package - Developer Guide
+# Design System & Shared UI Package — Developer Guide
 
-> **⚠️ MIGRATION NOTICE**: This guide documents the **styled-components** based design system.
-> This approach is being superseded by **Tailwind CSS + shadcn/ui** (ADR-016, Phase 48-53).
-> During migration, both systems co-exist. For new components, prefer Tailwind + shadcn.
-> See `specs/platform/frontend-modernisation.md` for the migration plan.
+> **Current System**: Tailwind CSS + shadcn/ui with CSS variable tokens.
+> All new components use this approach. A few legacy styled-components remain
+> and are supported via `StyledThemeProvider` — see [Legacy Support](#legacy-support).
 
-**Last Updated**: January 26, 2026  
-**Package**: `@finance-manager/ui`  
+**Last Updated**: February 28, 2026
+**Package**: `@life-manager/ui`
 **Location**: `packages/ui/`
 
 ## 📚 Table of Contents
 
 1. [Overview](#overview)
-2. [Getting Started](#getting-started)
-3. [Using Components](#using-components)
-4. [Using Design Tokens](#using-design-tokens)
-5. [Creating New Components](#creating-new-components)
-6. [Contributing to the Shared Package](#contributing-to-the-shared-package)
-7. [Best Practices](#best-practices)
-8. [Migration Guide](#migration-guide)
+2. [Fonts & Typography](#fonts--typography)
+3. [Colour Tokens](#colour-tokens)
+4. [Spacing & Layout](#spacing--layout)
+5. [Using shadcn/ui Components](#using-shadcnui-components)
+6. [Creating New Components](#creating-new-components)
+7. [Accessibility](#accessibility)
+8. [Legacy Support](#legacy-support)
+9. [Best Practices](#best-practices)
 
 ---
 
 ## Overview
 
-The `@finance-manager/ui` package is a **shared component library and design system** that ensures consistency across all Finance Manager applications. It provides:
+The design system provides a **single source of truth** for visual consistency
+across all Life Manager applications. It is built on:
 
-- ✅ **15+ Pre-built Components** (Button, Card, Modal, Forms, etc.)
-- ✅ **Complete Design System** (Typography, spacing, colours)
-- ✅ **Theme System** (Light/dark mode with React Context)
-- ✅ **TypeScript Support** (Full type safety and autocomplete)
-- ✅ **Tree-Shakeable** (Import only what you need)
-
-**Key Principle**: Design once, use everywhere. Update once, applies to all apps.
+| Layer | Technology | Location |
+|-------|-----------|----------|
+| **Fonts** | DM Sans (display) + IBM Plex Sans (body) | Google Fonts in `index.html` |
+| **Colour tokens** | CSS custom properties (HSL) | `apps/web/src/styles/theme.css` |
+| **Utility framework** | Tailwind CSS 3 with shared preset | `packages/ui/tailwind.preset.ts` |
+| **Component library** | shadcn/ui (Radix + Tailwind) | `apps/web/src/components/ui/` |
+| **Dark mode** | `class` strategy (`.dark` on `<html>`) | `ThemeContext.tsx` |
+| **Legacy styled-components** | `StyledThemeProvider` (retained for unmigrated code) | `packages/ui/` |
 
 ---
 
-## Getting Started
+## Fonts & Typography
 
-### 1. Install the Package
+### Typefaces
 
-In any Finance Manager application:
+| Role | Font | Weights | Usage |
+|------|------|---------|-------|
+| **Display** | DM Sans | 600, 700 | Page titles, section headings, stat values |
+| **Body** | IBM Plex Sans | 400, 500, 600 | Body text, labels, inputs, buttons |
 
-```json
-// apps/your-app/package.json
-{
-  "dependencies": {
-    "@finance-manager/ui": "workspace:*"
-  }
-}
+Fonts are loaded via Google Fonts in `apps/web/index.html` with `preconnect` hints.
+
+### Typography Scale (Tailwind classes)
+
+| Class | Size | Weight | Use |
+|-------|------|--------|-----|
+| `text-display-lg` | 32px / 2rem | 700 | Page titles, stat hero numbers |
+| `text-display` | 24px / 1.5rem | 600 | Section headings |
+| `text-display-sm` | 20px / 1.25rem | 600 | Card group headings |
+| `text-heading` | 18px / 1.125rem | 600 | Sub-section headings |
+| `text-heading-sm` | 16px / 1rem | 600 | Card titles |
+| `text-body-lg` | 16px / 1rem | 400 | Prominent body text |
+| `text-body` | 14px / 0.875rem | 400 | Default body text |
+| `text-body-sm` | 13px / 0.8125rem | 400 | Secondary / compact text |
+| `text-caption` | 12px / 0.75rem | 400 | Timestamps, helper text |
+| `text-badge` | 11px / 0.6875rem | 500 | Badges, labels |
+
+### Font Family Classes
+
+```html
+<h1 class="font-display text-display-lg">Page Title</h1>
+<p class="font-sans text-body">Body paragraph</p>
 ```
 
-Run: `pnpm install`
+- `font-display` → DM Sans, then IBM Plex Sans fallback
+- `font-sans` → IBM Plex Sans with system fallbacks
 
-### 2. Wrap Your App with ThemeProvider
+### Reusable Components
 
 ```tsx
-// apps/your-app/src/App.tsx
-import { ThemeProvider, GlobalStyles } from '@finance-manager/ui';
+import { PageTitle, SectionTitle } from '../components/ui/page-title';
 
-function App() {
-  return (
-    <ThemeProvider>
-      <GlobalStyles />
-      <YourApp />
-    </ThemeProvider>
-  );
-}
+<PageTitle>Dashboard</PageTitle>
+<SectionTitle>Quick Actions</SectionTitle>
+<SectionTitle as="h3" className="text-heading-sm">Card Title</SectionTitle>
 ```
-
-### 3. Start Using Components
-
-```tsx
-import { Button, Card, Heading1 } from '@finance-manager/ui';
-
-function MyPage() {
-  return (
-    <Card>
-      <Heading1>Hello World</Heading1>
       <Button variant="primary">Click Me</Button>
     </Card>
   );
@@ -86,343 +91,281 @@ function MyPage() {
 
 ---
 
-## Using Components
+## Colour Tokens
 
-### Import Patterns
+All colours are defined as HSL CSS custom properties in `apps/web/src/styles/theme.css`
+and mapped to Tailwind utilities via `packages/ui/tailwind.preset.ts`.
 
-```tsx
-// Components
-import { Button, Card, Input, Modal } from '@finance-manager/ui';
+### Semantic Colours
 
-// Design tokens (spacing, typography)
-import { spacing, typography } from '@finance-manager/ui/styles';
+| Token | Light | Dark | Tailwind classes |
+|-------|-------|------|-----------------|
+| `background` | #FFFFFF | #1A1A1A | `bg-background` `text-foreground` |
+| `card` | #FFFFFF | #222222 | `bg-card` `text-card-foreground` |
+| `primary` | #1A1A1A | #E8E8E8 | `bg-primary` `text-primary-foreground` |
+| `secondary` | #F7F7F7 | #2D2D2D | `bg-secondary` `text-secondary-foreground` |
+| `muted` | #EFEFEF | #2D2D2D | `bg-muted` `text-muted-foreground` |
+| `accent` | #F5F5F5 | #2A2A2A | `bg-accent` `text-accent-foreground` |
+| `destructive` | #FF4D4D | #FF4D4D | `bg-destructive` `text-destructive` |
+| `success` | #10B981 | #10B981 | `bg-success` `text-success` |
+| `warning` | #F59E0B | #FBBF24 | `bg-warning` `text-warning` |
+| **`brand`** | **#21B8A4** | **#26CCBA** | `bg-brand` `text-brand` |
 
-// Theme context
-import { useTheme } from '@finance-manager/ui';
+### Brand Colour
+
+The **teal brand colour** provides visual identity across the application:
+
+```html
+<!-- Background accent -->
+<div class="bg-brand text-brand-foreground">Branded element</div>
+
+<!-- Muted surface (e.g. "in progress" badges) -->
+<span class="bg-brand-muted text-brand-muted-foreground">In Progress</span>
+
+<!-- Text accent -->
+<h2 class="text-brand">Currently Working On</h2>
 ```
 
-### Common Components
+### Status Colour Usage
 
-#### Buttons
+| Semantic | Use for | Token |
+|----------|---------|-------|
+| `destructive` | Errors, critical priority, delete actions, blocked status | `text-destructive`, `bg-destructive/10` |
+| `warning` | Amber warnings, high priority, medium energy, WIP limits | `text-warning`, `bg-warning/5` |
+| `success` | Completed, positive trends, low energy (relaxed) | `text-success`, `bg-success/10` |
+| `brand` | In-progress, medium classification, schedule quadrant | `text-brand`, `bg-brand-muted` |
+| `muted` | Not started, low priority, eliminate quadrant | `text-muted-foreground`, `bg-muted` |
 
-```tsx
-<Button variant="primary" size="medium">Primary</Button>
-<Button variant="secondary">Secondary</Button>
-<Button variant="danger">Delete</Button>
-<Button variant="success">Save</Button>
-<Button variant="outline">Cancel</Button>
+> **Important**: `warning` ≠ `destructive`. Warning is amber (#F59E0B), destructive is red (#FF4D4D).
 
-<Button fullWidth>Full Width Button</Button>
-<Button isLoading>Loading...</Button>
-<Button disabled>Disabled</Button>
+### Opacity Patterns for Surfaces
+
+```html
+<!-- Light background surface -->
+<div class="bg-destructive/5 border border-destructive/20 text-destructive">Error</div>
+<div class="bg-warning/5 border border-warning/30 text-warning-foreground">Warning</div>
+<div class="bg-success/10 text-success-foreground">Success badge</div>
+<div class="bg-brand-muted text-brand-muted-foreground">In Progress badge</div>
 ```
-
-**Variants**: `primary`, `secondary`, `danger`, `success`, `outline`  
-**Sizes**: `small`, `medium`, `large`
-
-#### Cards
-
-```tsx
-<Card>
-  <CardHeader>
-    <CardTitle>Title</CardTitle>
-  </CardHeader>
-  <CardBody>
-    Content goes here
-  </CardBody>
-</Card>
-```
-
-#### Forms
-
-```tsx
-<FormGroup>
-  <Label htmlFor="email">Email</Label>
-  <Input 
-    id="email" 
-    type="email" 
-    placeholder="Enter email..." 
-    hasError={!!error}
-  />
-  {error && <ErrorText>{error}</ErrorText>}
-  <HelperText>We'll never share your email</HelperText>
-</FormGroup>
-```
-
-#### Badges
-
-```tsx
-<Badge $variant="success">Active</Badge>
-<Badge $variant="error">Failed</Badge>
-<Badge $variant="warning">Pending</Badge>
-<SmallBadge $variant="info">Info</SmallBadge>
-```
-
-#### Typography
-
-```tsx
-<Heading1>Page Title (24px)</Heading1>
-<Heading2>Section Heading (18px)</Heading2>
-<Heading3>Card Title (16px)</Heading3>
-<Text>Body text (14px)</Text>
-<TextSecondary>Secondary text</TextSecondary>
-<TextSmall>Small text (12px)</TextSmall>
-```
-
-**Full component list**: See [packages/ui/src/components/README.md](../../packages/ui/src/components/README.md)
 
 ---
 
-## Using Design Tokens
+## Spacing & Layout
 
-### Why Design Tokens?
+### Spacing Scale
 
-❌ **Bad** - Hardcoded values:
+Use Tailwind's default 4px-based scale. **Never use arbitrary values** like `p-[30px]`.
+
+| Tailwind | Value | Common use |
+|----------|-------|-----------|
+| `p-1` | 4px | Tight internal spacing |
+| `p-2` | 8px | Compact padding |
+| `p-3` | 12px | Form field gaps |
+| `p-4` | 16px | Standard padding |
+| `p-5` | 20px | Comfortable padding |
+| `p-6` | 24px | Card body padding |
+| `p-8` | 32px | Section header margin |
+| `p-10` | 40px | Large section gaps |
+
+### Border Radius
+
+| Tailwind | Value | Use |
+|----------|-------|-----|
+| `rounded-sm` | 4px | Small elements (badges, chips) |
+| `rounded-md` | 6px | Inputs, buttons |
+| `rounded-lg` | 12px | Cards, modals, dialogs |
+
+### Shadow
+
+| Class | Use |
+|-------|-----|
+| `shadow-elevated` | `0 4px 16px rgba(0,0,0,0.08)` — hover states only |
+
+### Container Pattern
+
 ```tsx
-const Container = styled.div`
-  padding: 16px;
-  font-size: 18px;
-  margin-bottom: 24px;
-`;
+<div className="mx-auto w-4/5 max-w-6xl px-5 py-5 md:px-2.5 md:w-[95%]">
+  {/* Page content */}
+</div>
 ```
 
-✅ **Good** - Design tokens:
-```tsx
-import { spacing, typography } from '@finance-manager/ui/styles';
+Or use the `PageLayout` component for consistency.
 
-const Container = styled.div`
-  padding: ${spacing.lg};
-  ${typography.sectionHeading}
-  margin-bottom: ${spacing['2xl']};
-`;
+---
+
+## Using shadcn/ui Components
+
+shadcn/ui components live in `apps/web/src/components/ui/` and are built on
+Radix UI primitives + Tailwind CSS. They consume the CSS variable tokens
+automatically.
+
+### Available Components
+
+| Component | File | Radix-based |
+|-----------|------|-------------|
+| Alert | `alert.tsx` | No |
+| Badge | `badge.tsx` | No |
+| Button | `button.tsx` | No |
+| Card | `card.tsx` | No |
+| Checkbox | `checkbox.tsx` | Yes |
+| Dialog | `dialog.tsx` | Yes |
+| Dropdown Menu | `dropdown-menu.tsx` | Yes |
+| Input | `input.tsx` | No |
+| Label | `label.tsx` | Yes |
+| Modal | `Modal.tsx` | No (custom) |
+| PageTitle / SectionTitle | `page-title.tsx` | No |
+| Select | `select.tsx` | Yes |
+| Separator | `separator.tsx` | Yes |
+| Skeleton | `Skeleton.tsx` | No |
+| Sonner (toast) | `sonner.tsx` | No |
+| Switch | `switch.tsx` | Yes |
+| Tabs | `tabs.tsx` | Yes |
+| Textarea | `textarea.tsx` | No |
+| Tooltip | `tooltip.tsx` | Yes |
+
+### Usage Examples
+
+```tsx
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Badge } from '../components/ui/badge';
+import { PageTitle, SectionTitle } from '../components/ui/page-title';
+
+// Button variants
+<Button variant="default">Primary</Button>
+<Button variant="secondary">Secondary</Button>
+<Button variant="destructive">Delete</Button>
+<Button variant="outline">Cancel</Button>
+<Button variant="ghost">Subtle</Button>
+
+// Card
+<Card>
+  <CardHeader>
+    <CardTitle>Section</CardTitle>
+  </CardHeader>
+  <CardContent>Content here</CardContent>
+</Card>
+
+// Typography
+<PageTitle>Dashboard</PageTitle>
+<SectionTitle>Quick Actions</SectionTitle>
 ```
 
-**Benefits**:
-- Consistency across all components
-- Easy to update globally
-- Self-documenting code
-- Type-safe with autocomplete
+### Utility Function: `cn()`
 
-### Typography Tokens
+All components use `cn()` from `lib/utils.ts` (clsx + tailwind-merge):
 
 ```tsx
-import { typography } from '@finance-manager/ui/styles';
+import { cn } from '../../lib/utils';
 
-const Title = styled.h1`
-  ${typography.pageTitle}        // 24px, weight 600
-  ${typography.sectionHeading}   // 18px, weight 600
-  ${typography.cardTitle}        // 16px, weight 600
-  ${typography.body}             // 14px, weight 400
-  ${typography.bodySmall}        // 12px, weight 400
-  ${typography.label}            // 14px, weight 500
-  ${typography.badge}            // 11px, weight 500
-  ${typography.displayLarge}     // 32px, weight 700
-  ${typography.displayMedium}    // 24px, weight 700
-  ${typography.displaySmall}     // 18px, weight 600
-`;
-```
-
-### Spacing Tokens
-
-4px-based scale:
-
-```tsx
-import { spacing } from '@finance-manager/ui/styles';
-
-const Container = styled.div`
-  padding: ${spacing.xs};    // 4px
-  padding: ${spacing.sm};    // 8px
-  padding: ${spacing.md};    // 12px
-  padding: ${spacing.lg};    // 16px
-  padding: ${spacing.xl};    // 20px
-  padding: ${spacing['2xl']}; // 24px
-  padding: ${spacing['3xl']}; // 32px
-  padding: ${spacing['4xl']}; // 40px
-  padding: ${spacing['5xl']}; // 48px
-`;
-```
-
-### Theme Colors
-
-```tsx
-const StyledDiv = styled.div`
-  // Background colors
-  background: ${({ theme }) => theme.colors.background};
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  background: ${({ theme }) => theme.colors.cardBackground};
-  
-  // Text colors
-  color: ${({ theme }) => theme.colors.text};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  
-  // Brand colors
-  color: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.primaryHover};
-  
-  // Status colors
-  color: ${({ theme }) => theme.colors.success};
-  color: ${({ theme }) => theme.colors.error};
-  color: ${({ theme }) => theme.colors.warning};
-  color: ${({ theme }) => theme.colors.info};
-  
-  // Borders
-  border: 1px solid ${({ theme }) => theme.colors.border};
-`;
-```
-
-**See all colors**: Visit `/design-system` in the app for live colour swatches.
-
-### Layout Utilities
-
-```tsx
-import { flexCenter, flexBetween, scrollbar } from '@finance-manager/ui/styles';
-
-const Container = styled.div`
-  ${flexCenter}    // display: flex; align-items: center; justify-content: center;
-  ${flexBetween}   // display: flex; justify-content: space-between; align-items: center;
-  ${scrollbar}     // Custom scrollbar styling
-`;
+<div className={cn('p-4 rounded-lg', isActive && 'bg-brand/5 border-brand/30')} />
 ```
 
 ---
 
 ## Creating New Components
 
-### When to Create in Your App
+### When to create in your app
 
-Create components **inside your app** (`apps/your-app/src/components/`) when:
+- Used only in this specific app
+- Contains business logic
+- Rapid prototyping
 
-- ✅ Used only in this specific app
-- ✅ Highly specialized business logic
-- ✅ Rapid prototyping / experimental
-- ✅ Page-specific complex behaviour
+### When to add to shared package
 
-**Example**: `WeeklyProgressChart`, `TaskFilterDropdown`, `DashboardStats`
+- Used in 2+ applications
+- Generic, reusable pattern (no business logic)
+- Represents a design system primitive
 
-### When to Add to Shared Package
-
-Add components **to the shared package** (`packages/ui/src/components/`) when:
-
-- ✅ Used in **2+ applications**
-- ✅ Generic, reusable pattern (e.g., "Modal", "Dropdown", "DatePicker")
-- ✅ No business logic (pure UI)
-- ✅ Represents a design system pattern
-
-**Example**: `Button`, `Card`, `Input`, `Select`, `Tooltip`
-
-### Component Template
-
-When creating new components in your app, use design tokens:
+### Component Template (Tailwind + shadcn)
 
 ```tsx
-import styled from 'styled-components';
-import { spacing, typography } from '@finance-manager/ui/styles';
+import { cn } from '../../lib/utils';
 
 interface MyComponentProps {
   title: string;
   variant?: 'default' | 'highlighted';
+  className?: string;
 }
 
-const Container = styled.div<{ $variant: string }>`
-  padding: ${spacing.lg};
-  ${typography.cardTitle}
-  background: ${({ theme, $variant }) => 
-    $variant === 'highlighted' 
-      ? theme.colors.backgroundSecondary 
-      : theme.colors.cardBackground
-  };
-  border-radius: 8px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-`;
-
-export const MyComponent = ({ title, variant = 'default' }: MyComponentProps) => {
-  return (
-    <Container $variant={variant}>
-      {title}
-    </Container>
-  );
-};
+export const MyComponent = ({
+  title,
+  variant = 'default',
+  className,
+}: MyComponentProps) => (
+  <div
+    className={cn(
+      'rounded-lg border border-border p-4',
+      variant === 'highlighted' && 'bg-brand/5 border-brand/30',
+      className,
+    )}
+  >
+    <h3 className="font-display text-heading-sm">{title}</h3>
+  </div>
+);
 ```
 
-**Key Points**:
-- ✅ Use `${spacing.lg}` not `16px`
-- ✅ Use `${typography.cardTitle}` not `font-size: 16px`
-- ✅ Use `${({ theme }) => theme.colors.text}` not `#333`
-- ✅ Use transient props (`$variant`) for styled-components props
+**Key rules**:
+- Always accept `className` prop for composition
+- Use `cn()` for conditional classes
+- Use semantic tokens, never raw palette colours
+- Use the typography scale, never arbitrary sizes
 
 ---
 
-## Contributing to the Shared Package
+## Accessibility
 
-### 1. Add Your Component
+### Skip to Content
 
-Create your component in `packages/ui/src/components/`:
+A skip-to-content link is rendered before the header in `App.tsx`. It becomes
+visible on keyboard focus.
+
+### Landmarks
+
+- `<main id="main-content">` wraps all page routes
+- `<header>` wraps the app header and page-level headers
+
+### Reduced Motion
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+```
+
+This is declared in `global.css` and applies globally.
+
+### Contrast
+
+All semantic colour tokens pass WCAG AA contrast requirements:
+- `text-foreground` on `bg-background` — 14.5:1 (light), 12.8:1 (dark)
+- `text-destructive` on white — 4.6:1
+- `text-success` (#10B981) on white — 4.5:1
+- `text-brand` (#21B8A4) on white — 4.2:1
+
+---
+
+## Legacy Support
+
+The `StyledThemeProvider` from `packages/ui` still wraps the app for any
+remaining styled-components. `GlobalStyles` is **no longer rendered** — all
+base styles come from Tailwind's `global.css`.
+
+If you encounter a styled-component using `${({ theme }) => theme.colors.*}`,
+it will still work because `StyledThemeProvider` injects the theme object. To
+migrate it:
 
 ```tsx
-// packages/ui/src/components/MyNewComponent.tsx
-import styled from 'styled-components';
-import { spacing, typography } from '../styles';
-
-export const MyNewComponent = styled.div`
-  ${typography.body}
-  padding: ${spacing.md};
-  // ...
+// BEFORE (styled-components)
+const Box = styled.div`
+  background: ${({ theme }) => theme.colors.cardBackground};
+  padding: ${spacing.lg};
+  color: ${({ theme }) => theme.colors.text};
 `;
-```
 
-### 2. Export from Index
-
-Add to `packages/ui/src/components/index.ts`:
-
-```tsx
-export { MyNewComponent } from './MyNewComponent';
-```
-
-Or if it's inline in the index file, just add it.
-
-### 3. Update README
-
-Add usage example to `packages/ui/src/components/README.md`:
-
-```markdown
-### MyNewComponent
-
-\`\`\`tsx
-import { MyNewComponent } from '@finance-manager/ui';
-
-<MyNewComponent>Content</MyNewComponent>
-\`\`\`
-
-**Props**: ...
-```
-
-### 4. Test Locally
-
-```bash
-# In the app using the component
-cd apps/web
-pnpm dev
-```
-
-Changes to `packages/ui/` are reflected immediately (no rebuild needed in monorepo).
-
-### 5. Add to Design System Page
-
-Add example to `apps/web/src/pages/design-system/DesignSystemPage.tsx`:
-
-```tsx
-<ComponentGroup>
-  <Heading3>MyNewComponent</Heading3>
-  <MyNewComponent>Example usage</MyNewComponent>
-  <CodeBlock>{`<MyNewComponent>Content</MyNewComponent>`}</CodeBlock>
-</ComponentGroup>
-```
-
-### 6. Commit
-
-```bash
-git add packages/ui/
-git commit -m "feat(ui): add MyNewComponent to shared package"
+// AFTER (Tailwind)
+<div className="bg-card p-4 text-card-foreground" />
 ```
 
 ---
@@ -431,209 +374,61 @@ git commit -m "feat(ui): add MyNewComponent to shared package"
 
 ### ✅ DO
 
-1. **Use design tokens everywhere**
-   ```tsx
-   padding: ${spacing.lg}  // Not: padding: 16px
-   ```
-
-2. **Import from the shared package**
-   ```tsx
-   import { Button } from '@finance-manager/ui';  // Not: relative paths
-   ```
-
-3. **Use TypeScript for all components**
-   ```tsx
-   interface Props {
-     title: string;
-     variant?: 'primary' | 'secondary';
-   }
-   ```
-
-4. **Use transient props for styled-components**
-   ```tsx
-   <StyledDiv $variant="primary">  // $ prefix prevents DOM warnings
-   ```
-
-5. **Leverage theme colors**
-   ```tsx
-   color: ${({ theme }) => theme.colors.text};  // Auto dark/light mode
-   ```
-
-6. **Use semantic component names**
-   ```tsx
-   <Heading1>, <Button>, <Card>  // Not: <BigText>, <ClickBox>
-   ```
+1. **Use semantic colour tokens** — `text-destructive`, `bg-brand-muted`, `border-warning/30`
+2. **Use the typography scale** — `text-display-lg`, `text-body-sm`, `text-caption`
+3. **Use `font-display`** for headings — DM Sans provides visual hierarchy
+4. **Use `cn()` for conditional classes** — never string concatenation
+5. **Use Tailwind's spacing scale** — `p-4`, `gap-6`, `mb-8`
+6. **Accept `className` prop** in every component
+7. **Test in light and dark mode**
 
 ### ❌ DON'T
 
-1. **Don't hardcode values**
-   ```tsx
-   font-size: 18px;  // ❌ Use typography.sectionHeading
-   padding: 20px;    // ❌ Use spacing.xl
-   color: #333;      // ❌ Use theme.colors.text
-   ```
-
-2. **Don't create duplicate components**
-   - Check `packages/ui/src/components/README.md` first
-   - Search existing components before creating new ones
-
-3. **Don't skip the design system page**
-   - Always test your component in `/design-system` route
-   - Verify dark mode works correctly
-
-4. **Don't mix design patterns**
-   ```tsx
-   // ❌ Bad
-   <div style={{ fontSize: '18px' }}>
-     <Heading2>Title</Heading2>
-   </div>
-   
-   // ✅ Good
-   <div>
-     <Heading2>Title</Heading2>
-   </div>
-   ```
-
-5. **Don't add business logic to shared components**
-   - Keep shared components pure UI
-   - Business logic stays in the app
+1. **Don't use raw palette colours** — `text-red-600` → `text-destructive`
+2. **Don't use arbitrary values** — `text-[32px]` → `text-display-lg`
+3. **Don't hardcode hex colours** — `#898989` → `hsl(var(--muted-foreground))`
+4. **Don't import `GlobalStyles`** — it's no longer rendered
+5. **Don't use `React.FC`** — use direct prop typing
+6. **Don't mix `warning` and `destructive`** — they are distinct: amber vs red
 
 ---
 
-## Migration Guide
+## Quick Reference
 
-### Migrating Existing Components
+### Typography
 
-**Before** (old pattern):
-```tsx
-import styled from 'styled-components';
+| Element | Classes |
+|---------|---------|
+| Page title | `font-display text-display-lg tracking-tight` |
+| Section heading | `font-display text-display-sm` |
+| Card title | `font-display text-heading-sm` |
+| Body text | `text-body` (14px default) |
+| Small text | `text-body-sm` (13px) |
+| Caption/helper | `text-caption` (12px) |
+| Badge text | `text-badge` (11px) |
 
-const Title = styled.h1`
-  font-size: 24px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.text};
-  margin-bottom: 30px;
-`;
+### Colour Usage Cheatsheet
 
-const Container = styled.div`
-  padding: 20px;
-  background: ${({ theme }) => theme.colors.cardBackground};
-`;
-```
-
-**After** (using shared package):
-```tsx
-import styled from 'styled-components';
-import { Heading1 } from '@finance-manager/ui';
-import { spacing } from '@finance-manager/ui/styles';
-
-const StyledHeading = styled(Heading1)`
-  margin-bottom: ${spacing['2xl']};
-`;
-
-const Container = styled.div`
-  padding: ${spacing.xl};
-  background: ${({ theme }) => theme.colors.cardBackground};
-`;
-```
-
-**Or better** - use components directly:
-```tsx
-import { Heading1, Card, CardBody } from '@finance-manager/ui';
-
-<Card>
-  <CardBody>
-    <Heading1 style={{ marginBottom: spacing['2xl'] }}>Title</Heading1>
-  </CardBody>
-</Card>
-```
-
-### Migration Checklist
-
-For each file you migrate:
-
-- [ ] Replace hardcoded font sizes with `typography` tokens
-- [ ] Replace hardcoded spacing with `spacing` tokens
-- [ ] Use shared components where possible
-- [ ] Import from `@finance-manager/ui` not relative paths
-- [ ] Test in both light and dark mode
-- [ ] Verify responsive behaviour
-
----
-
-## Visual Reference
-
-### Live Examples
-
-Visit **`/design-system`** in any Finance Manager app to see:
-
-1. **Complete Colour Palette** with swatches
-2. **Typography Examples** with code snippets
-3. **Spacing Scale** visual representation
-4. **All Components** with interactive examples
-5. **Usage Instructions** with copy-paste code
-
-### Quick Reference
-
-**Typography Scale**:
-- `pageTitle`: 24px, weight 600
-- `sectionHeading`: 18px, weight 600
-- `cardTitle`: 16px, weight 600
-- `body`: 14px, weight 400
-- `bodySmall`: 12px, weight 400
-- `badge`: 11px, weight 500
-
-**Spacing Scale**:
-- `xs`: 4px
-- `sm`: 8px
-- `md`: 12px
-- `lg`: 16px
-- `xl`: 20px
-- `2xl`: 24px
-- `3xl`: 32px
-- `4xl`: 40px
-- `5xl`: 48px
+| Context | Classes |
+|---------|---------|
+| Error / Critical | `text-destructive`, `bg-destructive/5`, `border-destructive/20` |
+| Warning / High | `text-warning`, `bg-warning/5`, `border-warning/30` |
+| Success / Complete | `text-success`, `bg-success/10` |
+| In Progress / Brand | `text-brand`, `bg-brand-muted`, `text-brand-muted-foreground` |
+| Neutral / Muted | `text-muted-foreground`, `bg-muted` |
 
 ---
 
 ## Support & Resources
 
-### Documentation
-
-- **Package README**: `packages/ui/README.md`
-- **Component Library**: `packages/ui/src/components/README.md`
-- **This Guide**: `docs/guides/DESIGN_SYSTEM_USAGE.md`
-- **Live Examples**: Navigate to `/design-system` in any app
-
-### Getting Help
-
-1. Check the Design System page (`/design-system`)
-2. Review component README (`packages/ui/src/components/README.md`)
-3. Search for similar patterns in `apps/web/src/`
-4. Ask the team in #design-system channel
-
-### Related Documentation
-
-- [Theme Implementation](THEME_IMPLEMENTATION.md) - Theme system details
-- [Icon Guide](ICON_GUIDE.md) - Icon usage with Lucide
-- [Design System Audit](../development/design-system-audit.md) - Migration history
+- **Tailwind Preset**: `packages/ui/tailwind.preset.ts`
+- **CSS Tokens**: `apps/web/src/styles/theme.css`
+- **Component Library**: `apps/web/src/components/ui/`
+- **Live Examples**: `/design-system` route in the app
+- **Icon Guide**: `docs/guides/ICON_GUIDE.md`
+- **Theme Management**: `docs/guides/THEME_MANAGEMENT.md`
 
 ---
 
-## Summary
-
-**Golden Rules**:
-
-1. 🎨 **Always use design tokens** (spacing, typography, theme colors)
-2. 🧩 **Import from `@finance-manager/ui`** for shared components
-3. 📱 **Test in light/dark mode** before committing
-4. 📚 **Document in `/design-system` page** if adding to shared package
-5. 🚀 **Keep shared components generic** - business logic stays in apps
-
-**Result**: Consistent, maintainable, beautiful UI across all Finance Manager applications! 🎉
-
----
-
-**Last Updated**: January 26, 2026  
-**Maintained By**: Finance Manager Team  
-**Questions?**: Check `/design-system` or ask in team chat
+**Last Updated**: February 28, 2026
+**Maintained By**: Life Manager Team

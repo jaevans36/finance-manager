@@ -1,5 +1,4 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import styled from 'styled-components';
 import {
   DndContext,
   closestCenter,
@@ -17,10 +16,9 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Plus } from 'lucide-react';
-import { spacing, borderRadius } from '@finance-manager/ui/styles';
 import type { Task } from '../../services/taskService';
 import type { CreateSubtaskInput } from '../../services/subtaskService';
-import { TextSecondary, Alert } from '@finance-manager/ui';
+import { Alert, AlertDescription } from '../ui/alert';
 import { Skeleton, SkeletonLine } from '../ui/Skeleton';
 import { SubtaskItem } from './SubtaskItem';
 import { SubtaskBulkActions } from './SubtaskBulkActions';
@@ -47,83 +45,6 @@ interface SubtaskListProps {
   onSelectAll: () => void;
   onDeselectAll: () => void;
 }
-
-// ---------------------------------------------------------------------------
-// Styled – Todoist-inspired inline pattern
-// ---------------------------------------------------------------------------
-
-const Container = styled.div`
-  margin-top: ${spacing.sm};
-`;
-
-const ProgressRow = styled.div`
-  padding: ${spacing.xs} 0;
-  margin-bottom: ${spacing.xs};
-`;
-
-const InlineAddRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${spacing.sm};
-  padding: ${spacing.sm} ${spacing.md};
-  cursor: pointer;
-  border-radius: ${borderRadius.sm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  transition: background-color 150ms ease, color 150ms ease;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.backgroundSecondary};
-    color: ${({ theme }) => theme.colors.primary};
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-`;
-
-const InlineInput = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${spacing.sm};
-  padding: ${spacing.xs} ${spacing.md};
-`;
-
-const AddInput = styled.input`
-  flex: 1;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.sm};
-  padding: ${spacing.sm} ${spacing.md};
-  font-size: 13px;
-  background: ${({ theme }) => theme.colors.cardBackground};
-  color: ${({ theme }) => theme.colors.text};
-  outline: none;
-  transition: border-color 150ms ease;
-
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
-
-  &::placeholder {
-    color: ${({ theme }) => theme.colors.textSecondary};
-  }
-`;
-
-const AddHint = styled.span`
-  font-size: 11px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  white-space: nowrap;
-`;
-
-const EmptyHint = styled.div`
-  padding: ${spacing.sm} ${spacing.md};
-  font-size: 13px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const BulkActionsContainer = styled.div`
-  padding: ${spacing.xs} ${spacing.md};
-`;
 
 // ---------------------------------------------------------------------------
 // Sortable wrapper (internal)
@@ -263,38 +184,40 @@ export const SubtaskList = ({
   // ---------- Loading skeleton ----------
   if (isLoading) {
     return (
-      <Container>
+      <div className="mt-2">
         <Skeleton>
           <SkeletonLine width="60%" />
           <SkeletonLine width="80%" />
           <SkeletonLine width="50%" />
         </Skeleton>
-      </Container>
+      </div>
     );
   }
 
   // ---------- Error state ----------
   if (error) {
     return (
-      <Container>
-        <Alert variant="error">{error}</Alert>
-      </Container>
+      <div className="mt-2">
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
   // ---------- Render ----------
   return (
-    <Container>
+    <div className="mt-2">
       {/* Progress (only when subtasks exist) */}
       {subtasks.length > 0 && (
-        <ProgressRow>
+        <div className="mb-1 py-1">
           <SubtaskProgress total={subtasks.length} completed={completedCount} />
-        </ProgressRow>
+        </div>
       )}
 
       {/* Bulk actions */}
       {selectedIds.size > 0 && (
-        <BulkActionsContainer>
+        <div className="px-3 py-1">
           <SubtaskBulkActions
             selectedCount={selectedIds.size}
             totalCount={subtasks.length}
@@ -309,7 +232,7 @@ export const SubtaskList = ({
               onDeselectAll();
             }}
           />
-        </BulkActionsContainer>
+        </div>
       )}
 
       {/* Subtask list with drag-and-drop */}
@@ -339,13 +262,13 @@ export const SubtaskList = ({
           </SortableContext>
         </DndContext>
       ) : (
-        <EmptyHint>No subtasks yet</EmptyHint>
+        <div className="px-3 py-2 text-[13px] text-muted-foreground">No subtasks yet</div>
       )}
 
       {/* Inline add – Todoist-style */}
       {isAdding ? (
-        <InlineInput>
-          <AddInput
+        <div className="flex items-center gap-2 px-3 py-1">
+          <input
             ref={inputRef}
             value={addTitle}
             onChange={(e) => setAddTitle(e.target.value)}
@@ -357,15 +280,23 @@ export const SubtaskList = ({
             }}
             placeholder="Subtask title..."
             aria-label="New subtask title"
+            className="flex-1 rounded border border-border bg-card px-3 py-2 text-[13px] text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
           />
-          <AddHint>Enter to add &middot; Esc to close</AddHint>
-        </InlineInput>
+          <span className="whitespace-nowrap text-[11px] text-muted-foreground">
+            Enter to add &middot; Esc to close
+          </span>
+        </div>
       ) : (
-        <InlineAddRow onClick={() => setIsAdding(true)} role="button" tabIndex={0}>
-          <Plus />
-          <TextSecondary style={{ fontSize: '13px' }}>Add subtask</TextSecondary>
-        </InlineAddRow>
+        <div
+          className="flex cursor-pointer items-center gap-2 rounded px-3 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-primary"
+          onClick={() => setIsAdding(true)}
+          role="button"
+          tabIndex={0}
+        >
+          <Plus className="h-3.5 w-3.5" />
+          <span className="text-[13px]">Add subtask</span>
+        </div>
       )}
-    </Container>
+    </div>
   );
 };

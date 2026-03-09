@@ -1,6 +1,6 @@
 # Test Inventory
 
-This document tracks all automated tests in the Finance Manager project. It serves as a reference for what's tested, coverage gaps, and maintenance responsibilities.
+This document tracks all automated tests in the Life Manager project. It serves as a reference for what's tested, coverage gaps, and maintenance responsibilities.
 
 **Last Updated**: 2026-01-18  
 **Total Tests**: 303 (Phase 13 complete: Events feature with 68 new tests)
@@ -149,20 +149,20 @@ This document tracks all automated tests in the Finance Manager project. It serv
 ### Quick Commands
 ```powershell
 # All frontend tests
-pnpm --filter @finance-manager/web test
+pnpm --filter @life-manager/web test
 
 # Watch mode (for TDD)
-pnpm --filter @finance-manager/web test:watch
+pnpm --filter @life-manager/web test:watch
 
 # E2E tests (requires dev servers running)
-pnpm --filter @finance-manager/web test:e2e
+pnpm --filter @life-manager/web test:e2e
 
 # E2E with UI mode (debugging)
-pnpm --filter @finance-manager/web test:e2e:ui
+pnpm --filter @life-manager/web test:e2e:ui
 
 # Backend tests (requires test database)
 .\scripts\reset-test-db.ps1
-pnpm --filter @finance-manager/api test
+pnpm --filter @life-manager/api test
 
 # All tests (full suite)
 .\scripts\run-tests.ps1

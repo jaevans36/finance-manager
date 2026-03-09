@@ -5,7 +5,7 @@
 
 ## Summary
 
-Create a secure, full-stack To Do application with user authentication and task management capabilities. The app will serve as the foundation for the Finance Manager project, establishing core patterns for authentication, data management, API design, and testing. Primary features include user registration/login, CRUD operations for tasks with priorities and due dates, and a responsive React frontend.
+Create a secure, full-stack To Do application with user authentication and task management capabilities. The app will serve as the foundation for the Life Manager project, establishing core patterns for authentication, data management, API design, and testing. Primary features include user registration/login, CRUD operations for tasks with priorities and due dates, and a responsive React frontend.
 
 ## Technical Context
 
@@ -95,7 +95,7 @@ packages/
     └── tsconfig.json
 ```
 
-**Structure Decision**: Selected web application architecture with monorepo structure. The `apps/` directory contains the API server and React frontend, while `packages/` provides shared libraries for type definitions and UI components. This supports the Finance Manager project's future expansion with shared code between financial modules.
+**Structure Decision**: Selected web application architecture with monorepo structure. The `apps/` directory contains the API server and React frontend, while `packages/` provides shared libraries for type definitions and UI components. This supports the Life Manager project's future expansion with shared code between financial modules.
 
 ## Complexity Tracking
 

@@ -1,32 +1,21 @@
 # Consolidated Roadmap: Integrated Feature Plan
 
-**Last Updated**: 2026-01-18  
+**Last Updated**: 2026-03-08
 **Purpose**: Integrate new features into existing phases for faster implementation
 
 ## Current Status
 
-- **Phase 1-12**: Complete ✅
-- **Phase 13**: In Progress (Events feature ~60% complete)
-- **Phase 14+**: Planned features reorganized below
+- **Phase 1–13**: Complete ✅ (Events foundation fully delivered)
+- **Phase 48–51**: Complete ✅ (Tailwind + shadcn/ui, TanStack Query, React Hook Form + Zod)
+- **Phase 55–57**: Complete ✅ (Status workflow + WIP limits, Eisenhower Matrix, Energy tagging)
+- **Phase 50**: In Progress 🔄 (test infrastructure alignment + query migration)
+- **Phase 14+**: Planned — see phases below for detail
 
 ## Reorganized Phase Structure
 
-### Phase 13: Events Foundation (IN PROGRESS - Week 1-2 Complete) ⏳
+### Phase 13: Events Foundation ✅ COMPLETE
 
-**Current Progress**: Backend API, frontend types/service, UI components complete  
-**Remaining**: Testing + calendar integration
-
-**Week 1-2** (COMPLETE ✅):
-- [x] Events backend API (Entity, DTOs, Service, Controller)
-- [x] Frontend types and service layer
-- [x] Event UI components (EventItem, EventList, EventForm)
-
-**Week 2-3** (CURRENT 🔄):
-- [ ] Phase 13.7: Backend Testing (T402-T408) - 1 week
-- [ ] Phase 13.9: Calendar Integration (T414-T421) - 3 days
-- [ ] Phase 13.10: Frontend Testing (T422-T427) - 2 days
-
-**Timeline**: Complete by end of Week 3
+**Delivered**: Full events CRUD with RRULE-based recurrence, calendar integration, backend + frontend testing complete.
 
 ---
 
@@ -140,9 +129,9 @@
 
 ---
 
-### Phase 19: Finance Manager (8 weeks) 💰
+### Phase 19: Life Manager (8 weeks) 💰
 
-**Purpose**: The actual Finance Manager feature (CSV import, budgeting)
+**Purpose**: The actual Life Manager feature (CSV import, budgeting)
 
 #### Week 1-3: Transaction Import
 - CSV upload and parsing
@@ -217,7 +206,7 @@ If you want to implement features **immediately** after completing Phase 13:
 **Result**: Team collaboration + enterprise-ready architecture
 
 ### Option D: Finance Features (8 weeks)
-1. **Phase 19** (8 weeks): Complete Finance Manager
+1. **Phase 19** (8 weeks): Complete Life Manager
 
 **Result**: Personal finance management with budgeting
 
@@ -310,7 +299,7 @@ If you want to implement features **immediately** after completing Phase 13:
    - Phase 14: Categories + Invitations (collaboration features)
    - Phase 15: Recurring Events (advanced scheduling)
    - Phase 17: Sharing + Integrations (enterprise features)
-   - Phase 19: Finance Manager (business features)
+   - Phase 19: Life Manager (business features)
 
 ---
 

@@ -35,6 +35,9 @@ public class TaskGroup
     [Column("is_default")]
     public bool IsDefault { get; set; } = false;
 
+    [Column("wip_limit")]
+    public int? WipLimit { get; set; }
+
     [Column("created_at")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -46,4 +49,5 @@ public class TaskGroup
     public User User { get; set; } = null!;
 
     public ICollection<Task> Tasks { get; set; } = new List<Task>();
+    public ICollection<TaskGroupShare> Shares { get; set; } = new List<TaskGroupShare>();
 }

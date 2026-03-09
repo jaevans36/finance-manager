@@ -8,6 +8,11 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@workspace': path.resolve(__dirname, '../../'),
+      '@life-manager/ui/styles': path.resolve(__dirname, '../../packages/ui/src/styles/index.ts'),
+      '@life-manager/ui/components': path.resolve(__dirname, '../../packages/ui/src/components/index.ts'),
+      '@life-manager/ui/contexts': path.resolve(__dirname, '../../packages/ui/src/contexts/index.ts'),
+      '@life-manager/ui': path.resolve(__dirname, '../../packages/ui/src/index.ts'),
+      '@life-manager/schema': path.resolve(__dirname, '../../packages/schema/src/index.ts'),
     },
   },
   server: {
@@ -24,6 +29,9 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+  },
+  optimizeDeps: {
+    include: ['react-calendar'],
   },
   build: {
     sourcemap: true, // Better debugging in development

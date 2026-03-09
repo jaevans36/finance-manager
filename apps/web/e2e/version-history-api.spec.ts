@@ -23,7 +23,7 @@ test.describe('Version History API E2E (T799)', () => {
   test('should load version history from API without errors', async ({ page }) => {
     // Navigate to version history page
     await page.goto('/version-history');
-    await expect(page).toHaveTitle(/Finance Manager/);
+    await expect(page).toHaveTitle(/Life Manager/);
 
     // Wait for the page to load
     await page.waitForTimeout(1000);

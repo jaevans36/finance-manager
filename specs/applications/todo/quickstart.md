@@ -18,7 +18,7 @@
 ```bash
 # Clone and navigate to project
 git clone <repository-url>
-cd finance-manager
+cd life-manager
 
 # Install dependencies
 pnpm install

@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -v --request OPTIONS \"http://localhost:5000/api/v1/auth/check-username\" -H \"Origin: http://life-manager\" -H \"Access-Control-Request-Method: POST\" -H \"Access-Control-Request-Headers: Content-Type\")"
+    ]
+  }
+}

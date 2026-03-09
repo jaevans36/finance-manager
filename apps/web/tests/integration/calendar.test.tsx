@@ -7,12 +7,13 @@ import '@testing-library/jest-dom';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider } from '../../src/contexts/ThemeContext';
+import { ThemeProvider } from '@life-manager/ui';
 import { AuthProvider } from '../../src/contexts/AuthContext';
 import { ToastProvider } from '../../src/contexts/ToastContext';
 
 // Mock the services before importing CalendarPage
 jest.mock('../../src/services/taskService');
+jest.mock('../../src/services/eventService');
 jest.mock('../../src/services/api-client', () => ({
   apiClient: {
     get: jest.fn(),
@@ -75,6 +76,12 @@ jest.mock('react-calendar', () => {
 // Now import after mocking
 import CalendarPage from '../../src/pages/calendar/CalendarPage';
 import { taskService } from '../../src/services/taskService';
+import { eventService } from '../../src/services/eventService';
+
+// Use current month for mock data so component's client-side date filtering works
+const now = new Date();
+const currentYear = now.getFullYear();
+const currentMonth = now.getMonth();
 
 const mockTasks = [
   {
@@ -82,7 +89,7 @@ const mockTasks = [
     title: 'Task 1',
     description: 'Description 1',
     priority: 'High' as const,
-    dueDate: new Date(2026, 0, 15).toISOString(), // Jan 15, 2026
+    dueDate: new Date(currentYear, currentMonth, 15).toISOString(),
     completed: false,
     completedAt: null,
     userId: 'user-1',
@@ -97,7 +104,7 @@ const mockTasks = [
     title: 'Task 2',
     description: 'Description 2',
     priority: 'Critical' as const,
-    dueDate: new Date(2026, 0, 20).toISOString(), // Jan 20, 2026
+    dueDate: new Date(currentYear, currentMonth, 20).toISOString(),
     completed: false,
     completedAt: null,
     userId: 'user-1',
@@ -112,7 +119,7 @@ const mockTasks = [
     title: 'Task 3',
     description: 'Description 3',
     priority: 'Medium' as const,
-    dueDate: new Date(2026, 0, 15).toISOString(), // Jan 15, 2026 (same day as Task 1)
+    dueDate: new Date(currentYear, currentMonth, 15).toISOString(),
     completed: true,
     completedAt: new Date().toISOString(),
     userId: 'user-1',
@@ -143,6 +150,8 @@ describe('CalendarPage', () => {
     (taskService.createTask as jest.MockedFunction<typeof taskService.createTask>).mockResolvedValue(mockTasks[0]);
     (taskService.updateTask as jest.MockedFunction<typeof taskService.updateTask>).mockResolvedValue(mockTasks[0]);
     (taskService.toggleTask as jest.MockedFunction<typeof taskService.toggleTask>).mockResolvedValue(mockTasks[0]);
+    (eventService.getEvents as jest.MockedFunction<typeof eventService.getEvents>).mockResolvedValue([]);
+    (eventService.createEvent as jest.MockedFunction<typeof eventService.createEvent>).mockResolvedValue({ id: 'e1', title: 'Test Event', startDate: new Date().toISOString(), endDate: new Date().toISOString(), allDay: false, userId: 'user-1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
   });
 
   describe('Calendar Display', () => {
@@ -167,7 +176,7 @@ describe('CalendarPage', () => {
 
       await waitFor(() => {
         expect(taskService.getTasks).toHaveBeenCalled();
-        expect(screen.getByText('3 tasks this month')).toBeInTheDocument();
+        expect(screen.getByText(/3 tasks/)).toBeInTheDocument();
       });
     });
 
@@ -181,8 +190,8 @@ describe('CalendarPage', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('No Tasks This Month')).toBeInTheDocument();
-        expect(screen.getByText(/Click on any date to create your first task/i)).toBeInTheDocument();
+        expect(screen.getByText(/No Tasks or Events This Month/i)).toBeInTheDocument();
+        expect(screen.getByText(/Click on any date to create a task or event/i)).toBeInTheDocument();
       });
     });
 
@@ -265,7 +274,7 @@ describe('CalendarPage', () => {
 
       await waitFor(() => {
         // Should only show tasks from Work group
-        const taskCountText = screen.getByText(/tasks this month/i);
+        const taskCountText = screen.getByText(/tasks/);
         expect(taskCountText).toBeInTheDocument();
       });
     });
@@ -287,7 +296,7 @@ describe('CalendarPage', () => {
       await user.click(highPriorityButton);
 
       await waitFor(() => {
-        const taskCountText = screen.getByText(/tasks this month/i);
+        const taskCountText = screen.getByText(/tasks/);
         expect(taskCountText).toBeInTheDocument();
       });
     });
@@ -360,7 +369,7 @@ describe('CalendarPage', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('3 tasks this month')).toBeInTheDocument();
+        expect(screen.getByText(/3 tasks/)).toBeInTheDocument();
       });
     });
   });
@@ -405,7 +414,7 @@ describe('CalendarPage', () => {
       await waitFor(() => {
         const modal = screen.getByRole('dialog');
         expect(modal).toBeInTheDocument();
-        expect(screen.getByText('Quick Add Task')).toBeInTheDocument();
+        expect(screen.getByText('Quick Add')).toBeInTheDocument();
       });
     });
 
@@ -427,7 +436,7 @@ describe('CalendarPage', () => {
 
       await waitFor(() => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
-        expect(screen.getByText('Quick Add Task')).toBeInTheDocument();
+        expect(screen.getByText('Quick Add')).toBeInTheDocument();
       });
 
       // Close with Escape

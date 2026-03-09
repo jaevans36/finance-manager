@@ -1,8 +1,6 @@
 import { memo } from 'react';
-import styled from 'styled-components';
 import { CheckSquare, Trash2, SquareCheck, Square } from 'lucide-react';
-import { spacing, borderRadius } from '@finance-manager/ui/styles';
-import { Button, Flex, TextSmall } from '@finance-manager/ui';
+import { Button } from '../ui/button';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -17,27 +15,6 @@ interface SubtaskBulkActionsProps {
   onDeselectAll: () => void;
   isLoading?: boolean;
 }
-
-// ---------------------------------------------------------------------------
-// Styled
-// ---------------------------------------------------------------------------
-
-const Toolbar = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${spacing.md};
-  padding: ${spacing.sm} ${spacing.md};
-  background-color: ${({ theme }) => theme.colors.primaryLight};
-  border: 1px solid ${({ theme }) => theme.colors.primary};
-  border-radius: ${borderRadius.sm};
-  margin-bottom: ${spacing.sm};
-  flex-wrap: wrap;
-`;
-
-const SelectedLabel = styled(TextSmall)`
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.primary};
-`;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -57,46 +34,52 @@ export const SubtaskBulkActions = memo(({
   const allSelected = selectedCount === totalCount;
 
   return (
-    <Toolbar role="toolbar" aria-label="Bulk actions for selected subtasks">
-      <SelectedLabel>
+    <div
+      className="mb-2 flex flex-wrap items-center gap-3 rounded border border-primary bg-primary/10 px-3 py-2"
+      role="toolbar"
+      aria-label="Bulk actions for selected subtasks"
+    >
+      <span className="text-xs font-semibold text-primary">
         {selectedCount} selected
-      </SelectedLabel>
+      </span>
 
-      <Flex gap={8} align="center">
+      <div className="flex items-center gap-2">
         <Button
-          variant="primary"
-          size="small"
+          variant="default"
+          size="sm"
           onClick={onCompleteSelected}
           disabled={isLoading}
           aria-label="Complete selected subtasks"
         >
-          <CheckSquare size={14} />
+          <CheckSquare className="mr-1 h-3.5 w-3.5" />
           Complete selected
         </Button>
 
         <Button
-          variant="danger"
-          size="small"
+          variant="destructive"
+          size="sm"
           onClick={onDeleteSelected}
           disabled={isLoading}
           aria-label="Delete selected subtasks"
         >
-          <Trash2 size={14} />
+          <Trash2 className="mr-1 h-3.5 w-3.5" />
           Delete selected
         </Button>
 
         <Button
           variant="secondary"
-          size="small"
+          size="sm"
           onClick={allSelected ? onDeselectAll : onSelectAll}
           disabled={isLoading}
           aria-label={allSelected ? 'Deselect all subtasks' : 'Select all subtasks'}
         >
-          {allSelected ? <Square size={14} /> : <SquareCheck size={14} />}
+          {allSelected
+            ? <Square className="mr-1 h-3.5 w-3.5" />
+            : <SquareCheck className="mr-1 h-3.5 w-3.5" />}
           {allSelected ? 'Deselect all' : 'Select all'}
         </Button>
-      </Flex>
-    </Toolbar>
+      </div>
+    </div>
   );
 });
 

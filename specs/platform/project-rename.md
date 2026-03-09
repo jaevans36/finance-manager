@@ -1,4 +1,4 @@
-# Feature Specification: Project Rename — Finance Manager → Life Manager
+# Feature Specification: Project Rename — Life Manager → Life Manager
 
 **Feature ID**: `009-project-rename`  
 **Created**: 2026-02-13  
@@ -8,11 +8,11 @@
 
 ## Overview
 
-Rename the platform from "Finance Manager" to a broader name that reflects its evolution from a single-purpose finance application into a multi-domain life management platform encompassing To Do, Fitness, Finance, Weather, and future applications. The rename includes code changes, branding updates, URL migration, and documentation updates.
+Rename the platform from "Life Manager" to a broader name that reflects its evolution from a single-purpose finance application into a multi-domain life management platform encompassing To Do, Fitness, Finance, Weather, and future applications. The rename includes code changes, branding updates, URL migration, and documentation updates.
 
 ## Rationale
 
-The current name "Finance Manager" no longer accurately represents the platform's scope. As the platform expands to include fitness tracking, weather, task management, and more, the name creates confusion about its purpose. A comprehensive rename establishes a clear identity that supports the platform's vision as a unified personal life management tool.
+The current name "Life Manager" no longer accurately represents the platform's scope. As the platform expands to include fitness tracking, weather, task management, and more, the name creates confusion about its purpose. A comprehensive rename establishes a clear identity that supports the platform's vision as a unified personal life management tool.
 
 ---
 
@@ -35,7 +35,7 @@ The current name "Finance Manager" no longer accurately represents the platform'
 
 ### User Story 1 - Codebase Rename (Priority: P1)
 
-All code references to "Finance Manager" are updated to the new name, including package names, namespaces, solution files, Docker configurations, and environment variables.
+All code references to "Life Manager" are updated to the new name, including package names, namespaces, solution files, Docker configurations, and environment variables.
 
 **Why this priority**: The codebase is the foundation. All other rename activities depend on the code being updated first.
 
@@ -43,9 +43,9 @@ All code references to "Finance Manager" are updated to the new name, including 
 
 **Acceptance Scenarios**:
 
-1. **Given** the solution file, **When** the rename is applied, **Then** `Finance Manager.sln` → `Life Manager.sln` and all project references are updated
+1. **Given** the solution file, **When** the rename is applied, **Then** `Life Manager.sln` → `Life Manager.sln` and all project references are updated
 2. **Given** .NET projects, **When** namespaces are renamed, **Then** `FinanceApi` → `LifeManagerApi` (or `LifeManager.Api`) and all `using` statements are updated
-3. **Given** npm packages, **When** package names are updated, **Then** `@finance-manager/web` → `@life-manager/web`, `@finance-manager/ui` → `@life-manager/ui`, etc.
+3. **Given** npm packages, **When** package names are updated, **Then** `@life-manager/web` → `@life-manager/web`, `@life-manager/ui` → `@life-manager/ui`, etc.
 4. **Given** Docker configurations, **When** service and image names are updated, **Then** `docker-compose.yml` reflects the new naming convention
 5. **Given** environment variables, **When** prefixed vars are renamed, **Then** `FINANCE_MANAGER_*` → `LIFE_MANAGER_*` (with backward compatibility period)
 6. **Given** the complete rename, **When** all tests are run, **Then** all existing tests pass without modification to test logic
@@ -100,7 +100,7 @@ All documentation, specification files, README files, and guides are updated to 
 
 1. **Given** the main README.md, **When** a developer reads it, **Then** all references use the new platform name
 2. **Given** specification files, **When** they reference the platform, **Then** they use the new name
-3. **Given** the CHANGELOG.md, **When** past entries mention "Finance Manager", **Then** they are preserved as historical records (not renamed)
+3. **Given** the CHANGELOG.md, **When** past entries mention "Life Manager", **Then** they are preserved as historical records (not renamed)
 4. **Given** inline code comments referencing the platform name, **When** a search is run, **Then** no stale references to the old name exist
 5. **Given** API documentation (Swagger), **When** it is generated, **Then** the API title reflects the new platform name
 
@@ -111,7 +111,7 @@ All documentation, specification files, README files, and guides are updated to 
 ### Phase 1: Code Changes
 
 **Solution & Projects:**
-- [ ] Rename `Finance Manager.sln` → `Life Manager.sln`
+- [ ] Rename `Life Manager.sln` → `Life Manager.sln`
 - [ ] Rename `apps/finance-api/` → `apps/api/` (or `apps/life-manager-api/`)
 - [ ] Update `FinanceApi.csproj` → `LifeManager.Api.csproj`
 - [ ] Update all C# namespaces: `FinanceApi.*` → `LifeManager.*`

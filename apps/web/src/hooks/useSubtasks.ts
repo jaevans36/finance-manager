@@ -1,7 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import type { Task } from '../services/taskService';
 import { subtaskService, type CreateSubtaskInput } from '../services/subtaskService';
 import { statisticsService } from '../services/statisticsService';
+import { queryKeys } from './query-keys';
 
 interface UseSubtasksReturn {
   subtasks: Task[];
@@ -21,7 +23,11 @@ interface UseSubtasksReturn {
   deselectAll: () => void;
 }
 
-export const useSubtasks = (parentTaskId: string): UseSubtasksReturn => {
+export const useSubtasks = (
+  parentTaskId: string,
+  onSubtaskChange?: (taskId: string, counts: { subtaskCount: number; completedSubtaskCount: number }) => void,
+): UseSubtasksReturn => {
+  const queryClient = useQueryClient();
   const [subtasks, setSubtasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +56,7 @@ export const useSubtasks = (parentTaskId: string): UseSubtasksReturn => {
       try {
         const newSubtask = await subtaskService.createSubtask(parentTaskId, input);
         setSubtasks((prev) => [...prev, newSubtask]);
+        queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
         return newSubtask;
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Failed to create subtask';
@@ -65,6 +72,7 @@ export const useSubtasks = (parentTaskId: string): UseSubtasksReturn => {
       try {
         const newSubtasks = await subtaskService.bulkCreateSubtasks(parentTaskId, titles);
         setSubtasks((prev) => [...prev, ...newSubtasks]);
+        queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
         return newSubtasks;
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Failed to create subtasks';
@@ -90,6 +98,9 @@ export const useSubtasks = (parentTaskId: string): UseSubtasksReturn => {
         const { taskService } = await import('../services/taskService');
         await taskService.toggleTask(subtaskId, completed);
         statisticsService.invalidateCache();
+        // Invalidate task caches so parent task counts refresh across all pages
+        queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.statistics.all });
       } catch (err: unknown) {
         // Revert optimistic update
         setSubtasks((prev) =>
@@ -144,6 +155,8 @@ export const useSubtasks = (parentTaskId: string): UseSubtasksReturn => {
         const { taskService } = await import('../services/taskService');
         await taskService.deleteTask(subtaskId);
         statisticsService.invalidateCache();
+        queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.statistics.all });
       } catch (err: unknown) {
         // Revert on failure
         setSubtasks(previousSubtasks);
@@ -185,6 +198,8 @@ export const useSubtasks = (parentTaskId: string): UseSubtasksReturn => {
     try {
       await subtaskService.bulkCompleteSubtasks(parentTaskId);
       statisticsService.invalidateCache();
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.statistics.all });
     } catch (err: unknown) {
       setSubtasks(previousSubtasks);
       const message = err instanceof Error ? err.message : 'Failed to complete subtasks';
@@ -211,6 +226,17 @@ export const useSubtasks = (parentTaskId: string): UseSubtasksReturn => {
   const deselectAll = useCallback(() => {
     setSelectedIds(new Set());
   }, []);
+
+  // Notify parent whenever subtask counts change
+  useEffect(() => {
+    if (!isLoading) {
+      const completedCount = subtasks.filter((s) => s.completed).length;
+      onSubtaskChange?.(parentTaskId, {
+        subtaskCount: subtasks.length,
+        completedSubtaskCount: completedCount,
+      });
+    }
+  }, [subtasks, isLoading, parentTaskId, onSubtaskChange]);
 
   return {
     subtasks,

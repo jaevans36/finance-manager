@@ -14,7 +14,7 @@ EPERM: operation not permitted, rename '...query_engine-windows.dll.node.tmp...'
 1. Close all terminals in VS Code (trash can icon)
 2. Close VS Code completely (File → Exit or Alt+F4)
 3. Reopen VS Code
-4. Run: `cd "c:\Projects\Finance Manager\apps\api"; pnpm prisma generate`
+4. Run: `cd "c:\Projects\Life Manager\apps\api"; pnpm prisma generate`
 
 ### 2. Kill Node Processes Manually
 ```powershell
@@ -22,7 +22,7 @@ EPERM: operation not permitted, rename '...query_engine-windows.dll.node.tmp...'
 Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force
 
 # Then try generating again
-cd "c:\Projects\Finance Manager\apps\api"
+cd "c:\Projects\Life Manager\apps\api"
 pnpm prisma generate
 ```
 

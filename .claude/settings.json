@@ -1,0 +1,31 @@
+{
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "figma@claude-plugins-official": true,
+    "csharp-lsp@claude-plugins-official": true,
+    "gitlab@claude-plugins-official": true,
+    "qodo-skills@claude-plugins-official": true,
+    "deep-project@piercelamb-plugins": true,
+    "deep-plan@piercelamb-plugins": true,
+    "deep-implement@piercelamb-plugins": true,
+    "plannotator@plannotator": true,
+    "superpowers@superpowers-dev": true,
+    "claude-mem@thedotmack": true,
+    "terraform-code-generation@hashicorp": true,
+    "terraform-module-generation@hashicorp": true,
+    "terraform-provider-development@hashicorp": true,
+    "packer-builders@hashicorp": true,
+    "packer-hcp@hashicorp": true,
+    "obsidian@obsidian-skills": true
+  }
+}

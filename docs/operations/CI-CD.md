@@ -1,6 +1,6 @@
 # GitHub Actions CI/CD Pipeline
 
-This document explains the GitHub Actions CI/CD pipeline for the Finance Manager project.
+This document explains the GitHub Actions CI/CD pipeline for the Life Manager project.
 
 ## Pipeline Overview
 

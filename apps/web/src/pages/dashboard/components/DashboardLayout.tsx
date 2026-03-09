@@ -1,14 +1,17 @@
-import styled from 'styled-components';
-import { mediaQueries } from '@finance-manager/ui/styles';
+import { cn } from '../../../lib/utils';
 
-export const DashboardLayout = styled.div`
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 24px;
-  align-items: start;
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+  className?: string;
+}
 
-  ${mediaQueries.tablet} {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-`;
+export const DashboardLayout = ({ children, className }: DashboardLayoutProps) => (
+  <div
+    className={cn(
+      'grid grid-cols-[280px_1fr] items-start gap-6 md:grid-cols-1 md:gap-4',
+      className,
+    )}
+  >
+    {children}
+  </div>
+);

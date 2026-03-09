@@ -1,7 +1,5 @@
-import styled from 'styled-components';
 import type { Event } from '../../types/event';
 import { EventItem } from './EventItem';
-import { Card, Text, TextSecondary } from '@finance-manager/ui';
 
 interface EventListProps {
   events: Event[];
@@ -10,27 +8,6 @@ interface EventListProps {
   onDelete: (id: string) => void;
 }
 
-const EmptyState = styled(Card)`
-  text-align: center;
-  padding: 60px 20px;
-  background-color: ${({ theme }) => theme.colors.backgroundSecondary};
-`;
-
-const LoadingState = styled.div`
-  text-align: center;
-  padding: 40px;
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const SectionHeader = styled.h3`
-  margin: 20px 0 10px 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-`;
-
 export const EventList = ({
   events,
   isLoading,
@@ -38,15 +15,19 @@ export const EventList = ({
   onDelete,
 }: EventListProps) => {
   if (isLoading) {
-    return <LoadingState role="status" aria-live="polite">Loading events...</LoadingState>;
+    return (
+      <div className="py-10 text-center text-muted-foreground" role="status" aria-live="polite">
+        Loading events...
+      </div>
+    );
   }
 
   if (events.length === 0) {
     return (
-      <EmptyState role="status">
-        <Text style={{ marginBottom: '10px' }}>No events yet</Text>
-        <TextSecondary>Create your first event to get started!</TextSecondary>
-      </EmptyState>
+      <div className="rounded-lg border border-border bg-secondary px-5 py-[60px] text-center" role="status">
+        <p className="mb-2.5 text-sm text-foreground">No events yet</p>
+        <p className="text-sm text-muted-foreground">Create your first event to get started!</p>
+      </div>
     );
   }
 
@@ -85,7 +66,7 @@ export const EventList = ({
     <div role="list" aria-label={`${events.length} event${events.length !== 1 ? 's' : ''}`}>
       {todayEvents.length > 0 && (
         <>
-          <SectionHeader>Today</SectionHeader>
+          <h3 className="mx-0 mb-2.5 mt-5 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Today</h3>
           {todayEvents.map((event) => (
             <EventItem
               key={event.id}
@@ -99,7 +80,7 @@ export const EventList = ({
 
       {tomorrowEvents.length > 0 && (
         <>
-          <SectionHeader>Tomorrow</SectionHeader>
+          <h3 className="mx-0 mb-2.5 mt-5 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Tomorrow</h3>
           {tomorrowEvents.map((event) => (
             <EventItem
               key={event.id}
@@ -113,7 +94,7 @@ export const EventList = ({
 
       {thisWeekEvents.length > 0 && (
         <>
-          <SectionHeader>This Week</SectionHeader>
+          <h3 className="mx-0 mb-2.5 mt-5 text-sm font-semibold uppercase tracking-wide text-muted-foreground">This Week</h3>
           {thisWeekEvents.map((event) => (
             <EventItem
               key={event.id}
@@ -127,7 +108,7 @@ export const EventList = ({
 
       {laterEvents.length > 0 && (
         <>
-          <SectionHeader>Later</SectionHeader>
+          <h3 className="mx-0 mb-2.5 mt-5 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Later</h3>
           {laterEvents.map((event) => (
             <EventItem
               key={event.id}
@@ -141,7 +122,7 @@ export const EventList = ({
 
       {pastEvents.length > 0 && (
         <>
-          <SectionHeader>Past Events</SectionHeader>
+          <h3 className="mx-0 mb-2.5 mt-5 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Past Events</h3>
           {pastEvents.map((event) => (
             <EventItem
               key={event.id}

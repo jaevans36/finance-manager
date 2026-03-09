@@ -1,54 +1,4 @@
-import styled from 'styled-components';
-import { Card, Text } from '@finance-manager/ui';
-import { borderRadius, shadows } from '../../../styles/layout';
-
-const ErrorContainer = styled(Card)`
-  padding: 20px;
-  background: ${({ theme }) => theme.colors.errorBackground};
-  border: 1px solid ${({ theme }) => theme.colors.error}33;
-`;
-
-const ErrorTitle = styled.h3`
-  font-size: 18px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.errorText};
-  margin: 0 0 8px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const ErrorIcon = styled.span`
-  font-size: 24px;
-`;
-
-const ErrorMessage = styled(Text)`
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0;
-`;
-
-const RetryButton = styled.button`
-  margin-top: 16px;
-  padding: 8px 20px;
-  background: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.buttonText};
-  border: none;
-  border-radius: ${borderRadius.sm};
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: none;
-  }
-
-  &:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.colors.primary};
-    outline-offset: 2px;
-  }
-`;
+import { Button } from '../../../components/ui/button';
 
 interface ErrorDisplayProps {
   message: string;
@@ -64,17 +14,22 @@ export const ErrorDisplay = ({
   icon = '⚠️',
 }: ErrorDisplayProps) => {
   return (
-    <ErrorContainer>
-      <ErrorTitle>
-        <ErrorIcon>{icon}</ErrorIcon>
+    <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-5">
+      <h3 className="text-lg font-semibold text-destructive m-0 mb-2 flex items-center gap-2">
+        <span className="text-2xl">{icon}</span>
         {title}
-      </ErrorTitle>
-      <ErrorMessage>{message}</ErrorMessage>
+      </h3>
+      <p className="text-sm text-foreground m-0">{message}</p>
       {onRetry && (
-        <RetryButton onClick={onRetry}>
+        <Button
+          variant="destructive"
+          size="sm"
+          className="mt-4"
+          onClick={onRetry}
+        >
           Try Again
-        </RetryButton>
+        </Button>
       )}
-    </ErrorContainer>
+    </div>
   );
 };
