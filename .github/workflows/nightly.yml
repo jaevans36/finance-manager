@@ -42,7 +42,7 @@ jobs:
         run: pnpm --filter @life-manager/schema build
 
       - name: Restore .NET dependencies
-        run: dotnet restore "Finance Manager.sln"
+        run: dotnet restore apps/finance-api/FinanceApi.csproj
 
       - name: Run unit tests
         run: >

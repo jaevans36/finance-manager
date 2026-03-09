@@ -25,7 +25,10 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore "Finance Manager.sln"
+        run: |
+          dotnet restore apps/finance-api/FinanceApi.csproj
+          dotnet restore apps/finance-api-tests/FinanceApi.UnitTests/FinanceApi.UnitTests.csproj
+          dotnet restore apps/finance-api-tests/FinanceApi.IntegrationTests/FinanceApi.IntegrationTests.csproj
 
       - name: Run unit tests
         run: >
@@ -89,7 +92,7 @@ jobs:
 
       - name: Run frontend tests
         working-directory: apps/web
-        run: pnpm test --passWithNoTests
+        run: pnpm exec jest --passWithNoTests
 
       - name: Upload coverage
         if: always()
@@ -147,7 +150,7 @@ jobs:
         run: pnpm typecheck
 
       - name: Restore .NET dependencies
-        run: dotnet restore "Finance Manager.sln"
+        run: dotnet restore apps/finance-api/FinanceApi.csproj
 
       - name: Build API (type check via dotnet build)
         run: dotnet build apps/finance-api/FinanceApi.csproj --configuration Release --no-restore
@@ -194,7 +197,7 @@ jobs:
         run: pnpm --filter @life-manager/schema build
 
       - name: Restore .NET dependencies
-        run: dotnet restore "Finance Manager.sln"
+        run: dotnet restore apps/finance-api/FinanceApi.csproj
 
       - name: Publish API
         run: >
