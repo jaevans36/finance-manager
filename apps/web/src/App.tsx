@@ -33,6 +33,7 @@ const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const UserManagement = lazy(() => import('./pages/admin/UserManagement'));
 const SystemSettings = lazy(() => import('./pages/admin/SystemSettings'));
 const AdminLogs = lazy(() => import('./pages/admin/AdminLogs'));
+const HelpPage = lazy(() => import('./pages/help/HelpPage'));
 const NotFoundPage = lazy(() => import('./pages/errors/NotFoundPage'));
 
 function App() {
@@ -186,6 +187,14 @@ function App() {
                     <AdminRoute>
                       <AdminLogs />
                     </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/help"
+                  element={
+                    <ProtectedRoute>
+                      <HelpPage />
+                    </ProtectedRoute>
                   }
                 />
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />

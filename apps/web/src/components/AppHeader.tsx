@@ -29,6 +29,7 @@ import {
   Palette,
   Shield,
   Sparkles,
+  HelpCircle,
 } from 'lucide-react';
 import CalculatorModal from './CalculatorModal';
 
@@ -123,6 +124,18 @@ export const AppHeader = () => {
           <Clock size={16} />
           {formatTime()} &bull; {formatDate()}
         </div>
+
+        {/* Help button */}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => navigate('/help')}
+          title="Help"
+          aria-label="Open user guide"
+          className={cn('size-9 md:size-8', location.pathname === '/help' && 'border-primary text-primary')}
+        >
+          <HelpCircle size={20} />
+        </Button>
 
         {/* Calculator button */}
         <Button
