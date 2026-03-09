@@ -238,7 +238,7 @@ public class AuthController : ControllerBase
             .Select(e => new
             {
                 e.Id, e.Title, e.Description, e.StartDate, e.EndDate,
-                e.IsAllDay, e.RecurrenceRule, e.CreatedAt, e.UpdatedAt
+                e.IsAllDay, e.Location, e.ReminderMinutes, e.CreatedAt, e.UpdatedAt
             })
             .ToListAsync();
 

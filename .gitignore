@@ -20,6 +20,7 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.production
 .env.uat
 
 # ASP.NET environment-specific config (may contain secrets)

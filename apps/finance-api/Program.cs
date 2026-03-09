@@ -146,18 +146,28 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 // Configure CORS
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? new[] { "http://localhost:5173" };
+
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(builder =>
+    options.AddDefaultPolicy(corsBuilder =>
     {
-        builder.WithOrigins("http://localhost:5173") // React app
-               .AllowAnyMethod()
-               .AllowAnyHeader()
-               .AllowCredentials();
+        corsBuilder.WithOrigins(allowedOrigins)
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .AllowCredentials();
     });
 });
 
 var app = builder.Build();
+
+// Apply any pending database migrations on startup
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<FinanceDbContext>();
+    db.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline
 
