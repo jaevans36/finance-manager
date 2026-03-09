@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "0.16.0",
   "releaseDate": "2026-03-08",
   "codename": "MVP Launch — Life Manager",
   "description": "First stable release. Productivity app with tasks, subtasks, calendar, events, Eisenhower Matrix, and self-hosted LAN deployment.",
