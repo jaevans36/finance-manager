@@ -563,7 +563,9 @@ public class TaskService : ITaskService
     {
         var query = _context.Tasks
             .Include(t => t.Group)
-            .Where(t => t.UserId == userId);
+            .Where(t => t.UserId == userId
+                || (t.GroupId != null && _context.TaskGroupShares.Any(s =>
+                    s.TaskGroupId == t.GroupId && s.SharedWithUserId == userId)));
 
         // By default, filter to root-level tasks only (no parent)
         if (rootOnly != false)
@@ -627,10 +629,12 @@ public class TaskService : ITaskService
     {
         var tasks = await _context.Tasks
             .Include(t => t.Group)
-            .Where(t => t.UserId == userId &&
-                        t.DueDate != null &&
-                        t.DueDate >= startDate &&
-                        t.DueDate <= endDate)
+            .Where(t => (t.UserId == userId
+                || (t.GroupId != null && _context.TaskGroupShares.Any(s =>
+                    s.TaskGroupId == t.GroupId && s.SharedWithUserId == userId)))
+                        && t.DueDate != null
+                        && t.DueDate >= startDate
+                        && t.DueDate <= endDate)
             .OrderByDescending(t => t.Priority)
             .ThenBy(t => t.DueDate)
             .ToListAsync();

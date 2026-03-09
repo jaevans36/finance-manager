@@ -6,6 +6,7 @@ import { TaskGroupItem } from './TaskGroupItem';
 import { GroupSkeleton } from './GroupSkeleton';
 import { PlusIcon } from 'lucide-react';
 import { CreateTaskGroupModal } from './CreateTaskGroupModal';
+import { ShareGroupModal } from './ShareGroupModal';
 
 interface TaskGroupListProps {
   groups: TaskGroup[];
@@ -23,6 +24,7 @@ export const TaskGroupList = ({
   loading = false
 }: TaskGroupListProps) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [sharingGroup, setSharingGroup] = useState<TaskGroup | null>(null);
 
   if (loading) {
     return (
@@ -80,6 +82,7 @@ export const TaskGroupList = ({
             group={group}
             isActive={selectedGroupId === group.id}
             onClick={() => onSelectGroup(group.id)}
+            onShare={setSharingGroup}
           />
         ))}
       </div>
@@ -91,6 +94,14 @@ export const TaskGroupList = ({
             setIsCreateModalOpen(false);
             onGroupCreated();
           }}
+        />
+      )}
+
+      {sharingGroup && (
+        <ShareGroupModal
+          groupId={sharingGroup.id}
+          groupName={sharingGroup.name}
+          onClose={() => setSharingGroup(null)}
         />
       )}
     </>

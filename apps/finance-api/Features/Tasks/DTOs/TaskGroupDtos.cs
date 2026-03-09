@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using FinanceApi.Features.Tasks.Models;
 
 namespace FinanceApi.Features.Tasks.DTOs;
 
@@ -51,4 +52,25 @@ public record TaskGroupResponse
     public int TaskCount { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
+    // Sharing metadata (null when viewing own group)
+    public SharePermission? SharedPermission { get; init; }
+    public string? SharedByUsername { get; init; }
+}
+
+public record ShareGroupRequest
+{
+    [Required(ErrorMessage = "Username or email is required")]
+    public string UsernameOrEmail { get; init; } = string.Empty;
+
+    [Required(ErrorMessage = "Permission is required")]
+    public SharePermission Permission { get; init; }
+}
+
+public record GroupShareResponse
+{
+    public Guid SharedWithUserId { get; init; }
+    public string Username { get; init; } = string.Empty;
+    public string Email { get; init; } = string.Empty;
+    public SharePermission Permission { get; init; }
+    public DateTime CreatedAt { get; init; }
 }

@@ -49,4 +49,5 @@ public class TaskGroup
     public User User { get; set; } = null!;
 
     public ICollection<Task> Tasks { get; set; } = new List<Task>();
+    public ICollection<TaskGroupShare> Shares { get; set; } = new List<TaskGroupShare>();
 }

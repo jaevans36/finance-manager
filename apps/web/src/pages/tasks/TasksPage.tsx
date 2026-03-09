@@ -315,6 +315,10 @@ const TasksPage = () => {
     loadGroups();
   };
 
+  // Hide the create form when user only has View permission on the selected group
+  const selectedGroup = selectedGroupId ? groups.find(g => g.id === selectedGroupId) : null;
+  const isViewOnlyGroup = selectedGroup?.sharedPermission === 'View';
+
   return (
     <PageLayout 
       title="Tasks"
@@ -345,10 +349,10 @@ const TasksPage = () => {
             <WipCounter />
           </div>
 
-          {showCreateForm ? (
+          {showCreateForm && !isViewOnlyGroup ? (
             createType === 'task' ? (
-              <CreateTaskForm 
-                onSubmit={handleCreateTask} 
+              <CreateTaskForm
+                onSubmit={handleCreateTask}
                 onCancel={() => setShowCreateForm(false)}
                 groups={groups}
                 selectedGroupId={selectedGroupId}
@@ -360,7 +364,7 @@ const TasksPage = () => {
                 groups={groups}
               />
             )
-          ) : (
+          ) : !isViewOnlyGroup ? (
             <div className="relative mb-5 inline-block">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -388,7 +392,7 @@ const TasksPage = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-          )}
+          ) : null}
           {loading ? (
             <div role="status" aria-label="Loading tasks">
               <TaskSkeleton count={5} />
