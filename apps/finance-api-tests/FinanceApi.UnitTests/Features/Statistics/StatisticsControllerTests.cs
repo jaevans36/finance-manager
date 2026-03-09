@@ -306,7 +306,7 @@ public class StatisticsControllerTests
             .ReturnsAsync(expectedStats);
 
         // Act
-        var result = await _controller.GetHistoricalStatistics(null);
+        var result = await _controller.GetHistoricalStatistics();
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
