@@ -434,11 +434,32 @@ const WeeklyProgressPage = () => {
         </div>
       )}
 
+      {/* Empty state — no tasks for this period */}
+      {stats.totalTasks === 0 && (
+        <div className="rounded-lg border border-dashed border-border bg-secondary/30 p-6 text-center mb-6">
+          <p className="text-sm text-muted-foreground">
+            No tasks found for this period.{' '}
+            <button
+              type="button"
+              onClick={() => navigate('/tasks')}
+              className="text-primary underline underline-offset-2 hover:no-underline"
+            >
+              Add tasks
+            </button>
+            {' '}or navigate to a different week.
+          </p>
+        </div>
+      )}
+
       {/* Weekly Goal and Most Productive Day */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6 [&>*]:min-h-[180px]">
+      <div className={cn(
+        'grid gap-5 mb-6 [&>*]:min-h-[180px]',
+        bestDay && bestDay.count > 0 ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1',
+      )}>
         <WeeklyGoalCard
           completedTasks={stats.completedTasks}
           weeklyGoal={weeklyGoal}
+          totalTasks={stats.totalTasks}
           onUpdateGoal={updateWeeklyGoal}
         />
 
@@ -456,106 +477,110 @@ const WeeklyProgressPage = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-5 mb-8">
-        <StatisticCard
-          label="Total Tasks"
-          value={stats.totalTasks}
-          trend={prevWeekStats && prevWeekStats.totalTasks > 0 ? {
-            direction: stats.totalTasks > prevWeekStats.totalTasks ? 'up' : stats.totalTasks < prevWeekStats.totalTasks ? 'down' : 'neutral',
-            value: `${Math.abs(stats.totalTasks - prevWeekStats.totalTasks)} vs last week`
-          } : undefined}
-        />
-        <StatisticCard
-          label="Completed"
-          value={stats.completedTasks}
-          valueColor={chartColors.primary}
-          trend={prevWeekStats && completedTasksTrend.change > 0 ? {
-            direction: completedTasksTrend.trend,
-            value: `${completedTasksTrend.change.toFixed(0)}% vs last week`
-          } : undefined}
-        />
-        <StatisticCard
-          label="Completion Rate"
-          value={`${stats.completionPercentage.toFixed(1)}%`}
-          trend={prevWeekStats && completionTrend.change > 0 ? {
-            direction: completionTrend.trend,
-            value: `${completionTrend.change.toFixed(1)}% vs last week`
-          } : undefined}
-        />
-        <StatisticCard
-          label="Remaining"
-          value={stats.totalTasks - stats.completedTasks}
-          valueColor={chartColors.secondary}
-        />
-      </div>
+      {stats.totalTasks > 0 && (
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-5 mb-8">
+          <StatisticCard
+            label="Total Tasks"
+            value={stats.totalTasks}
+            trend={prevWeekStats && prevWeekStats.totalTasks > 0 ? {
+              direction: stats.totalTasks > prevWeekStats.totalTasks ? 'up' : stats.totalTasks < prevWeekStats.totalTasks ? 'down' : 'neutral',
+              value: `${Math.abs(stats.totalTasks - prevWeekStats.totalTasks)} vs last week`
+            } : undefined}
+          />
+          <StatisticCard
+            label="Completed"
+            value={stats.completedTasks}
+            valueColor={chartColors.primary}
+            trend={prevWeekStats && completedTasksTrend.change > 0 ? {
+              direction: completedTasksTrend.trend,
+              value: `${completedTasksTrend.change.toFixed(0)}% vs last week`
+            } : undefined}
+          />
+          <StatisticCard
+            label="Completion Rate"
+            value={`${stats.completionPercentage.toFixed(1)}%`}
+            trend={prevWeekStats && completionTrend.change > 0 ? {
+              direction: completionTrend.trend,
+              value: `${completionTrend.change.toFixed(1)}% vs last week`
+            } : undefined}
+          />
+          <StatisticCard
+            label="Remaining"
+            value={stats.totalTasks - stats.completedTasks}
+            valueColor={chartColors.secondary}
+          />
+        </div>
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-        <ChartCard 
-          title="Daily Task Overview"
-          headerAction={
-            <Button variant="outline" size="sm" onClick={() => exportChartAsImage('daily-chart', 'daily-task-overview')}>
-              <Download size={14} /> Export
-            </Button>
-          }
-        >
-          <div id="daily-chart">
-            <BarChartWrapper 
-              data={dailyChartData}
-              dataKeys={[
-                { key: 'Completed', color: chartColors.primary, name: 'Completed Tasks' },
-                { key: 'Incomplete', color: chartColors.secondary, name: 'Incomplete Tasks' },
-              ]}
-              height={300}
-              title="Daily Task Overview"
-              description="Bar chart showing completed and incomplete tasks for each day of the week"
-            />
-          </div>
-        </ChartCard>
-        <ChartCard 
-          title="Weekly Completion"
-          headerAction={
-            <Button variant="outline" size="sm" onClick={() => exportChartAsImage('weekly-pie-chart', 'weekly-completion')}>
-              <Download size={14} /> Export
-            </Button>
-          }
-        >
-          <div id="weekly-pie-chart">
-            <PieChartWrapper 
-              data={completionPieData} 
-              height={300}
-              title="Weekly Completion Rate"
-              description={`Pie chart showing ${stats.completedTasks} completed out of ${stats.totalTasks} total tasks this week`}
-            />
-          </div>
-        </ChartCard>
-      </div>
+      {stats.totalTasks > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+          <ChartCard
+            title="Daily Task Overview"
+            headerAction={
+              <Button variant="outline" size="sm" onClick={() => exportChartAsImage('daily-chart', 'daily-task-overview')}>
+                <Download size={14} /> Export
+              </Button>
+            }
+          >
+            <div id="daily-chart">
+              <BarChartWrapper
+                data={dailyChartData}
+                dataKeys={[
+                  { key: 'Completed', color: chartColors.primary, name: 'Completed Tasks' },
+                  { key: 'Incomplete', color: chartColors.secondary, name: 'Incomplete Tasks' },
+                ]}
+                height={300}
+                title="Daily Task Overview"
+                description="Bar chart showing completed and incomplete tasks for each day of the week"
+              />
+            </div>
+          </ChartCard>
+          <ChartCard
+            title="Weekly Completion"
+            headerAction={
+              <Button variant="outline" size="sm" onClick={() => exportChartAsImage('weekly-pie-chart', 'weekly-completion')}>
+                <Download size={14} /> Export
+              </Button>
+            }
+          >
+            <div id="weekly-pie-chart">
+              <PieChartWrapper
+                data={completionPieData}
+                height={300}
+                title="Weekly Completion Rate"
+                description={`Pie chart showing ${stats.completedTasks} completed out of ${stats.totalTasks} total tasks this week`}
+              />
+            </div>
+          </ChartCard>
+        </div>
+      )}
 
-      {/* Productivity Insights */}
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-5 mt-5 mb-8">
-        {streak > 0 && (
-          <Card className="p-5 flex flex-col items-center text-center justify-center h-full">
-            <div className="mb-3 text-primary flex items-center justify-center [&_svg]:w-10 [&_svg]:h-10"><Flame /></div>
-            <div className="text-2xl font-bold text-primary mb-2">{streak}</div>
-            <span className="block text-muted-foreground">
-              {streak === 1 ? 'Day Streak' : 'Days Streak'}
-            </span>
-            <span className="text-xs mt-2">
-              Consecutive days with completed tasks
-            </span>
-          </Card>
-        )}
+      {/* Productivity Insights — only rendered when there is something to show */}
+      {(streak > 0 || stats.completionPercentage >= 80) && (
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-5 mt-5 mb-8">
+          {streak > 0 && (
+            <Card className="p-5 flex flex-col items-center text-center justify-center h-full">
+              <div className="mb-3 text-primary flex items-center justify-center [&_svg]:w-10 [&_svg]:h-10"><Flame /></div>
+              <div className="text-2xl font-bold text-primary mb-2">{streak}</div>
+              <span className="block text-muted-foreground">
+                {streak === 1 ? 'Day Streak' : 'Days Streak'}
+              </span>
+              <span className="text-xs mt-2">Consecutive days with completed tasks</span>
+            </Card>
+          )}
 
-        {stats.completionPercentage >= 80 && (
-          <Card className="p-5 flex flex-col items-center text-center justify-center h-full">
-            <div className="mb-3 text-primary flex items-center justify-center [&_svg]:w-10 [&_svg]:h-10"><Trophy /></div>
-            <div className="text-2xl font-bold text-primary mb-2">Excellent!</div>
-            <span className="block text-muted-foreground">High Achiever</span>
-            <span className="text-xs mt-2">
-              {stats.completionPercentage.toFixed(0)}% completion rate this week
-            </span>
-          </Card>
-        )}
-      </div>
+          {stats.completionPercentage >= 80 && (
+            <Card className="p-5 flex flex-col items-center text-center justify-center h-full">
+              <div className="mb-3 text-primary flex items-center justify-center [&_svg]:w-10 [&_svg]:h-10"><Trophy /></div>
+              <div className="text-2xl font-bold text-primary mb-2">Excellent!</div>
+              <span className="block text-muted-foreground">High Achiever</span>
+              <span className="text-xs mt-2">
+                {stats.completionPercentage.toFixed(0)}% completion rate this week
+              </span>
+            </Card>
+          )}
+        </div>
+      )}
 
       {/* Historical Completion Rate Chart */}
       <HistoricalCompletionChart />

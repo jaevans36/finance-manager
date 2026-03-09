@@ -25,6 +25,9 @@ export default defineConfig({
       },
     },
   },
+  optimizeDeps: {
+    include: ['react-calendar'],
+  },
   build: {
     sourcemap: true, // Better debugging in development
     rollupOptions: {
