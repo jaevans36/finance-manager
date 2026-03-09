@@ -1,58 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
-import { focusRing } from '@finance-manager/ui/styles';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { authService } from '../../services/authService';
 import { getErrorMessage } from '../../utils/errorHelpers';
-import {
-  CenteredContainer,
-  FormCard,
-  Heading2,
-  Text,
-  Button,
-  Alert,
-  LoadingSpinner,
-} from '@finance-manager/ui';
-
-const StyledLink = styled(Link)`
-  color: ${({ theme }) => theme.colors.primary};
-  font-weight: 500;
-  text-decoration: none;
-  ${focusRing}
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.primaryHover};
-    text-decoration: underline;
-  }
-`;
-
-const CenteredText = styled(Text)`
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const IconWrapper = styled.div<{ $variant: 'success' | 'error' }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  margin: 0 auto 16px;
-  background-color: ${({ $variant, theme }) =>
-    $variant === 'success' ? theme.colors.successBackground : theme.colors.errorBackground};
-  color: ${({ $variant, theme }) =>
-    $variant === 'success' ? theme.colors.successText : theme.colors.errorText};
-`;
-
-const LinkContainer = styled.div`
-  text-align: center;
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
+import { Button } from '../../components/ui/button';
+import { Alert, AlertDescription } from '../../components/ui/alert';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 
 const VerifyEmailPage = () => {
   const { token } = useParams<{ token: string }>();
@@ -84,51 +37,65 @@ const VerifyEmailPage = () => {
 
   if (isVerifying) {
     return (
-      <CenteredContainer>
-        <LoadingSpinner />
-        <CenteredText>Verifying your email...</CenteredText>
-      </CenteredContainer>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-center text-muted-foreground">Verifying your email...</p>
+      </div>
     );
   }
 
   if (verified) {
     return (
-      <CenteredContainer>
-        <FormCard>
-          <IconWrapper $variant="success">
-            <CheckCircle size={40} />
-          </IconWrapper>
-          <Heading2 style={{ textAlign: 'center' }}>Email Verified!</Heading2>
-          <CenteredText>
-            Your email has been successfully verified. You can now access all features of your account.
-          </CenteredText>
-          <Alert variant="success">
-            Your account is now fully activated. You can log in and start using the application.
-          </Alert>
-          <LinkContainer>
-            <Button onClick={() => navigate('/login')} fullWidth>
+      <div className="flex min-h-[60vh] items-center justify-center px-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="items-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success/10 text-success">
+              <CheckCircle size={40} />
+            </div>
+            <CardTitle className="text-center text-2xl">Email Verified!</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-center text-muted-foreground">
+              Your email has been successfully verified. You can now access all features of your account.
+            </p>
+            <Alert variant="success">
+              <AlertDescription>
+                Your account is now fully activated. You can log in and start using the application.
+              </AlertDescription>
+            </Alert>
+            <Button onClick={() => navigate('/login')} className="w-full">
               Go to Login
             </Button>
-          </LinkContainer>
-        </FormCard>
-      </CenteredContainer>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <CenteredContainer>
-      <FormCard>
-        <IconWrapper $variant="error">
-          <XCircle size={40} />
-        </IconWrapper>
-        <Heading2 style={{ textAlign: 'center' }}>Verification Failed</Heading2>
-        <Alert variant="error">{error}</Alert>
-        <LinkContainer>
-          <StyledLink to="/resend-verification">Resend verification email</StyledLink>
-          <StyledLink to="/login">Return to login</StyledLink>
-        </LinkContainer>
-      </FormCard>
-    </CenteredContainer>
+    <div className="flex min-h-[60vh] items-center justify-center px-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="items-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+            <XCircle size={40} />
+          </div>
+          <CardTitle className="text-center text-2xl">Verification Failed</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+          <div className="flex flex-col gap-3 text-center">
+            <Link to="/resend-verification" className="font-medium text-primary no-underline hover:text-primary/80 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+              Resend verification email
+            </Link>
+            <Link to="/login" className="font-medium text-primary no-underline hover:text-primary/80 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+              Return to login
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

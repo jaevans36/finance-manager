@@ -134,7 +134,7 @@ Models frequently attempt to reintroduce these rejected patterns. Flag immediate
 Copy and paste this prompt when starting a **brand new session** with any model:
 
 ```
-You are working on the Finance Manager platform repository. Before doing anything:
+You are working on the Life Manager platform repository. Before doing anything:
 
 1. Read these files in order:
    - docs/AI_CONTRACT.json (machine-readable rules — parse and internalise all rules)
@@ -153,7 +153,7 @@ You are working on the Finance Manager platform repository. Before doing anythin
    - Never use `any` type in TypeScript
    - Never use `React.FC`
    - Always use `apiClient` from services/api-client.ts (never raw axios)
-   - Always use design tokens from @finance-manager/ui/styles
+   - Always use design tokens from @life-manager/ui/styles
    - Always use Lucide React icons (never emoji)
    - Always use British English in documentation and UI text
    - Always use Conventional Commits

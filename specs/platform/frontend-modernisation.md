@@ -25,7 +25,7 @@ The current frontend stack (styled-components 6, manual `useState`/`useEffect` d
 | Current | Replacement | Reason |
 |---------|-------------|--------|
 | styled-components 6 | Tailwind CSS 3+ | Build-time CSS, utility-first, design tokens in config |
-| Hand-built components (`@finance-manager/ui`) | shadcn/ui + Radix UI | Accessible primitives, copy-paste ownership, Tailwind-native |
+| Hand-built components (`@life-manager/ui`) | shadcn/ui + Radix UI | Accessible primitives, copy-paste ownership, Tailwind-native |
 | `useState`/`useEffect` data fetching | TanStack Query v5 | Caching, background refetch, optimistic updates, deduplication |
 | Manual form `useState` | React Hook Form + Zod | Type-safe validation, shared schemas with backend |
 | Axios (via `apiClient`) | Axios (via `apiClient`) | **No change** — centralised client remains |
@@ -85,7 +85,7 @@ Developers can build type-safe forms with validation schemas shared between fron
 **Acceptance Scenarios**:
 
 1. **Given** a form uses React Hook Form with a Zod schema, **When** the user submits with invalid data, **Then** inline validation errors appear immediately without an API call
-2. **Given** a Zod schema exists in `@finance-manager/schema`, **When** the same schema is used by frontend validation and backend DTO parsing, **Then** validation rules are guaranteed consistent
+2. **Given** a Zod schema exists in `@life-manager/schema`, **When** the same schema is used by frontend validation and backend DTO parsing, **Then** validation rules are guaranteed consistent
 3. **Given** a form field loses focus, **When** the field value is invalid, **Then** the error is shown immediately (blur validation mode)
 4. **Given** a multi-step form (e.g. Create Event with recurrence), **When** the user moves between steps, **Then** partially entered data is preserved and validated per-step
 5. **Given** a form is submitting, **When** the user clicks submit again, **Then** the button is disabled and the form prevents duplicate submission
@@ -245,7 +245,7 @@ CSS variables in `:root` and `.dark` selectors replace the JavaScript theme obje
 
 1. All new features use Tailwind CSS + shadcn/ui exclusively
 2. TanStack Query manages all server state — no `useState` + `useEffect` for data fetching
-3. All forms use React Hook Form + Zod with schemas from `@finance-manager/schema`
+3. All forms use React Hook Form + Zod with schemas from `@life-manager/schema`
 4. Zero `styled-components` imports remain after migration is complete
 5. React Doctor health score ≥ 90
 6. All existing tests pass after migration

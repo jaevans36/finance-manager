@@ -1,42 +1,59 @@
 import { z } from 'zod';
 
-export const priorityEnum = z.enum(['HIGH', 'MEDIUM', 'LOW']);
+export const priorityEnum = z.enum(['Low', 'Medium', 'High', 'Critical']);
 
 export const createTaskSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or less'),
+  title: z.string().trim().min(1, 'Title is required').max(200, 'Title must be 200 characters or less'),
   description: z
     .string()
     .max(2000, 'Description must be 2000 characters or less')
-    .optional(),
-  priority: priorityEnum.default('MEDIUM'),
+    .optional()
+    .or(z.literal('')),
+  priority: priorityEnum.optional(),
   dueDate: z
     .string()
     .optional()
+    .or(z.literal(''))
+    .transform((val) => (val === '' ? undefined : val))
     .refine((date) => {
       if (!date) return true;
       const dateObj = new Date(date);
-      return !isNaN(dateObj.getTime()) && dateObj > new Date();
-    }, 'Due date must be valid and in the future'),
+      return !isNaN(dateObj.getTime());
+    }, 'Due date must be valid'),
+  groupId: z
+    .string()
+    .optional()
+    .or(z.literal(''))
+    .transform((val) => (val === '' ? undefined : val)),
 });
 
 export const updateTaskSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or less').optional(),
+  title: z.string().trim().min(1, 'Title is required').max(200, 'Title must be 200 characters or less').optional(),
   description: z
     .string()
     .max(2000, 'Description must be 2000 characters or less')
     .nullable()
-    .optional(),
+    .optional()
+    .or(z.literal('')),
   priority: priorityEnum.optional(),
   dueDate: z
     .string()
     .nullable()
     .optional()
+    .or(z.literal(''))
+    .transform((val) => (val === '' ? null : val))
     .refine((date) => {
       if (!date) return true;
       const dateObj = new Date(date);
       return !isNaN(dateObj.getTime());
     }, 'Due date must be valid'),
   completed: z.boolean().optional(),
+  groupId: z
+    .string()
+    .nullable()
+    .optional()
+    .or(z.literal(''))
+    .transform((val) => (val === '' ? null : val)),
 });
 
 export const taskQuerySchema = z.object({

@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ThemeProvider as StyledThemeProvider } from 'styled-components';
 import { lightTheme, darkTheme, Theme } from '../styles/theme';
-import { GlobalStyles } from '../styles/GlobalStyles';
 
 interface ThemeContextType {
   theme: Theme;
@@ -11,7 +10,7 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const THEME_STORAGE_KEY = 'finance-manager-theme';
+const THEME_STORAGE_KEY = 'life-manager-theme';
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -52,7 +51,6 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   return (
     <ThemeContext.Provider value={{ theme, isDarkMode, toggleTheme }}>
       <StyledThemeProvider theme={theme}>
-        <GlobalStyles />
         {children}
       </StyledThemeProvider>
     </ThemeContext.Provider>

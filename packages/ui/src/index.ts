@@ -1,7 +1,7 @@
 /**
- * @finance-manager/ui
+ * @life-manager/ui
  * 
- * Shared UI component library and design system for Finance Manager applications
+ * Shared UI component library and design system for Life Manager applications
  */
 
 // Styles and design tokens

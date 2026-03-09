@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
+import { renderWithProviders as render } from '../utils/test-utils';
 import { TaskList } from '../../src/components/tasks/TaskList';
 import { Task } from '../../src/services/taskService';
 

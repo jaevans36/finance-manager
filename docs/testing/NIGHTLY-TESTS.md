@@ -1,6 +1,6 @@
 # Nightly Test Suite Strategy
 
-This document outlines the nightly/scheduled test suite for the Finance Manager project. These tests are too slow or resource-intensive to run on every PR but are critical for maintaining application quality.
+This document outlines the nightly/scheduled test suite for the Life Manager project. These tests are too slow or resource-intensive to run on every PR but are critical for maintaining application quality.
 
 **Last Updated**: 2026-01-10
 

@@ -55,4 +55,5 @@ public class User
     public ICollection<Session> Sessions { get; set; } = new List<Session>();
     public ICollection<EmailToken> EmailTokens { get; set; } = new List<EmailToken>();
     public ICollection<ActivityLog> ActivityLogs { get; set; } = new List<ActivityLog>();
+    public FinanceApi.Features.Settings.Models.UserSettings? Settings { get; set; }
 }

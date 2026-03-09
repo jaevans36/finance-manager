@@ -1,6 +1,6 @@
-# Finance Manager Platform Specifications
+# Life Manager Platform Specifications
 
-This directory contains all specifications for the Finance Manager platform and its applications.
+This directory contains all specifications for the Life Manager platform and its applications.
 
 ## Directory Structure
 
@@ -23,7 +23,7 @@ specs/
 │   ├── microservices-tasks.md   # Microservices tasks (T973-T1008, ~4 weeks)
 │   ├── test-automation.md       # Test automation & quality monitoring spec
 │   ├── test-automation-tasks.md # Test tasks (T1009-T1054, ~5.5 weeks)
-│   ├── project-rename.md        # Rename Finance Manager → Life Manager
+│   ├── project-rename.md        # Rename Life Manager → Life Manager
 │   ├── project-rename-tasks.md  # Rename tasks (T1127-T1154, ~2 weeks)
 │   ├── frontend-modernisation.md # Tailwind, shadcn/ui, TanStack Query, RHF+Zod
 │   ├── frontend-modernisation-tasks.md # Modernisation tasks (T1257-T1388, ~9 weeks)
@@ -54,7 +54,7 @@ specs/
 
 ### Platform-Level Specs (`platform/`)
 
-Platform-level specifications apply across all applications in the Finance Manager ecosystem:
+Platform-level specifications apply across all applications in the Life Manager ecosystem:
 
 - **architecture.md**: Overall system architecture, routing structure, application registry
 - **authentication.md**: User authentication, sessions, email verification (shared by all apps)
@@ -130,7 +130,7 @@ Example: Profile images
 
 ## Scaling Guide: Adding New Applications
 
-As the Finance Manager platform grows, new applications will be added alongside the To Do app. This section explains how the specification structure evolves.
+As the Life Manager platform grows, new applications will be added alongside the To Do app. This section explains how the specification structure evolves.
 
 ### Current State
 

@@ -1,4 +1,4 @@
-# Finance Manager Architecture
+# Life Manager Architecture
 
 **Last Updated**: 2026-01-14  
 **Version**: 2.0
@@ -17,7 +17,7 @@
 
 ## Overview
 
-Finance Manager is a personal productivity and finance management platform built as a monorepo with clear separation between frontend and backend concerns. The application prioritises maintainability, scalability, and developer experience through consistent architectural patterns.
+Life Manager is a personal productivity and finance management platform built as a monorepo with clear separation between frontend and backend concerns. The application prioritises maintainability, scalability, and developer experience through consistent architectural patterns.
 
 ### Core Principles
 
@@ -74,7 +74,7 @@ Finance Manager is a personal productivity and finance management platform built
 ### Monorepo Layout
 
 ```
-Finance Manager/
+Life Manager/
 ├── apps/
 │   ├── finance-api/          # C# .NET Web API (primary backend)
 │   ├── finance-api-tests/    # xUnit tests for backend

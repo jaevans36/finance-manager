@@ -546,12 +546,58 @@ namespace FinanceApi.Migrations
                     b.ToTable("transactions", (string)null);
                 });
 
+            modelBuilder.Entity("FinanceApi.Features.Settings.Models.UserSettings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("DefaultTaskStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("default_task_status");
+
+                    b.Property<bool>("EnableWipWarnings")
+                        .HasColumnType("boolean")
+                        .HasColumnName("enable_wip_warnings");
+
+                    b.Property<int?>("GlobalWipLimit")
+                        .HasColumnType("integer")
+                        .HasColumnName("global_wip_limit");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("user_settings", (string)null);
+                });
+
             modelBuilder.Entity("FinanceApi.Features.Tasks.Models.Task", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<string>("BlockedReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("blocked_reason");
 
                     b.Property<bool>("Completed")
                         .HasColumnType("boolean")
@@ -577,9 +623,21 @@ namespace FinanceApi.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("due_date");
 
+                    b.Property<int?>("EnergyLevel")
+                        .HasColumnType("integer")
+                        .HasColumnName("energy_level");
+
+                    b.Property<int?>("EstimatedMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("estimated_minutes");
+
                     b.Property<Guid?>("GroupId")
                         .HasColumnType("uuid")
                         .HasColumnName("group_id");
+
+                    b.Property<int?>("Importance")
+                        .HasColumnType("integer")
+                        .HasColumnName("importance");
 
                     b.Property<Guid?>("ParentTaskId")
                         .HasColumnType("uuid")
@@ -593,6 +651,14 @@ namespace FinanceApi.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("sort_order");
 
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -602,6 +668,10 @@ namespace FinanceApi.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
+
+                    b.Property<int?>("Urgency")
+                        .HasColumnType("integer")
+                        .HasColumnName("urgency");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid")
@@ -621,11 +691,19 @@ namespace FinanceApi.Migrations
 
                     b.HasIndex("UserId", "DueDate");
 
+                    b.HasIndex("UserId", "EnergyLevel");
+
                     b.HasIndex("UserId", "Priority");
+
+                    b.HasIndex("UserId", "Status");
 
                     b.HasIndex("UserId", "Completed", "CreatedAt");
 
+                    b.HasIndex("UserId", "EnergyLevel", "EstimatedMinutes");
+
                     b.HasIndex("UserId", "GroupId", "Completed");
+
+                    b.HasIndex("UserId", "Urgency", "Importance");
 
                     b.ToTable("tasks", (string)null);
                 });
@@ -675,6 +753,10 @@ namespace FinanceApi.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
+                    b.Property<int?>("WipLimit")
+                        .HasColumnType("integer")
+                        .HasColumnName("wip_limit");
+
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
@@ -683,6 +765,44 @@ namespace FinanceApi.Migrations
                         .IsUnique();
 
                     b.ToTable("task_groups", (string)null);
+                });
+
+            modelBuilder.Entity("FinanceApi.Features.Tasks.Models.TaskGroupShare", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Permission")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("permission");
+
+                    b.Property<Guid>("SharedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("shared_by_user_id");
+
+                    b.Property<Guid>("SharedWithUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("shared_with_user_id");
+
+                    b.Property<Guid>("TaskGroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("task_group_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SharedWithUserId");
+
+                    b.HasIndex("TaskGroupId", "SharedWithUserId")
+                        .IsUnique();
+
+                    b.ToTable("task_group_shares", (string)null);
                 });
 
             modelBuilder.Entity("FinanceApi.Features.Common.ActivityLogs.Models.ActivityLog", b =>
@@ -774,6 +894,17 @@ namespace FinanceApi.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("FinanceApi.Features.Settings.Models.UserSettings", b =>
+                {
+                    b.HasOne("FinanceApi.Features.Auth.Models.User", "User")
+                        .WithOne("Settings")
+                        .HasForeignKey("FinanceApi.Features.Settings.Models.UserSettings", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("FinanceApi.Features.Tasks.Models.Task", b =>
                 {
                     b.HasOne("FinanceApi.Features.Tasks.Models.TaskGroup", "Group")
@@ -810,6 +941,25 @@ namespace FinanceApi.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("FinanceApi.Features.Tasks.Models.TaskGroupShare", b =>
+                {
+                    b.HasOne("FinanceApi.Features.Auth.Models.User", "SharedWithUser")
+                        .WithMany()
+                        .HasForeignKey("SharedWithUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FinanceApi.Features.Tasks.Models.TaskGroup", "TaskGroup")
+                        .WithMany("Shares")
+                        .HasForeignKey("TaskGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SharedWithUser");
+
+                    b.Navigation("TaskGroup");
+                });
+
             modelBuilder.Entity("FinanceApi.Features.Auth.Models.User", b =>
                 {
                     b.Navigation("ActivityLogs");
@@ -817,6 +967,8 @@ namespace FinanceApi.Migrations
                     b.Navigation("EmailTokens");
 
                     b.Navigation("Sessions");
+
+                    b.Navigation("Settings");
 
                     b.Navigation("TaskGroups");
 
@@ -842,6 +994,8 @@ namespace FinanceApi.Migrations
 
             modelBuilder.Entity("FinanceApi.Features.Tasks.Models.TaskGroup", b =>
                 {
+                    b.Navigation("Shares");
+
                     b.Navigation("Tasks");
                 });
 #pragma warning restore 612, 618

@@ -1,8 +1,8 @@
 {
-  "name": "@finance-manager/web",
-  "version": "0.15.0",
+  "name": "@life-manager/web",
+  "version": "1.0.0",
   "private": true,
-  "description": "React frontend for Finance Manager",
+  "description": "React frontend for Life Manager",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -24,7 +24,8 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
-    "@finance-manager/ui": "workspace:*",
+    "@life-manager/ui": "workspace:*",
+    "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-checkbox": "^1.3.3",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
@@ -45,6 +46,7 @@
     "react": "^18.2.0",
     "react-calendar": "^6.0.0",
     "react-dom": "^18.2.0",
+    "react-hook-form": "^7.71.2",
     "react-router-dom": "^6.21.0",
     "recharts": "^3.6.0",
     "sonner": "^2.0.7",
@@ -52,6 +54,9 @@
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.0",
+    "@babel/preset-react": "^7.28.5",
     "@playwright/test": "^1.56.1",
     "@tailwindcss/typography": "^0.5.19",
     "@testing-library/jest-dom": "^6.1.5",

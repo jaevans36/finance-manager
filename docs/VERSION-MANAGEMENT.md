@@ -50,7 +50,7 @@ For pre-release versions, append a hyphen and identifier:
 
 ### 1. VERSION.json
 
-**Location**: `c:\Projects\Finance Manager\VERSION.json`
+**Location**: `c:\Projects\Life Manager\VERSION.json`
 
 This is the **single source of truth** for the current application version.
 
@@ -110,7 +110,7 @@ This is the **single source of truth** for the current application version.
 
 ### 2. CHANGELOG.md
 
-**Location**: `c:\Projects\Finance Manager\CHANGELOG.md`
+**Location**: `c:\Projects\Life Manager\CHANGELOG.md`
 
 Complete version history with detailed change descriptions.
 
@@ -242,7 +242,7 @@ Add a new section at the top of the file:
 
 ```json
 {
-  "name": "@finance-manager/web",
+  "name": "@life-manager/web",
   "version": "0.14.0",
   ...
 }

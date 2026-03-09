@@ -1,6 +1,6 @@
 # End-to-End Testing with Playwright
 
-This directory contains comprehensive E2E tests for the Finance Manager application using Playwright.
+This directory contains comprehensive E2E tests for the Life Manager application using Playwright.
 
 ## Prerequisites
 

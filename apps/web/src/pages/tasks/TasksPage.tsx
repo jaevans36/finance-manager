@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
-import { taskService, type Task } from '../../services/taskService';
+import { taskService, type Task, type TaskStatus, type UrgencyLevel, type ImportanceLevel, type EnergyLevel } from '../../services/taskService';
 import { eventService } from '../../services/eventService';
 import { taskGroupService } from '../../services/taskGroupService';
 import { subtaskService } from '../../services/subtaskService';
@@ -15,62 +15,19 @@ import { TaskStatistics } from '../../components/dashboard/TaskStatistics';
 import { TaskSkeleton } from '../../components/dashboard/TaskSkeleton';
 import { TaskSearch } from '../../components/dashboard/TaskSearch';
 import { PageLayout } from '../../components/layout/PageLayout';
-import { Alert, Button } from '@finance-manager/ui';
+import { Alert, AlertDescription } from '../../components/ui/alert';
+import { Button } from '../../components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../../components/ui/dropdown-menu';
 import { XCircle, ChevronDown, ListTodo, Calendar } from 'lucide-react';
 import { TaskGroup } from '../../types/taskGroup';
 import { DashboardLayout } from '../dashboard/components';
-import styled from 'styled-components';
-import { borderRadius } from '@finance-manager/ui/styles';
+import { WipCounter } from '../../components/tasks/WipCounter';
 import type { CreateEventRequest } from '../../types/event';
-
-const AddButtonContainer = styled.div`
-  position: relative;
-  display: inline-block;
-  margin-bottom: 20px;
-`;
-
-const AddButton = styled(Button).attrs({ size: 'small' })`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const DropdownMenu = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 8px;
-  background: ${({ theme }) => theme.colors.background};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  min-width: 200px;
-  overflow: hidden;
-`;
-
-const DropdownItem = styled.button`
-  width: 100%;
-  padding: 12px 16px;
-  background: none;
-  border: none;
-  text-align: left;
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.text};
-  cursor: pointer;
-  transition: background 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.backgroundSecondary};
-  }
-
-  &:not(:last-child) {
-    border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  }
-`;
 
 const TasksPage = () => {
   const navigate = useNavigate();
@@ -84,7 +41,6 @@ const TasksPage = () => {
   const [error, setError] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [createType, setCreateType] = useState<'task' | 'event'>('task');
-  const [showDropdown, setShowDropdown] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -305,9 +261,63 @@ const TasksPage = () => {
     }
   };
 
+  const handleStatusChange = async (id: string, status: TaskStatus, blockedReason?: string) => {
+    try {
+      const updatedTask = await taskService.updateTaskStatus(id, status, blockedReason);
+      setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
+      setEditingTask((prev) => (prev && prev.id === id ? updatedTask : prev));
+      toast.success(`Task status changed to ${status.replace(/([A-Z])/g, ' $1').trim()}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update task status';
+      toast.error(message);
+    }
+  };
+
+  const handleClassificationChange = async (id: string, urgency: UrgencyLevel | null, importance: ImportanceLevel | null) => {
+    try {
+      const updatedTask = await taskService.classifyTask(id, urgency ?? undefined, importance ?? undefined);
+      setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
+      setEditingTask((prev) => (prev && prev.id === id ? updatedTask : prev));
+      toast.success('Classification updated');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to classify task';
+      toast.error(message);
+    }
+  };
+
+  const handleEnergyChange = async (id: string, energy: EnergyLevel | null) => {
+    if (!energy) return;
+    try {
+      const updatedTask = await taskService.setEnergy(id, energy);
+      setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
+      setEditingTask((prev) => (prev && prev.id === id ? updatedTask : prev));
+      toast.success('Energy level updated');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update energy level';
+      toast.error(message);
+    }
+  };
+
+  const handleEstimateChange = async (id: string, minutes: number | null) => {
+    if (!minutes) return;
+    try {
+      const updatedTask = await taskService.setEstimate(id, minutes);
+      setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
+      setEditingTask((prev) => (prev && prev.id === id ? updatedTask : prev));
+      toast.success('Estimate updated');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update estimate';
+      toast.error(message);
+    }
+  };
+
   const handleGroupCreated = () => {
     loadGroups();
   };
+
+  // Hide the create form when user only has View permission on the selected group
+  const selectedGroup = selectedGroupId ? groups.find(g => g.id === selectedGroupId) : null;
+  const isViewOnlyGroup = selectedGroup?.sharedPermission === 'View';
 
   return (
     <PageLayout 
@@ -316,9 +326,9 @@ const TasksPage = () => {
       loadingComponent={<TaskSkeleton />}
     >
       {error && (
-        <Alert variant="error" style={{ marginBottom: '20px' }}>
-          <XCircle size={16} />
-          <span>{error}</span>
+        <Alert variant="destructive" className="mb-5">
+          <XCircle className="size-4" />
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
@@ -334,12 +344,15 @@ const TasksPage = () => {
         <main role="main" aria-label="Task management">
           <TaskStatistics tasks={tasks} totalGroups={groups.length} />
 
-          <TaskSearch ref={searchInputRef} value={searchQuery} onChange={setSearchQuery} />
+          <div className="mb-4 flex items-center gap-3">
+            <TaskSearch ref={searchInputRef} value={searchQuery} onChange={setSearchQuery} />
+            <WipCounter />
+          </div>
 
-          {showCreateForm ? (
+          {showCreateForm && !isViewOnlyGroup ? (
             createType === 'task' ? (
-              <CreateTaskForm 
-                onSubmit={handleCreateTask} 
+              <CreateTaskForm
+                onSubmit={handleCreateTask}
                 onCancel={() => setShowCreateForm(false)}
                 groups={groups}
                 selectedGroupId={selectedGroupId}
@@ -351,40 +364,35 @@ const TasksPage = () => {
                 groups={groups}
               />
             )
-          ) : (
-            <AddButtonContainer>
-              <AddButton 
-                variant="primary" 
-                onClick={() => setShowDropdown(!showDropdown)}
-                aria-label="Create new item"
-              >
-                + New <ChevronDown size={16} />
-              </AddButton>
-              {showDropdown && (
-                <DropdownMenu>
-                  <DropdownItem
+          ) : !isViewOnlyGroup ? (
+            <div className="relative mb-5 inline-block">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button aria-label="Create new item">
+                    + New <ChevronDown className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="min-w-[200px]">
+                  <DropdownMenuItem
                     onClick={() => {
                       setCreateType('task');
                       setShowCreateForm(true);
-                      setShowDropdown(false);
                     }}
                   >
-                    <ListTodo size={16} /> Task
-                  </DropdownItem>
-                  <DropdownItem
+                    <ListTodo className="size-4" /> Task
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
                     onClick={() => {
                       setCreateType('event');
                       setShowCreateForm(true);
-                      setShowDropdown(false);
                     }}
                   >
-                    <Calendar size={16} /> Event
-                  </DropdownItem>
-                </DropdownMenu>
-              )}
-            </AddButtonContainer>
-          )}
-
+                    <Calendar className="size-4" /> Event
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          ) : null}
           {loading ? (
             <div role="status" aria-label="Loading tasks">
               <TaskSkeleton count={5} />
@@ -396,6 +404,7 @@ const TasksPage = () => {
               onToggleComplete={handleToggleComplete}
               onEdit={setEditingTask}
               onDelete={handleDeleteTask}
+              onSubtaskChange={handleSubtaskChange}
             />
           )}
         </main>
@@ -408,6 +417,10 @@ const TasksPage = () => {
           onCancel={() => setEditingTask(null)}
           onDelete={handleDeleteTask}
           onToggleComplete={handleToggleComplete}
+          onStatusChange={handleStatusChange}
+          onClassificationChange={handleClassificationChange}
+          onEnergyChange={handleEnergyChange}
+          onEstimateChange={handleEstimateChange}
           onSubtaskChange={handleSubtaskChange}
         />
       )}

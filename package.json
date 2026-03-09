@@ -1,12 +1,12 @@
 {
-  "name": "finance-manager",
-  "version": "0.15.0",
+  "name": "life-manager",
+  "version": "1.0.0",
   "private": true,
-  "description": "Personal finance manager with To Do app foundation",
+  "description": "Personal productivity platform — Life Manager",
   "scripts": {
     "dev": "pnpm --parallel run dev",
-    "dev:api": "pnpm --filter @finance-manager/api dev",
-    "dev:web": "pnpm --filter @finance-manager/web dev",
+    "dev:api": "pnpm --filter @life-manager/api dev",
+    "dev:web": "pnpm --filter @life-manager/web dev",
     "build": "pnpm --recursive run build",
     "test": "pnpm --recursive run test",
     "lint": "pnpm --recursive run lint",

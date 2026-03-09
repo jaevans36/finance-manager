@@ -15,7 +15,14 @@
     "allowImportingTsExtensions": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@life-manager/schema": ["../../packages/schema/src/index.ts"],
+      "@life-manager/schema/*": ["../../packages/schema/src/*"],
+      "@life-manager/ui": ["../../packages/ui/src/index.ts"],
+      "@life-manager/ui/*": ["../../packages/ui/src/*"],
+      "@life-manager/ui/styles": ["../../packages/ui/src/styles/index.ts"],
+      "@life-manager/ui/components": ["../../packages/ui/src/components/index.ts"],
+      "@life-manager/ui/contexts": ["../../packages/ui/src/contexts/index.ts"]
     }
   },
   "include": ["src", "../../VERSION.json"],

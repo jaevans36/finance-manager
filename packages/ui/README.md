@@ -1,6 +1,6 @@
-# @finance-manager/ui
+# @life-manager/ui
 
-Shared UI component library and design system for Finance Manager applications.
+Shared UI component library and design system for Life Manager applications.
 
 > **⚠️ MIGRATION NOTICE**: This package currently uses **styled-components**.
 > It is being migrated to **Tailwind CSS + shadcn/ui** (Phase 48-53).
@@ -23,7 +23,7 @@ Since this is a monorepo package, it's automatically available via workspace pro
 ```json
 {
   "dependencies": {
-    "@finance-manager/ui": "workspace:*"
+    "@life-manager/ui": "workspace:*"
   }
 }
 ```
@@ -33,9 +33,9 @@ Since this is a monorepo package, it's automatically available via workspace pro
 ### Import Components
 
 ```tsx
-import { Button, Card, Input, Modal } from '@finance-manager/ui';
-import { typography, spacing } from '@finance-manager/ui/styles';
-import { ThemeProvider, useTheme } from '@finance-manager/ui/contexts';
+import { Button, Card, Input, Modal } from '@life-manager/ui';
+import { typography, spacing } from '@life-manager/ui/styles';
+import { ThemeProvider, useTheme } from '@life-manager/ui/contexts';
 ```
 
 ### Setup Theme Provider
@@ -43,8 +43,8 @@ import { ThemeProvider, useTheme } from '@finance-manager/ui/contexts';
 Wrap your app with the ThemeProvider:
 
 ```tsx
-import { ThemeProvider } from '@finance-manager/ui/contexts';
-import { GlobalStyles } from '@finance-manager/ui/styles';
+import { ThemeProvider } from '@life-manager/ui/contexts';
+import { GlobalStyles } from '@life-manager/ui/styles';
 
 function App() {
   return (
@@ -59,7 +59,7 @@ function App() {
 ### Use Components
 
 ```tsx
-import { Button, Card, CardHeader, CardTitle, CardBody } from '@finance-manager/ui';
+import { Button, Card, CardHeader, CardTitle, CardBody } from '@life-manager/ui';
 
 function MyComponent() {
   return (
@@ -80,7 +80,7 @@ function MyComponent() {
 
 ```tsx
 import styled from 'styled-components';
-import { typography, spacing } from '@finance-manager/ui/styles';
+import { typography, spacing } from '@life-manager/ui/styles';
 
 const Title = styled.h1`
   ${typography.pageTitle}

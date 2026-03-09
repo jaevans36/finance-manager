@@ -1,30 +1,4 @@
-import styled from 'styled-components';
-import { borderRadius } from '@finance-manager/ui/styles';
-
-const ViewToggle = styled.div`
-  display: flex;
-  gap: 8px;
-  align-items: center;
-`;
-
-const ViewButton = styled.button<{ $active: boolean }>`
-  padding: 6px 12px;
-  border: none;
-  border-radius: ${borderRadius.sm};
-  background: ${({ theme, $active }) => 
-    $active ? theme.colors.primary : theme.colors.backgroundSecondary};
-  color: ${({ theme, $active }) => 
-    $active ? theme.colors.buttonText : theme.colors.text};
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-`;
+import { cn } from '../../../lib/utils';
 
 type ViewMode = 'week' | 'month' | 'custom';
 
@@ -38,25 +12,21 @@ export const ViewModeSelector = ({
   onModeChange,
 }: ViewModeSelectorProps) => {
   return (
-    <ViewToggle>
-      <ViewButton 
-        $active={currentMode === 'week'} 
-        onClick={() => onModeChange('week')}
-      >
-        Week View
-      </ViewButton>
-      <ViewButton 
-        $active={currentMode === 'month'} 
-        onClick={() => onModeChange('month')}
-      >
-        Month View
-      </ViewButton>
-      <ViewButton 
-        $active={currentMode === 'custom'} 
-        onClick={() => onModeChange('custom')}
-      >
-        Custom Range
-      </ViewButton>
-    </ViewToggle>
+    <div className="flex gap-2 items-center">
+      {(['week', 'month', 'custom'] as const).map((mode) => (
+        <button
+          key={mode}
+          className={cn(
+            'px-3 py-1.5 border-none rounded text-sm font-medium cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md',
+            currentMode === mode
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-secondary text-foreground'
+          )}
+          onClick={() => onModeChange(mode)}
+        >
+          {mode === 'week' ? 'Week View' : mode === 'month' ? 'Month View' : 'Custom Range'}
+        </button>
+      ))}
+    </div>
   );
 };

@@ -30,7 +30,7 @@ test.describe('Complete User Flow - Authentication and Task Management', () => {
   test('should complete full user journey from registration to task management', async ({ page }) => {
     // Step 1: Navigate to registration page
     await page.goto('/register');
-    await expect(page).toHaveTitle(/Finance Manager/);
+    await expect(page).toHaveTitle(/Life Manager/);
 
     // Step 2: Register a new user
     await test.step('User Registration', async () => {

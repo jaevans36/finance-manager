@@ -178,7 +178,7 @@ PostgreSQL 15 (Alpine) via Docker Compose for development. Single database for a
 Multiple applications will share UI patterns. Need consistent design tokens, components, and themes.
 
 ### Decision
-Create `@finance-manager/ui` package in `packages/ui/`. Export design tokens (`spacing`, `typography`, `borderRadius`, `shadows`, `transitions`), themes (`lightTheme`, `darkTheme`), and reusable components. All apps import from this package.
+Create `@life-manager/ui` package in `packages/ui/`. Export design tokens (`spacing`, `typography`, `borderRadius`, `shadows`, `transitions`), themes (`lightTheme`, `darkTheme`), and reusable components. All apps import from this package.
 
 ### Consequences
 - (+) Single source of truth for design decisions
@@ -314,7 +314,7 @@ PowerShell scripts in `scripts/` directory for all development operations. Alway
 **Supersedes**: ADR-004
 
 ### Context
-styled-components generates CSS at runtime, adding ~12KB gzipped to the bundle and increasing TTI. 62 files import styled-components. Theme-aware styles require verbose `${({ theme }) => theme.colors.*}` boilerplate. The shared `@finance-manager/ui` package is tightly coupled to styled-components, making it difficult to use in non-React contexts.
+styled-components generates CSS at runtime, adding ~12KB gzipped to the bundle and increasing TTI. 62 files import styled-components. Theme-aware styles require verbose `${({ theme }) => theme.colors.*}` boilerplate. The shared `@life-manager/ui` package is tightly coupled to styled-components, making it difficult to use in non-React contexts.
 
 ### Decision
 Replace styled-components with Tailwind CSS (utility-first, build-time CSS) and shadcn/ui (accessible component primitives based on Radix UI). Design tokens move from JS objects to CSS variables. Dark mode switches from JavaScript ThemeProvider to CSS class strategy (`dark:` variants).
@@ -375,10 +375,10 @@ Adopt TanStack Query v5 for all server state management. Create custom hooks per
 **Status**: Accepted (implementation pending Phase 50)
 
 ### Context
-Forms use `useState` for each field, manual validation in `onSubmit`, and inconsistent patterns across components. Validation rules exist only in the frontend — no shared schemas with the backend. The `@finance-manager/schema` package exists but is underutilised.
+Forms use `useState` for each field, manual validation in `onSubmit`, and inconsistent patterns across components. Validation rules exist only in the frontend — no shared schemas with the backend. The `@life-manager/schema` package exists but is underutilised.
 
 ### Decision
-Adopt React Hook Form (RHF) with `@hookform/resolvers` for Zod integration. Define validation schemas in `@finance-manager/schema` and share them with the frontend via the Zod resolver. shadcn/ui form components are built for RHF.
+Adopt React Hook Form (RHF) with `@hookform/resolvers` for Zod integration. Define validation schemas in `@life-manager/schema` and share them with the frontend via the Zod resolver. shadcn/ui form components are built for RHF.
 
 ### Consequences
 - (+) Shared validation schemas between frontend and backend

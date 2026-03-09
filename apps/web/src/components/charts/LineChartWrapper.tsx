@@ -1,15 +1,4 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import styled, { useTheme } from 'styled-components';
-import { mediaQueries } from '@finance-manager/ui/styles';
-
-const ChartContainer = styled.div`
-  width: 100%;
-  height: 300px;
-  
-  ${mediaQueries.tablet} {
-    height: 250px;
-  }
-`;
 
 interface LineChartWrapperProps {
   data: Array<Record<string, unknown>>;
@@ -23,28 +12,27 @@ interface LineChartWrapperProps {
 }
 
 export const LineChartWrapper = ({ data, xAxisKey, lines, yAxisLabel }: LineChartWrapperProps) => {
-  const theme = useTheme();
   return (
-    <ChartContainer>
+    <div className="h-[300px] w-full md:h-[250px]">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={data}
           margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis 
+          <XAxis
             dataKey={xAxisKey}
             tick={{ fontSize: 12 }}
           />
-          <YAxis 
+          <YAxis
             label={yAxisLabel ? { value: yAxisLabel, angle: -90, position: 'insideLeft' } : undefined}
             tick={{ fontSize: 12 }}
           />
-          <Tooltip 
-            contentStyle={{ 
-              backgroundColor: theme.colors.cardBackground, 
-              border: `1px solid ${theme.colors.border}`,
-              borderRadius: '4px'
+          <Tooltip
+            contentStyle={{
+              backgroundColor: 'hsl(var(--card))',
+              border: '1px solid hsl(var(--border))',
+              borderRadius: '4px',
             }}
           />
           <Legend />
@@ -62,6 +50,6 @@ export const LineChartWrapper = ({ data, xAxisKey, lines, yAxisLabel }: LineChar
           ))}
         </LineChart>
       </ResponsiveContainer>
-    </ChartContainer>
+    </div>
   );
 };

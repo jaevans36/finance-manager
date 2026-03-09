@@ -6,7 +6,7 @@
 
 ## Overview
 
-The Finance Manager design system ensures visual consistency across all applications through standardized colours, typography, spacing, components, and interaction patterns.
+The Life Manager design system ensures visual consistency across all applications through standardized colours, typography, spacing, components, and interaction patterns.
 
 ## Features
 

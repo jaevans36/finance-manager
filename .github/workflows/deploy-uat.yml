@@ -1,0 +1,82 @@
+name: Deploy to UAT
+
+# Triggered when CI passes on the develop branch.
+# Requires a self-hosted runner registered on the Windows LAN machine.
+# See docs/guides/SELF-HOSTED-RUNNER.md for setup instructions.
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [develop]
+    types: [completed]
+
+jobs:
+  deploy:
+    name: Deploy to UAT (https://life-manager)
+    # Only run when CI succeeded
+    if: github.event.workflow_run.conclusion == 'success'
+    # Self-hosted runner on the Windows machine that hosts UAT
+    runs-on: [self-hosted, windows, uat]
+    timeout-minutes: 15
+
+    environment:
+      name: uat
+      url: https://life-manager
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Verify environment files
+        shell: pwsh
+        run: |
+          if (-not (Test-Path ".env.production")) {
+            Write-Error ".env.production not found — cannot deploy. See .env.production.example."
+            exit 1
+          }
+          if (-not (Test-Path "certs/life-manager.pem") -or -not (Test-Path "certs/life-manager-key.pem")) {
+            Write-Error "TLS certificates not found in certs/ — cannot deploy. Run mkcert life-manager first."
+            exit 1
+          }
+
+      - name: Deploy via Docker Compose
+        shell: pwsh
+        run: |
+          docker compose -f docker-compose.production.yml --env-file .env.production pull
+          docker compose -f docker-compose.production.yml --env-file .env.production up -d --build --remove-orphans
+
+      - name: Wait for containers to be healthy
+        shell: pwsh
+        run: |
+          Write-Host "Waiting for containers to start..."
+          Start-Sleep -Seconds 15
+
+      - name: Health check
+        shell: pwsh
+        run: |
+          $maxAttempts = 10
+          $attempt = 0
+          do {
+            $attempt++
+            try {
+              $response = Invoke-WebRequest -Uri "https://life-manager/api/health" -UseBasicParsing -TimeoutSec 5
+              if ($response.StatusCode -eq 200) {
+                Write-Host "Health check passed (attempt $attempt)"
+                exit 0
+              }
+            } catch {
+              Write-Host "Attempt $attempt failed: $_"
+            }
+            if ($attempt -lt $maxAttempts) { Start-Sleep -Seconds 5 }
+          } while ($attempt -lt $maxAttempts)
+          Write-Error "Health check failed after $maxAttempts attempts"
+          exit 1
+
+      - name: Deployment summary
+        shell: pwsh
+        run: |
+          $sha = "${{ github.event.workflow_run.head_sha }}".Substring(0, 7)
+          Write-Host "Deployed commit $sha to https://life-manager"
+          docker compose -f docker-compose.production.yml ps

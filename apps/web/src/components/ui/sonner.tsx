@@ -1,4 +1,4 @@
-import { useTheme } from '@finance-manager/ui';
+import { useTheme } from '@life-manager/ui';
 import { Toaster as Sonner } from 'sonner';
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;

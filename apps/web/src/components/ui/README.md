@@ -1,6 +1,6 @@
 # UI Component Library & Design System
 
-A centralized, theme-aware component library and design system for consistent styling across the Finance Manager application.
+A centralized, theme-aware component library and design system for consistent styling across the Life Manager application.
 
 ## Purpose
 

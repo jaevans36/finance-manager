@@ -153,6 +153,76 @@ public class TaskGroupsController : ControllerBase
         }
     }
 
+    // --- Sharing endpoints ---
+
+    [HttpGet("{id}/shares")]
+    public async Task<ActionResult<List<GroupShareResponse>>> GetShares(Guid id)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var shares = await _taskGroupService.GetSharesAsync(id, userId);
+            return Ok(shares);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Server error.", error = ex.Message });
+        }
+    }
+
+    [HttpPost("{id}/shares")]
+    public async Task<ActionResult<GroupShareResponse>> ShareGroup(Guid id, [FromBody] ShareGroupRequest request)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        try
+        {
+            var userId = GetUserId();
+            var share = await _taskGroupService.ShareGroupAsync(id, userId, request);
+            return Ok(share);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Server error.", error = ex.Message });
+        }
+    }
+
+    [HttpDelete("{id}/shares/{sharedUserId}")]
+    public async Task<ActionResult> UnshareGroup(Guid id, Guid sharedUserId)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var removed = await _taskGroupService.UnshareGroupAsync(id, userId, sharedUserId);
+            if (!removed) return NotFound(new { message = "Share not found" });
+            return NoContent();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Server error.", error = ex.Message });
+        }
+    }
+
     private Guid GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

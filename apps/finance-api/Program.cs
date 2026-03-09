@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -17,6 +18,7 @@ using FinanceApi.Features.Common.EmailVerification.Services;
 using FinanceApi.Features.Statistics.Services;
 using FinanceApi.Features.Version.Services;
 using FinanceApi.Features.Admin.Services;
+using FinanceApi.Features.Settings.Services;
 using FinanceApi.Middleware;
 
 // Configure Serilog
@@ -112,6 +114,10 @@ builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>(
 builder.Services.AddScoped<IChangelogParser, ChangelogParser>();
 builder.Services.AddScoped<IVersionService, VersionService>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
+builder.Services.AddSingleton<FinanceApi.Features.Admin.Services.LogReaderService>();
+builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
+builder.Services.AddScoped<IWipService, WipService>();
+builder.Services.AddScoped<IClassificationSuggestionService, ClassificationSuggestionService>();
 // Configure PostgreSQL with Entity Framework Core
 builder.Services.AddDbContext<FinanceDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -141,19 +147,41 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// Configure CORS
+// Configure CORS — use GetChildren() for reliable env-var array binding
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .GetChildren()
+    .Select(c => c.Value)
+    .Where(v => !string.IsNullOrWhiteSpace(v))
+    .ToArray();
+if (allowedOrigins.Length == 0)
+{
+    allowedOrigins = new[] { "http://localhost:5173" };
+}
+
+var allowedOriginsSet = new HashSet<string>(
+    allowedOrigins.Where(o => o is not null).Select(o => o!),
+    StringComparer.OrdinalIgnoreCase);
+
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(builder =>
+    options.AddDefaultPolicy(corsBuilder =>
     {
-        builder.WithOrigins("http://localhost:5173") // React app
-               .AllowAnyMethod()
-               .AllowAnyHeader()
-               .AllowCredentials();
+        corsBuilder.SetIsOriginAllowed(origin => allowedOriginsSet.Contains(origin))
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .AllowCredentials();
     });
 });
 
 var app = builder.Build();
+
+// Apply any pending database migrations on startup
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<FinanceDbContext>();
+    db.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline
 
@@ -189,6 +217,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Trust the X-Forwarded-Proto header from the nginx reverse proxy so that
+// HSTS and other HTTPS-aware features work correctly behind the proxy.
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+});
+
 app.UseCors();
 
 app.UseResponseCaching();
@@ -197,6 +232,25 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Health check — no auth required
+app.MapGet("/api/health", (FinanceDbContext db) =>
+{
+    try
+    {
+        db.Database.CanConnect();
+        return Results.Ok(new
+        {
+            status = "healthy",
+            version = "1.0.0",
+            timestamp = DateTime.UtcNow
+        });
+    }
+    catch
+    {
+        return Results.Json(new { status = "unhealthy", timestamp = DateTime.UtcNow }, statusCode: 503);
+    }
+});
 
 app.Run();
 }

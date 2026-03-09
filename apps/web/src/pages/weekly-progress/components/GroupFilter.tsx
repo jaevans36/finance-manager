@@ -1,37 +1,4 @@
-import styled from 'styled-components';
-import { TextSmall } from '@finance-manager/ui';
-import { borderRadius } from '@finance-manager/ui/styles';
-
-const FilterContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-`;
-
-const FilterLabel = styled(TextSmall)`
-  font-weight: 500;
-`;
-
-const FilterChip = styled.button<{ $active: boolean }>`
-  padding: 6px 12px;
-  border: 1px solid ${({ theme, $active }) => 
-    $active ? theme.colors.primary : theme.colors.border};
-  border-radius: ${borderRadius.lg};
-  background: ${({ theme, $active }) => 
-    $active ? theme.colors.primary : 'transparent'};
-  color: ${({ theme, $active }) => 
-    $active ? theme.colors.buttonText : theme.colors.text};
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-
-  &:hover {
-    transform: scale(1.05);
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
-`;
+import { cn } from '../../../lib/utils';
 
 interface GroupFilterProps {
   groups: string[];
@@ -47,23 +14,33 @@ export const GroupFilter = ({
   label = 'Filter by group:',
 }: GroupFilterProps) => {
   return (
-    <FilterContainer>
-      <FilterLabel>{label}</FilterLabel>
-      <FilterChip 
-        $active={selectedGroup === null}
+    <div className="flex items-center gap-2 flex-wrap">
+      <span className="text-xs text-muted-foreground font-medium">{label}</span>
+      <button
+        className={cn(
+          'px-3 py-1.5 border rounded-lg text-body-sm cursor-pointer transition-all duration-200 whitespace-nowrap hover:scale-105 hover:border-primary',
+          selectedGroup === null
+            ? 'border-primary bg-primary text-primary-foreground'
+            : 'border-border bg-transparent text-foreground',
+        )}
         onClick={() => onGroupChange(null)}
       >
         All Groups
-      </FilterChip>
+      </button>
       {groups.map((group) => (
-        <FilterChip
+        <button
           key={group}
-          $active={selectedGroup === group}
+          className={cn(
+            'px-3 py-1.5 border rounded-lg text-body-sm cursor-pointer transition-all duration-200 whitespace-nowrap hover:scale-105 hover:border-primary',
+            selectedGroup === group
+              ? 'border-primary bg-primary text-primary-foreground'
+              : 'border-border bg-transparent text-foreground',
+          )}
           onClick={() => onGroupChange(group)}
         >
           {group}
-        </FilterChip>
+        </button>
       ))}
-    </FilterContainer>
+    </div>
   );
 };

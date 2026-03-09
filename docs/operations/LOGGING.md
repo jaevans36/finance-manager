@@ -2,7 +2,7 @@
 
 ## Overview
 
-Finance Manager uses **Winston** for comprehensive structured logging with automatic log rotation, multiple log levels, and easy search capabilities.
+Life Manager uses **Winston** for comprehensive structured logging with automatic log rotation, multiple log levels, and easy search capabilities.
 
 ## Log Levels
 

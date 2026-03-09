@@ -1,38 +1,44 @@
-import styled, { keyframes } from 'styled-components';
+import { cn } from '@/lib/utils';
 
-const shimmer = keyframes`
-  0% {
-    background-position: -468px 0;
-  }
-  100% {
-    background-position: 468px 0;
-  }
-`;
-
-export const Skeleton = styled.div<{ width?: string; height?: string; borderRadius?: string }>`
-  background: linear-gradient(
-    90deg,
-    ${props => props.theme.colors.border} 0%,
-    ${props => props.theme.colors.inputBorder} 50%,
-    ${props => props.theme.colors.border} 100%
+function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn('animate-pulse rounded-md bg-primary/10', className)}
+      {...props}
+    />
   );
-  background-size: 468px 100%;
-  animation: ${shimmer} 1.2s ease-in-out infinite;
-  border-radius: ${props => props.borderRadius || '4px'};
-  width: ${props => props.width || '100%'};
-  height: ${props => props.height || '16px'};
-`;
+}
 
-export const SkeletonLine = styled(Skeleton)`
-  margin-bottom: 8px;
-  
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
+/** Convenience: a line-shaped skeleton with bottom margin */
+function SkeletonLine({
+  width,
+  height = '16px',
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & { width?: string; height?: string }) {
+  return (
+    <Skeleton
+      className={cn('mb-2 last:mb-0', className)}
+      style={{ width, height }}
+      {...props}
+    />
+  );
+}
 
-export const SkeletonCircle = styled(Skeleton)`
-  border-radius: 50%;
-  width: ${props => props.width || '40px'};
-  height: ${props => props.height || props.width || '40px'};
-`;
+/** Convenience: a circular skeleton */
+function SkeletonCircle({
+  width = '40px',
+  height,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & { width?: string; height?: string }) {
+  return (
+    <Skeleton
+      className={cn('rounded-full', className)}
+      style={{ width, height: height ?? width }}
+      {...props}
+    />
+  );
+}
+
+export { Skeleton, SkeletonLine, SkeletonCircle };

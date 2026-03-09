@@ -3,6 +3,7 @@ using FinanceApi.Features.Tasks.Models;
 using FinanceApi.Features.Tasks.DTOs;
 using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Common.ActivityLogs.Models;
+using FinanceApi.Features.Settings.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinanceApi.Features.Tasks.Services;
@@ -11,6 +12,15 @@ public interface ITaskService
 {
     System.Threading.Tasks.Task<TaskDto> CreateTaskAsync(Guid userId, CreateTaskRequest request);
     System.Threading.Tasks.Task<TaskDto> UpdateTaskAsync(Guid userId, Guid taskId, UpdateTaskRequest request);
+    System.Threading.Tasks.Task<TaskDto> UpdateTaskStatusAsync(Guid userId, Guid taskId, UpdateTaskStatusRequest request);
+    System.Threading.Tasks.Task<TaskDto> ClassifyTaskAsync(Guid userId, Guid taskId, ClassifyTaskRequest request);
+    System.Threading.Tasks.Task<List<TaskDto>> BulkClassifyAsync(Guid userId, BulkClassifyRequest request);
+    System.Threading.Tasks.Task<MatrixResponse> GetMatrixAsync(Guid userId, Guid? groupId = null, string? priority = null, bool includeCompleted = false);
+    System.Threading.Tasks.Task<TaskDto> SetEnergyAsync(Guid userId, Guid taskId, SetEnergyRequest request);
+    System.Threading.Tasks.Task<TaskDto> SetEstimateAsync(Guid userId, Guid taskId, SetEstimateRequest request);
+    System.Threading.Tasks.Task<List<TaskDto>> BulkSetEnergyAsync(Guid userId, BulkEnergyRequest request);
+    System.Threading.Tasks.Task<List<TaskDto>> GetSuggestionsAsync(Guid userId, string? energy = null, int? maxMinutes = null);
+    System.Threading.Tasks.Task<EnergyDistributionDto> GetEnergyDistributionAsync(Guid userId);
     System.Threading.Tasks.Task DeleteTaskAsync(Guid userId, Guid taskId);
     System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid userId, Guid taskId, bool includeSubtasks = false);
     System.Threading.Tasks.Task<List<TaskDto>> GetTasksAsync(
@@ -20,7 +30,8 @@ public interface ITaskService
         string? priority = null,
         Guid? groupId = null,
         bool? completed = null,
-        bool? rootOnly = null);
+        bool? rootOnly = null,
+        string? status = null);
     System.Threading.Tasks.Task<List<TaskDto>> GetTasksByDateRangeAsync(Guid userId, DateTime startDate, DateTime endDate);
 }
 
@@ -29,12 +40,14 @@ public class TaskService : ITaskService
     private readonly FinanceDbContext _context;
     private readonly IActivityLogService _activityLogService;
     private readonly TaskGroupService _taskGroupService;
+    private readonly IWipService _wipService;
 
-    public TaskService(FinanceDbContext context, IActivityLogService activityLogService, TaskGroupService taskGroupService)
+    public TaskService(FinanceDbContext context, IActivityLogService activityLogService, TaskGroupService taskGroupService, IWipService wipService)
     {
         _context = context;
         _activityLogService = activityLogService;
         _taskGroupService = taskGroupService;
+        _wipService = wipService;
     }
 
     public async System.Threading.Tasks.Task<TaskDto> CreateTaskAsync(Guid userId, CreateTaskRequest request)
@@ -59,6 +72,8 @@ public class TaskService : ITaskService
             Description = request.Description,
             Priority = priority,
             DueDate = request.DueDate.HasValue ? DateTime.SpecifyKind(request.DueDate.Value, DateTimeKind.Utc) : null,
+            EnergyLevel = Enum.TryParse<Models.EnergyLevel>(request.EnergyLevel, true, out var energy) ? energy : null,
+            EstimatedMinutes = request.EstimatedMinutes,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -91,17 +106,26 @@ public class TaskService : ITaskService
 
         if (request.GroupId.HasValue) task.GroupId = request.GroupId;
 
+        if (request.EnergyLevel != null && Enum.TryParse<Models.EnergyLevel>(request.EnergyLevel, true, out var energyLevel))
+        {
+            task.EnergyLevel = energyLevel;
+        }
+
+        if (request.EstimatedMinutes.HasValue) task.EstimatedMinutes = request.EstimatedMinutes;
+
         if (request.Completed.HasValue)
         {
             task.Completed = request.Completed.Value;
             if (request.Completed.Value && !task.CompletedAt.HasValue)
             {
                 task.CompletedAt = DateTime.UtcNow;
+                task.Status = Models.TaskStatus.Completed;
                 await _activityLogService.LogAsync(userId, ActivityType.TaskCompleted, $"Completed task: {task.Title}", null, null);
             }
             else if (!request.Completed.Value)
             {
                 task.CompletedAt = null;
+                task.Status = Models.TaskStatus.NotStarted;
             }
         }
 
@@ -111,6 +135,383 @@ public class TaskService : ITaskService
         await _activityLogService.LogAsync(userId, ActivityType.TaskUpdated, $"Updated task: {task.Title}", null, null);
 
         return await MapToTaskDtoAsync(task);
+    }
+
+    public async System.Threading.Tasks.Task<TaskDto> UpdateTaskStatusAsync(Guid userId, Guid taskId, UpdateTaskStatusRequest request)
+    {
+        var task = await _context.Tasks
+            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
+
+        if (task == null)
+        {
+            throw new KeyNotFoundException("Task not found");
+        }
+
+        if (!Enum.TryParse<Models.TaskStatus>(request.Status, true, out var newStatus))
+        {
+            throw new ArgumentException($"Invalid status: {request.Status}");
+        }
+
+        var oldStatus = task.Status;
+
+        // Validate state transitions
+        ValidateStatusTransition(oldStatus, newStatus);
+
+        // Check WIP limits when transitioning to InProgress
+        if (newStatus == Models.TaskStatus.InProgress && oldStatus != Models.TaskStatus.InProgress)
+        {
+            var canStart = await _wipService.CanStartTaskAsync(userId, task.GroupId);
+            if (!canStart)
+            {
+                throw new InvalidOperationException("WIP limit reached. Complete or remove an in-progress task before starting a new one.");
+            }
+        }
+
+        // Require BlockedReason when transitioning to Blocked
+        if (newStatus == Models.TaskStatus.Blocked && string.IsNullOrWhiteSpace(request.BlockedReason))
+        {
+            throw new ArgumentException("A blocked reason is required when setting status to Blocked");
+        }
+
+        task.Status = newStatus;
+        task.BlockedReason = newStatus == Models.TaskStatus.Blocked ? request.BlockedReason : null;
+
+        // Sync timestamps
+        if (newStatus == Models.TaskStatus.InProgress && !task.StartedAt.HasValue)
+        {
+            task.StartedAt = DateTime.UtcNow;
+        }
+
+        // Sync Completed boolean for backward compatibility
+        if (newStatus == Models.TaskStatus.Completed)
+        {
+            task.Completed = true;
+            task.CompletedAt ??= DateTime.UtcNow;
+        }
+        else if (oldStatus == Models.TaskStatus.Completed)
+        {
+            task.Completed = false;
+            task.CompletedAt = null;
+        }
+
+        task.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        var action = newStatus == Models.TaskStatus.Completed
+            ? ActivityType.TaskCompleted
+            : ActivityType.TaskUpdated;
+        await _activityLogService.LogAsync(userId, action, $"Changed task status to {newStatus}: {task.Title}", null, null);
+
+        return await MapToTaskDtoAsync(task);
+    }
+
+    private static void ValidateStatusTransition(Models.TaskStatus from, Models.TaskStatus to)
+    {
+        // All transitions are allowed, but log could be added for audit
+        // The key constraint is that Blocked requires a reason (handled by caller)
+        // Future: add strict transition rules if needed
+    }
+
+    public async System.Threading.Tasks.Task<TaskDto> ClassifyTaskAsync(Guid userId, Guid taskId, ClassifyTaskRequest request)
+    {
+        var task = await _context.Tasks
+            .Include(t => t.Group)
+            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
+
+        if (task == null)
+        {
+            throw new KeyNotFoundException("Task not found");
+        }
+
+        if (request.Urgency != null)
+        {
+            if (!Enum.TryParse<Models.UrgencyLevel>(request.Urgency, true, out var urgency))
+            {
+                throw new ArgumentException($"Invalid urgency level: {request.Urgency}");
+            }
+
+            task.Urgency = urgency;
+        }
+
+        if (request.Importance != null)
+        {
+            if (!Enum.TryParse<Models.ImportanceLevel>(request.Importance, true, out var importance))
+            {
+                throw new ArgumentException($"Invalid importance level: {request.Importance}");
+            }
+
+            task.Importance = importance;
+        }
+
+        task.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        await _activityLogService.LogAsync(userId, ActivityType.TaskUpdated,
+            $"Classified task: {task.Title} (Urgency={task.Urgency}, Importance={task.Importance})", null, null);
+
+        return await MapToTaskDtoAsync(task);
+    }
+
+    public async System.Threading.Tasks.Task<List<TaskDto>> BulkClassifyAsync(Guid userId, BulkClassifyRequest request)
+    {
+        if (request.Items == null || request.Items.Count == 0)
+        {
+            throw new ArgumentException("At least one task must be specified for bulk classification");
+        }
+
+        var taskIds = request.Items.Select(i => i.TaskId).ToList();
+        var tasks = await _context.Tasks
+            .Include(t => t.Group)
+            .Where(t => taskIds.Contains(t.Id) && t.UserId == userId)
+            .ToListAsync();
+
+        if (tasks.Count != taskIds.Count)
+        {
+            var foundIds = tasks.Select(t => t.Id).ToHashSet();
+            var missing = taskIds.Where(id => !foundIds.Contains(id)).ToList();
+            throw new KeyNotFoundException($"Tasks not found: {string.Join(", ", missing)}");
+        }
+
+        var taskLookup = tasks.ToDictionary(t => t.Id);
+
+        foreach (var item in request.Items)
+        {
+            var task = taskLookup[item.TaskId];
+
+            if (item.Urgency != null && Enum.TryParse<Models.UrgencyLevel>(item.Urgency, true, out var urgency))
+            {
+                task.Urgency = urgency;
+            }
+
+            if (item.Importance != null && Enum.TryParse<Models.ImportanceLevel>(item.Importance, true, out var importance))
+            {
+                task.Importance = importance;
+            }
+
+            task.UpdatedAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+
+        await _activityLogService.LogAsync(userId, ActivityType.TaskUpdated,
+            $"Bulk classified {request.Items.Count} tasks", null, null);
+
+        var result = new List<TaskDto>();
+        foreach (var task in tasks)
+        {
+            result.Add(await MapToTaskDtoAsync(task));
+        }
+
+        return result;
+    }
+
+    public async System.Threading.Tasks.Task<MatrixResponse> GetMatrixAsync(
+        Guid userId, Guid? groupId = null, string? priority = null, bool includeCompleted = false)
+    {
+        var query = _context.Tasks
+            .Include(t => t.Group)
+            .Where(t => t.UserId == userId && t.ParentTaskId == null);
+
+        if (!includeCompleted)
+        {
+            query = query.Where(t => !t.Completed);
+        }
+
+        if (groupId.HasValue)
+        {
+            query = query.Where(t => t.GroupId == groupId.Value);
+        }
+
+        if (!string.IsNullOrEmpty(priority) && Enum.TryParse<Models.Priority>(priority, true, out var parsedPriority))
+        {
+            query = query.Where(t => t.Priority == parsedPriority);
+        }
+
+        var tasks = await query.OrderByDescending(t => t.Priority).ThenBy(t => t.DueDate).ToListAsync();
+
+        var response = new MatrixResponse();
+
+        foreach (var task in tasks)
+        {
+            var dto = await MapToTaskDtoAsync(task);
+            var quadrant = ComputeQuadrant(task.Urgency, task.Importance);
+
+            switch (quadrant)
+            {
+                case "Q1": response.Q1DoFirst.Add(dto); break;
+                case "Q2": response.Q2Schedule.Add(dto); break;
+                case "Q3": response.Q3Delegate.Add(dto); break;
+                case "Q4": response.Q4Eliminate.Add(dto); break;
+                default: response.Unclassified.Add(dto); break;
+            }
+        }
+
+        return response;
+    }
+
+    internal static string? ComputeQuadrant(Models.UrgencyLevel? urgency, Models.ImportanceLevel? importance)
+    {
+        if (!urgency.HasValue || !importance.HasValue)
+        {
+            return null;
+        }
+
+        var isUrgent = urgency.Value >= Models.UrgencyLevel.Medium;
+        var isImportant = importance.Value >= Models.ImportanceLevel.Medium;
+
+        return (isUrgent, isImportant) switch
+        {
+            (true, true) => "Q1",
+            (false, true) => "Q2",
+            (true, false) => "Q3",
+            (false, false) => "Q4",
+        };
+    }
+
+    public async System.Threading.Tasks.Task<TaskDto> SetEnergyAsync(Guid userId, Guid taskId, SetEnergyRequest request)
+    {
+        var task = await _context.Tasks
+            .Include(t => t.Group)
+            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
+
+        if (task == null)
+        {
+            throw new KeyNotFoundException("Task not found");
+        }
+
+        if (!Enum.TryParse<Models.EnergyLevel>(request.EnergyLevel, true, out var energyLevel))
+        {
+            throw new ArgumentException($"Invalid energy level: {request.EnergyLevel}");
+        }
+
+        task.EnergyLevel = energyLevel;
+        task.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return await MapToTaskDtoAsync(task);
+    }
+
+    public async System.Threading.Tasks.Task<TaskDto> SetEstimateAsync(Guid userId, Guid taskId, SetEstimateRequest request)
+    {
+        var task = await _context.Tasks
+            .Include(t => t.Group)
+            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
+
+        if (task == null)
+        {
+            throw new KeyNotFoundException("Task not found");
+        }
+
+        task.EstimatedMinutes = request.EstimatedMinutes;
+        task.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return await MapToTaskDtoAsync(task);
+    }
+
+    public async System.Threading.Tasks.Task<List<TaskDto>> BulkSetEnergyAsync(Guid userId, BulkEnergyRequest request)
+    {
+        var taskIds = request.Items.Select(i => i.TaskId).ToList();
+        var tasks = await _context.Tasks
+            .Include(t => t.Group)
+            .Where(t => t.UserId == userId && taskIds.Contains(t.Id))
+            .ToListAsync();
+
+        var foundIds = tasks.Select(t => t.Id).ToHashSet();
+        var missingIds = taskIds.Where(id => !foundIds.Contains(id)).ToList();
+        if (missingIds.Count > 0)
+        {
+            throw new KeyNotFoundException($"Tasks not found: {string.Join(", ", missingIds)}");
+        }
+
+        foreach (var item in request.Items)
+        {
+            if (!Enum.TryParse<Models.EnergyLevel>(item.EnergyLevel, true, out var energyLevel))
+            {
+                throw new ArgumentException($"Invalid energy level: {item.EnergyLevel}");
+            }
+
+            var task = tasks.First(t => t.Id == item.TaskId);
+            task.EnergyLevel = energyLevel;
+            task.UpdatedAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+
+        var result = new List<TaskDto>();
+        foreach (var task in tasks)
+        {
+            result.Add(await MapToTaskDtoAsync(task));
+        }
+
+        return result;
+    }
+
+    public async System.Threading.Tasks.Task<List<TaskDto>> GetSuggestionsAsync(Guid userId, string? energy = null, int? maxMinutes = null)
+    {
+        var query = _context.Tasks
+            .Include(t => t.Group)
+            .Where(t => t.UserId == userId && t.Status != Models.TaskStatus.Completed && !t.Completed);
+
+        // Filter by energy level: include tasks at or below the selected energy level, plus untagged tasks
+        if (!string.IsNullOrEmpty(energy) && Enum.TryParse<Models.EnergyLevel>(energy, true, out var selectedEnergy))
+        {
+            query = query.Where(t => t.EnergyLevel == null || t.EnergyLevel <= selectedEnergy);
+        }
+
+        // Filter by max minutes: include tasks within duration limit, plus unestimated tasks
+        if (maxMinutes.HasValue)
+        {
+            query = query.Where(t => t.EstimatedMinutes == null || t.EstimatedMinutes <= maxMinutes.Value);
+        }
+
+        // Sort: Urgency (Q1 first via urgency+importance desc) → DueDate asc (nulls last) → Priority desc
+        var tasks = await query
+            .OrderByDescending(t => t.Urgency)
+            .ThenByDescending(t => t.Importance)
+            .ThenBy(t => t.DueDate.HasValue ? 0 : 1)
+            .ThenBy(t => t.DueDate)
+            .ThenByDescending(t => t.Priority)
+            .Take(10)
+            .ToListAsync();
+
+        var result = new List<TaskDto>();
+        foreach (var task in tasks)
+        {
+            result.Add(await MapToTaskDtoAsync(task));
+        }
+
+        return result;
+    }
+
+    public async System.Threading.Tasks.Task<EnergyDistributionDto> GetEnergyDistributionAsync(Guid userId)
+    {
+        var tasks = await _context.Tasks
+            .Where(t => t.UserId == userId && t.ParentTaskId == null)
+            .Select(t => new { t.EnergyLevel, t.Completed })
+            .ToListAsync();
+
+        var highTasks = tasks.Where(t => t.EnergyLevel == Models.EnergyLevel.High).ToList();
+        var mediumTasks = tasks.Where(t => t.EnergyLevel == Models.EnergyLevel.Medium).ToList();
+        var lowTasks = tasks.Where(t => t.EnergyLevel == Models.EnergyLevel.Low).ToList();
+        var untagged = tasks.Where(t => t.EnergyLevel == null).ToList();
+
+        return new EnergyDistributionDto
+        {
+            HighEnergyCount = highTasks.Count,
+            MediumEnergyCount = mediumTasks.Count,
+            LowEnergyCount = lowTasks.Count,
+            UntaggedCount = untagged.Count,
+            HighEnergyCompletionRate = highTasks.Count > 0
+                ? Math.Round((decimal)highTasks.Count(t => t.Completed) / highTasks.Count * 100, 1)
+                : 0,
+            MediumEnergyCompletionRate = mediumTasks.Count > 0
+                ? Math.Round((decimal)mediumTasks.Count(t => t.Completed) / mediumTasks.Count * 100, 1)
+                : 0,
+            LowEnergyCompletionRate = lowTasks.Count > 0
+                ? Math.Round((decimal)lowTasks.Count(t => t.Completed) / lowTasks.Count * 100, 1)
+                : 0,
+        };
     }
 
     public async System.Threading.Tasks.Task DeleteTaskAsync(Guid userId, Guid taskId)
@@ -157,11 +558,14 @@ public class TaskService : ITaskService
         string? priority = null,
         Guid? groupId = null,
         bool? completed = null,
-        bool? rootOnly = null)
+        bool? rootOnly = null,
+        string? status = null)
     {
         var query = _context.Tasks
             .Include(t => t.Group)
-            .Where(t => t.UserId == userId);
+            .Where(t => t.UserId == userId
+                || (t.GroupId != null && _context.TaskGroupShares.Any(s =>
+                    s.TaskGroupId == t.GroupId && s.SharedWithUserId == userId)));
 
         // By default, filter to root-level tasks only (no parent)
         if (rootOnly != false)
@@ -203,6 +607,12 @@ public class TaskService : ITaskService
             query = query.Where(t => t.Completed == completed.Value);
         }
 
+        // Apply status filter
+        if (!string.IsNullOrEmpty(status) && Enum.TryParse<Models.TaskStatus>(status, true, out var parsedStatus))
+        {
+            query = query.Where(t => t.Status == parsedStatus);
+        }
+
         var tasks = await query
             .OrderByDescending(t => t.CreatedAt)
             .ToListAsync();
@@ -219,10 +629,12 @@ public class TaskService : ITaskService
     {
         var tasks = await _context.Tasks
             .Include(t => t.Group)
-            .Where(t => t.UserId == userId &&
-                        t.DueDate != null &&
-                        t.DueDate >= startDate &&
-                        t.DueDate <= endDate)
+            .Where(t => (t.UserId == userId
+                || (t.GroupId != null && _context.TaskGroupShares.Any(s =>
+                    s.TaskGroupId == t.GroupId && s.SharedWithUserId == userId)))
+                        && t.DueDate != null
+                        && t.DueDate >= startDate
+                        && t.DueDate <= endDate)
             .OrderByDescending(t => t.Priority)
             .ThenBy(t => t.DueDate)
             .ToListAsync();
@@ -250,6 +662,14 @@ public class TaskService : ITaskService
             DueDate = task.DueDate,
             Completed = task.Completed,
             CompletedAt = task.CompletedAt,
+            Status = task.Status.ToString(),
+            StartedAt = task.StartedAt,
+            BlockedReason = task.BlockedReason,
+            Urgency = task.Urgency?.ToString(),
+            Importance = task.Importance?.ToString(),
+            Quadrant = ComputeQuadrant(task.Urgency, task.Importance),
+            EnergyLevel = task.EnergyLevel?.ToString(),
+            EstimatedMinutes = task.EstimatedMinutes,
             GroupId = task.GroupId,
             GroupName = task.Group?.Name,
             GroupColour = task.Group?.Colour,

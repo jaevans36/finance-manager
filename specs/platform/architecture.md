@@ -1,4 +1,4 @@
-# Finance Manager Platform Architecture
+# Life Manager Platform Architecture
 
 **Created**: 2026-01-07  
 **Status**: Active  
@@ -6,14 +6,14 @@
 
 ## Overview
 
-Finance Manager is a personal productivity and finance management platform consisting of multiple integrated applications accessed through a unified hub dashboard.
+Life Manager is a personal productivity and finance management platform consisting of multiple integrated applications accessed through a unified hub dashboard.
 
 ## Platform Architecture
 
 ### Application Structure
 
 ```
-Finance Manager Platform
+Life Manager Platform
 ├── Hub Dashboard (/)                 # Main portal for all applications
 │   ├── Application tiles
 │   ├── Quick stats widget
@@ -126,7 +126,7 @@ Applications are registered in the database and displayed dynamically on the hub
 ```typescript
 interface Application {
   id: string;              // 'todo', 'finance', 'admin'
-  name: string;            // 'To Do Manager', 'Finance Manager'
+  name: string;            // 'To Do Manager', 'Life Manager'
   description: string;     // Brief description for hub tile
   iconPath: string;        // Path to flat icon
   routePath: string;       // '/todo', '/finance'
@@ -146,7 +146,7 @@ interface Application {
    - Icon: Checkmark circle (green)
    - Required Role: None (public)
 
-2. **Finance Manager**
+2. **Life Manager**
    - ID: `finance`
    - Route: `/finance`
    - Status: `coming_soon`

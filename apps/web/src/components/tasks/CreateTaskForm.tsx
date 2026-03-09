@@ -1,23 +1,12 @@
 import { useState, useRef, useCallback } from 'react';
-import styled from 'styled-components';
-import { 
-  Card, 
-  Button, 
-  Input, 
-  TextArea, 
-  FormGroup, 
-  Label, 
-  ErrorText, 
-  Alert,
-  Flex
-} from '@finance-manager/ui';
 import { XCircle, Plus, X } from 'lucide-react';
-import { spacing, borderRadius } from '@finance-manager/ui/styles';
-
-const Subheading = styled.h2`
-  color: ${({ theme }) => theme.colors.text};
-  margin: 0 0 20px 0;
-`;
+import { useCreateTaskForm } from '../../hooks/forms';
+import type { CreateTaskInput } from '@life-manager/schema';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Textarea } from '../ui/textarea';
+import { Label } from '../ui/label';
+import { Alert, AlertDescription } from '../ui/alert';
 
 import { TaskGroup } from '../../types/taskGroup';
 
@@ -36,114 +25,17 @@ interface CreateTaskFormProps {
   onSubtasksCreated?: (taskId: string, titles: string[]) => Promise<void>;
 }
 
-// ---------------------------------------------------------------------------
-// Subtasks section styled components
-// ---------------------------------------------------------------------------
-
-const SubtasksSection = styled.div`
-  margin-bottom: 15px;
-`;
-
-const SubtasksSectionHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: ${spacing.sm};
-`;
-
-const SubtaskList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${spacing.xs};
-  margin-bottom: ${spacing.sm};
-`;
-
-const SubtaskRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${spacing.sm};
-  padding: ${spacing.xs} ${spacing.sm};
-  background: ${({ theme }) => theme.colors.backgroundSecondary};
-  border-radius: ${borderRadius.sm};
-`;
-
-const SubtaskTitle = styled.span`
-  flex: 1;
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.text};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
-const RemoveButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 2px;
-  border-radius: ${borderRadius.sm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  transition: color 150ms ease;
-  flex-shrink: 0;
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.error};
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-`;
-
-const InlineSubtaskInput = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${spacing.sm};
-`;
-
-const SubtaskInput = styled(Input)`
-  flex: 1;
-  font-size: 14px;
-`;
-
-const AddSubtaskButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: ${spacing.xs};
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 13px;
-  padding: ${spacing.xs} 0;
-  transition: color 150ms ease;
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.primary};
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-`;
-
-export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupId, onSubtasksCreated }: CreateTaskFormProps) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState<'Low' | 'Medium' | 'High' | 'Critical'>('Medium');
-  const [dueDate, setDueDate] = useState('');
-  const [groupId, setGroupId] = useState<string>(selectedGroupId || '');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupId, onSubtasksCreated: _onSubtasksCreated }: CreateTaskFormProps) => {
+  const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useCreateTaskForm({
+    groupId: selectedGroupId || '',
+  });
+  const [apiError, setApiError] = useState('');
   const [subtaskTitles, setSubtaskTitles] = useState<string[]>([]);
   const [subtaskInput, setSubtaskInput] = useState('');
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
   const subtaskInputRef = useRef<HTMLInputElement>(null);
+
+  const watchedTitle = watch('title');
 
   const handleAddSubtask = useCallback(() => {
     const trimmed = subtaskInput.trim();
@@ -171,97 +63,81 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
     [handleAddSubtask],
   );
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (!title.trim()) {
-      setError('Title is required');
-      return;
-    }
-
-    setIsSubmitting(true);
+  const onFormSubmit = async (data: CreateTaskInput) => {
+    setApiError('');
 
     try {
       await onSubmit({
-        title: title.trim(),
-        description: description.trim() || undefined,
-        priority,
-        dueDate: dueDate || undefined,
-        groupId: groupId || undefined,
+        title: data.title.trim(),
+        description: data.description?.trim() || undefined,
+        priority: data.priority || undefined,
+        dueDate: data.dueDate || undefined,
+        groupId: data.groupId || undefined,
         subtaskTitles: subtaskTitles.length > 0 ? subtaskTitles : undefined,
       });
       // Reset form
-      setTitle('');
-      setDescription('');
-      setPriority('Medium');
-      setDueDate('');
-      setGroupId(selectedGroupId || '');
+      reset({ title: '', description: '', priority: 'Medium', dueDate: '', groupId: selectedGroupId || '' });
       setSubtaskTitles([]);
       setSubtaskInput('');
       setIsAddingSubtask(false);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Task creation error:', err);
       if (err instanceof Error) {
-        setError(err.message);
+        setApiError(err.message);
       } else if (typeof err === 'object' && err !== null && 'response' in err) {
         const axiosError = err as { response?: { data?: { error?: { message?: string } } } };
-        setError(axiosError.response?.data?.error?.message || 'Failed to create task');
+        setApiError(axiosError.response?.data?.error?.message || 'Failed to create task');
       } else {
-        setError('Failed to create task');
+        setApiError('Failed to create task');
       }
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginBottom: '30px' }} aria-label="Create new task form">
-      <Card style={{ padding: '20px' }}>
-        <Subheading id="create-task-heading">Create New Task</Subheading>
+    <form onSubmit={handleSubmit(onFormSubmit)} className="mb-[30px]" aria-label="Create new task form">
+      <div className="rounded-lg border border-border bg-card p-5">
+        <h2 className="m-0 mb-5 text-foreground" id="create-task-heading">Create New Task</h2>
 
-        {error && (
-          <Alert variant="error" style={{ marginBottom: '15px' }}>
-            <XCircle size={16} />
-            <span>{error}</span>
+        {apiError && (
+          <Alert variant="destructive" className="mb-4">
+            <XCircle className="h-4 w-4" />
+            <AlertDescription>{apiError}</AlertDescription>
           </Alert>
         )}
 
-        <FormGroup>
+        <div className="mb-4 space-y-2">
           <Label htmlFor="title">Title *</Label>
           <Input
             id="title"
             aria-required="true"
-            aria-invalid={!!error && !title.trim()}
+            aria-invalid={!!errors.title}
             type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            {...register('title')}
             placeholder="Enter task title"
             maxLength={200}
             disabled={isSubmitting}
           />
-          <ErrorText>{title.length}/200</ErrorText>
-        </FormGroup>
+          {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
+          <p className="text-sm text-muted-foreground">{(watchedTitle ?? '').length}/200</p>
+        </div>
 
-        <FormGroup>
+        <div className="mb-4 space-y-2">
           <Label htmlFor="description">Description</Label>
-          <TextArea
+          <Textarea
             id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            {...register('description')}
             placeholder="Enter task description"
             maxLength={2000}
             rows={3}
             disabled={isSubmitting}
           />
-        <FormGroup>
+        <div className="mb-4 space-y-2">
           <Label htmlFor="group">Group</Label>
-          <Input
-            as="select"
+          <select
             id="group"
-            value={groupId}
-            onChange={(e) => setGroupId(e.target.value)}
+            {...register('groupId')}
             disabled={isSubmitting}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <option value="">Select a group...</option>
             {groups.map((group) => (
@@ -269,68 +145,67 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
                 {group.name}
               </option>
             ))}
-          </Input>
-        </FormGroup>
+          </select>
+        </div>
 
-        </FormGroup>
+        </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-          <FormGroup>
+        <div className="mb-4 grid grid-cols-2 gap-4">
+          <div className="space-y-2">
             <Label htmlFor="priority">Priority</Label>
-            <Input
-              as="select"
+            <select
               id="priority"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value as 'Low' | 'Medium' | 'High' | 'Critical')}
+              {...register('priority')}
               disabled={isSubmitting}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="Low">Low</option>
               <option value="Medium">Medium</option>
               <option value="High">High</option>
               <option value="Critical">Critical</option>
-            </Input>
-          </FormGroup>
+            </select>
+          </div>
 
-          <FormGroup>
+          <div className="space-y-2">
             <Label htmlFor="dueDate">Due Date</Label>
             <Input
               id="dueDate"
               type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
+              {...register('dueDate')}
               min={new Date().toISOString().split('T')[0]}
               disabled={isSubmitting}
             />
-          </FormGroup>
+          </div>
         </div>
 
         {/* Subtasks section */}
-        <SubtasksSection>
-          <SubtasksSectionHeader>
-            <Label style={{ margin: 0 }}>Subtasks</Label>
-          </SubtasksSectionHeader>
+        <div className="mb-4">
+          <div className="mb-2 flex items-center justify-between">
+            <Label className="m-0">Subtasks</Label>
+          </div>
 
           {subtaskTitles.length > 0 && (
-            <SubtaskList>
+            <div className="mb-2 flex flex-col gap-1">
               {subtaskTitles.map((st, index) => (
-                <SubtaskRow key={index}>
-                  <SubtaskTitle>{st}</SubtaskTitle>
-                  <RemoveButton
+                <div key={index} className="flex items-center gap-2 rounded bg-secondary px-2 py-1">
+                  <span className="flex-1 truncate text-sm text-foreground">{st}</span>
+                  <button
                     type="button"
                     onClick={() => handleRemoveSubtask(index)}
                     aria-label={`Remove subtask "${st}"`}
                     disabled={isSubmitting}
+                    className="flex flex-shrink-0 items-center justify-center rounded border-none bg-transparent p-0.5 text-muted-foreground transition-colors hover:text-destructive"
                   >
-                    <X />
-                  </RemoveButton>
-                </SubtaskRow>
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               ))}
-            </SubtaskList>
+            </div>
           )}
 
           {isAddingSubtask ? (
-            <InlineSubtaskInput>
-              <SubtaskInput
+            <div className="flex items-center gap-2">
+              <Input
                 ref={subtaskInputRef}
                 type="text"
                 placeholder="Type a subtask and press Enter..."
@@ -345,29 +220,31 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
                 disabled={isSubmitting}
                 aria-label="New subtask title"
                 autoFocus
+                className="flex-1"
               />
-            </InlineSubtaskInput>
+            </div>
           ) : (
-            <AddSubtaskButton
+            <button
               type="button"
               onClick={() => setIsAddingSubtask(true)}
               disabled={isSubmitting}
+              className="flex items-center gap-1 border-none bg-transparent py-1 text-[13px] text-muted-foreground transition-colors hover:text-primary"
             >
-              <Plus />
+              <Plus className="h-3.5 w-3.5" />
               Add subtask
-            </AddSubtaskButton>
+            </button>
           )}
-        </SubtasksSection>
+        </div>
 
-        <Flex gap={10}>
-          <Button type="submit" variant="primary" $isLoading={isSubmitting}>
+        <div className="flex gap-2.5">
+          <Button type="submit" variant="default" disabled={isSubmitting}>
             {isSubmitting ? 'Creating...' : 'Create Task'}
           </Button>
           <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
             Cancel
           </Button>
-        </Flex>
-      </Card>
+        </div>
+      </div>
     </form>
   );
 };
