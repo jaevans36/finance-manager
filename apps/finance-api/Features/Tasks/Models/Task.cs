@@ -78,9 +78,15 @@ public class Task
     [Column("updated_at")]
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+    [Column("assigned_to_user_id")]
+    public Guid? AssignedToUserId { get; set; }
+
     // Navigation properties
     [ForeignKey(nameof(UserId))]
     public User User { get; set; } = null!;
+
+    [ForeignKey(nameof(AssignedToUserId))]
+    public User? AssignedTo { get; set; }
 
     [ForeignKey(nameof(GroupId))]
     public TaskGroup? Group { get; set; }
