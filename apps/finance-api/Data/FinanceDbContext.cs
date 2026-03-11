@@ -7,7 +7,7 @@ using FinanceApi.Features.Common.Sessions.Models;
 using FinanceApi.Features.Common.ActivityLogs.Models;
 using FinanceApi.Features.Common.EmailVerification.Models;
 using FinanceApi.Features.Settings.Models;
-using FinanceApi.Features.Tasks.Models;
+using FinanceApi.Features.Notifications.Models;
 
 namespace FinanceApi.Data;
 
@@ -33,6 +33,7 @@ public class FinanceDbContext : DbContext
     public DbSet<ActivityLog> ActivityLogs { get; set; }
     public DbSet<UserSettings> UserSettings { get; set; }
     public DbSet<TaskGroupShare> TaskGroupShares { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -200,6 +201,15 @@ public class FinanceDbContext : DbContext
             entity.HasIndex(e => new { e.UserId, e.Urgency, e.Importance });
             entity.HasIndex(e => new { e.UserId, e.EnergyLevel });
             entity.HasIndex(e => new { e.UserId, e.EnergyLevel, e.EstimatedMinutes });
+
+            // Assignment FK - SET NULL when assignee user is deleted (task is preserved)
+            entity.HasOne(t => t.AssignedTo)
+                .WithMany()
+                .HasForeignKey(t => t.AssignedToUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(t => t.AssignedToUserId)
+                .HasDatabaseName("IX_tasks_assigned_to_user_id");
         });
 
         // UserSettings configuration
@@ -309,6 +319,36 @@ public class FinanceDbContext : DbContext
             
             // Check constraint: EndDate >= StartDate (PostgreSQL syntax)
             entity.ToTable(t => t.HasCheckConstraint("CK_Events_EndDate_After_StartDate", "end_date >= start_date"));
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.ToTable("notifications");
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.UserId).HasColumnName("user_id").IsRequired();
+            entity.Property(e => e.Type).HasColumnName("type").IsRequired();
+            entity.Property(e => e.EntityType).HasColumnName("entity_type").IsRequired();
+            entity.Property(e => e.EntityId).HasColumnName("entity_id").IsRequired();
+            entity.Property(e => e.EntityTitle).HasColumnName("entity_title").HasMaxLength(500).IsRequired();
+            entity.Property(e => e.FromUserId).HasColumnName("from_user_id").IsRequired();
+            entity.Property(e => e.IsRead).HasColumnName("is_read");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+
+            entity.HasOne(n => n.User)
+                .WithMany()
+                .HasForeignKey(n => n.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(n => n.FromUser)
+                .WithMany()
+                .HasForeignKey(n => n.FromUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Optimise for "get my unread notifications" query
+            entity.HasIndex(n => new { n.UserId, n.IsRead, n.CreatedAt })
+                .HasDatabaseName("IX_notifications_user_read_created");
         });
     }
 }
