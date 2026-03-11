@@ -93,24 +93,42 @@ public class StatisticsService : IStatisticsService
     public async Task<DailyStatisticsDto> GetDailyStatisticsAsync(Guid userId, DateTime date)
     {
         var dayStart = date.Date;
-        var dayEnd = dayStart.AddDays(1).AddSeconds(-1);
+        var dayEnd = dayStart.AddDays(1);
 
         var tasks = await _context.Tasks
+            .Include(t => t.Group)
             .Where(t => t.UserId == userId &&
                         t.DueDate != null &&
                         t.DueDate >= dayStart &&
-                        t.DueDate <= dayEnd)
+                        t.DueDate < dayEnd)
             .ToListAsync();
 
         var totalTasks = tasks.Count;
         var completedTasks = tasks.Count(t => t.Completed);
+
+        var taskDtos = tasks.Select(t => new TaskDto
+        {
+            Id = t.Id,
+            Title = t.Title,
+            Description = t.Description,
+            Priority = t.Priority.ToString(),
+            DueDate = t.DueDate,
+            Completed = t.Completed,
+            CompletedAt = t.CompletedAt,
+            GroupId = t.GroupId,
+            GroupName = t.Group?.Name,
+            GroupColour = t.Group?.Colour,
+            CreatedAt = t.CreatedAt,
+            UpdatedAt = t.UpdatedAt
+        }).ToList();
 
         return new DailyStatisticsDto
         {
             Date = dayStart,
             TotalTasks = totalTasks,
             CompletedTasks = completedTasks,
-            CompletionRate = totalTasks > 0 ? (decimal)completedTasks / totalTasks * 100 : 0
+            CompletionRate = totalTasks > 0 ? (decimal)completedTasks / totalTasks * 100 : 0,
+            Tasks = taskDtos
         };
     }
 
@@ -123,8 +141,8 @@ public class StatisticsService : IStatisticsService
             .Where(t => t.UserId == userId &&
                         !t.Completed &&
                         t.DueDate != null &&
-                        t.DueDate >= DateTime.UtcNow &&
-                        t.DueDate <= weekEndUtc &&
+                        t.DueDate >= weekStartUtc &&
+                        t.DueDate < weekEndUtc &&
                         (t.Priority == Priority.Critical || t.Priority == Priority.High))
             .OrderBy(t => t.DueDate)
             .ThenByDescending(t => t.Priority)

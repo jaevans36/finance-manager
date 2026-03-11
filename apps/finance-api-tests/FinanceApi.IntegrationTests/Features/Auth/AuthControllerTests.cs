@@ -120,7 +120,7 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>
 
         var loginRequest = new LoginRequest
         {
-            Email = email,
+            EmailOrUsername = email,
             Password = password
         };
 
@@ -150,7 +150,7 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>
 
         var loginRequest = new LoginRequest
         {
-            Email = email,
+            EmailOrUsername = email,
             Password = "WrongPassword123!"
         };
 
@@ -167,7 +167,7 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>
         // Arrange
         var loginRequest = new LoginRequest
         {
-            Email = "nonexistent@example.com",
+            EmailOrUsername = "nonexistent@example.com",
             Password = "Password123!"
         };
 
