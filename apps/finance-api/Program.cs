@@ -176,11 +176,14 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Apply any pending database migrations on startup
+// Apply any pending database migrations on startup (skip for in-memory databases used in testing)
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<FinanceDbContext>();
-    db.Database.Migrate();
+    if (db.Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory")
+    {
+        db.Database.Migrate();
+    }
 }
 
 // Configure the HTTP request pipeline
