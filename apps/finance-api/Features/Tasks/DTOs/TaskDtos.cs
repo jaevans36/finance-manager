@@ -77,7 +77,12 @@ public class TaskDto
     public List<TaskDto>? Subtasks { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public bool IsOwner { get; init; }
+    public AssignmentUserDto? AssignedTo { get; init; }
+    public AssignmentUserDto? AssignedBy { get; init; }
 }
+
+public record AssignmentUserDto(Guid Id, string Username);
 
 public class UpdateTaskStatusRequest
 {

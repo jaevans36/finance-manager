@@ -24,14 +24,15 @@ public interface ITaskService
     System.Threading.Tasks.Task DeleteTaskAsync(Guid userId, Guid taskId);
     System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid userId, Guid taskId, bool includeSubtasks = false);
     System.Threading.Tasks.Task<List<TaskDto>> GetTasksAsync(
-        Guid userId, 
-        DateTime? startDate = null, 
+        Guid userId,
+        DateTime? startDate = null,
         DateTime? endDate = null,
         string? priority = null,
         Guid? groupId = null,
         bool? completed = null,
         bool? rootOnly = null,
-        string? status = null);
+        string? status = null,
+        string? view = null);
     System.Threading.Tasks.Task<List<TaskDto>> GetTasksByDateRangeAsync(Guid userId, DateTime startDate, DateTime endDate);
 }
 
@@ -559,13 +560,38 @@ public class TaskService : ITaskService
         Guid? groupId = null,
         bool? completed = null,
         bool? rootOnly = null,
-        string? status = null)
+        string? status = null,
+        string? view = null)
     {
-        var query = _context.Tasks
-            .Include(t => t.Group)
-            .Where(t => t.UserId == userId
-                || (t.GroupId != null && _context.TaskGroupShares.Any(s =>
-                    s.TaskGroupId == t.GroupId && s.SharedWithUserId == userId)));
+        var viewFilter = view?.ToLower();
+
+        IQueryable<FinanceApi.Features.Tasks.Models.Task> query;
+        if (viewFilter == "mine")
+        {
+            query = _context.Tasks.Include(t => t.Group).Include(t => t.AssignedTo)
+                .Where(t => t.UserId == userId);
+        }
+        else if (viewFilter == "assigned-to-me")
+        {
+            query = _context.Tasks.Include(t => t.Group).Include(t => t.AssignedTo)
+                .Include(t => t.User)
+                .Where(t => t.AssignedToUserId == userId);
+        }
+        else if (viewFilter == "assigned-by-me")
+        {
+            query = _context.Tasks.Include(t => t.Group).Include(t => t.AssignedTo)
+                .Where(t => t.UserId == userId && t.AssignedToUserId != null);
+        }
+        else
+        {
+            // Default "all": own tasks + group-shared tasks + assigned to me
+            query = _context.Tasks.Include(t => t.Group).Include(t => t.AssignedTo)
+                .Include(t => t.User)
+                .Where(t => t.UserId == userId
+                    || t.AssignedToUserId == userId
+                    || (t.GroupId != null && _context.TaskGroupShares.Any(s =>
+                        s.TaskGroupId == t.GroupId && s.SharedWithUserId == userId)));
+        }
 
         // By default, filter to root-level tasks only (no parent)
         if (rootOnly != false)
@@ -620,7 +646,7 @@ public class TaskService : ITaskService
         var taskDtos = new List<TaskDto>();
         foreach (var task in tasks)
         {
-            taskDtos.Add(await MapToTaskDtoAsync(task));
+            taskDtos.Add(await MapToTaskDtoAsync(task, userId));
         }
         return taskDtos;
     }
@@ -647,7 +673,7 @@ public class TaskService : ITaskService
         return taskDtos;
     }
 
-    private async System.Threading.Tasks.Task<TaskDto> MapToTaskDtoAsync(Models.Task task)
+    private async System.Threading.Tasks.Task<TaskDto> MapToTaskDtoAsync(Models.Task task, Guid requestingUserId = default)
     {
         // Count direct subtasks
         var subtaskCount = await _context.Tasks.CountAsync(t => t.ParentTaskId == task.Id);
@@ -681,7 +707,14 @@ public class TaskService : ITaskService
                 ? Math.Round((decimal)completedSubtaskCount / subtaskCount * 100, 1)
                 : 0,
             CreatedAt = task.CreatedAt,
-            UpdatedAt = task.UpdatedAt
+            UpdatedAt = task.UpdatedAt,
+            IsOwner = requestingUserId == default || task.UserId == requestingUserId,
+            AssignedTo = task.AssignedTo != null
+                ? new AssignmentUserDto(task.AssignedTo.Id, task.AssignedTo.Username)
+                : null,
+            AssignedBy = (requestingUserId != default && task.AssignedToUserId == requestingUserId && task.User != null)
+                ? new AssignmentUserDto(task.User.Id, task.User.Username)
+                : null,
         };
     }
 
