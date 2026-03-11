@@ -10,7 +10,7 @@ public static class EventValidator
     {
         if (endDate < startDate)
         {
-            errorMessage = "End date must be on or after start date.";
+            errorMessage = "End date must be after start date.";
             return false;
         }
 
@@ -42,6 +42,11 @@ public static class EventValidator
     public static bool ValidateCreateEventRequest(CreateEventRequest request, out List<string> errors)
     {
         errors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(request.Title))
+        {
+            errors.Add("Title is required");
+        }
 
         if (!ValidateDateRange(request.StartDate, request.EndDate, out var dateError))
         {

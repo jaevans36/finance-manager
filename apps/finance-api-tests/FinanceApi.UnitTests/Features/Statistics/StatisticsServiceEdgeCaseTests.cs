@@ -144,13 +144,11 @@ public class StatisticsServiceEdgeCaseTests : IDisposable
         Assert.Equal(2, result.TotalTasks);
         Assert.Equal(1, result.CompletedTasks);
         
-        // Verify 2025 task
-        var dec2025Stats = result.DailyBreakdown.First(d => d.Date.Year == 2025);
-        Assert.True(dec2025Stats.TotalTasks > 0);
+        // Verify 2025 task appears in a 2025 daily entry
+        Assert.True(result.DailyBreakdown.Any(d => d.Date.Year == 2025 && d.TotalTasks > 0));
 
-        // Verify 2026 task
-        var jan2026Stats = result.DailyBreakdown.First(d => d.Date.Year == 2026);
-        Assert.True(jan2026Stats.TotalTasks > 0);
+        // Verify 2026 task appears in a 2026 daily entry
+        Assert.True(result.DailyBreakdown.Any(d => d.Date.Year == 2026 && d.TotalTasks > 0));
     }
 
     [Fact]

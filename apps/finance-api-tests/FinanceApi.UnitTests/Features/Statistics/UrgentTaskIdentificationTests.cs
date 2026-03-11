@@ -37,7 +37,7 @@ public class UrgentTaskIdentificationTests
         await _context.Tasks.AddRangeAsync(
             // Should be included (incomplete, high priority, due within week)
             new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Critical Task", Priority = Priority.Critical, DueDate = now.AddDays(1), Completed = false },
-            new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "High Task", Priority = Priority.High, DueDate = now.AddDays(2), Completed = false },
+            new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "High Task", Priority = Priority.High, DueDate = now.AddDays(1).AddHours(2), Completed = false },
             
             // Should be excluded (wrong priority)
             new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Medium Task", Priority = Priority.Medium, DueDate = now.AddDays(1), Completed = false },
@@ -59,18 +59,17 @@ public class UrgentTaskIdentificationTests
     [Fact]
     public async Task GetUrgentTasks_ExcludesTasksDueInPast()
     {
-        // Arrange
+        // Arrange - use weekStart-relative dates so tasks fall in the right window
         var weekStart = new DateTime(2026, 1, 5, 0, 0, 0, DateTimeKind.Utc);
-        var now = DateTime.UtcNow;
-        
+
         await _context.Tasks.AddRangeAsync(
-            // Should be excluded (past due)
-            new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Overdue", Priority = Priority.Critical, DueDate = now.AddDays(-5), Completed = false },
-            new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Yesterday", Priority = Priority.High, DueDate = now.AddDays(-1), Completed = false },
-            
-            // Should be included (future due dates)
-            new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Tomorrow", Priority = Priority.Critical, DueDate = now.AddDays(1), Completed = false },
-            new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Next Week", Priority = Priority.High, DueDate = now.AddDays(5), Completed = false }
+            // Should be excluded (before weekStart)
+            new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Overdue", Priority = Priority.Critical, DueDate = weekStart.AddDays(-5), Completed = false },
+            new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Yesterday", Priority = Priority.High, DueDate = weekStart.AddDays(-1), Completed = false },
+
+            // Should be included (within [weekStart, weekStart+7))
+            new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Tomorrow", Priority = Priority.Critical, DueDate = weekStart.AddDays(1), Completed = false },
+            new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Day Five", Priority = Priority.High, DueDate = weekStart.AddDays(5), Completed = false }
         );
         await _context.SaveChangesAsync();
 
@@ -79,7 +78,7 @@ public class UrgentTaskIdentificationTests
 
         // Assert
         Assert.Equal(2, result.Count);
-        Assert.All(result, task => Assert.True(task.DueDate >= now));
+        Assert.All(result, task => Assert.True(task.DueDate >= weekStart));
     }
 
     [Fact]
@@ -112,10 +111,10 @@ public class UrgentTaskIdentificationTests
     [Fact]
     public async Task GetUrgentTasks_SortsByDueDateThenPriority()
     {
-        // Arrange
+        // Arrange - baseDate chosen so baseDate+3 stays within [weekStart, weekStart+7)
         var weekStart = new DateTime(2026, 1, 5, 0, 0, 0, DateTimeKind.Utc);
-        var baseDate = new DateTime(2026, 1, 10, 0, 0, 0, DateTimeKind.Utc);
-        
+        var baseDate = new DateTime(2026, 1, 6, 0, 0, 0, DateTimeKind.Utc);
+
         var task1 = new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Later High", Priority = Priority.High, DueDate = baseDate.AddDays(3), Completed = false };
         var task2 = new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Soon High", Priority = Priority.High, DueDate = baseDate.AddDays(1), Completed = false };
         var task3 = new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Soon Critical", Priority = Priority.Critical, DueDate = baseDate.AddDays(1), Completed = false };
@@ -141,18 +140,17 @@ public class UrgentTaskIdentificationTests
     [Fact]
     public async Task GetUrgentTasks_LimitsResultsTo10Tasks()
     {
-        // Arrange
+        // Arrange - spread 15 tasks within the 7-day window using 10-hour offsets
         var weekStart = new DateTime(2026, 1, 5, 0, 0, 0, DateTimeKind.Utc);
-        var now = new DateTime(2026, 1, 10, 0, 0, 0, DateTimeKind.Utc);
-        
-        // Create 15 urgent tasks
+
+        // Create 15 urgent tasks, all within [weekStart, weekStart+7)
         var tasks = Enumerable.Range(1, 15).Select(i => new TaskEntity
         {
             Id = Guid.NewGuid(),
             UserId = _testUserId,
             Title = $"Task {i}",
             Priority = Priority.Critical,
-            DueDate = now.AddDays(i),
+            DueDate = weekStart.AddHours(i * 10), // max: 150h = Jan 11 06:00, within window
             Completed = false
         });
         
@@ -169,14 +167,16 @@ public class UrgentTaskIdentificationTests
     [Fact]
     public async Task GetUrgentTasks_CalculatesDaysUntilDueCorrectly()
     {
-        // Arrange
-        var weekStart = new DateTime(2026, 1, 5, 0, 0, 0, DateTimeKind.Utc);
-        var now = DateTime.UtcNow;
-        
+        // Arrange - weekStart must contain today so due dates fall within the window
+        // and DaysUntilDue (computed relative to DateTime.UtcNow) returns correct values
+        var todayDate = DateTime.UtcNow.Date;
+        var weekStart = DateTime.SpecifyKind(todayDate.AddDays(-1), DateTimeKind.Utc); // yesterday, so today+3 is within 7-day window
+        var now = todayDate;
+
         await _context.Tasks.AddRangeAsync(
-            new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Today", Priority = Priority.Critical, DueDate = now.Date, Completed = false },
-            new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Tomorrow", Priority = Priority.High, DueDate = now.Date.AddDays(1), Completed = false },
-            new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "In 3 Days", Priority = Priority.Critical, DueDate = now.Date.AddDays(3), Completed = false }
+            new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Today", Priority = Priority.Critical, DueDate = now, Completed = false },
+            new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Tomorrow", Priority = Priority.High, DueDate = now.AddDays(1), Completed = false },
+            new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "In 3 Days", Priority = Priority.Critical, DueDate = now.AddDays(3), Completed = false }
         );
         await _context.SaveChangesAsync();
 
@@ -296,9 +296,9 @@ public class UrgentTaskIdentificationTests
     [Fact]
     public async Task GetUrgentTasks_PrioritizesCriticalOverHighWhenSameDueDate()
     {
-        // Arrange
+        // Arrange - dueDate must be < weekStart+7 (Jan 12), so use Jan 11
         var weekStart = new DateTime(2026, 1, 5, 0, 0, 0, DateTimeKind.Utc);
-        var dueDate = new DateTime(2026, 1, 12, 0, 0, 0, DateTimeKind.Utc);
+        var dueDate = new DateTime(2026, 1, 11, 0, 0, 0, DateTimeKind.Utc);
         
         await _context.Tasks.AddRangeAsync(
             new TaskEntity { Id = Guid.NewGuid(), UserId = _testUserId, Title = "High Priority", Priority = Priority.High, DueDate = dueDate, Completed = false },

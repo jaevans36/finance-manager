@@ -601,9 +601,10 @@ public class HistoricalStatisticsTests : IDisposable
         // Act
         var result = await _service.GetHistoricalStatisticsAsync(_userId, 2);
 
-        // Assert - Implementation should consistently handle boundaries
+        // Assert - the task at exact nextWeekStart is in the next (future) week, not in the 2-week query window.
+        // Only "Just Before Boundary" (nextWeekStart - 1s) is within [currentWeekStart, nextWeekStart).
         var totalTasks = result.Sum(r => r.TotalTasks);
-        Assert.Equal(2, totalTasks); // Both tasks should be counted exactly once
+        Assert.Equal(1, totalTasks); // Only the task before the boundary is included
     }
 
     /// <summary>
