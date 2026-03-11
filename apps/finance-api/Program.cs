@@ -19,6 +19,7 @@ using FinanceApi.Features.Statistics.Services;
 using FinanceApi.Features.Version.Services;
 using FinanceApi.Features.Admin.Services;
 using FinanceApi.Features.Settings.Services;
+using FinanceApi.Features.Notifications.Services;
 using FinanceApi.Middleware;
 
 // Configure Serilog
@@ -118,6 +119,8 @@ builder.Services.AddSingleton<FinanceApi.Features.Admin.Services.LogReaderServic
 builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 builder.Services.AddScoped<IWipService, WipService>();
 builder.Services.AddScoped<IClassificationSuggestionService, ClassificationSuggestionService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ITaskPermissionService, TaskPermissionService>();
 // Configure PostgreSQL with Entity Framework Core
 builder.Services.AddDbContext<FinanceDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
