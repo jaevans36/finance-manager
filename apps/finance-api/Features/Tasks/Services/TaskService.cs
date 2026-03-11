@@ -96,7 +96,9 @@ public class TaskService : ITaskService
     public async System.Threading.Tasks.Task<TaskDto> UpdateTaskAsync(Guid userId, Guid taskId, UpdateTaskRequest request)
     {
         var task = await _context.Tasks
-            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
+            .Include(t => t.AssignedTo)
+            .FirstOrDefaultAsync(t => t.Id == taskId &&
+                (t.UserId == userId || t.AssignedToUserId == userId));
 
         if (task == null)
         {
@@ -147,7 +149,9 @@ public class TaskService : ITaskService
     public async System.Threading.Tasks.Task<TaskDto> UpdateTaskStatusAsync(Guid userId, Guid taskId, UpdateTaskStatusRequest request)
     {
         var task = await _context.Tasks
-            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
+            .Include(t => t.AssignedTo)
+            .FirstOrDefaultAsync(t => t.Id == taskId &&
+                (t.UserId == userId || t.AssignedToUserId == userId));
 
         if (task == null)
         {
@@ -237,7 +241,9 @@ public class TaskService : ITaskService
     {
         var task = await _context.Tasks
             .Include(t => t.Group)
-            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
+            .Include(t => t.AssignedTo)
+            .FirstOrDefaultAsync(t => t.Id == taskId &&
+                (t.UserId == userId || t.AssignedToUserId == userId));
 
         if (task == null)
         {
@@ -393,7 +399,9 @@ public class TaskService : ITaskService
     {
         var task = await _context.Tasks
             .Include(t => t.Group)
-            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
+            .Include(t => t.AssignedTo)
+            .FirstOrDefaultAsync(t => t.Id == taskId &&
+                (t.UserId == userId || t.AssignedToUserId == userId));
 
         if (task == null)
         {
@@ -416,7 +424,9 @@ public class TaskService : ITaskService
     {
         var task = await _context.Tasks
             .Include(t => t.Group)
-            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
+            .Include(t => t.AssignedTo)
+            .FirstOrDefaultAsync(t => t.Id == taskId &&
+                (t.UserId == userId || t.AssignedToUserId == userId));
 
         if (task == null)
         {

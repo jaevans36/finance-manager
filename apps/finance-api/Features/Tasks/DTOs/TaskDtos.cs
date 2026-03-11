@@ -192,3 +192,5 @@ public class EnergyDistributionDto
     public decimal MediumEnergyCompletionRate { get; set; }
     public decimal LowEnergyCompletionRate { get; set; }
 }
+
+public record AssignTaskRequest(string UsernameOrEmail);
