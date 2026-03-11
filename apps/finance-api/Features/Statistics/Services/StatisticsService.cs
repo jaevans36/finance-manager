@@ -121,6 +121,7 @@ public class StatisticsService : IStatisticsService
         var dayEnd = dayStart.AddDays(1).AddSeconds(-1);
 
         var tasks = await _context.Tasks
+            .Include(t => t.Group)
             .Where(t => t.UserId == userId &&
                         t.DueDate != null &&
                         t.DueDate >= dayStart &&
@@ -129,13 +130,28 @@ public class StatisticsService : IStatisticsService
 
         var totalTasks = tasks.Count;
         var completedTasks = tasks.Count(t => t.Completed);
+        var taskDtos = tasks.Select(t => new TaskDto
+        {
+            Id = t.Id,
+            Title = t.Title,
+            Priority = t.Priority.ToString(),
+            DueDate = t.DueDate,
+            Completed = t.Completed,
+            CompletedAt = t.CompletedAt,
+            GroupId = t.GroupId,
+            GroupName = t.Group?.Name,
+            GroupColour = t.Group?.Colour,
+            CreatedAt = t.CreatedAt,
+            UpdatedAt = t.UpdatedAt
+        }).ToList();
 
         return new DailyStatisticsDto
         {
             Date = dayStart,
             TotalTasks = totalTasks,
             CompletedTasks = completedTasks,
-            CompletionRate = totalTasks > 0 ? (decimal)completedTasks / totalTasks * 100 : 0
+            CompletionRate = totalTasks > 0 ? (decimal)completedTasks / totalTasks * 100 : 0,
+            Tasks = taskDtos
         };
     }
 

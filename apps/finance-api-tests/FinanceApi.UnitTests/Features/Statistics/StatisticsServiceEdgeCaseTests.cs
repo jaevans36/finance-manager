@@ -144,13 +144,13 @@ public class StatisticsServiceEdgeCaseTests : IDisposable
         Assert.Equal(2, result.TotalTasks);
         Assert.Equal(1, result.CompletedTasks);
         
-        // Verify 2025 task
-        var dec2025Stats = result.DailyBreakdown.First(d => d.Date.Year == 2025);
-        Assert.True(dec2025Stats.TotalTasks > 0);
+        // Verify 2025 task falls on Dec 31
+        var dec31Stats = result.DailyBreakdown.First(d => d.Date.Month == 12 && d.Date.Day == 31);
+        Assert.True(dec31Stats.TotalTasks > 0);
 
-        // Verify 2026 task
-        var jan2026Stats = result.DailyBreakdown.First(d => d.Date.Year == 2026);
-        Assert.True(jan2026Stats.TotalTasks > 0);
+        // Verify 2026 task falls on Jan 1
+        var jan1Stats = result.DailyBreakdown.First(d => d.Date.Month == 1 && d.Date.Day == 1);
+        Assert.True(jan1Stats.TotalTasks > 0);
     }
 
     [Fact]
@@ -342,8 +342,10 @@ public class StatisticsServiceEdgeCaseTests : IDisposable
     [Fact]
     public async Task GetUrgentTasks_OnlyIncludesIncompleteHighPriorityTasks()
     {
-        // Arrange
-        var weekStart = new DateTime(2026, 1, 6, 0, 0, 0, DateTimeKind.Utc);
+        // Use DateTime.UtcNow-relative dates so the service's future-date filter passes
+        var now = DateTime.UtcNow;
+        var weekStart = now.Date.AddDays(now.DayOfWeek == DayOfWeek.Sunday ? -6 : -(int)now.DayOfWeek + 1);
+        var weekEnd = weekStart.AddDays(7);
 
         _context.Tasks.AddRange(
             new TaskEntity
@@ -351,7 +353,7 @@ public class StatisticsServiceEdgeCaseTests : IDisposable
                 Id = Guid.NewGuid(),
                 UserId = _userId,
                 Title = "Critical Incomplete",
-                DueDate = weekStart.AddDays(1),
+                DueDate = now.AddDays(1),
                 Priority = Priority.Critical,
                 Completed = false
             },
@@ -360,7 +362,7 @@ public class StatisticsServiceEdgeCaseTests : IDisposable
                 Id = Guid.NewGuid(),
                 UserId = _userId,
                 Title = "Critical Complete",
-                DueDate = weekStart.AddDays(1),
+                DueDate = now.AddDays(1),
                 Priority = Priority.Critical,
                 Completed = true
             },
@@ -369,7 +371,7 @@ public class StatisticsServiceEdgeCaseTests : IDisposable
                 Id = Guid.NewGuid(),
                 UserId = _userId,
                 Title = "High Incomplete",
-                DueDate = weekStart.AddDays(2),
+                DueDate = now.AddDays(2),
                 Priority = Priority.High,
                 Completed = false
             },
@@ -378,7 +380,7 @@ public class StatisticsServiceEdgeCaseTests : IDisposable
                 Id = Guid.NewGuid(),
                 UserId = _userId,
                 Title = "Medium Incomplete",
-                DueDate = weekStart.AddDays(3),
+                DueDate = now.AddDays(3),
                 Priority = Priority.Medium,
                 Completed = false
             }

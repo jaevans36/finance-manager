@@ -569,29 +569,30 @@ public class HistoricalStatisticsTests : IDisposable
     [Fact]
     public async Task GetHistoricalStatistics_TaskDueAtWeekBoundary_IncludedInCorrectWeek()
     {
-        // Arrange
+        // Arrange: use previous week's boundary so both tasks fall within the queried window
         var today = DateTime.UtcNow.Date;
         var currentWeekStart = GetMonday(today);
-        var nextWeekStart = currentWeekStart.AddDays(7);
+        var previousWeekStart = currentWeekStart.AddDays(-7);
+        var previousWeekEnd = currentWeekStart; // = previousWeekStart + 7
 
         _context.Tasks.AddRange(
-            // Task due at exact week boundary (should be in next week)
+            // Task due at exact boundary of previous week (should be in current week, not prev)
             new TaskEntity
             {
                 Id = Guid.NewGuid(),
                 UserId = _userId,
                 Title = "Boundary Task",
-                DueDate = nextWeekStart, // Exact Monday 00:00
+                DueDate = previousWeekEnd, // Exact Monday 00:00 — start of current week
                 Priority = Priority.High,
                 Completed = true
             },
-            // Task due one second before boundary (should be in current week)
+            // Task due one second before boundary (should be in previous week)
             new TaskEntity
             {
                 Id = Guid.NewGuid(),
                 UserId = _userId,
                 Title = "Just Before Boundary",
-                DueDate = nextWeekStart.AddSeconds(-1),
+                DueDate = previousWeekEnd.AddSeconds(-1),
                 Priority = Priority.Medium,
                 Completed = false
             }
@@ -601,9 +602,14 @@ public class HistoricalStatisticsTests : IDisposable
         // Act
         var result = await _service.GetHistoricalStatisticsAsync(_userId, 2);
 
-        // Assert - Implementation should consistently handle boundaries
+        // Assert - each task should appear in exactly one week (no overlap, no gap)
         var totalTasks = result.Sum(r => r.TotalTasks);
-        Assert.Equal(2, totalTasks); // Both tasks should be counted exactly once
+        Assert.Equal(2, totalTasks); // Both tasks counted exactly once across the 2-week window
+
+        var prevWeek = result.First(r => r.WeekStart == previousWeekStart);
+        var currWeek = result.First(r => r.WeekStart == currentWeekStart);
+        Assert.Equal(1, prevWeek.TotalTasks);  // "Just Before Boundary" in prev week
+        Assert.Equal(1, currWeek.TotalTasks);  // "Boundary Task" in current week
     }
 
     /// <summary>

@@ -131,7 +131,7 @@ public class EventServiceTests : IDisposable
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             async () => await _eventService.CreateEventAsync(_testUser.Id, request));
         
-        exception.Message.Should().Contain("end date must be after start date");
+        exception.Message.Should().Contain("End date must be on or after start date");
     }
 
     [Fact]

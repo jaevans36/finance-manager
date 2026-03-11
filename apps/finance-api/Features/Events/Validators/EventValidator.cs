@@ -43,6 +43,11 @@ public static class EventValidator
     {
         errors = new List<string>();
 
+        if (string.IsNullOrWhiteSpace(request.Title))
+        {
+            errors.Add("Title is required");
+        }
+
         if (!ValidateDateRange(request.StartDate, request.EndDate, out var dateError))
         {
             errors.Add(dateError!);
