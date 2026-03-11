@@ -79,6 +79,29 @@ public class StatisticsService : IStatisticsService
         var totalTasks = tasks.Count;
         var completedTasks = tasks.Count(t => t.Completed);
 
+        // Tasks I assigned to others
+        var delegatedTotal = await _context.Tasks
+            .CountAsync(t => t.UserId == userId && t.AssignedToUserId != null
+                && t.DueDate >= weekStartUtc && t.DueDate < weekEndUtc);
+
+        var delegatedCompleted = await _context.Tasks
+            .CountAsync(t => t.UserId == userId && t.AssignedToUserId != null
+                && t.Completed
+                && t.CompletedAt >= weekStartUtc && t.CompletedAt < weekEndUtc);
+
+        // Tasks assigned to me
+        var assignedToMeTotal = await _context.Tasks
+            .CountAsync(t => t.AssignedToUserId == userId
+                && t.DueDate >= weekStartUtc && t.DueDate < weekEndUtc);
+
+        var assignedToMeCompleted = await _context.Tasks
+            .CountAsync(t => t.AssignedToUserId == userId
+                && t.Completed
+                && t.CompletedAt >= weekStartUtc && t.CompletedAt < weekEndUtc);
+
+        var delegatedRate = delegatedTotal > 0 ? (double)delegatedCompleted / delegatedTotal : 0;
+        var assignedRate = assignedToMeTotal > 0 ? (double)assignedToMeCompleted / assignedToMeTotal : 0;
+
         return new WeeklyStatisticsDto
         {
             WeekStart = weekStartUtc,
@@ -86,7 +109,9 @@ public class StatisticsService : IStatisticsService
             TotalTasks = totalTasks,
             CompletedTasks = completedTasks,
             CompletionPercentage = totalTasks > 0 ? (decimal)completedTasks / totalTasks * 100 : 0,
-            DailyBreakdown = dailyBreakdown
+            DailyBreakdown = dailyBreakdown,
+            Delegated = new DelegatedStatsDto(delegatedTotal, delegatedCompleted, Math.Round(delegatedRate, 2)),
+            AssignedToMe = new AssignedToMeStatsDto(assignedToMeTotal, assignedToMeCompleted, Math.Round(assignedRate, 2))
         };
     }
 
