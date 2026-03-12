@@ -33,6 +33,7 @@ public class FinanceDbContext : DbContext
     public DbSet<ActivityLog> ActivityLogs { get; set; }
     public DbSet<UserSettings> UserSettings { get; set; }
     public DbSet<TaskGroupShare> TaskGroupShares { get; set; }
+    public DbSet<EventShare> EventShares { get; set; }
     public DbSet<Notification> Notifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -319,6 +320,41 @@ public class FinanceDbContext : DbContext
             
             // Check constraint: EndDate >= StartDate (PostgreSQL syntax)
             entity.ToTable(t => t.HasCheckConstraint("CK_Events_EndDate_After_StartDate", "end_date >= start_date"));
+        });
+
+        // EventShare configuration
+        modelBuilder.Entity<EventShare>(entity =>
+        {
+            entity.ToTable("event_shares");
+            entity.HasKey(e => e.Id);
+
+            entity.HasOne(es => es.Event)
+                  .WithMany()
+                  .HasForeignKey(es => es.EventId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(es => es.SharedBy)
+                  .WithMany()
+                  .HasForeignKey(es => es.SharedByUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(es => es.SharedWith)
+                  .WithMany()
+                  .HasForeignKey(es => es.SharedWithUserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(e => e.Permission)
+                  .HasConversion<string>();
+
+            entity.Property(e => e.Status)
+                  .HasConversion<string>();
+
+            // One share record per event/recipient pair
+            entity.HasIndex(e => new { e.EventId, e.SharedWithUserId }).IsUnique();
+            // Query indexes
+            entity.HasIndex(e => e.SharedWithUserId);
+            entity.HasIndex(e => e.SharedByUserId);
+            entity.HasIndex(e => e.Status);
         });
 
         modelBuilder.Entity<Notification>(entity =>
