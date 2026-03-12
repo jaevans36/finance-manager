@@ -108,6 +108,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ISubtaskService, SubtaskService>();
 builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IEventShareService, EventShareService>();
 builder.Services.AddScoped<TaskGroupService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
