@@ -4,7 +4,7 @@ import { renderWithProviders as render } from '../utils/test-utils';
 import { TaskAssignmentBadge } from '../../src/features/tasks/components/TaskAssignmentBadge';
 
 describe('TaskAssignmentBadge', () => {
-  it('renders "Assigned to" chip for owner view', () => {
+  it('renders "Assigned to @alice" chip for owner view', () => {
     render(
       <TaskAssignmentBadge
         isOwner={true}
@@ -15,7 +15,7 @@ describe('TaskAssignmentBadge', () => {
     expect(screen.getByText(/Assigned to @alice/)).toBeInTheDocument();
   });
 
-  it('renders "From" chip for assignee view', () => {
+  it('renders "From @bob" chip for assignee view', () => {
     render(
       <TaskAssignmentBadge
         isOwner={false}
