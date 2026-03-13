@@ -101,7 +101,7 @@ export const TaskItem = memo(({
           {/* Assignment badge — shown to both owner and assignee */}
           {(task.assignedToUsername || task.assignedByUsername) && (
             <TaskAssignmentBadge
-              isOwner={task.isOwner ?? true}
+              isOwner={task.isOwner}
               assignedToUsername={task.assignedToUsername ?? null}
               assignedByUsername={task.assignedByUsername ?? null}
             />

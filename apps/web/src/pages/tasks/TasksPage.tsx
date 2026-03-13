@@ -76,7 +76,7 @@ const TasksPage = () => {
       const tasks = await taskService.getTasks({ view });
       setTasks(tasks);
       setError('');
-    } catch (err) {
+    } catch (err: unknown) {
       toast.error('Failed to load tasks');
       setError('Failed to load tasks');
       console.error(err);
@@ -90,7 +90,7 @@ const TasksPage = () => {
       setGroupsLoading(true);
       const groups = await taskGroupService.getGroups();
       setGroups(groups);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to load groups:', err);
     } finally {
       setGroupsLoading(false);
@@ -153,7 +153,7 @@ const TasksPage = () => {
       toast.success('Task created successfully');
       // Reload groups to update task counts
       loadGroups();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to create task:', err);
       toast.error('Failed to create task');
       // Re-throw so the form can display the error
@@ -168,7 +168,7 @@ const TasksPage = () => {
       toast.success('Event created successfully');
       // Navigate to calendar to see the event
       navigate('/calendar');
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to create event:', err);
       toast.error('Failed to create event');
       // Re-throw so the form can display the error
@@ -192,7 +192,7 @@ const TasksPage = () => {
       toast.success('Task updated successfully');
       // Reload groups to update task counts
       loadGroups();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to update task:', err);
       toast.error('Failed to update task');
       throw err;
@@ -207,7 +207,7 @@ const TasksPage = () => {
       const updatedTask = await taskService.updateTask(id, { completed: !task.completed });
       setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
       toast.success(updatedTask.completed ? 'Task completed!' : 'Task marked as incomplete');
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to toggle task completion:', err);
       toast.error('Failed to update task');
     }
@@ -258,7 +258,7 @@ const TasksPage = () => {
         toast.success('Task deleted successfully');
         // Reload groups to update task counts
         loadGroups();
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Failed to delete task:', err);
         toast.error('Failed to delete task');
       }
