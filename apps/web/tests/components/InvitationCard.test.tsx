@@ -1,10 +1,9 @@
-import React from 'react';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithProviders } from '../utils/test-utils';
 import { InvitationCard } from '../../src/features/sharing/components/InvitationCard';
 import { sharingService } from '../../src/services/sharingService';
-import type { EventShare } from '../../src/services/sharingService';
+import type { EventShareInvitation } from '../../src/services/sharingService';
 
 jest.mock('../../src/services/sharingService', () => ({
   sharingService: {
@@ -20,14 +19,14 @@ jest.mock('../../src/services/sharingService', () => ({
 
 const mockSharingService = sharingService as jest.Mocked<typeof sharingService>;
 
-const pendingShare: EventShare = {
-  id: 'share-1',
+const pendingShare: EventShareInvitation = {
+  shareId: 'share-1',
   eventId: 'event-1',
-  sharedWithUserId: 'user-2',
-  username: 'alice',
-  email: 'alice@example.com',
+  eventTitle: 'Team Planning Session',
+  eventStartDate: '2026-01-15T09:00:00Z',
+  eventEndDate: '2026-01-15T10:00:00Z',
+  sharedBy: { id: 'user-2', username: 'alice' },
   permission: 'View',
-  status: 'Pending',
   createdAt: '2026-01-01T00:00:00Z',
 };
 

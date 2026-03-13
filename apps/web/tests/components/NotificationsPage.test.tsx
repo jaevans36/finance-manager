@@ -1,4 +1,3 @@
-import React from 'react';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithProviders } from '../utils/test-utils';
@@ -165,13 +164,13 @@ describe('NotificationsPage', () => {
     mockNotificationService.getNotifications.mockResolvedValue([]);
     mockSharingService.getPendingInvitations.mockResolvedValue([
       {
-        id: 'share-1',
+        shareId: 'share-1',
         eventId: 'event-1',
-        sharedWithUserId: 'user-3',
-        username: 'bob',
-        email: 'bob@example.com',
+        eventTitle: 'Team Planning Session',
+        eventStartDate: '2026-03-10T09:00:00Z',
+        eventEndDate: '2026-03-10T10:00:00Z',
+        sharedBy: { id: 'user-3', username: 'bob' },
         permission: 'View',
-        status: 'Pending',
         createdAt: '2026-03-10T08:00:00Z',
       },
     ]);

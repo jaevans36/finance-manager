@@ -72,7 +72,7 @@ const NotificationsPage = () => {
             </h2>
             <div className="space-y-2">
               {pendingInvitations.map((share) => (
-                <InvitationCard key={share.id} share={share} />
+                <InvitationCard key={share.shareId} share={share} />
               ))}
             </div>
           </section>

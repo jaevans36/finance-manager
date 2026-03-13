@@ -13,6 +13,22 @@ export interface EventShare {
   createdAt: string;
 }
 
+export interface UserSummary {
+  id: string;
+  username: string;
+}
+
+export interface EventShareInvitation {
+  shareId: string;
+  eventId: string;
+  eventTitle: string;
+  eventStartDate: string;
+  eventEndDate: string;
+  sharedBy: UserSummary;
+  permission: EventSharePermission;
+  createdAt: string;
+}
+
 export interface CreateEventShareRequest {
   usernameOrEmail: string;
   permission: EventSharePermission;
@@ -42,8 +58,8 @@ export const sharingService = {
     await apiClient.delete(`/events/${eventId}/shares/${shareId}`);
   },
 
-  async getPendingInvitations(): Promise<EventShare[]> {
-    const response = await apiClient.get<EventShare[]>('/sharing/invitations');
+  async getPendingInvitations(): Promise<EventShareInvitation[]> {
+    const response = await apiClient.get<EventShareInvitation[]>('/sharing/invitations');
     return response.data;
   },
 
