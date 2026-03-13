@@ -179,7 +179,7 @@ export const TaskItem = memo(({
             variant="outline"
             size="sm"
             onClick={() => onAssign(task)}
-            aria-label={`Assign task "${task.title}"`}
+            aria-label={`Assign task '${task.title}'`}
           >
             Assign
           </Button>
