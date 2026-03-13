@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode, type FormEvent } from 'react';
 import { UserPlus, Trash2, Shield, Eye, Settings, Loader2 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ interface ShareEventModalProps {
   onClose: () => void;
 }
 
-const PERMISSION_OPTIONS: { value: EventSharePermission; label: string; icon: React.ReactNode }[] = [
+const PERMISSION_OPTIONS: { value: EventSharePermission; label: string; icon: ReactNode }[] = [
   { value: 'View', label: 'View', icon: <Eye size={12} /> },
   { value: 'Edit', label: 'Edit', icon: <Shield size={12} /> },
   { value: 'Manage', label: 'Manage', icon: <Settings size={12} /> },
@@ -36,7 +36,7 @@ export function ShareEventModal({ eventId, eventTitle, onClose }: ShareEventModa
   const [permission, setPermission] = useState<EventSharePermission>('View');
   const [error, setError] = useState<string | null>(null);
 
-  const handleShare = async (e: React.FormEvent) => {
+  const handleShare = async (e: FormEvent) => {
     e.preventDefault();
     const value = usernameOrEmail.trim();
     if (!value) return;
