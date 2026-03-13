@@ -253,26 +253,38 @@ public class StatisticsControllerTests
     }
 
     [Theory]
-    [InlineData(0)] // Sunday -> Monday
-    [InlineData(1)] // Monday -> Monday
-    [InlineData(2)] // Tuesday -> Monday
-    [InlineData(3)] // Wednesday -> Monday
-    [InlineData(4)] // Thursday -> Monday
-    [InlineData(5)] // Friday -> Monday
-    [InlineData(6)] // Saturday -> Monday
+    [InlineData(1)] // Monday -> same Monday (Jan 5)
+    [InlineData(2)] // Tuesday -> Monday Jan 5
+    [InlineData(3)] // Wednesday -> Monday Jan 5
+    [InlineData(4)] // Thursday -> Monday Jan 5
+    [InlineData(5)] // Friday -> Monday Jan 5
+    [InlineData(6)] // Saturday -> Monday Jan 5
     public void GetWeekStart_CalculatesCorrectMonday(int dayOfWeek)
     {
-        // Arrange - Create a date with specific day of week
-        var testDate = new DateTime(2026, 1, 4 + dayOfWeek); // Jan 4, 2026 is Sunday
-        
+        // Arrange - Jan 5 2026 is Monday; use Jan 4+dayOfWeek (Mon-Sat of same week)
+        var testDate = new DateTime(2026, 1, 4 + dayOfWeek);
+
         // Act - Use reflection to call private method
         var method = typeof(StatisticsController).GetMethod("GetWeekStart",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
         var result = (DateTime)method!.Invoke(null, new object[] { testDate })!;
 
-        // Assert - Should always return Monday Jan 5, 2026
+        // Assert - Should return Monday Jan 5, 2026
         var expectedMonday = new DateTime(2026, 1, 5);
         Assert.Equal(expectedMonday, result);
+        Assert.Equal(DayOfWeek.Monday, result.DayOfWeek);
+    }
+
+    [Fact]
+    public void GetWeekStart_Sunday_ReturnsPreviousMonday()
+    {
+        // ISO 8601: Sunday belongs to the week that started the previous Monday
+        var sunday = new DateTime(2026, 1, 4); // Sunday
+        var method = typeof(StatisticsController).GetMethod("GetWeekStart",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        var result = (DateTime)method!.Invoke(null, new object[] { sunday })!;
+
+        Assert.Equal(new DateTime(2025, 12, 29), result); // Previous Monday
         Assert.Equal(DayOfWeek.Monday, result.DayOfWeek);
     }
 
@@ -361,7 +373,9 @@ public class StatisticsControllerTests
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Equal("Weeks parameter must be between 1 and 52", badRequestResult.Value);
+        var value = badRequestResult.Value!;
+        var errorProp = value.GetType().GetProperty("error")?.GetValue(value) as string;
+        Assert.Equal("Weeks parameter must be between 1 and 52", errorProp);
         _mockStatisticsService.Verify(
             s => s.GetHistoricalStatisticsAsync(It.IsAny<Guid>(), It.IsAny<int>()),
             Times.Never);
@@ -378,7 +392,9 @@ public class StatisticsControllerTests
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Equal("Weeks parameter must be between 1 and 52", badRequestResult.Value);
+        var value = badRequestResult.Value!;
+        var errorProp = value.GetType().GetProperty("error")?.GetValue(value) as string;
+        Assert.Equal("Weeks parameter must be between 1 and 52", errorProp);
         _mockStatisticsService.Verify(
             s => s.GetHistoricalStatisticsAsync(It.IsAny<Guid>(), It.IsAny<int>()),
             Times.Never);

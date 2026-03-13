@@ -304,6 +304,53 @@ namespace FinanceApi.Migrations
                         });
                 });
 
+            modelBuilder.Entity("FinanceApi.Features.Events.Models.EventShare", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
+
+                    b.Property<string>("Permission")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("permission");
+
+                    b.Property<Guid>("SharedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("shared_by_user_id");
+
+                    b.Property<Guid>("SharedWithUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("shared_with_user_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SharedByUserId");
+
+                    b.HasIndex("SharedWithUserId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("EventId", "SharedWithUserId")
+                        .IsUnique();
+
+                    b.ToTable("event_shares", (string)null);
+                });
+
             modelBuilder.Entity("FinanceApi.Features.Finance.Models.Account", b =>
                 {
                     b.Property<Guid>("Id")
@@ -546,6 +593,57 @@ namespace FinanceApi.Migrations
                     b.ToTable("transactions", (string)null);
                 });
 
+            modelBuilder.Entity("FinanceApi.Features.Notifications.Models.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("entity_id");
+
+                    b.Property<string>("EntityTitle")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("entity_title");
+
+                    b.Property<int>("EntityType")
+                        .HasColumnType("integer")
+                        .HasColumnName("entity_type");
+
+                    b.Property<Guid>("FromUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("from_user_id");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_read");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer")
+                        .HasColumnName("type");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FromUserId");
+
+                    b.HasIndex("UserId", "IsRead", "CreatedAt")
+                        .HasDatabaseName("IX_notifications_user_read_created");
+
+                    b.ToTable("notifications", (string)null);
+                });
+
             modelBuilder.Entity("FinanceApi.Features.Settings.Models.UserSettings", b =>
                 {
                     b.Property<Guid>("Id")
@@ -593,6 +691,10 @@ namespace FinanceApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<Guid?>("AssignedToUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assigned_to_user_id");
 
                     b.Property<string>("BlockedReason")
                         .HasMaxLength(500)
@@ -678,6 +780,9 @@ namespace FinanceApi.Migrations
                         .HasColumnName("user_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AssignedToUserId")
+                        .HasDatabaseName("IX_tasks_assigned_to_user_id");
 
                     b.HasIndex("GroupId");
 
@@ -856,6 +961,33 @@ namespace FinanceApi.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("FinanceApi.Features.Events.Models.EventShare", b =>
+                {
+                    b.HasOne("FinanceApi.Features.Events.Models.Event", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FinanceApi.Features.Auth.Models.User", "SharedBy")
+                        .WithMany()
+                        .HasForeignKey("SharedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FinanceApi.Features.Auth.Models.User", "SharedWith")
+                        .WithMany()
+                        .HasForeignKey("SharedWithUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+
+                    b.Navigation("SharedBy");
+
+                    b.Navigation("SharedWith");
+                });
+
             modelBuilder.Entity("FinanceApi.Features.Finance.Models.Budget", b =>
                 {
                     b.HasOne("FinanceApi.Features.Finance.Models.Category", "Category")
@@ -894,6 +1026,25 @@ namespace FinanceApi.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("FinanceApi.Features.Notifications.Models.Notification", b =>
+                {
+                    b.HasOne("FinanceApi.Features.Auth.Models.User", "FromUser")
+                        .WithMany()
+                        .HasForeignKey("FromUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FinanceApi.Features.Auth.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FromUser");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("FinanceApi.Features.Settings.Models.UserSettings", b =>
                 {
                     b.HasOne("FinanceApi.Features.Auth.Models.User", "User")
@@ -907,6 +1058,11 @@ namespace FinanceApi.Migrations
 
             modelBuilder.Entity("FinanceApi.Features.Tasks.Models.Task", b =>
                 {
+                    b.HasOne("FinanceApi.Features.Auth.Models.User", "AssignedTo")
+                        .WithMany()
+                        .HasForeignKey("AssignedToUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("FinanceApi.Features.Tasks.Models.TaskGroup", "Group")
                         .WithMany("Tasks")
                         .HasForeignKey("GroupId")
@@ -922,6 +1078,8 @@ namespace FinanceApi.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("AssignedTo");
 
                     b.Navigation("Group");
 

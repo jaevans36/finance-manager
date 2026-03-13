@@ -4,6 +4,7 @@ using FinanceApi.Features.Events.DTOs;
 using FinanceApi.Features.Events.Validators;
 using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Common.ActivityLogs.Models;
+using FinanceApi.Features.Tasks.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinanceApi.Features.Events.Services;
@@ -192,53 +193,106 @@ public class EventService : IEventService
 
     public async System.Threading.Tasks.Task<EventDto?> GetEventByIdAsync(Guid userId, Guid eventId)
     {
+        // Try as owner first
         var eventEntity = await _context.Events
             .Include(e => e.Group)
             .FirstOrDefaultAsync(e => e.Id == eventId && e.UserId == userId);
 
-        return eventEntity == null ? null : await MapToEventDtoAsync(eventEntity);
+        if (eventEntity != null)
+        {
+            var dto = await MapToEventDtoAsync(eventEntity);
+            dto.IsOwner = true;
+            return dto;
+        }
+
+        // Try as accepted share recipient
+        var share = await _context.EventShares
+            .Include(s => s.Event)
+                .ThenInclude(e => e.Group)
+            .FirstOrDefaultAsync(s => s.EventId == eventId
+                && s.SharedWithUserId == userId
+                && s.Status == ShareStatus.Accepted);
+
+        if (share == null)
+            return null;
+
+        var sharedDto = await MapToEventDtoAsync(share.Event);
+        sharedDto.IsOwner = false;
+        sharedDto.MyPermission = share.Permission;
+        var sharer = await _context.Users.FindAsync(share.SharedByUserId);
+        sharedDto.SharedBy = sharer == null ? null : new UserSummaryDto { Id = sharer.Id, Username = sharer.Username };
+        return sharedDto;
     }
 
     public async System.Threading.Tasks.Task<List<EventDto>> GetEventsAsync(
-        Guid userId, 
-        DateTime? startDate = null, 
+        Guid userId,
+        DateTime? startDate = null,
         DateTime? endDate = null,
         Guid? groupId = null)
     {
-        var query = _context.Events
+        // ── Owned events ──────────────────────────────────────────────────
+        var ownedQuery = _context.Events
             .Include(e => e.Group)
             .Where(e => e.UserId == userId);
 
-        // Filter by date range
         if (startDate.HasValue)
         {
             var startUtc = DateTime.SpecifyKind(startDate.Value, DateTimeKind.Utc);
-            query = query.Where(e => e.EndDate >= startUtc);
+            ownedQuery = ownedQuery.Where(e => e.EndDate >= startUtc);
         }
 
         if (endDate.HasValue)
         {
             var endUtc = DateTime.SpecifyKind(endDate.Value, DateTimeKind.Utc);
-            query = query.Where(e => e.StartDate <= endUtc);
+            ownedQuery = ownedQuery.Where(e => e.StartDate <= endUtc);
         }
 
-        // Filter by group
         if (groupId.HasValue)
         {
-            query = query.Where(e => e.GroupId == groupId.Value);
+            ownedQuery = ownedQuery.Where(e => e.GroupId == groupId.Value);
         }
 
-        var events = await query
-            .OrderBy(e => e.StartDate)
+        var ownedEvents = await ownedQuery.OrderBy(e => e.StartDate).ToListAsync();
+
+        // ── Accepted shared events ────────────────────────────────────────
+        var acceptedShares = await _context.EventShares
+            .Include(s => s.Event)
+                .ThenInclude(e => e.Group)
+            .Where(s => s.SharedWithUserId == userId && s.Status == ShareStatus.Accepted)
             .ToListAsync();
 
+        // Apply same date/group filters to shared events
+        var filteredShares = acceptedShares
+            .Where(s =>
+                (!startDate.HasValue || s.Event.EndDate >= DateTime.SpecifyKind(startDate.Value, DateTimeKind.Utc)) &&
+                (!endDate.HasValue   || s.Event.StartDate <= DateTime.SpecifyKind(endDate.Value, DateTimeKind.Utc)) &&
+                (!groupId.HasValue   || s.Event.GroupId == groupId.Value))
+            .OrderBy(s => s.Event.StartDate)
+            .ToList();
+
+        // ── Build result ─────────────────────────────────────────────────
         var eventDtos = new List<EventDto>();
-        foreach (var eventEntity in events)
+
+        foreach (var eventEntity in ownedEvents)
         {
-            eventDtos.Add(await MapToEventDtoAsync(eventEntity));
+            var dto = await MapToEventDtoAsync(eventEntity);
+            dto.IsOwner = true;
+            eventDtos.Add(dto);
         }
 
-        return eventDtos;
+        foreach (var share in filteredShares)
+        {
+            var dto = await MapToEventDtoAsync(share.Event);
+            dto.IsOwner = false;
+            dto.MyPermission = share.Permission;
+
+            var sharer = await _context.Users.FindAsync(share.SharedByUserId);
+            dto.SharedBy = sharer == null ? null : new UserSummaryDto { Id = sharer.Id, Username = sharer.Username };
+
+            eventDtos.Add(dto);
+        }
+
+        return eventDtos.OrderBy(e => e.StartDate).ToList();
     }
 
     private async System.Threading.Tasks.Task<EventDto> MapToEventDtoAsync(Event eventEntity)

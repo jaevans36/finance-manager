@@ -35,6 +35,11 @@ export interface Task {
   subtasks?: Task[];
   createdAt: string;
   updatedAt: string;
+  assignedToUserId: string | null;
+  assignedToUsername: string | null;
+  assignedByUserId: string | null;
+  assignedByUsername: string | null;
+  isOwner: boolean;
 }
 
 interface CreateTaskInput {
@@ -65,6 +70,7 @@ interface TaskQueryParams {
   startDate?: string;
   endDate?: string;
   status?: TaskStatus;
+  view?: 'all' | 'mine' | 'assigned-to-me' | 'assigned-by-me';
 }
 
 export const taskService = {
@@ -204,6 +210,18 @@ export const taskService = {
 
   async getEnergyDistribution(): Promise<EnergyDistribution> {
     const response = await apiClient.get<EnergyDistribution>('/tasks/energy-distribution');
+    return response.data;
+  },
+
+  async assignTask(id: string, usernameOrEmail: string): Promise<Task> {
+    const response = await apiClient.patch<Task>(`/tasks/${id}/assign`, { usernameOrEmail });
+    statisticsService.invalidateCache();
+    return response.data;
+  },
+
+  async unassignTask(id: string): Promise<Task> {
+    const response = await apiClient.patch<Task>(`/tasks/${id}/unassign`, {});
+    statisticsService.invalidateCache();
     return response.data;
   },
 };

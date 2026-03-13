@@ -509,6 +509,17 @@ const WeeklyProgressPage = () => {
             value={stats.totalTasks - stats.completedTasks}
             valueColor={chartColors.secondary}
           />
+          {/* Delegated tasks card — only meaningful when stats are loaded */}
+          <StatisticCard
+            label="Delegated tasks"
+            value={stats?.delegated ?? 0}
+            valueColor={stats?.delegated ? undefined : 'hsl(var(--muted-foreground))'}
+          />
+          <StatisticCard
+            label="Assigned to me"
+            value={stats?.assignedToMe ?? 0}
+            valueColor={stats?.assignedToMe ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))'}
+          />
         </div>
       )}
 

@@ -79,4 +79,17 @@ export const queryKeys = {
     current: () => [...queryKeys.settings.all, 'current'] as const,
     wipSummary: () => [...queryKeys.settings.all, 'wip-summary'] as const,
   },
+
+  notifications: {
+    all: ['notifications'] as const,
+    lists: () => [...queryKeys.notifications.all, 'list'] as const,
+    list: (params?: Record<string, unknown>) => [...queryKeys.notifications.lists(), params] as const,
+    unreadCount: () => [...queryKeys.notifications.all, 'unread-count'] as const,
+  },
+
+  eventShares: {
+    all: ['eventShares'] as const,
+    byEvent: (eventId: string) => [...queryKeys.eventShares.all, eventId] as const,
+    invitations: () => [...queryKeys.eventShares.all, 'invitations'] as const,
+  },
 } as const;

@@ -8,6 +8,7 @@ import { SubtaskProgress } from './SubtaskProgress';
 import { StatusBadge } from './StatusBadge';
 import { QuadrantBadge } from './QuadrantBadge';
 import { EnergyBadge } from './EnergyBadge';
+import { TaskAssignmentBadge } from '../../features/tasks/components/TaskAssignmentBadge';
 
 interface TaskItemProps {
   task: Task;
@@ -18,6 +19,7 @@ interface TaskItemProps {
   isSubtaskExpanded?: boolean;
   /** Toggle the subtask expansion for this task */
   onToggleSubtaskExpand?: (taskId: string) => void;
+  onAssign?: (task: Task) => void;
 }
 
 const getPriorityVariant = (priority: string) => {
@@ -41,6 +43,7 @@ export const TaskItem = memo(({
   onDelete,
   isSubtaskExpanded = false,
   onToggleSubtaskExpand,
+  onAssign,
 }: TaskItemProps) => {
   const isOverdue = task.dueDate && !task.completed && new Date(task.dueDate) < new Date();
   
@@ -95,6 +98,14 @@ export const TaskItem = memo(({
           <StatusBadge status={task.status} size="sm" />
           {task.quadrant && <QuadrantBadge quadrant={task.quadrant} size="sm" />}
           {task.energyLevel && <EnergyBadge energy={task.energyLevel} size="sm" showLabel />}
+          {/* Assignment badge — shown to both owner and assignee */}
+          {(task.assignedToUsername || task.assignedByUsername) && (
+            <TaskAssignmentBadge
+              isOwner={task.isOwner}
+              assignedToUsername={task.assignedToUsername ?? null}
+              assignedByUsername={task.assignedByUsername ?? null}
+            />
+          )}
           {isOverdue && <Badge variant="destructive">OVERDUE</Badge>}
           {task.hasSubtasks && (
             <Badge
@@ -162,6 +173,17 @@ export const TaskItem = memo(({
         >
           Edit
         </Button>
+        {/* Only show Assign button to task owner */}
+        {task.isOwner !== false && onAssign && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onAssign(task)}
+            aria-label={`Assign task '${task.title}'`}
+          >
+            Assign
+          </Button>
+        )}
         <Button
           variant="destructive"
           size="sm"

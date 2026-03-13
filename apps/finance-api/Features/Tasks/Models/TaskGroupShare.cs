@@ -7,7 +7,15 @@ namespace FinanceApi.Features.Tasks.Models;
 public enum SharePermission
 {
     View,
-    Edit
+    Edit,
+    Manage
+}
+
+public enum ShareStatus
+{
+    Pending,
+    Accepted,
+    Declined
 }
 
 [Table("task_group_shares")]

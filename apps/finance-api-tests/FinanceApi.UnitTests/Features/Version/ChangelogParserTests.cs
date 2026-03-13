@@ -185,9 +185,9 @@ public class ChangelogParserTests : IDisposable
 ## [0.14.0] - 2026-01-01 ""Test""
 
 ### Added
-- Dashboard: New analytics view
-- Tasks: Quick add button
-- API: Bulk update endpoint
+- **Dashboard**: New analytics view
+- **Tasks**: Quick add button
+- **API**: Bulk update endpoint
 ";
         await WriteChangelogAsync(changelog);
 
@@ -239,16 +239,16 @@ public class ChangelogParserTests : IDisposable
 ## [0.14.0] - 2026-01-01 ""Test""
 
 ### Added
-- Feature: New feature
+- **Feature**: New feature
 
 ### Fixed
-- Bug: Fixed bug
+- **Bug**: Fixed bug
 
-### Performance
-- Performance: Improved speed
+### Changed
+- **Change**: Some change
 
 ### Security
-- Security: Updated deps
+- **Security**: Updated deps
 ";
         await WriteChangelogAsync(changelog);
 
@@ -258,13 +258,13 @@ public class ChangelogParserTests : IDisposable
         // Assert
         var addedItem = result[0].Sections.First(s => s.Section == "Added").Items[0];
         Assert.Equal("feat", addedItem.Type);
-        
+
         var fixedItem = result[0].Sections.First(s => s.Section == "Fixed").Items[0];
         Assert.Equal("fix", fixedItem.Type);
-        
-        var perfItem = result[0].Sections.First(s => s.Section == "Performance").Items[0];
-        Assert.Equal("perf", perfItem.Type);
-        
+
+        var changedItem = result[0].Sections.First(s => s.Section == "Changed").Items[0];
+        Assert.Equal("feat", changedItem.Type);
+
         var securityItem = result[0].Sections.First(s => s.Section == "Security").Items[0];
         Assert.Equal("security", securityItem.Type);
     }
