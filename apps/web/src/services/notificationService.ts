@@ -28,7 +28,7 @@ export interface NotificationListParams {
 }
 
 export interface UnreadCountResponse {
-  count: number;
+  unreadCount: number;
 }
 
 export const notificationService = {
