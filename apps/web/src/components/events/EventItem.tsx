@@ -4,11 +4,14 @@ import type { Event } from '../../types/event';
 import { REMINDER_OPTIONS } from '../../types/event';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
+import { EventShareBadge } from '../../features/events/components/EventShareBadge';
 
 interface EventItemProps {
   event: Event;
   onEdit: (event: Event) => void;
   onDelete: (id: string) => void;
+  onShare?: (event: Event) => void;
+  shareCount?: number;
 }
 
 const formatEventDate = (startDate: string, endDate: string, isAllDay: boolean): string => {
@@ -46,6 +49,8 @@ export const EventItem = memo(({
   event,
   onEdit,
   onDelete,
+  onShare,
+  shareCount,
 }: EventItemProps) => {
   const isPast = new Date(event.endDate) < new Date();
   const reminderText = getReminderLabel(event.reminderMinutes);
@@ -82,6 +87,7 @@ export const EventItem = memo(({
               <Bell className="mr-1 inline h-3 w-3 align-middle" />{reminderText}
             </Badge>
           )}
+          {(shareCount ?? 0) > 0 && <EventShareBadge shareCount={shareCount ?? 0} />}
         </div>
 
         {event.description && (
@@ -97,6 +103,16 @@ export const EventItem = memo(({
       </div>
 
       <div className="flex gap-[5px]">
+        {onShare && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onShare(event)}
+            aria-label={`Share event '${event.title}'`}
+          >
+            Share
+          </Button>
+        )}
         <Button
           variant="default"
           size="sm"
