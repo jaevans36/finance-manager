@@ -28,6 +28,8 @@ import { TaskGroup } from '../../types/taskGroup';
 import { DashboardLayout } from '../dashboard/components';
 import { WipCounter } from '../../components/tasks/WipCounter';
 import type { CreateEventRequest } from '../../types/event';
+import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { AssignTaskModal } from '../../features/tasks/components/AssignTaskModal';
 
 const TasksPage = () => {
   const navigate = useNavigate();
@@ -42,6 +44,8 @@ const TasksPage = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [createType, setCreateType] = useState<'task' | 'event'>('task');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [taskView, setTaskView] = useState<'all' | 'mine' | 'assigned-to-me' | 'assigned-by-me'>('all');
+  const [assigningTask, setAssigningTask] = useState<Task | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Keyboard shortcuts: N = new item, / = search, Esc = close modals/unfocus search
@@ -66,10 +70,10 @@ const TasksPage = () => {
     }
   }, [showCreateForm, editingTask]);
 
-  const loadTasks = async () => {
+  const loadTasks = async (view?: 'all' | 'mine' | 'assigned-to-me' | 'assigned-by-me') => {
     try {
       setLoading(true);
-      const tasks = await taskService.getTasks();
+      const tasks = await taskService.getTasks({ view });
       setTasks(tasks);
       setError('');
     } catch (err) {
@@ -94,10 +98,10 @@ const TasksPage = () => {
   };
 
   useEffect(() => {
-    loadTasks();
+    loadTasks(taskView);
     loadGroups();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [taskView]);
 
   const filteredTasks = tasks
     .filter((task) => {
@@ -349,6 +353,19 @@ const TasksPage = () => {
             <WipCounter />
           </div>
 
+          <Tabs
+            value={taskView}
+            onValueChange={(v) => setTaskView(v as typeof taskView)}
+            className="mb-4"
+          >
+            <TabsList>
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="mine">Mine</TabsTrigger>
+              <TabsTrigger value="assigned-to-me">Assigned to me</TabsTrigger>
+              <TabsTrigger value="assigned-by-me">Assigned by me</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
           {showCreateForm && !isViewOnlyGroup ? (
             createType === 'task' ? (
               <CreateTaskForm
@@ -405,15 +422,16 @@ const TasksPage = () => {
               onEdit={setEditingTask}
               onDelete={handleDeleteTask}
               onSubtaskChange={handleSubtaskChange}
+              onAssign={setAssigningTask}
             />
           )}
         </main>
       </DashboardLayout>
 
       {editingTask && (
-        <TaskDetailModal 
-          task={editingTask} 
-          onSubmit={handleUpdateTask} 
+        <TaskDetailModal
+          task={editingTask}
+          onSubmit={handleUpdateTask}
           onCancel={() => setEditingTask(null)}
           onDelete={handleDeleteTask}
           onToggleComplete={handleToggleComplete}
@@ -422,6 +440,13 @@ const TasksPage = () => {
           onEnergyChange={handleEnergyChange}
           onEstimateChange={handleEstimateChange}
           onSubtaskChange={handleSubtaskChange}
+        />
+      )}
+
+      {assigningTask && (
+        <AssignTaskModal
+          task={assigningTask}
+          onClose={() => setAssigningTask(null)}
         />
       )}
     </PageLayout>
