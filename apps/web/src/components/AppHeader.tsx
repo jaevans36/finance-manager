@@ -32,6 +32,7 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import CalculatorModal from './CalculatorModal';
+import { NotificationBell } from './layout/NotificationBell';
 
 export const AppHeader = () => {
   const navigate = useNavigate();
@@ -136,6 +137,9 @@ export const AppHeader = () => {
         >
           <HelpCircle size={20} />
         </Button>
+
+        {/* Notification bell */}
+        <NotificationBell />
 
         {/* Calculator button */}
         <Button
