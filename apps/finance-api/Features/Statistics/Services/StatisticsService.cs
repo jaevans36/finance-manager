@@ -134,21 +134,6 @@ public class StatisticsService : IStatisticsService
         {
             Id = t.Id,
             Title = t.Title,
-            Priority = t.Priority.ToString(),
-            DueDate = t.DueDate,
-            Completed = t.Completed,
-            CompletedAt = t.CompletedAt,
-            GroupId = t.GroupId,
-            GroupName = t.Group?.Name,
-            GroupColour = t.Group?.Colour,
-            CreatedAt = t.CreatedAt,
-            UpdatedAt = t.UpdatedAt
-        }).ToList();
-
-        var taskDtos = tasks.Select(t => new TaskDto
-        {
-            Id = t.Id,
-            Title = t.Title,
             Description = t.Description,
             Priority = t.Priority.ToString(),
             DueDate = t.DueDate,

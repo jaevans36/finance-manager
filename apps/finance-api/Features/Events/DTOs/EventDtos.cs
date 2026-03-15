@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using FinanceApi.Features.Tasks.Models;
+using FinanceApi.Features.Users.DTOs;
 
 namespace FinanceApi.Features.Events.DTOs;
 

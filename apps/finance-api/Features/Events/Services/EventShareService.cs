@@ -2,6 +2,7 @@ using FinanceApi.Data;
 using FinanceApi.Features.Events.Models;
 using FinanceApi.Features.Events.DTOs;
 using FinanceApi.Features.Tasks.Models;
+using FinanceApi.Features.Users.DTOs;
 using FinanceApi.Features.Notifications.Services;
 using FinanceApi.Features.Notifications.Models;
 using Microsoft.EntityFrameworkCore;

@@ -5,6 +5,7 @@ using FinanceApi.Features.Events.Validators;
 using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Common.ActivityLogs.Models;
 using FinanceApi.Features.Tasks.Models;
+using FinanceApi.Features.Users.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinanceApi.Features.Events.Services;
