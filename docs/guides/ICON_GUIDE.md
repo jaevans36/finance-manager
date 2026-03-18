@@ -1,5 +1,43 @@
 # Icon Usage Guide
 
+## Brand Mark — AppLogo
+
+The application logo is a custom SVG component at `apps/web/src/components/AppLogo.tsx`.
+It renders a 2×2 priority grid (a reference to the Eisenhower Matrix built into the app):
+
+| Cell | Fill | Meaning |
+|------|------|---------|
+| Top-left | Solid `--brand` teal | Urgent + Important |
+| Top-right | 55% opacity teal | Important, not urgent |
+| Bottom-left | 28% opacity teal | Urgent, not important |
+| Bottom-right | Outline only | Neither |
+
+```tsx
+import { AppLogo } from '@/components/AppLogo';
+
+<AppLogo size={24} />          // header (default)
+<AppLogo size={48} />          // larger display
+<AppLogo size={16} className="opacity-70" />  // small/subdued
+```
+
+The fill uses the CSS variable `--brand` so it adapts to light/dark mode automatically. Never hardcode
+a colour when using `AppLogo` — let the theme drive it.
+
+### Favicon & PWA assets
+
+| File | Purpose |
+|------|---------|
+| `apps/web/public/favicon.svg` | Browser tab icon (solid hex values, no CSS vars) |
+| `apps/web/public/site.webmanifest` | PWA manifest — name, theme colour, icon |
+
+To regenerate raster variants (iOS home screen, Android PWA splash):
+1. Open `apps/web/public/favicon.svg` in Inkscape or use [realfavicongenerator.net](https://realfavicongenerator.net)
+2. Export `apple-touch-icon.png` at 180×180, `icon-192.png` at 192×192, `icon-512.png` at 512×512
+3. Place all files in `apps/web/public/`
+4. Update `site.webmanifest` to reference the PNG icons alongside the SVG entry
+
+---
+
 ## Using Lucide React Icons
 
 We've standardized on [Lucide React](https://lucide.dev/) for all icons in the application. This provides a consistent, modern, flat icon design system.

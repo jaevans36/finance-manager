@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!--
+    Life Manager — Priority Grid mark.
+    32×32 viewBox: outer pad 1px, gap 4px, each cell 13×13.
+    Uses solid hex values (no CSS variables) for browser compatibility.
+    Light/dark: teal reads well on both light and dark browser chrome.
+  -->
+
+  <!-- Top-left: solid teal (urgent + important) -->
+  <rect x="1" y="1" width="13" height="13" rx="2.5" fill="#21B8A4"/>
+
+  <!-- Top-right: 55% opacity (important, not urgent) -->
+  <rect x="18" y="1" width="13" height="13" rx="2.5" fill="#21B8A4" opacity="0.55"/>
+
+  <!-- Bottom-left: 28% opacity (urgent, not important) -->
+  <rect x="1" y="18" width="13" height="13" rx="2.5" fill="#21B8A4" opacity="0.28"/>
+
+  <!-- Bottom-right: outline only (not urgent, not important) -->
+  <rect x="18" y="18" width="13" height="13" rx="2.5" stroke="#21B8A4" stroke-width="2" fill="none"/>
+</svg>

@@ -10,6 +10,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Alert, AlertDescription } from '../../components/ui/alert';
+import { AppLogo } from '../AppLogo';
 
 export const RegisterForm = () => {
   const {
@@ -115,6 +116,10 @@ export const RegisterForm = () => {
 
   return (
     <div className="mx-auto max-w-[400px] p-5">
+      <div className="mb-6 flex flex-col items-center gap-2">
+        <AppLogo size={48} />
+        <span className="text-xl font-bold tracking-tight text-foreground">Life Manager</span>
+      </div>
       <h2 className="mb-5 text-foreground">Create Account</h2>
       
       {apiError && (
