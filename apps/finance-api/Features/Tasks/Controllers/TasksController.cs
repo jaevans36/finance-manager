@@ -13,11 +13,13 @@ public class TasksController : ControllerBase
 {
     private readonly ITaskService _taskService;
     private readonly IClassificationSuggestionService _classificationSuggestionService;
+    private readonly ITaskPermissionService _taskPermissionService;
 
-    public TasksController(ITaskService taskService, IClassificationSuggestionService classificationSuggestionService)
+    public TasksController(ITaskService taskService, IClassificationSuggestionService classificationSuggestionService, ITaskPermissionService taskPermissionService)
     {
         _taskService = taskService;
         _classificationSuggestionService = classificationSuggestionService;
+        _taskPermissionService = taskPermissionService;
     }
 
     /// <summary>
@@ -31,10 +33,11 @@ public class TasksController : ControllerBase
         [FromQuery] Guid? groupId,
         [FromQuery] bool? completed,
         [FromQuery] bool? rootOnly,
-        [FromQuery] string? status)
+        [FromQuery] string? status,
+        [FromQuery] string? view)
     {
         var userId = GetUserId();
-        var tasks = await _taskService.GetTasksAsync(userId, startDate, endDate, priority, groupId, completed, rootOnly, status);
+        var tasks = await _taskService.GetTasksAsync(userId, startDate, endDate, priority, groupId, completed, rootOnly, status, view);
         return Ok(tasks);
     }
 
@@ -303,6 +306,44 @@ public class TasksController : ControllerBase
         var userId = GetUserId();
         var distribution = await _taskService.GetEnergyDistributionAsync(userId);
         return Ok(distribution);
+    }
+
+    [HttpPatch("{id}/assign")]
+    public async System.Threading.Tasks.Task<ActionResult<TaskDto>> AssignTask(Guid id, [FromBody] AssignTaskRequest request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var task = await _taskService.AssignTaskAsync(userId, id, request.UsernameOrEmail);
+            return Ok(task);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { error = new { message = "Task not found or you are not the owner." } });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = new { message = ex.Message } });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = new { message = ex.Message } });
+        }
+    }
+
+    [HttpPatch("{id}/unassign")]
+    public async System.Threading.Tasks.Task<ActionResult<TaskDto>> UnassignTask(Guid id)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var task = await _taskService.UnassignTaskAsync(userId, id);
+            return Ok(task);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { error = new { message = "Task not found or you are not the owner." } });
+        }
     }
 
     private Guid GetUserId()

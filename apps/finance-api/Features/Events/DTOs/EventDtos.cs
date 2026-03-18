@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using FinanceApi.Features.Tasks.Models;
+using FinanceApi.Features.Users.DTOs;
 
 namespace FinanceApi.Features.Events.DTOs;
 
@@ -65,4 +67,9 @@ public class EventDto
     public string? GroupColour { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+
+    // Sharing metadata — populated when caller is not the event owner
+    public bool IsOwner { get; set; } = true;
+    public UserSummaryDto? SharedBy { get; set; }
+    public SharePermission? MyPermission { get; set; }
 }

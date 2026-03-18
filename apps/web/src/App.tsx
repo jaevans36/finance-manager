@@ -35,6 +35,7 @@ const SystemSettings = lazy(() => import('./pages/admin/SystemSettings'));
 const AdminLogs = lazy(() => import('./pages/admin/AdminLogs'));
 const HelpPage = lazy(() => import('./pages/help/HelpPage'));
 const NotFoundPage = lazy(() => import('./pages/errors/NotFoundPage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 
 function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(false);
@@ -194,6 +195,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <HelpPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/notifications"
+                  element={
+                    <ProtectedRoute>
+                      <NotificationsPage />
                     </ProtectedRoute>
                   }
                 />

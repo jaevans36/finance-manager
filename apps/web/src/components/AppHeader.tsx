@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import {
-  LayoutDashboard,
+  Home,
   LayoutGrid,
   ListTodo,
   Calendar,
@@ -32,6 +32,8 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import CalculatorModal from './CalculatorModal';
+import { NotificationBell } from './layout/NotificationBell';
+import { AppLogo } from './AppLogo';
 
 export const AppHeader = () => {
   const navigate = useNavigate();
@@ -60,7 +62,7 @@ export const AppHeader = () => {
     currentTime.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 
   const navigationItems = [
-    { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/dashboard', icon: Home, label: 'Dashboard' },
     { path: '/tasks', icon: ListTodo, label: 'Tasks' },
     { path: '/matrix', icon: LayoutGrid, label: 'Matrix' },
     { path: '/suggestions', icon: Sparkles, label: 'Suggestions' },
@@ -82,7 +84,7 @@ export const AppHeader = () => {
           onClick={() => navigate('/dashboard')}
           className="flex items-center gap-2 text-xl font-bold text-primary transition-colors hover:text-success md:text-lg"
         >
-          <LayoutDashboard size={24} />
+          <AppLogo size={24} />
           Life Manager
         </button>
 
@@ -136,6 +138,9 @@ export const AppHeader = () => {
         >
           <HelpCircle size={20} />
         </Button>
+
+        {/* Notification bell */}
+        <NotificationBell />
 
         {/* Calculator button */}
         <Button

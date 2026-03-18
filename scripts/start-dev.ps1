@@ -90,9 +90,10 @@ try {
         dotnet watch run
     }
 
-    # Start React Web App  
+    # Start React Web App
     $jobs += Start-Job -ScriptBlock {
         Set-Location "C:\Projects\Finance Manager\apps\web"
+        $env:PATH = "$env:APPDATA\npm;$env:PATH"
         pnpm dev
     }
 

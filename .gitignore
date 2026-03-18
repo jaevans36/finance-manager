@@ -114,3 +114,6 @@ artifacts/
 *.nuget.targets
 *.nuget.dgspec.json
 *.nuget.cache
+
+# Git worktrees
+.worktrees/

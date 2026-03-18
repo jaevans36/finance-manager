@@ -12,6 +12,7 @@ interface TaskListProps {
   onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
   onSubtaskChange?: (taskId: string, counts: { subtaskCount: number; completedSubtaskCount: number }) => void;
+  onAssign?: (task: Task) => void;
 }
 
 const EXPANDED_STORAGE_KEY = 'life-manager:expanded-subtasks';
@@ -89,6 +90,7 @@ export const TaskList = ({
   onEdit,
   onDelete,
   onSubtaskChange,
+  onAssign,
 }: TaskListProps) => {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(readExpandedIds);
 
@@ -142,6 +144,7 @@ export const TaskList = ({
               onDelete={onDelete}
               isSubtaskExpanded={isExpanded}
               onToggleSubtaskExpand={handleToggleExpand}
+              onAssign={onAssign}
             />
             {isExpanded && (
               <div className="border-t border-border px-3 pb-3 pt-2">

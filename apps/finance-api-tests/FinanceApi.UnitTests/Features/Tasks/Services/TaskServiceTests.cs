@@ -8,6 +8,8 @@ using FinanceApi.Features.Tasks.DTOs;
 using FinanceApi.Features.Tasks.Models;
 using FinanceApi.Features.Auth.Models;
 using FinanceApi.Features.Common.ActivityLogs.Services;
+using FinanceApi.Features.Notifications.Services;
+using FinanceApi.Features.Settings.Services;
 using TaskModel = FinanceApi.Features.Tasks.Models.Task; // Alias to avoid ambiguity
 
 namespace FinanceApi.UnitTests.Features.Tasks.Services;
@@ -25,6 +27,8 @@ public class TaskServiceTests : IDisposable
 {
     private readonly FinanceDbContext _context;
     private readonly Mock<IActivityLogService> _mockActivityLogService;
+    private readonly Mock<IWipService> _mockWipService;
+    private readonly Mock<INotificationService> _mockNotificationService;
     private readonly TaskService _taskService;
     private readonly User _testUser;
 
@@ -36,8 +40,11 @@ public class TaskServiceTests : IDisposable
 
         _context = new FinanceDbContext(options);
         _mockActivityLogService = new Mock<IActivityLogService>();
+        _mockWipService = new Mock<IWipService>();
+        _mockNotificationService = new Mock<INotificationService>();
 
-        _taskService = new TaskService(_context, _mockActivityLogService.Object);
+        var taskGroupService = new TaskGroupService(_context, _mockActivityLogService.Object);
+        _taskService = new TaskService(_context, _mockActivityLogService.Object, taskGroupService, _mockWipService.Object, _mockNotificationService.Object);
 
         // Create a test user
         _testUser = new User

@@ -19,6 +19,7 @@ using FinanceApi.Features.Statistics.Services;
 using FinanceApi.Features.Version.Services;
 using FinanceApi.Features.Admin.Services;
 using FinanceApi.Features.Settings.Services;
+using FinanceApi.Features.Notifications.Services;
 using FinanceApi.Middleware;
 
 // Configure Serilog
@@ -107,6 +108,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ISubtaskService, SubtaskService>();
 builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IEventShareService, EventShareService>();
 builder.Services.AddScoped<TaskGroupService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
@@ -118,6 +120,8 @@ builder.Services.AddSingleton<FinanceApi.Features.Admin.Services.LogReaderServic
 builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 builder.Services.AddScoped<IWipService, WipService>();
 builder.Services.AddScoped<IClassificationSuggestionService, ClassificationSuggestionService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ITaskPermissionService, TaskPermissionService>();
 // Configure PostgreSQL with Entity Framework Core
 builder.Services.AddDbContext<FinanceDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -176,11 +180,14 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Apply any pending database migrations on startup
+// Apply any pending database migrations on startup (skip for in-memory databases used in testing)
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<FinanceDbContext>();
-    db.Database.Migrate();
+    if (db.Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory")
+    {
+        db.Database.Migrate();
+    }
 }
 
 // Configure the HTTP request pipeline

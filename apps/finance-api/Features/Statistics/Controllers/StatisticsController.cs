@@ -84,7 +84,8 @@ public class StatisticsController : ControllerBase
     private static DateTime GetWeekStart(DateTime date)
     {
         var dayOfWeek = (int)date.DayOfWeek;
-        var daysToSubtract = dayOfWeek == 0 ? 6 : dayOfWeek - 1; // Monday as start
+        // Sunday (0) is treated as the last day of the previous week; shift forward to Monday
+        var daysToSubtract = dayOfWeek == 0 ? 6 : dayOfWeek - 1; // Sunday shifts back 6 days to previous Monday
         return date.Date.AddDays(-daysToSubtract);
     }
 }

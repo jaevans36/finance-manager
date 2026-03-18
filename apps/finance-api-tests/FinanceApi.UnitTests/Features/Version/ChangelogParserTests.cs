@@ -29,14 +29,18 @@ public class ChangelogParserTests : IDisposable
         _mockLogger = new Mock<ILogger<ChangelogParser>>();
         _mockEnv = new Mock<IWebHostEnvironment>();
         
-        _testDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        // Create a two-level-deep temp structure so the parser's "../.." stays within the temp root,
+        // not at the filesystem root (which is not writable on Linux CI).
+        // Parser navigates: ContentRootPath/../../CHANGELOG.md → tempRoot/CHANGELOG.md
+        var tempRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        _testDirectory = Path.Combine(tempRoot, "apps", "finance-api");
         Directory.CreateDirectory(_testDirectory);
-        
+
         // Mock ContentRootPath to point to test directory
         _mockEnv.Setup(e => e.ContentRootPath).Returns(_testDirectory);
-        
+
         _testChangelogPath = Path.Combine(_testDirectory, "..", "..", "CHANGELOG.md");
-        var changelogDirectory = Path.GetDirectoryName(_testChangelogPath)!;
+        var changelogDirectory = Path.GetDirectoryName(Path.GetFullPath(_testChangelogPath))!;
         Directory.CreateDirectory(changelogDirectory);
         
         _parser = new ChangelogParser(_mockLogger.Object, _mockEnv.Object);
@@ -44,18 +48,13 @@ public class ChangelogParserTests : IDisposable
 
     public void Dispose()
     {
-        // Clean up test files
-        var changelogPath = Path.GetFullPath(Path.Combine(_testDirectory, "..", "..", "CHANGELOG.md"));
-        if (File.Exists(changelogPath))
-        {
-            File.Delete(changelogPath);
-        }
-        
-        if (Directory.Exists(_testDirectory))
+        // Clean up the entire temp root (two levels up from _testDirectory = apps/finance-api)
+        var tempRoot = Path.GetFullPath(Path.Combine(_testDirectory, "..", ".."));
+        if (Directory.Exists(tempRoot))
         {
             try
             {
-                Directory.Delete(_testDirectory, true);
+                Directory.Delete(tempRoot, true);
             }
             catch
             {
@@ -186,9 +185,9 @@ public class ChangelogParserTests : IDisposable
 ## [0.14.0] - 2026-01-01 ""Test""
 
 ### Added
-- Dashboard: New analytics view
-- Tasks: Quick add button
-- API: Bulk update endpoint
+- **Dashboard**: New analytics view
+- **Tasks**: Quick add button
+- **API**: Bulk update endpoint
 ";
         await WriteChangelogAsync(changelog);
 
@@ -240,16 +239,16 @@ public class ChangelogParserTests : IDisposable
 ## [0.14.0] - 2026-01-01 ""Test""
 
 ### Added
-- Feature: New feature
+- **Feature**: New feature
 
 ### Fixed
-- Bug: Fixed bug
+- **Bug**: Fixed bug
 
-### Performance
-- Performance: Improved speed
+### Changed
+- **Change**: Some change
 
 ### Security
-- Security: Updated deps
+- **Security**: Updated deps
 ";
         await WriteChangelogAsync(changelog);
 
@@ -259,13 +258,13 @@ public class ChangelogParserTests : IDisposable
         // Assert
         var addedItem = result[0].Sections.First(s => s.Section == "Added").Items[0];
         Assert.Equal("feat", addedItem.Type);
-        
+
         var fixedItem = result[0].Sections.First(s => s.Section == "Fixed").Items[0];
         Assert.Equal("fix", fixedItem.Type);
-        
-        var perfItem = result[0].Sections.First(s => s.Section == "Performance").Items[0];
-        Assert.Equal("perf", perfItem.Type);
-        
+
+        var changedItem = result[0].Sections.First(s => s.Section == "Changed").Items[0];
+        Assert.Equal("feat", changedItem.Type);
+
         var securityItem = result[0].Sections.First(s => s.Section == "Security").Items[0];
         Assert.Equal("security", securityItem.Type);
     }

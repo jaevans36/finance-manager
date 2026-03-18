@@ -25,6 +25,7 @@ $jobs += Start-Job -ScriptBlock {
 
 $jobs += Start-Job -ScriptBlock {
     Set-Location "C:\Projects\Finance Manager\apps\web"
+    $env:PATH = "$env:APPDATA\npm;$env:PATH"
     pnpm dev
 }
 

@@ -15,6 +15,8 @@ export interface WeeklyStatistics {
   completedTasks: number;
   completionPercentage: number;
   dailyBreakdown: DailyStatistics[];
+  delegated: number;
+  assignedToMe: number;
 }
 
 export interface UrgentTask {

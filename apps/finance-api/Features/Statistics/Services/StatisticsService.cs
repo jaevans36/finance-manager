@@ -79,6 +79,29 @@ public class StatisticsService : IStatisticsService
         var totalTasks = tasks.Count;
         var completedTasks = tasks.Count(t => t.Completed);
 
+        // Tasks I assigned to others
+        var delegatedTotal = await _context.Tasks
+            .CountAsync(t => t.UserId == userId && t.AssignedToUserId != null
+                && t.DueDate >= weekStartUtc && t.DueDate < weekEndUtc);
+
+        var delegatedCompleted = await _context.Tasks
+            .CountAsync(t => t.UserId == userId && t.AssignedToUserId != null
+                && t.Completed
+                && t.CompletedAt >= weekStartUtc && t.CompletedAt < weekEndUtc);
+
+        // Tasks assigned to me
+        var assignedToMeTotal = await _context.Tasks
+            .CountAsync(t => t.AssignedToUserId == userId
+                && t.DueDate >= weekStartUtc && t.DueDate < weekEndUtc);
+
+        var assignedToMeCompleted = await _context.Tasks
+            .CountAsync(t => t.AssignedToUserId == userId
+                && t.Completed
+                && t.CompletedAt >= weekStartUtc && t.CompletedAt < weekEndUtc);
+
+        var delegatedRate = delegatedTotal > 0 ? (double)delegatedCompleted / delegatedTotal : 0;
+        var assignedRate = assignedToMeTotal > 0 ? (double)assignedToMeCompleted / assignedToMeTotal : 0;
+
         return new WeeklyStatisticsDto
         {
             WeekStart = weekStartUtc,
@@ -86,31 +109,50 @@ public class StatisticsService : IStatisticsService
             TotalTasks = totalTasks,
             CompletedTasks = completedTasks,
             CompletionPercentage = totalTasks > 0 ? (decimal)completedTasks / totalTasks * 100 : 0,
-            DailyBreakdown = dailyBreakdown
+            DailyBreakdown = dailyBreakdown,
+            Delegated = new DelegatedStatsDto(delegatedTotal, delegatedCompleted, Math.Round(delegatedRate, 2)),
+            AssignedToMe = new AssignedToMeStatsDto(assignedToMeTotal, assignedToMeCompleted, Math.Round(assignedRate, 2))
         };
     }
 
     public async Task<DailyStatisticsDto> GetDailyStatisticsAsync(Guid userId, DateTime date)
     {
         var dayStart = date.Date;
-        var dayEnd = dayStart.AddDays(1).AddSeconds(-1);
+        var dayEnd = dayStart.AddDays(1);
 
         var tasks = await _context.Tasks
+            .Include(t => t.Group)
             .Where(t => t.UserId == userId &&
                         t.DueDate != null &&
                         t.DueDate >= dayStart &&
-                        t.DueDate <= dayEnd)
+                        t.DueDate < dayEnd)
             .ToListAsync();
 
         var totalTasks = tasks.Count;
         var completedTasks = tasks.Count(t => t.Completed);
+        var taskDtos = tasks.Select(t => new TaskDto
+        {
+            Id = t.Id,
+            Title = t.Title,
+            Description = t.Description,
+            Priority = t.Priority.ToString(),
+            DueDate = t.DueDate,
+            Completed = t.Completed,
+            CompletedAt = t.CompletedAt,
+            GroupId = t.GroupId,
+            GroupName = t.Group?.Name,
+            GroupColour = t.Group?.Colour,
+            CreatedAt = t.CreatedAt,
+            UpdatedAt = t.UpdatedAt
+        }).ToList();
 
         return new DailyStatisticsDto
         {
             Date = dayStart,
             TotalTasks = totalTasks,
             CompletedTasks = completedTasks,
-            CompletionRate = totalTasks > 0 ? (decimal)completedTasks / totalTasks * 100 : 0
+            CompletionRate = totalTasks > 0 ? (decimal)completedTasks / totalTasks * 100 : 0,
+            Tasks = taskDtos
         };
     }
 
@@ -123,8 +165,8 @@ public class StatisticsService : IStatisticsService
             .Where(t => t.UserId == userId &&
                         !t.Completed &&
                         t.DueDate != null &&
-                        t.DueDate >= DateTime.UtcNow &&
-                        t.DueDate <= weekEndUtc &&
+                        t.DueDate >= weekStartUtc &&
+                        t.DueDate < weekEndUtc &&
                         (t.Priority == Priority.Critical || t.Priority == Priority.High))
             .OrderBy(t => t.DueDate)
             .ThenByDescending(t => t.Priority)

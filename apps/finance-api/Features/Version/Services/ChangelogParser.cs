@@ -88,7 +88,7 @@ public class ChangelogParser : IChangelogParser
         var sections = new List<ChangelogSection>();
         
         // Parse sections like ### Added, ### Changed, ### Fixed
-        var sectionPattern = @"### (Added|Changed|Fixed|Deprecated|Removed|Security)";
+        var sectionPattern = @"### (Added|Changed|Fixed|Deprecated|Removed|Security|Performance|Perf)";
         var matches = Regex.Matches(content, sectionPattern);
 
         for (int i = 0; i < matches.Count; i++)
@@ -128,8 +128,10 @@ public class ChangelogParser : IChangelogParser
             // Remove leading "- " or "  - "
             trimmed = trimmed.TrimStart('-').Trim();
             
-            // Try to parse "**Category**: Description" format
+            // Try to parse "**Category**: Description" or "Category: Description" format
             var match = Regex.Match(trimmed, @"^\*\*([^*]+)\*\*:\s*(.+)$");
+            if (!match.Success)
+                match = Regex.Match(trimmed, @"^([A-Za-z][A-Za-z0-9 ]+):\s*(.+)$");
             if (match.Success)
             {
                 items.Add(new ChangelogItem

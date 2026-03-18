@@ -3,6 +3,8 @@ using FinanceApi.Features.Tasks.Models;
 using FinanceApi.Features.Tasks.DTOs;
 using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Common.ActivityLogs.Models;
+using FinanceApi.Features.Notifications.Models;
+using FinanceApi.Features.Notifications.Services;
 using FinanceApi.Features.Settings.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,15 +26,18 @@ public interface ITaskService
     System.Threading.Tasks.Task DeleteTaskAsync(Guid userId, Guid taskId);
     System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid userId, Guid taskId, bool includeSubtasks = false);
     System.Threading.Tasks.Task<List<TaskDto>> GetTasksAsync(
-        Guid userId, 
-        DateTime? startDate = null, 
+        Guid userId,
+        DateTime? startDate = null,
         DateTime? endDate = null,
         string? priority = null,
         Guid? groupId = null,
         bool? completed = null,
         bool? rootOnly = null,
-        string? status = null);
+        string? status = null,
+        string? view = null);
     System.Threading.Tasks.Task<List<TaskDto>> GetTasksByDateRangeAsync(Guid userId, DateTime startDate, DateTime endDate);
+    System.Threading.Tasks.Task<TaskDto> AssignTaskAsync(Guid requestingUserId, Guid taskId, string usernameOrEmail);
+    System.Threading.Tasks.Task<TaskDto> UnassignTaskAsync(Guid requestingUserId, Guid taskId);
 }
 
 public class TaskService : ITaskService
@@ -41,13 +46,15 @@ public class TaskService : ITaskService
     private readonly IActivityLogService _activityLogService;
     private readonly TaskGroupService _taskGroupService;
     private readonly IWipService _wipService;
+    private readonly INotificationService _notificationService;
 
-    public TaskService(FinanceDbContext context, IActivityLogService activityLogService, TaskGroupService taskGroupService, IWipService wipService)
+    public TaskService(FinanceDbContext context, IActivityLogService activityLogService, TaskGroupService taskGroupService, IWipService wipService, INotificationService notificationService)
     {
         _context = context;
         _activityLogService = activityLogService;
         _taskGroupService = taskGroupService;
         _wipService = wipService;
+        _notificationService = notificationService;
     }
 
     public async System.Threading.Tasks.Task<TaskDto> CreateTaskAsync(Guid userId, CreateTaskRequest request)
@@ -89,7 +96,9 @@ public class TaskService : ITaskService
     public async System.Threading.Tasks.Task<TaskDto> UpdateTaskAsync(Guid userId, Guid taskId, UpdateTaskRequest request)
     {
         var task = await _context.Tasks
-            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
+            .Include(t => t.AssignedTo)
+            .FirstOrDefaultAsync(t => t.Id == taskId &&
+                (t.UserId == userId || t.AssignedToUserId == userId));
 
         if (task == null)
         {
@@ -140,7 +149,9 @@ public class TaskService : ITaskService
     public async System.Threading.Tasks.Task<TaskDto> UpdateTaskStatusAsync(Guid userId, Guid taskId, UpdateTaskStatusRequest request)
     {
         var task = await _context.Tasks
-            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
+            .Include(t => t.AssignedTo)
+            .FirstOrDefaultAsync(t => t.Id == taskId &&
+                (t.UserId == userId || t.AssignedToUserId == userId));
 
         if (task == null)
         {
@@ -202,6 +213,20 @@ public class TaskService : ITaskService
             : ActivityType.TaskUpdated;
         await _activityLogService.LogAsync(userId, action, $"Changed task status to {newStatus}: {task.Title}", null, null);
 
+        // Notify owner if assignee completed the task
+        if (task.Status == FinanceApi.Features.Tasks.Models.TaskStatus.Completed
+            && task.AssignedToUserId == userId
+            && task.UserId != userId)
+        {
+            await _notificationService.CreateAsync(
+                task.UserId,
+                NotificationType.TaskCompleted,
+                NotificationEntityType.Task,
+                task.Id,
+                task.Title,
+                userId);
+        }
+
         return await MapToTaskDtoAsync(task);
     }
 
@@ -216,7 +241,9 @@ public class TaskService : ITaskService
     {
         var task = await _context.Tasks
             .Include(t => t.Group)
-            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
+            .Include(t => t.AssignedTo)
+            .FirstOrDefaultAsync(t => t.Id == taskId &&
+                (t.UserId == userId || t.AssignedToUserId == userId));
 
         if (task == null)
         {
@@ -372,7 +399,9 @@ public class TaskService : ITaskService
     {
         var task = await _context.Tasks
             .Include(t => t.Group)
-            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
+            .Include(t => t.AssignedTo)
+            .FirstOrDefaultAsync(t => t.Id == taskId &&
+                (t.UserId == userId || t.AssignedToUserId == userId));
 
         if (task == null)
         {
@@ -395,7 +424,9 @@ public class TaskService : ITaskService
     {
         var task = await _context.Tasks
             .Include(t => t.Group)
-            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
+            .Include(t => t.AssignedTo)
+            .FirstOrDefaultAsync(t => t.Id == taskId &&
+                (t.UserId == userId || t.AssignedToUserId == userId));
 
         if (task == null)
         {
@@ -559,13 +590,38 @@ public class TaskService : ITaskService
         Guid? groupId = null,
         bool? completed = null,
         bool? rootOnly = null,
-        string? status = null)
+        string? status = null,
+        string? view = null)
     {
-        var query = _context.Tasks
-            .Include(t => t.Group)
-            .Where(t => t.UserId == userId
-                || (t.GroupId != null && _context.TaskGroupShares.Any(s =>
-                    s.TaskGroupId == t.GroupId && s.SharedWithUserId == userId)));
+        var viewFilter = view?.ToLower();
+
+        IQueryable<FinanceApi.Features.Tasks.Models.Task> query;
+        if (viewFilter == "mine")
+        {
+            query = _context.Tasks.Include(t => t.Group).Include(t => t.AssignedTo)
+                .Where(t => t.UserId == userId);
+        }
+        else if (viewFilter == "assigned-to-me")
+        {
+            query = _context.Tasks.Include(t => t.Group).Include(t => t.AssignedTo)
+                .Include(t => t.User)
+                .Where(t => t.AssignedToUserId == userId);
+        }
+        else if (viewFilter == "assigned-by-me")
+        {
+            query = _context.Tasks.Include(t => t.Group).Include(t => t.AssignedTo)
+                .Where(t => t.UserId == userId && t.AssignedToUserId != null);
+        }
+        else
+        {
+            // Default "all": own tasks + group-shared tasks + assigned to me
+            query = _context.Tasks.Include(t => t.Group).Include(t => t.AssignedTo)
+                .Include(t => t.User)
+                .Where(t => t.UserId == userId
+                    || t.AssignedToUserId == userId
+                    || (t.GroupId != null && _context.TaskGroupShares.Any(s =>
+                        s.TaskGroupId == t.GroupId && s.SharedWithUserId == userId)));
+        }
 
         // By default, filter to root-level tasks only (no parent)
         if (rootOnly != false)
@@ -620,7 +676,7 @@ public class TaskService : ITaskService
         var taskDtos = new List<TaskDto>();
         foreach (var task in tasks)
         {
-            taskDtos.Add(await MapToTaskDtoAsync(task));
+            taskDtos.Add(await MapToTaskDtoAsync(task, userId));
         }
         return taskDtos;
     }
@@ -647,7 +703,68 @@ public class TaskService : ITaskService
         return taskDtos;
     }
 
-    private async System.Threading.Tasks.Task<TaskDto> MapToTaskDtoAsync(Models.Task task)
+    public async System.Threading.Tasks.Task<TaskDto> AssignTaskAsync(Guid requestingUserId, Guid taskId, string usernameOrEmail)
+    {
+        var task = await _context.Tasks
+            .Include(t => t.AssignedTo)
+            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == requestingUserId);
+
+        if (task == null)
+            throw new KeyNotFoundException("Task not found or you are not the owner.");
+
+        var assignee = await _context.Users.FirstOrDefaultAsync(u =>
+            u.Email == usernameOrEmail || u.Username == usernameOrEmail);
+
+        if (assignee == null)
+            throw new ArgumentException("User not found.");
+
+        if (assignee.Id == requestingUserId)
+            throw new InvalidOperationException("You cannot assign a task to yourself.");
+
+        task.AssignedToUserId = assignee.Id;
+        task.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        await _notificationService.CreateAsync(
+            assignee.Id,
+            NotificationType.TaskAssigned,
+            NotificationEntityType.Task,
+            task.Id,
+            task.Title,
+            requestingUserId);
+
+        return await MapToTaskDtoAsync(task, requestingUserId);
+    }
+
+    public async System.Threading.Tasks.Task<TaskDto> UnassignTaskAsync(Guid requestingUserId, Guid taskId)
+    {
+        var task = await _context.Tasks
+            .Include(t => t.AssignedTo)
+            .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == requestingUserId);
+
+        if (task == null)
+            throw new KeyNotFoundException("Task not found or you are not the owner.");
+
+        var previousAssigneeId = task.AssignedToUserId;
+        task.AssignedToUserId = null;
+        task.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        if (previousAssigneeId.HasValue)
+        {
+            await _notificationService.CreateAsync(
+                previousAssigneeId.Value,
+                NotificationType.TaskUnassigned,
+                NotificationEntityType.Task,
+                task.Id,
+                task.Title,
+                requestingUserId);
+        }
+
+        return await MapToTaskDtoAsync(task, requestingUserId);
+    }
+
+    private async System.Threading.Tasks.Task<TaskDto> MapToTaskDtoAsync(Models.Task task, Guid requestingUserId = default)
     {
         // Count direct subtasks
         var subtaskCount = await _context.Tasks.CountAsync(t => t.ParentTaskId == task.Id);
@@ -681,7 +798,14 @@ public class TaskService : ITaskService
                 ? Math.Round((decimal)completedSubtaskCount / subtaskCount * 100, 1)
                 : 0,
             CreatedAt = task.CreatedAt,
-            UpdatedAt = task.UpdatedAt
+            UpdatedAt = task.UpdatedAt,
+            IsOwner = requestingUserId == default || task.UserId == requestingUserId,
+            AssignedTo = task.AssignedTo != null
+                ? new AssignmentUserDto(task.AssignedTo.Id, task.AssignedTo.Username)
+                : null,
+            AssignedBy = (requestingUserId != default && task.AssignedToUserId == requestingUserId && task.User != null)
+                ? new AssignmentUserDto(task.User.Id, task.User.Username)
+                : null,
         };
     }
 
