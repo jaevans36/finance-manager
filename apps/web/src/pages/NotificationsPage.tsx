@@ -85,7 +85,7 @@ const NotificationsPage = () => {
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-12 text-center">
               <Bell size={40} className="text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">You're all caught up</p>
+              <p className="text-sm text-muted-foreground">You&apos;re all caught up</p>
             </div>
           ) : (
             <ul className="divide-y divide-border rounded-lg border border-border">

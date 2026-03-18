@@ -72,7 +72,7 @@ public class StatisticsController : ControllerBase
         // Validate weeks parameter
         if (weeks < 1 || weeks > 52)
         {
-            return BadRequest("Weeks parameter must be between 1 and 52");
+            return BadRequest(new { error = "Weeks parameter must be between 1 and 52" });
         }
 
         var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -85,7 +85,7 @@ public class StatisticsController : ControllerBase
     {
         var dayOfWeek = (int)date.DayOfWeek;
         // Sunday (0) is treated as the last day of the previous week; shift forward to Monday
-        var daysToSubtract = dayOfWeek == 0 ? -1 : dayOfWeek - 1; // Monday as start
+        var daysToSubtract = dayOfWeek == 0 ? 6 : dayOfWeek - 1; // Sunday shifts back 6 days to previous Monday
         return date.Date.AddDays(-daysToSubtract);
     }
 }

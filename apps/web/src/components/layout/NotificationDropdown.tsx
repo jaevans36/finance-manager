@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, UserCheck, UserMinus, CheckCircle, Calendar, ChevronRight } from 'lucide-react';
+import { UserCheck, UserMinus, CheckCircle, Calendar, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useNotifications, useMarkAllNotificationsRead } from '@/hooks/queries';
@@ -73,7 +73,7 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
 
       {notifications.length === 0 ? (
         <div className="px-4 py-6 text-center text-sm text-muted-foreground">
-          You're all caught up
+          You&apos;re all caught up
         </div>
       ) : (
         <ul className="divide-y divide-border">

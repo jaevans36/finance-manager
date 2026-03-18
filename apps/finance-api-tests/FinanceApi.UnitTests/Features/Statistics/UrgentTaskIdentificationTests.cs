@@ -75,7 +75,7 @@ public class UrgentTaskIdentificationTests
         );
         await _context.SaveChangesAsync();
 
-        var result = await _service.GetUrgentTasksAsync(_testUserId, WeekStart);
+        var result = await _service.GetUrgentTasksAsync(_testUserId, weekStart);
 
         Assert.Equal(2, result.Count);
         Assert.All(result, task => Assert.True(task.DueDate >= weekStart));
@@ -144,7 +144,7 @@ public class UrgentTaskIdentificationTests
         await _context.Tasks.AddRangeAsync(tasks);
         await _context.SaveChangesAsync();
 
-        var result = await _service.GetUrgentTasksAsync(_testUserId, WeekStart);
+        var result = await _service.GetUrgentTasksAsync(_testUserId, weekStart);
 
         Assert.Equal(10, result.Count);
     }
