@@ -404,5 +404,9 @@ public class FinanceDbContext : DbContext
             .WithMany(l => l.TaskLabels)
             .HasForeignKey(tl => tl.LabelId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Label>()
+            .Property(l => l.Id)
+            .HasDefaultValueSql("gen_random_uuid()");
     }
 }

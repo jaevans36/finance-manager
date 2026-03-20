@@ -21,7 +21,7 @@ public class Label
     public string Name { get; set; } = string.Empty;
 
     [Required]
-    [Column("colour_hex")]
+    [Column("colour_hex", TypeName = "character(7)")]
     [RegularExpression("^#[0-9A-Fa-f]{6}$")]
     public string ColourHex { get; set; } = "#6366f1";
 
