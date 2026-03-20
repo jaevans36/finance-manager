@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using TaskEntity = FinanceApi.Features.Tasks.Models.Task;
 
 namespace FinanceApi.Features.Labels.Models;
 
@@ -12,7 +13,7 @@ public class TaskLabel
     public Guid LabelId { get; set; }
 
     [ForeignKey(nameof(TaskId))]
-    public FinanceApi.Features.Tasks.Models.Task Task { get; set; } = null!;
+    public TaskEntity Task { get; set; } = null!;
 
     [ForeignKey(nameof(LabelId))]
     public Label Label { get; set; } = null!;

@@ -390,23 +390,16 @@ public class FinanceDbContext : DbContext
                 .HasDatabaseName("IX_notifications_user_read_created");
         });
 
-        modelBuilder.Entity<TaskLabel>()
-            .HasKey(tl => new { tl.TaskId, tl.LabelId });
+        modelBuilder.Entity<TaskLabel>(entity =>
+        {
+            entity.HasKey(tl => new { tl.TaskId, tl.LabelId });
+            entity.HasOne(tl => tl.Task).WithMany(t => t.Labels).HasForeignKey(tl => tl.TaskId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(tl => tl.Label).WithMany(l => l.TaskLabels).HasForeignKey(tl => tl.LabelId).OnDelete(DeleteBehavior.Cascade);
+        });
 
-        modelBuilder.Entity<TaskLabel>()
-            .HasOne(tl => tl.Task)
-            .WithMany(t => t.Labels)
-            .HasForeignKey(tl => tl.TaskId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<TaskLabel>()
-            .HasOne(tl => tl.Label)
-            .WithMany(l => l.TaskLabels)
-            .HasForeignKey(tl => tl.LabelId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<Label>()
-            .Property(l => l.Id)
-            .HasDefaultValueSql("gen_random_uuid()");
+        modelBuilder.Entity<Label>(entity =>
+        {
+            entity.HasIndex(l => new { l.UserId, l.Name }).IsUnique();
+        });
     }
 }
