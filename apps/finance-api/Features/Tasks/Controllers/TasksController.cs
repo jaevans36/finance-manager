@@ -34,10 +34,11 @@ public class TasksController : ControllerBase
         [FromQuery] bool? completed,
         [FromQuery] bool? rootOnly,
         [FromQuery] string? status,
-        [FromQuery] string? view)
+        [FromQuery] string? view,
+        [FromQuery] Guid? labelId = null)
     {
         var userId = GetUserId();
-        var tasks = await _taskService.GetTasksAsync(userId, startDate, endDate, priority, groupId, completed, rootOnly, status, view);
+        var tasks = await _taskService.GetTasksAsync(userId, startDate, endDate, priority, groupId, completed, rootOnly, status, view, labelId);
         return Ok(tasks);
     }
 
@@ -63,6 +64,9 @@ public class TasksController : ControllerBase
     [HttpPost]
     public async System.Threading.Tasks.Task<ActionResult<TaskDto>> CreateTask([FromBody] CreateTaskRequest request)
     {
+        if (request.ReminderAt.HasValue && !request.DueDate.HasValue)
+            return BadRequest("ReminderAt requires a DueDate to be set.");
+
         var userId = GetUserId();
         var task = await _taskService.CreateTaskAsync(userId, request);
         return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
@@ -74,6 +78,15 @@ public class TasksController : ControllerBase
         try
         {
             var userId = GetUserId();
+
+            if (request.ReminderAt.HasValue)
+            {
+                var existingTask = await _taskService.GetTaskByIdAsync(userId, id);
+                var effectiveDueDate = request.DueDate ?? existingTask?.DueDate;
+                if (!effectiveDueDate.HasValue)
+                    return BadRequest("ReminderAt requires a DueDate to be set.");
+            }
+
             var task = await _taskService.UpdateTaskAsync(userId, id, request);
             return Ok(task);
         }

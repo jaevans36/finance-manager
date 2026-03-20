@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using FinanceApi.Features.Labels.DTOs;
 
 namespace FinanceApi.Features.Tasks.DTOs;
 
@@ -23,6 +24,9 @@ public class CreateTaskRequest
 
     [Range(1, 480, ErrorMessage = "EstimatedMinutes must be between 1 and 480")]
     public int? EstimatedMinutes { get; set; }
+
+    public DateTime? ReminderAt { get; set; }
+    public List<Guid>? LabelIds { get; set; }
 }
 
 public class UpdateTaskRequest
@@ -47,6 +51,10 @@ public class UpdateTaskRequest
 
     [Range(1, 480, ErrorMessage = "EstimatedMinutes must be between 1 and 480")]
     public int? EstimatedMinutes { get; set; }
+
+    public DateTime? ReminderAt { get; set; }
+    public bool ClearReminderAt { get; set; } = false;
+    public List<Guid>? LabelIds { get; set; }
 }
 
 public class TaskDto
@@ -80,6 +88,8 @@ public class TaskDto
     public bool IsOwner { get; init; }
     public AssignmentUserDto? AssignedTo { get; init; }
     public AssignmentUserDto? AssignedBy { get; init; }
+    public DateTime? ReminderAt { get; set; }
+    public List<LabelDto> Labels { get; set; } = new();
 }
 
 public record AssignmentUserDto(Guid Id, string Username);
