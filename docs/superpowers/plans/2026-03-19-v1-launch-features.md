@@ -1347,13 +1347,11 @@ describe('Reminder field permission states', () => {
     expect(screen.queryByLabelText('Remind me')).not.toBeInTheDocument();
   });
 
-  it('shows reminder field when due date is set and permission is granted', () => {
+  it('renders the form without errors when permission is granted', () => {
     mockNotification('granted');
     render(<CreateTaskForm onSubmit={jest.fn()} onCancel={jest.fn()} />);
-    // Reminder field is hidden until a due date exists; the component controls
-    // this via watchedDueDate — testing the permission=denied case is the key branch
-    // The granted case is verified by the field appearing once due date is entered
-    // (integration-level; confirmed via manual test in step below)
+    // Form renders successfully under granted permission state
+    expect(screen.getByRole('button', { name: /add task/i })).toBeInTheDocument();
   });
 });
 ```
@@ -1574,12 +1572,22 @@ export function KeyboardShortcutProvider({ children }: { children: React.ReactNo
 - [ ] Create `apps/web/src/hooks/useKeyboardShortcut.ts`:
 
 ```typescript
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useShortcutContext, type ShortcutRegistration } from '../providers/KeyboardShortcutProvider';
 
 export function useKeyboardShortcut(shortcut: ShortcutRegistration) {
   const { register } = useShortcutContext();
-  useEffect(() => register(shortcut), [shortcut.key]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Store the latest handler in a ref so the registered closure never goes stale,
+  // even when the handler captures component state that changes on re-render.
+  const handlerRef = useRef(shortcut.handler);
+  useEffect(() => { handlerRef.current = shortcut.handler; });
+
+  useEffect(
+    () => register({ ...shortcut, handler: (e) => handlerRef.current(e) }),
+    [shortcut.key], // eslint-disable-line react-hooks/exhaustive-deps
+    // Only re-register when the key changes. The handler stays fresh via handlerRef.
+  );
 }
 ```
 
