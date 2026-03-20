@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using FinanceApi.Features.Auth.Models;
+using FinanceApi.Features.Labels.Models;
 
 namespace FinanceApi.Features.Tasks.Models;
 
@@ -95,6 +96,11 @@ public class Task
     public Task? ParentTask { get; set; }
 
     public ICollection<Task> Subtasks { get; set; } = new List<Task>();
+
+    [Column("reminder_at")]
+    public DateTime? ReminderAt { get; set; }
+
+    public ICollection<TaskLabel> Labels { get; set; } = new List<TaskLabel>();
 }
 
 public enum Priority

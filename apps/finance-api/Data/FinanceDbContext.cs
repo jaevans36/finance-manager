@@ -8,6 +8,7 @@ using FinanceApi.Features.Common.ActivityLogs.Models;
 using FinanceApi.Features.Common.EmailVerification.Models;
 using FinanceApi.Features.Settings.Models;
 using FinanceApi.Features.Notifications.Models;
+using FinanceApi.Features.Labels.Models;
 
 namespace FinanceApi.Data;
 
@@ -35,6 +36,8 @@ public class FinanceDbContext : DbContext
     public DbSet<TaskGroupShare> TaskGroupShares { get; set; }
     public DbSet<EventShare> EventShares { get; set; }
     public DbSet<Notification> Notifications { get; set; }
+    public DbSet<Label> Labels { get; set; }
+    public DbSet<TaskLabel> TaskLabels { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -386,5 +389,20 @@ public class FinanceDbContext : DbContext
             entity.HasIndex(n => new { n.UserId, n.IsRead, n.CreatedAt })
                 .HasDatabaseName("IX_notifications_user_read_created");
         });
+
+        modelBuilder.Entity<TaskLabel>()
+            .HasKey(tl => new { tl.TaskId, tl.LabelId });
+
+        modelBuilder.Entity<TaskLabel>()
+            .HasOne(tl => tl.Task)
+            .WithMany(t => t.Labels)
+            .HasForeignKey(tl => tl.TaskId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<TaskLabel>()
+            .HasOne(tl => tl.Label)
+            .WithMany(l => l.TaskLabels)
+            .HasForeignKey(tl => tl.LabelId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
