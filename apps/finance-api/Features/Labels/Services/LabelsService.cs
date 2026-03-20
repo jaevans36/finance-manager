@@ -5,7 +5,15 @@ using FinanceApi.Features.Labels.Models;
 
 namespace FinanceApi.Features.Labels.Services;
 
-public class LabelsService
+public interface ILabelsService
+{
+    Task<List<LabelDto>> GetLabelsAsync(Guid userId);
+    Task<LabelDto?> CreateLabelAsync(Guid userId, CreateLabelRequest request);
+    Task<LabelDto?> UpdateLabelAsync(Guid userId, Guid labelId, UpdateLabelRequest request);
+    Task<bool> DeleteLabelAsync(Guid userId, Guid labelId);
+}
+
+public class LabelsService : ILabelsService
 {
     private readonly FinanceDbContext _db;
 
@@ -23,13 +31,17 @@ public class LabelsService
             .ToListAsync();
     }
 
-    public async Task<LabelDto> CreateLabelAsync(Guid userId, CreateLabelRequest request)
+    public async Task<LabelDto?> CreateLabelAsync(Guid userId, CreateLabelRequest request)
     {
+        var trimmedName = request.Name.Trim();
+        var exists = await _db.Labels.AnyAsync(l => l.UserId == userId && l.Name == trimmedName);
+        if (exists) return null;
+
         var label = new Label
         {
             UserId = userId,
-            Name = request.Name.Trim(),
-            ColourHex = request.ColourHex
+            Name = trimmedName,
+            ColourHex = request.ColourHex.ToUpperInvariant()
         };
         _db.Labels.Add(label);
         await _db.SaveChangesAsync();
@@ -38,11 +50,13 @@ public class LabelsService
 
     public async Task<LabelDto?> UpdateLabelAsync(Guid userId, Guid labelId, UpdateLabelRequest request)
     {
+        if (request.Name is null && request.ColourHex is null) return null;
+
         var label = await _db.Labels.FirstOrDefaultAsync(l => l.Id == labelId && l.UserId == userId);
         if (label is null) return null;
 
         if (request.Name is not null) label.Name = request.Name.Trim();
-        if (request.ColourHex is not null) label.ColourHex = request.ColourHex;
+        if (request.ColourHex is not null) label.ColourHex = request.ColourHex.ToUpperInvariant();
         await _db.SaveChangesAsync();
         return new LabelDto { Id = label.Id, Name = label.Name, ColourHex = label.ColourHex };
     }
