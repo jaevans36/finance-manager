@@ -40,7 +40,7 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
-    Log.Information("Starting Finance Manager API");
+    Log.Information("Starting Life Manager API");
 
     var builder = WebApplication.CreateBuilder(args);
 
@@ -56,12 +56,12 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Finance Manager API",
+        Title = "Life Manager API",
         Version = "v1",
         Description = "A comprehensive personal finance management API with task tracking, user authentication, and financial analysis features.",
         Contact = new OpenApiContact
         {
-            Name = "Finance Manager Team",
+            Name = "Life Manager",
             Email = "support@financemanager.com"
         }
     });
