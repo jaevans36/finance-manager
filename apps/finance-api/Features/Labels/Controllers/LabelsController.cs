@@ -19,7 +19,7 @@ public class LabelsController : ControllerBase
     }
 
     private Guid CurrentUserId =>
-        Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        Guid.Parse((User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub"))!);
 
     [HttpGet]
     public async Task<IActionResult> GetLabels()
