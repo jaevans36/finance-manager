@@ -10,6 +10,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
 import { WhatsNewModal } from './components/WhatsNewModal';
 import { AppHeader } from './components/AppHeader';
+import { useTasks } from '@/hooks/queries';
 import versionData from '@workspace/VERSION.json';
 
 // Lazy load pages for code splitting
@@ -36,6 +37,23 @@ const AdminLogs = lazy(() => import('./pages/admin/AdminLogs'));
 const HelpPage = lazy(() => import('./pages/help/HelpPage'));
 const NotFoundPage = lazy(() => import('./pages/errors/NotFoundPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+
+function TaskReminderSync() {
+  const { data: tasks } = useTasks();
+
+  useEffect(() => {
+    if (!tasks) return;
+    const reminders = tasks
+      .filter(t => t.reminderAt)
+      .map(t => ({ taskId: t.id, title: t.title, reminderAt: t.reminderAt }));
+
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({ type: 'SYNC_TASKS', reminders });
+    }
+  }, [tasks]);
+
+  return null;
+}
 
 function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(false);
@@ -68,6 +86,7 @@ function App() {
                 Skip to content
               </a>
               <AppHeader />
+              <TaskReminderSync />
               {showWhatsNew && <WhatsNewModal onClose={handleCloseWhatsNew} />}
               <main id="main-content">
               <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
