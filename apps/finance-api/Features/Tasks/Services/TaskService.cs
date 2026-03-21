@@ -197,6 +197,7 @@ public class TaskService : ITaskService
     {
         var task = await _context.Tasks
             .Include(t => t.AssignedTo)
+            .Include(t => t.Labels).ThenInclude(tl => tl.Label)
             .FirstOrDefaultAsync(t => t.Id == taskId &&
                 (t.UserId == userId || t.AssignedToUserId == userId));
 
@@ -289,6 +290,7 @@ public class TaskService : ITaskService
         var task = await _context.Tasks
             .Include(t => t.Group)
             .Include(t => t.AssignedTo)
+            .Include(t => t.Labels).ThenInclude(tl => tl.Label)
             .FirstOrDefaultAsync(t => t.Id == taskId &&
                 (t.UserId == userId || t.AssignedToUserId == userId));
 
@@ -336,6 +338,7 @@ public class TaskService : ITaskService
         var taskIds = request.Items.Select(i => i.TaskId).ToList();
         var tasks = await _context.Tasks
             .Include(t => t.Group)
+            .Include(t => t.Labels).ThenInclude(tl => tl.Label)
             .Where(t => taskIds.Contains(t.Id) && t.UserId == userId)
             .ToListAsync();
 
@@ -447,6 +450,7 @@ public class TaskService : ITaskService
         var task = await _context.Tasks
             .Include(t => t.Group)
             .Include(t => t.AssignedTo)
+            .Include(t => t.Labels).ThenInclude(tl => tl.Label)
             .FirstOrDefaultAsync(t => t.Id == taskId &&
                 (t.UserId == userId || t.AssignedToUserId == userId));
 
@@ -472,6 +476,7 @@ public class TaskService : ITaskService
         var task = await _context.Tasks
             .Include(t => t.Group)
             .Include(t => t.AssignedTo)
+            .Include(t => t.Labels).ThenInclude(tl => tl.Label)
             .FirstOrDefaultAsync(t => t.Id == taskId &&
                 (t.UserId == userId || t.AssignedToUserId == userId));
 
@@ -492,6 +497,7 @@ public class TaskService : ITaskService
         var taskIds = request.Items.Select(i => i.TaskId).ToList();
         var tasks = await _context.Tasks
             .Include(t => t.Group)
+            .Include(t => t.Labels).ThenInclude(tl => tl.Label)
             .Where(t => t.UserId == userId && taskIds.Contains(t.Id))
             .ToListAsync();
 
@@ -744,6 +750,7 @@ public class TaskService : ITaskService
     {
         var tasks = await _context.Tasks
             .Include(t => t.Group)
+            .Include(t => t.Labels).ThenInclude(tl => tl.Label)
             .Where(t => (t.UserId == userId
                 || (t.GroupId != null && _context.TaskGroupShares.Any(s =>
                     s.TaskGroupId == t.GroupId && s.SharedWithUserId == userId)))
@@ -893,6 +900,7 @@ public class TaskService : ITaskService
     {
         var directChildren = await _context.Tasks
             .Include(t => t.Group)
+            .Include(t => t.Labels).ThenInclude(tl => tl.Label)
             .Where(t => t.ParentTaskId == parentId && t.UserId == userId)
             .OrderBy(t => t.SortOrder)
             .ToListAsync();
