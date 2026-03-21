@@ -7,6 +7,7 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
 import { Alert, AlertDescription } from '../ui/alert';
+import { LabelPicker } from '../labels/LabelPicker';
 
 import { TaskGroup } from '../../types/taskGroup';
 
@@ -18,6 +19,7 @@ interface CreateTaskFormProps {
     dueDate?: string;
     groupId?: string;
     subtaskTitles?: string[];
+    labelIds?: string[];
   }) => Promise<void>;
   onCancel: () => void;
   groups?: TaskGroup[];
@@ -30,6 +32,7 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
     groupId: selectedGroupId || '',
   });
   const [apiError, setApiError] = useState('');
+  const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>([]);
   const [subtaskTitles, setSubtaskTitles] = useState<string[]>([]);
   const [subtaskInput, setSubtaskInput] = useState('');
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
@@ -74,12 +77,14 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
         dueDate: data.dueDate || undefined,
         groupId: data.groupId || undefined,
         subtaskTitles: subtaskTitles.length > 0 ? subtaskTitles : undefined,
+        labelIds: selectedLabelIds.length > 0 ? selectedLabelIds : undefined,
       });
       // Reset form
       reset({ title: '', description: '', priority: 'Medium', dueDate: '', groupId: selectedGroupId || '' });
       setSubtaskTitles([]);
       setSubtaskInput('');
       setIsAddingSubtask(false);
+      setSelectedLabelIds([]);
     } catch (err: unknown) {
       console.error('Task creation error:', err);
       if (err instanceof Error) {
@@ -176,6 +181,11 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
               disabled={isSubmitting}
             />
           </div>
+        </div>
+
+        <div className="mb-4 space-y-2">
+          <Label>Labels</Label>
+          <LabelPicker selectedIds={selectedLabelIds} onChange={setSelectedLabelIds} />
         </div>
 
         {/* Subtasks section */}

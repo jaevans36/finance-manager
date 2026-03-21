@@ -30,6 +30,7 @@ import { WipCounter } from '../../components/tasks/WipCounter';
 import type { CreateEventRequest } from '../../types/event';
 import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { AssignTaskModal } from '../../features/tasks/components/AssignTaskModal';
+import { useLabels } from '../../hooks/queries/useLabels';
 
 const TasksPage = () => {
   const navigate = useNavigate();
@@ -46,6 +47,8 @@ const TasksPage = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskView, setTaskView] = useState<'all' | 'mine' | 'assigned-to-me' | 'assigned-by-me'>('all');
   const [assigningTask, setAssigningTask] = useState<Task | null>(null);
+  const [selectedLabelId, setSelectedLabelId] = useState<string>('');
+  const { data: labels = [] } = useLabels();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Keyboard shortcuts: N = new item, / = search, Esc = close modals/unfocus search
@@ -109,7 +112,12 @@ const TasksPage = () => {
       if (selectedGroupId && task.groupId !== selectedGroupId) {
         return false;
       }
-      
+
+      // Filter by label
+      if (selectedLabelId && !task.labels.some(l => l.id === selectedLabelId)) {
+        return false;
+      }
+
       // Filter by search query
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -117,7 +125,7 @@ const TasksPage = () => {
         const matchesDescription = task.description?.toLowerCase().includes(query) ?? false;
         return matchesTitle || matchesDescription;
       }
-      
+
       return true;
     });
 
@@ -133,6 +141,7 @@ const TasksPage = () => {
     dueDate?: string;
     groupId?: string;
     subtaskTitles?: string[];
+    labelIds?: string[];
   }) => {
     try {
       const { subtaskTitles, ...taskData } = data;
@@ -183,6 +192,7 @@ const TasksPage = () => {
       description?: string;
       priority?: 'Low' | 'Medium' | 'High' | 'Critical';
       dueDate?: string;
+      labelIds?: string[];
     }
   ) => {
     try {
@@ -350,6 +360,19 @@ const TasksPage = () => {
 
           <div className="mb-4 flex items-center gap-3">
             <TaskSearch ref={searchInputRef} value={searchQuery} onChange={setSearchQuery} />
+            {labels.length > 0 && (
+              <select
+                value={selectedLabelId}
+                onChange={e => setSelectedLabelId(e.target.value)}
+                aria-label="Filter by label"
+                className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">All labels</option>
+                {labels.map(label => (
+                  <option key={label.id} value={label.id}>{label.name}</option>
+                ))}
+              </select>
+            )}
             <WipCounter />
           </div>
 
