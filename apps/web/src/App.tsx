@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@life-manager/ui';
 import { Loader2 } from 'lucide-react';
 import { QueryProvider } from './providers/QueryProvider';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -39,10 +39,11 @@ const NotFoundPage = lazy(() => import('./pages/errors/NotFoundPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 
 function TaskReminderSync() {
+  const { isAuthenticated } = useAuth();
   const { data: tasks } = useTasks();
 
   useEffect(() => {
-    if (!tasks) return;
+    if (!isAuthenticated || !tasks) return;
     const reminders = tasks
       .filter(t => t.reminderAt)
       .map(t => ({ taskId: t.id, title: t.title, reminderAt: t.reminderAt }));
@@ -50,7 +51,7 @@ function TaskReminderSync() {
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({ type: 'SYNC_TASKS', reminders });
     }
-  }, [tasks]);
+  }, [isAuthenticated, tasks]);
 
   return null;
 }

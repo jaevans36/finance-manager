@@ -38,8 +38,8 @@ async function checkReminders() {
   const now = Date.now();
   for (const reminder of all) {
     const reminderTime = new Date(reminder.reminderAt).getTime();
-    const diffMs = Math.abs(now - reminderTime);
-    if (diffMs <= 60000) { // within 60 seconds
+    const diff = now - reminderTime;
+    if (diff >= 0 && diff <= 60000) { // within 60 seconds past reminder time
       try {
         await self.registration.showNotification(reminder.title, {
           body: 'Task reminder',
