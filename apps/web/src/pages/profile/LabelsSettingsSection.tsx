@@ -4,6 +4,7 @@ import { useLabels, useCreateLabel, useUpdateLabel, useDeleteLabel } from '../..
 import { LabelBadge } from '../../components/labels/LabelBadge';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
+import { useToast } from '../../contexts/ToastContext';
 
 const PRESET_COLOURS = [
   '#21B8A4', '#6366f1', '#f43f5e', '#f97316',
@@ -13,6 +14,7 @@ const PRESET_COLOURS = [
 
 export function LabelsSettingsSection() {
   const { data: labels = [], isLoading } = useLabels();
+  const toast = useToast();
   const createLabel = useCreateLabel();
   const updateLabel = useUpdateLabel();
   const deleteLabel = useDeleteLabel();
@@ -25,8 +27,13 @@ export function LabelsSettingsSection() {
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
-    await createLabel.mutateAsync({ name: newName.trim(), colourHex: newColour });
-    setNewName('');
+    try {
+      await createLabel.mutateAsync({ name: newName.trim(), colourHex: newColour });
+      setNewName('');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to create label';
+      toast.error(message);
+    }
   };
 
   const startEdit = (id: string, name: string, colour: string) => {
@@ -37,8 +44,22 @@ export function LabelsSettingsSection() {
 
   const handleUpdate = async () => {
     if (!editingId || !editName.trim()) return;
-    await updateLabel.mutateAsync({ id: editingId, payload: { name: editName.trim(), colourHex: editColour } });
-    setEditingId(null);
+    try {
+      await updateLabel.mutateAsync({ id: editingId, payload: { name: editName.trim(), colourHex: editColour } });
+      setEditingId(null);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update label';
+      toast.error(message);
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    deleteLabel.mutate(id, {
+      onError: (err: unknown) => {
+        const message = err instanceof Error ? err.message : 'Failed to delete label';
+        toast.error(message);
+      },
+    });
   };
 
   if (isLoading) return null;
@@ -60,7 +81,7 @@ export function LabelsSettingsSection() {
                       style={{ backgroundColor: c }} />
                   ))}
                 </div>
-                <Button size="icon" variant="ghost" onClick={handleUpdate}><Check className="h-4 w-4" /></Button>
+                <Button size="icon" variant="ghost" onClick={handleUpdate} disabled={updateLabel.isPending}><Check className="h-4 w-4" /></Button>
                 <Button size="icon" variant="ghost" onClick={() => setEditingId(null)}><X className="h-4 w-4" /></Button>
               </>
             ) : (
@@ -69,7 +90,7 @@ export function LabelsSettingsSection() {
                 <Button size="icon" variant="ghost" onClick={() => startEdit(label.id, label.name, label.colourHex)}>
                   <Pencil className="h-3 w-3" />
                 </Button>
-                <Button size="icon" variant="ghost" onClick={() => deleteLabel.mutate(label.id)}>
+                <Button size="icon" variant="ghost" onClick={() => handleDelete(label.id)} disabled={deleteLabel.isPending}>
                   <Trash2 className="h-3 w-3 text-destructive" />
                 </Button>
               </>
@@ -88,7 +109,7 @@ export function LabelsSettingsSection() {
               style={{ backgroundColor: c }} />
           ))}
         </div>
-        <Button size="sm" onClick={handleCreate} disabled={!newName.trim()}>Add</Button>
+        <Button size="sm" onClick={handleCreate} disabled={!newName.trim() || createLabel.isPending}>Add</Button>
       </div>
     </section>
   );

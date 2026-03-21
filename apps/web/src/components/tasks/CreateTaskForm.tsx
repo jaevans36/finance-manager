@@ -136,6 +136,8 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
             rows={3}
             disabled={isSubmitting}
           />
+        </div>
+
         <div className="mb-4 space-y-2">
           <Label htmlFor="group">Group</Label>
           <select
@@ -151,8 +153,6 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
               </option>
             ))}
           </select>
-        </div>
-
         </div>
 
         <div className="mb-4 grid grid-cols-2 gap-4">
