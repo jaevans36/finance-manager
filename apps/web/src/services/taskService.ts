@@ -1,5 +1,6 @@
 import { apiClient } from './api-client';
 import { statisticsService } from './statisticsService';
+import type { Label } from './labelsService';
 
 export type TaskStatus = 'NotStarted' | 'InProgress' | 'Blocked' | 'Completed';
 export type UrgencyLevel = 'Low' | 'Medium' | 'High';
@@ -40,6 +41,8 @@ export interface Task {
   assignedByUserId: string | null;
   assignedByUsername: string | null;
   isOwner: boolean;
+  labels: Label[];
+  reminderAt: string | null;
 }
 
 interface CreateTaskInput {
@@ -50,6 +53,8 @@ interface CreateTaskInput {
   groupId?: string;
   energyLevel?: EnergyLevel;
   estimatedMinutes?: number;
+  labelIds?: string[];
+  reminderAt?: string | null;
 }
 
 interface UpdateTaskInput {
@@ -61,6 +66,8 @@ interface UpdateTaskInput {
   groupId?: string;
   energyLevel?: EnergyLevel;
   estimatedMinutes?: number;
+  labelIds?: string[];
+  reminderAt?: string | null;
 }
 
 interface TaskQueryParams {
