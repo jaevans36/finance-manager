@@ -1,6 +1,8 @@
 using FinanceApi.Data;
 using FinanceApi.Features.Tasks.Models;
 using FinanceApi.Features.Tasks.DTOs;
+using FinanceApi.Features.Labels.DTOs;
+using FinanceApi.Features.Labels.Models;
 using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Common.ActivityLogs.Models;
 using FinanceApi.Features.Notifications.Models;
@@ -34,7 +36,8 @@ public interface ITaskService
         bool? completed = null,
         bool? rootOnly = null,
         string? status = null,
-        string? view = null);
+        string? view = null,
+        Guid? labelId = null);
     System.Threading.Tasks.Task<List<TaskDto>> GetTasksByDateRangeAsync(Guid userId, DateTime startDate, DateTime endDate);
     System.Threading.Tasks.Task<TaskDto> AssignTaskAsync(Guid requestingUserId, Guid taskId, string usernameOrEmail);
     System.Threading.Tasks.Task<TaskDto> UnassignTaskAsync(Guid requestingUserId, Guid taskId);
@@ -81,12 +84,28 @@ public class TaskService : ITaskService
             DueDate = request.DueDate.HasValue ? DateTime.SpecifyKind(request.DueDate.Value, DateTimeKind.Utc) : null,
             EnergyLevel = Enum.TryParse<Models.EnergyLevel>(request.EnergyLevel, true, out var energy) ? energy : null,
             EstimatedMinutes = request.EstimatedMinutes,
+            ReminderAt = request.ReminderAt.HasValue ? DateTime.SpecifyKind(request.ReminderAt.Value, DateTimeKind.Utc) : null,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
 
         _context.Tasks.Add(task);
         await _context.SaveChangesAsync();
+
+        if (request.LabelIds != null && request.LabelIds.Count > 0)
+        {
+            var validLabels = await _context.Labels
+                .Where(l => l.UserId == userId && request.LabelIds.Contains(l.Id))
+                .Select(l => l.Id)
+                .ToListAsync();
+
+            foreach (var labelId in validLabels)
+            {
+                _context.TaskLabels.Add(new TaskLabel { TaskId = task.Id, LabelId = labelId });
+            }
+
+            await _context.SaveChangesAsync();
+        }
 
         await _activityLogService.LogAsync(userId, ActivityType.TaskCreated, $"Created task: {task.Title}", null, null);
 
@@ -97,6 +116,7 @@ public class TaskService : ITaskService
     {
         var task = await _context.Tasks
             .Include(t => t.AssignedTo)
+            .Include(t => t.Labels)
             .FirstOrDefaultAsync(t => t.Id == taskId &&
                 (t.UserId == userId || t.AssignedToUserId == userId));
 
@@ -122,6 +142,15 @@ public class TaskService : ITaskService
 
         if (request.EstimatedMinutes.HasValue) task.EstimatedMinutes = request.EstimatedMinutes;
 
+        if (request.ClearReminderAt)
+        {
+            task.ReminderAt = null;
+        }
+        else if (request.ReminderAt.HasValue)
+        {
+            task.ReminderAt = DateTime.SpecifyKind(request.ReminderAt.Value, DateTimeKind.Utc);
+        }
+
         if (request.Completed.HasValue)
         {
             task.Completed = request.Completed.Value;
@@ -138,6 +167,24 @@ public class TaskService : ITaskService
             }
         }
 
+        if (request.LabelIds != null)
+        {
+            // Remove existing labels
+            var existingLabels = task.Labels.ToList();
+            _context.TaskLabels.RemoveRange(existingLabels);
+
+            // Add new valid labels owned by user
+            var validLabels = await _context.Labels
+                .Where(l => l.UserId == userId && request.LabelIds.Contains(l.Id))
+                .Select(l => l.Id)
+                .ToListAsync();
+
+            foreach (var labelId in validLabels)
+            {
+                _context.TaskLabels.Add(new TaskLabel { TaskId = task.Id, LabelId = labelId });
+            }
+        }
+
         task.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
@@ -150,6 +197,7 @@ public class TaskService : ITaskService
     {
         var task = await _context.Tasks
             .Include(t => t.AssignedTo)
+            .Include(t => t.Labels).ThenInclude(tl => tl.Label)
             .FirstOrDefaultAsync(t => t.Id == taskId &&
                 (t.UserId == userId || t.AssignedToUserId == userId));
 
@@ -242,6 +290,7 @@ public class TaskService : ITaskService
         var task = await _context.Tasks
             .Include(t => t.Group)
             .Include(t => t.AssignedTo)
+            .Include(t => t.Labels).ThenInclude(tl => tl.Label)
             .FirstOrDefaultAsync(t => t.Id == taskId &&
                 (t.UserId == userId || t.AssignedToUserId == userId));
 
@@ -289,6 +338,7 @@ public class TaskService : ITaskService
         var taskIds = request.Items.Select(i => i.TaskId).ToList();
         var tasks = await _context.Tasks
             .Include(t => t.Group)
+            .Include(t => t.Labels).ThenInclude(tl => tl.Label)
             .Where(t => taskIds.Contains(t.Id) && t.UserId == userId)
             .ToListAsync();
 
@@ -400,6 +450,7 @@ public class TaskService : ITaskService
         var task = await _context.Tasks
             .Include(t => t.Group)
             .Include(t => t.AssignedTo)
+            .Include(t => t.Labels).ThenInclude(tl => tl.Label)
             .FirstOrDefaultAsync(t => t.Id == taskId &&
                 (t.UserId == userId || t.AssignedToUserId == userId));
 
@@ -425,6 +476,7 @@ public class TaskService : ITaskService
         var task = await _context.Tasks
             .Include(t => t.Group)
             .Include(t => t.AssignedTo)
+            .Include(t => t.Labels).ThenInclude(tl => tl.Label)
             .FirstOrDefaultAsync(t => t.Id == taskId &&
                 (t.UserId == userId || t.AssignedToUserId == userId));
 
@@ -445,6 +497,7 @@ public class TaskService : ITaskService
         var taskIds = request.Items.Select(i => i.TaskId).ToList();
         var tasks = await _context.Tasks
             .Include(t => t.Group)
+            .Include(t => t.Labels).ThenInclude(tl => tl.Label)
             .Where(t => t.UserId == userId && taskIds.Contains(t.Id))
             .ToListAsync();
 
@@ -568,6 +621,7 @@ public class TaskService : ITaskService
     {
         var task = await _context.Tasks
             .Include(t => t.Group)
+            .Include(t => t.Labels).ThenInclude(tl => tl.Label)
             .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
 
         if (task == null) return null;
@@ -591,7 +645,8 @@ public class TaskService : ITaskService
         bool? completed = null,
         bool? rootOnly = null,
         string? status = null,
-        string? view = null)
+        string? view = null,
+        Guid? labelId = null)
     {
         var viewFilter = view?.ToLower();
 
@@ -599,23 +654,27 @@ public class TaskService : ITaskService
         if (viewFilter == "mine")
         {
             query = _context.Tasks.Include(t => t.Group).Include(t => t.AssignedTo)
+                .Include(t => t.Labels).ThenInclude(tl => tl.Label)
                 .Where(t => t.UserId == userId);
         }
         else if (viewFilter == "assigned-to-me")
         {
             query = _context.Tasks.Include(t => t.Group).Include(t => t.AssignedTo)
+                .Include(t => t.Labels).ThenInclude(tl => tl.Label)
                 .Include(t => t.User)
                 .Where(t => t.AssignedToUserId == userId);
         }
         else if (viewFilter == "assigned-by-me")
         {
             query = _context.Tasks.Include(t => t.Group).Include(t => t.AssignedTo)
+                .Include(t => t.Labels).ThenInclude(tl => tl.Label)
                 .Where(t => t.UserId == userId && t.AssignedToUserId != null);
         }
         else
         {
             // Default "all": own tasks + group-shared tasks + assigned to me
             query = _context.Tasks.Include(t => t.Group).Include(t => t.AssignedTo)
+                .Include(t => t.Labels).ThenInclude(tl => tl.Label)
                 .Include(t => t.User)
                 .Where(t => t.UserId == userId
                     || t.AssignedToUserId == userId
@@ -669,6 +728,12 @@ public class TaskService : ITaskService
             query = query.Where(t => t.Status == parsedStatus);
         }
 
+        // Apply label filter
+        if (labelId.HasValue)
+        {
+            query = query.Where(t => t.Labels.Any(tl => tl.LabelId == labelId.Value));
+        }
+
         var tasks = await query
             .OrderByDescending(t => t.CreatedAt)
             .ToListAsync();
@@ -685,6 +750,7 @@ public class TaskService : ITaskService
     {
         var tasks = await _context.Tasks
             .Include(t => t.Group)
+            .Include(t => t.Labels).ThenInclude(tl => tl.Label)
             .Where(t => (t.UserId == userId
                 || (t.GroupId != null && _context.TaskGroupShares.Any(s =>
                     s.TaskGroupId == t.GroupId && s.SharedWithUserId == userId)))
@@ -806,6 +872,8 @@ public class TaskService : ITaskService
             AssignedBy = (requestingUserId != default && task.AssignedToUserId == requestingUserId && task.User != null)
                 ? new AssignmentUserDto(task.User.Id, task.User.Username)
                 : null,
+            ReminderAt = task.ReminderAt,
+            Labels = task.Labels?.Select(tl => new LabelDto { Id = tl.Label.Id, Name = tl.Label.Name, ColourHex = tl.Label.ColourHex }).ToList() ?? new List<LabelDto>(),
         };
     }
 
@@ -832,6 +900,7 @@ public class TaskService : ITaskService
     {
         var directChildren = await _context.Tasks
             .Include(t => t.Group)
+            .Include(t => t.Labels).ThenInclude(tl => tl.Label)
             .Where(t => t.ParentTaskId == parentId && t.UserId == userId)
             .OrderBy(t => t.SortOrder)
             .ToListAsync();

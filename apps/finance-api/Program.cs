@@ -20,6 +20,7 @@ using FinanceApi.Features.Version.Services;
 using FinanceApi.Features.Admin.Services;
 using FinanceApi.Features.Settings.Services;
 using FinanceApi.Features.Notifications.Services;
+using FinanceApi.Features.Labels.Services;
 using FinanceApi.Middleware;
 
 // Configure Serilog
@@ -40,7 +41,7 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
-    Log.Information("Starting Finance Manager API");
+    Log.Information("Starting Life Manager API");
 
     var builder = WebApplication.CreateBuilder(args);
 
@@ -56,12 +57,12 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Finance Manager API",
+        Title = "Life Manager API",
         Version = "v1",
-        Description = "A comprehensive personal finance management API with task tracking, user authentication, and financial analysis features.",
+        Description = "Life Manager API — personal productivity platform with task management, calendar, events, and user authentication.",
         Contact = new OpenApiContact
         {
-            Name = "Finance Manager Team",
+            Name = "Life Manager",
             Email = "support@financemanager.com"
         }
     });
@@ -122,6 +123,7 @@ builder.Services.AddScoped<IWipService, WipService>();
 builder.Services.AddScoped<IClassificationSuggestionService, ClassificationSuggestionService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ITaskPermissionService, TaskPermissionService>();
+builder.Services.AddScoped<ILabelsService, LabelsService>();
 // Configure PostgreSQL with Entity Framework Core
 builder.Services.AddDbContext<FinanceDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));

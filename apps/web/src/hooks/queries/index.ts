@@ -16,3 +16,4 @@ export * from './useSystemConfig';
 export * from './useVersion';
 export * from './useNotifications';
 export * from './useEventShares';
+export * from './useLabels';

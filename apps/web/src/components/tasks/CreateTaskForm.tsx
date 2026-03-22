@@ -7,6 +7,7 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
 import { Alert, AlertDescription } from '../ui/alert';
+import { LabelPicker } from '../labels/LabelPicker';
 
 import { TaskGroup } from '../../types/taskGroup';
 
@@ -18,6 +19,8 @@ interface CreateTaskFormProps {
     dueDate?: string;
     groupId?: string;
     subtaskTitles?: string[];
+    labelIds?: string[];
+    reminderAt?: string;
   }) => Promise<void>;
   onCancel: () => void;
   groups?: TaskGroup[];
@@ -30,12 +33,20 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
     groupId: selectedGroupId || '',
   });
   const [apiError, setApiError] = useState('');
+  const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>([]);
   const [subtaskTitles, setSubtaskTitles] = useState<string[]>([]);
   const [subtaskInput, setSubtaskInput] = useState('');
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
   const subtaskInputRef = useRef<HTMLInputElement>(null);
 
   const watchedTitle = watch('title');
+  const watchedDueDate = watch('dueDate');
+  const [reminderAt, setReminderAt] = useState<string>('');
+
+  const canShowReminder =
+    'Notification' in window &&
+    Notification.permission !== 'denied' &&
+    !!watchedDueDate;
 
   const handleAddSubtask = useCallback(() => {
     const trimmed = subtaskInput.trim();
@@ -67,6 +78,10 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
     setApiError('');
 
     try {
+      if (reminderAt && 'Notification' in window && Notification.permission === 'default') {
+        await Notification.requestPermission();
+      }
+
       await onSubmit({
         title: data.title.trim(),
         description: data.description?.trim() || undefined,
@@ -74,12 +89,16 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
         dueDate: data.dueDate || undefined,
         groupId: data.groupId || undefined,
         subtaskTitles: subtaskTitles.length > 0 ? subtaskTitles : undefined,
+        labelIds: selectedLabelIds.length > 0 ? selectedLabelIds : undefined,
+        reminderAt: reminderAt ? new Date(reminderAt).toISOString() : undefined,
       });
       // Reset form
       reset({ title: '', description: '', priority: 'Medium', dueDate: '', groupId: selectedGroupId || '' });
       setSubtaskTitles([]);
       setSubtaskInput('');
       setIsAddingSubtask(false);
+      setSelectedLabelIds([]);
+      setReminderAt('');
     } catch (err: unknown) {
       console.error('Task creation error:', err);
       if (err instanceof Error) {
@@ -131,6 +150,8 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
             rows={3}
             disabled={isSubmitting}
           />
+        </div>
+
         <div className="mb-4 space-y-2">
           <Label htmlFor="group">Group</Label>
           <select
@@ -146,8 +167,6 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
               </option>
             ))}
           </select>
-        </div>
-
         </div>
 
         <div className="mb-4 grid grid-cols-2 gap-4">
@@ -177,6 +196,24 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
             />
           </div>
         </div>
+
+        <div className="mb-4 space-y-2">
+          <Label>Labels</Label>
+          <LabelPicker selectedIds={selectedLabelIds} onChange={setSelectedLabelIds} />
+        </div>
+
+        {canShowReminder && (
+          <div className="mb-4">
+            <label htmlFor="reminderAt" className="block text-sm font-medium mb-1">Remind me</label>
+            <input
+              id="reminderAt"
+              type="datetime-local"
+              value={reminderAt}
+              onChange={e => setReminderAt(e.target.value)}
+              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm"
+            />
+          </div>
+        )}
 
         {/* Subtasks section */}
         <div className="mb-4">

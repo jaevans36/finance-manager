@@ -1,7 +1,6 @@
 # Life Manager
 
 > Personal productivity platform — To Do, Calendar, Events, and more.
-> *(Currently named "Life Manager" — rename to "Life Manager" in progress)*
 
 [![CI](https://github.com/jaevans36/finance-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/jaevans36/finance-manager/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/badge/version-0.15.0-blue)](CHANGELOG.md)
@@ -90,12 +89,15 @@ Life Manager/
 ## Features (v0.15.0)
 
 - **Auth** — Register, login, JWT refresh, password reset, email verification, account lockout, multi-device session management
-- **Tasks** — CRUD, priorities, due dates, groups, subtasks, bulk operations, WIP limits
+- **Tasks** — CRUD, priorities, due dates, groups, subtasks, bulk operations, WIP limits, task assignment
 - **Productivity** — Eisenhower Matrix, energy tagging (1–10), status workflow (NotStarted → Blocked → Completed)
+- **Collaboration** — Assign tasks to other users, share events with permission levels, invitation inbox
 - **Calendar** — Day/week/month view, events with RRULE recurrence
-- **Progress** — Weekly stats and charts
+- **Notifications** — In-app notification bell, notification page, mark-read support
+- **Progress** — Weekly stats and charts, delegated and assigned-to-me summaries
 - **Admin** — User management, activity logs, system stats
 - **Theme** — Full light/dark mode (WCAG AAA)
+- **Self-hosted** — Health endpoint, data export, `.env.example` files, PostgreSQL backup/restore scripts
 
 ---
 
@@ -133,11 +135,12 @@ Life Manager/
 
 ## Roadmap
 
-**v1.0 MVP** — Task search, empty-state onboarding, error pages, data export, self-hosted setup guide
-**Post-launch** — Task categories, keyboard shortcuts, browser notifications
+**v1.0 MVP** — All P1 gaps complete ✅ (search, onboarding, error pages, data export, health endpoint, self-hosted setup guide)
+**Up next** — Rename to Life Manager (WS3), v1.0.0 release tag + LAN deployment verification (WS4)
+**P2 (post-launch)** — Keyboard shortcuts, due-date browser notifications, task categories/labels
 **Future** — Fitness app, Weather app, Finance app, microservices architecture
 
-See [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md) for the complete v1.0 gap list.
+See [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md) for details.
 
 ---
 
@@ -147,4 +150,4 @@ Private project — All rights reserved
 
 ---
 
-**Last Updated**: 2026-03-08 | **Version**: 0.15.0 | **Branch**: `phase-50/test-infra-and-query-migration`
+**Last Updated**: 2026-03-18 | **Version**: 0.15.0 | **Branch**: `develop`

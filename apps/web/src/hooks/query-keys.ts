@@ -92,4 +92,8 @@ export const queryKeys = {
     byEvent: (eventId: string) => [...queryKeys.eventShares.all, eventId] as const,
     invitations: () => [...queryKeys.eventShares.all, 'invitations'] as const,
   },
+
+  labels: {
+    all: ['labels'] as const,
+  },
 } as const;

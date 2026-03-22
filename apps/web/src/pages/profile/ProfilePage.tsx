@@ -8,6 +8,7 @@ import { Input } from '../../components/ui/input';
 import { UserIcon, MailIcon, CalendarIcon, LogOutIcon, ArrowLeftIcon, EditIcon, CheckIcon, XIcon, DownloadIcon } from 'lucide-react';
 import { useProfileForm } from '../../hooks/forms';
 import { cn } from '../../lib/utils';
+import { LabelsSettingsSection } from './LabelsSettingsSection';
 
 const formatDate = (dateString?: string | null) => {
   if (!dateString) return 'Not available';
@@ -247,6 +248,10 @@ const ProfilePage = () => {
             Logout
           </Button>
         </div>
+      </div>
+
+      <div className="rounded-lg border border-border bg-card p-8 md:p-5">
+        <LabelsSettingsSection />
       </div>
     </div>
   );

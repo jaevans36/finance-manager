@@ -15,7 +15,9 @@ import React, { ReactElement } from 'react';
 import { render, RenderOptions, RenderResult } from '@testing-library/react';
 import { ThemeProvider } from '@life-manager/ui';
 import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastProvider } from '../../src/contexts/ToastContext';
+import { KeyboardShortcutProvider } from '../../src/providers/KeyboardShortcutProvider';
 
 interface ProviderOptions {
   /** Include BrowserRouter — default true */
@@ -34,20 +36,34 @@ export const renderWithProviders = (
   ui: ReactElement,
   { withRouter = true, withToast = true, ...renderOptions }: ProviderOptions & Omit<RenderOptions, 'wrapper'> = {},
 ): RenderResult => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+    },
+  });
+
   const Wrapper = ({ children }: { children: React.ReactNode }) => {
     let wrapped = (
-      <ThemeProvider>
-        {children}
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <KeyboardShortcutProvider>
+            {children}
+          </KeyboardShortcutProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
     );
 
     if (withToast) {
       wrapped = (
-        <ThemeProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
-        </ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider>
+            <KeyboardShortcutProvider>
+              <ToastProvider>
+                {children}
+              </ToastProvider>
+            </KeyboardShortcutProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
       );
     }
 

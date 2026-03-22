@@ -9,6 +9,7 @@ import { StatusBadge } from './StatusBadge';
 import { QuadrantBadge } from './QuadrantBadge';
 import { EnergyBadge } from './EnergyBadge';
 import { TaskAssignmentBadge } from '../../features/tasks/components/TaskAssignmentBadge';
+import { LabelBadge } from '../labels/LabelBadge';
 
 interface TaskItemProps {
   task: Task;
@@ -105,6 +106,10 @@ export const TaskItem = memo(({
               assignedToUsername={task.assignedToUsername ?? null}
               assignedByUsername={task.assignedByUsername ?? null}
             />
+          )}
+          {(task.labels ?? []).slice(0, 3).map(l => <LabelBadge key={l.id} label={l} />)}
+          {(task.labels ?? []).length > 3 && (
+            <span className="text-xs text-muted-foreground">+{(task.labels ?? []).length - 3}</span>
           )}
           {isOverdue && <Badge variant="destructive">OVERDUE</Badge>}
           {task.hasSubtasks && (

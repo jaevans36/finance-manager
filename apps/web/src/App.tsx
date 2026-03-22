@@ -3,14 +3,18 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@life-manager/ui';
 import { Loader2 } from 'lucide-react';
 import { QueryProvider } from './providers/QueryProvider';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
 import { WhatsNewModal } from './components/WhatsNewModal';
 import { AppHeader } from './components/AppHeader';
+import { useTasks } from '@/hooks/queries';
 import versionData from '@workspace/VERSION.json';
+import { KeyboardShortcutProvider, useShortcutContext } from './providers/KeyboardShortcutProvider';
+import { useKeyboardShortcut } from './hooks/useKeyboardShortcut';
+import { ShortcutCheatSheet } from './components/shortcuts/ShortcutCheatSheet';
 
 // Lazy load pages for code splitting
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
@@ -36,6 +40,31 @@ const AdminLogs = lazy(() => import('./pages/admin/AdminLogs'));
 const HelpPage = lazy(() => import('./pages/help/HelpPage'));
 const NotFoundPage = lazy(() => import('./pages/errors/NotFoundPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+
+function ShortcutCheatSheetController() {
+  const { cheatSheetOpen, setCheatSheetOpen } = useShortcutContext();
+  useKeyboardShortcut({ key: '?', handler: () => setCheatSheetOpen(true), description: 'Open shortcuts', group: 'Help' });
+  useKeyboardShortcut({ key: 'Escape', handler: () => setCheatSheetOpen(false), description: 'Close / deselect', group: 'Global' });
+  return <ShortcutCheatSheet open={cheatSheetOpen} onClose={() => setCheatSheetOpen(false)} />;
+}
+
+function TaskReminderSync() {
+  const { isAuthenticated } = useAuth();
+  const { data: tasks } = useTasks();
+
+  useEffect(() => {
+    if (!isAuthenticated || !tasks) return;
+    const reminders = tasks
+      .filter(t => t.reminderAt)
+      .map(t => ({ taskId: t.id, title: t.title, reminderAt: t.reminderAt }));
+
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({ type: 'SYNC_TASKS', reminders });
+    }
+  }, [isAuthenticated, tasks]);
+
+  return null;
+}
 
 function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(false);
@@ -63,11 +92,14 @@ function App() {
           <ToastProvider>
             <AuthProvider>
               <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <KeyboardShortcutProvider>
+              <ShortcutCheatSheetController />
               <div className="font-sans text-foreground antialiased">
               <a href="#main-content" className="skip-to-content">
                 Skip to content
               </a>
               <AppHeader />
+              <TaskReminderSync />
               {showWhatsNew && <WhatsNewModal onClose={handleCloseWhatsNew} />}
               <main id="main-content">
               <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
@@ -212,6 +244,7 @@ function App() {
               </Suspense>
               </main>
               </div>
+              </KeyboardShortcutProvider>
             </BrowserRouter>
           </AuthProvider>
         </ToastProvider>

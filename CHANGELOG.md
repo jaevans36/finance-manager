@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.0] - 2026-03-08 "MVP Launch — Life Manager"
+## [1.0.0] - 2026-03-20 "MVP Launch — Life Manager"
 
 ### Added
 - **Project Rename** — Finance Manager is now Life Manager; all packages, imports, UI text, docs, and container names updated
@@ -23,11 +23,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Onboarding panel** — Empty-state welcome on dashboard when no tasks exist, with quick-start actions
 - **Production setup** — `.env.example`, `appsettings.Production.example.json`, `scripts/backup-db.ps1`, `scripts/restore-db.ps1`, `docs/guides/PRODUCTION-SETUP.md`
 - **CLAUDE.md** — Single AI context file replaces scattered SpecKit + Copilot instructions
+- **Task Labels** — User-defined coloured labels with full CRUD; labels attach to tasks and appear as coloured badges; filterable on Tasks page; managed in Profile settings; backend: `labels` table with unique (userId, name) constraint, `task_labels` junction table, full API (`GET/POST/PUT/DELETE /api/v1/labels`)
+- **Browser Notifications** — Service Worker (`sw.js`) with IndexedDB stores task reminders; polls every 60 s; `reminderAt` field on tasks lets users set a date/time reminder; notifications fire at the scheduled time
+- **Keyboard Shortcuts** — Global `KeyboardShortcutProvider` with chord support (`g+t`, `g+c`, `g+d`, `g+m`); `n` to create task, `/` to focus search; `?` opens cheat-sheet overlay; all shortcuts respect input-field focus guards
+- **Task Assignment** — Assign tasks to other users within the same group; assignment badge on TaskItem; shared tasks appear across assignee's board
+- **Event Sharing** — Share events with other users with view/edit permission levels; invitation flow with accept/decline
 
 ### Changed
 - Archived `.specify/` (SpecKit) to `_archive/speckit/`
 - `docs/CURRENT_STATE.md` rewritten to reflect actual v1.0 state
 - `README.md` fully updated with correct stack, scripts, and getting-started steps
+- Swagger API description updated to reflect Life Manager (not "finance management")
 
 ---
 
