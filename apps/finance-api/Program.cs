@@ -59,7 +59,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "Life Manager API",
         Version = "v1",
-        Description = "A comprehensive personal finance management API with task tracking, user authentication, and financial analysis features.",
+        Description = "Life Manager API — personal productivity platform with task management, calendar, events, and user authentication.",
         Contact = new OpenApiContact
         {
             Name = "Life Manager",

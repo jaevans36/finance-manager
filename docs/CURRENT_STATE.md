@@ -1,22 +1,26 @@
 # Current State
 
-> **Last Updated**: 2026-03-08 | **Version**: 0.15.0 | **Branch**: `phase-50/test-infra-and-query-migration`
+> **Last Updated**: 2026-03-20 | **Version**: 1.0.0 | **Branch**: `develop`
 
 ---
 
 ## What Has Been Built
 
-The To Do / productivity application is the active MVP. It is feature-complete for the v1.0 launch target.
+The Life Manager productivity application is MVP-complete and ready for v1.0.0 release.
 
 ### Core Features (Complete)
 
 - **Authentication** — Register, login, logout, JWT refresh tokens, password reset (email flow), email verification, account lockout after 5 failed attempts
 - **Multi-device session management** — View and revoke active sessions per device
-- **Task management** — Full CRUD, priorities (P1–P5), due dates, bulk operations
+- **Task management** — Full CRUD, priorities (P1–P5), due dates, bulk operations, label filtering
 - **Task groups** — Organise tasks into groups with configurable WIP limits
+- **Task assignment** — Assign tasks to other users within a group; shared task views
 - **Subtasks** — Nested subtasks with inline toggle and progress badge
+- **Task labels** — User-defined coloured labels; attach to tasks; filter on Tasks page; manage in Profile
+- **Task reminders** — Set a `reminderAt` date/time; Service Worker fires browser notification at the scheduled time
 - **Calendar view** — Day / week / month navigation
 - **Events** — Full CRUD with RRULE-based recurrence
+- **Event sharing** — Share events with view/edit permissions; invitation accept/decline flow
 - **Weekly progress** — Charts and statistics dashboard
 - **Eisenhower Matrix** — 4-quadrant urgency/importance classification
 - **Energy tagging** — 1–10 energy level scale with smart suggestions
@@ -24,48 +28,43 @@ The To Do / productivity application is the active MVP. It is feature-complete f
 - **Admin dashboard** — User management, system statistics, activity logs
 - **Theme** — Full light/dark mode (WCAG AAA compliant design system)
 - **Version history** — In-app changelog via `/version` route
+- **Keyboard shortcuts** — Global provider with chord support; `?` opens cheat-sheet overlay
+- **Health check** — `GET /api/health` with DB connectivity
+- **Data export** — `GET /api/v1/auth/export-data` downloads all user data as JSON
+- **Production setup** — `.env.example`, backup/restore scripts, `PRODUCTION-SETUP.md`
 
 ### Technical Foundation (Complete)
 
-- **Frontend**: React 18 + TypeScript 5.7 + Vite; fully migrated to Tailwind CSS + shadcn/ui; TanStack Query for server state; React Hook Form + Zod for forms
-- **Backend**: .NET 8 / C# Web API; EF Core 8 + PostgreSQL 15; JWT auth; Serilog; rate limiting; security headers (OWASP)
-- **Design system**: `@life-manager/ui` package with Tailwind design tokens; zero styled-components remaining
+- **Frontend**: React 18 + TypeScript 5.7 + Vite; Tailwind CSS + shadcn/ui; TanStack Query; React Hook Form + Zod
+- **Backend**: .NET 8 / C# Web API; EF Core 8 + PostgreSQL 15; JWT auth; Serilog; rate limiting; OWASP security headers
+- **Design system**: `@life-manager/ui` package with Tailwind design tokens
 - **Shared schema**: `@life-manager/schema` with Zod validation schemas
-- **Tests**: 300+ tests passing (Jest + React Testing Library + Playwright + xUnit)
+- **Service Worker**: `apps/web/public/sw.js` — IndexedDB reminder storage, 60s polling, push notifications
+- **Tests**: 356 frontend tests passing (Jest + React Testing Library); 26 backend unit tests passing; 5 labels integration tests passing
 - **CI**: GitHub Actions (PR checks, nightly extended suite, release-please)
 
 ---
 
 ## What Is Currently Being Built
 
-**Phase 50: Test Infrastructure & Query Migration** (`phase-50/test-infra-and-query-migration`)
+**v1.0.0 Release** (`develop` → `main`)
 
-- Aligning test suite to current component architecture after Tailwind migration
-- Migrating remaining hand-rolled `queryCache.ts` patterns to TanStack Query
-- Consolidating query hooks in `hooks/queries/`
+All P1 and P2 features complete. Pending:
+
+- Merge `develop` → `main` via PR
+- Create `v1.0.0` annotated tag
 
 ---
 
-## What Comes Next (MVP v1.0 Gaps)
+## What Comes Next
 
-These items must be complete before tagging v1.0.0:
+### Post-launch (v1.1+)
 
-### P1 — Must Have
-
-- [x] Task search / filter across all groups — client-side search + keyboard shortcut `/` already in TasksPage
-- [x] Empty state / onboarding for new users — dashboard shows getting-started panel when totalTasks === 0
-- [x] 404 error page — `pages/errors/NotFoundPage.tsx` + catch-all route in App.tsx
-- [x] Data export — `GET /api/v1/auth/export-data` endpoint + "Export my data" button on Profile page
-- [x] `.env.example` files — `apps/web/.env.example` and `apps/finance-api/appsettings.Production.example.json`
-- [x] PostgreSQL backup + restore scripts — `scripts/backup-db.ps1` and `scripts/restore-db.ps1`
-- [x] `GET /api/health` endpoint — returns `{ status, version, timestamp }`, DB connectivity check
-- [x] `docs/guides/PRODUCTION-SETUP.md` — step-by-step self-hosted setup guide
-
-### P2 — Should Have
-
-- [ ] Keyboard shortcuts for task operations
-- [ ] Due-date browser notifications (Service Worker)
-- [ ] Task categories / labels (already spec'd as Phase 14)
+- Work Stream 3: Rename remaining `finance-manager` references → `life-manager` in package names and repo
+- Work Stream 4: LAN deployment hardening (Docker Compose production profile, nginx reverse proxy)
+- Phase 22–24: Auth service extraction (currently embedded in monolith)
+- Phase 25–27: Microservices migration
+- Future apps: Finance, Fitness, Weather (specified but not built)
 
 ---
 
@@ -74,10 +73,10 @@ These items must be complete before tagging v1.0.0:
 | Item | Detail | Plan |
 | ---- | ------ | ---- |
 | Finance models | `Features/Finance/` contains placeholder models only | Phase 41+ |
-| Package name | `@life-manager/*` needs rename to `@life-manager/*` | Work Stream 3 |
-| Project name | All references to "Life Manager" in UI and docs | Work Stream 3 |
+| Package naming | `@life-manager/*` packages still reference old naming in some places | WS3 |
 | Auth service extraction | Auth is currently embedded in monolith | Phase 22–24 |
 | Microservices | Single .NET monolith | Phase 25–27 |
+| Integration tests | 25 pre-existing integration test failures (auth token setup issue in test factory) | Backlog |
 
 ---
 
@@ -105,4 +104,10 @@ These items must be complete before tagging v1.0.0:
 | 55 | Task status workflow + WIP limits | — |
 | 56 | Eisenhower Matrix | — |
 | 57 | Energy tagging + smart suggestions | — |
-| 50 (current) | Test infra alignment + query migration | 0.15.0 |
+| 58 | Task assignment + event sharing + notifications frontend | 0.15.0 |
+| WS1 | AI docs consolidation (CLAUDE.md) | — |
+| WS2 | MVP P1 gaps (health, export, 404, onboarding, env files, backup scripts) | — |
+| P2a | Keyboard shortcuts + cheat sheet | — |
+| P2b | Browser notifications via Service Worker | — |
+| P2c | Task labels (coloured, user-defined) | — |
+| v1.0.0 | MVP launch | 1.0.0 |
