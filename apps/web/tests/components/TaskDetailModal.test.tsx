@@ -4,6 +4,12 @@ import { ThemeProvider } from 'styled-components';
 import { lightTheme } from '../../src/styles/theme';
 import { EditTaskModal } from '../../src/components/tasks/TaskDetailModal';
 
+// Mock the useLabels hook
+jest.mock('../../src/hooks/queries/useLabels', () => ({
+  useLabels: () => ({ data: [], isLoading: false }),
+  useCreateLabel: () => ({ mutateAsync: jest.fn(), isPending: false }),
+}));
+
 // Mock the useSubtasks hook
 jest.mock('../../src/hooks/useSubtasks', () => ({
   useSubtasks: () => ({
@@ -369,6 +375,7 @@ describe('TaskDetailModal', () => {
           description: 'Original description',
           priority: 'Medium',
           dueDate: '2024-12-31',
+          labelIds: [],
         });
       });
     });
@@ -398,6 +405,7 @@ describe('TaskDetailModal', () => {
           description: 'New Description',
           priority: 'Low',
           dueDate: '2025-06-15',
+          labelIds: [],
         });
       });
     });
@@ -421,6 +429,7 @@ describe('TaskDetailModal', () => {
           description: 'Desc',
           priority: 'Medium',
           dueDate: '2024-12-31',
+          labelIds: [],
         });
       });
     });

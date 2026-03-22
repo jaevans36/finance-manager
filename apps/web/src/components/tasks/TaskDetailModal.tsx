@@ -133,7 +133,7 @@ export const TaskDetailModal = ({
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('subtasks');
   const [showOverflow, setShowOverflow] = useState(false);
-  const [editLabelIds, setEditLabelIds] = useState<string[]>(task.labels.map(l => l.id));
+  const [editLabelIds, setEditLabelIds] = useState<string[]>((task.labels ?? []).map(l => l.id));
 
   // Reminder state — convert stored UTC ISO string to local datetime-local value
   const toDatetimeLocalValue = (iso: string | null): string => {
@@ -259,7 +259,7 @@ export const TaskDetailModal = ({
       priority: task.priority,
       dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
     });
-    setEditLabelIds(task.labels.map(l => l.id));
+    setEditLabelIds((task.labels ?? []).map(l => l.id));
     setReminderAt(toDatetimeLocalValue(task.reminderAt));
     setApiError('');
     setIsEditing(true);
@@ -716,9 +716,9 @@ export const TaskDetailModal = ({
         </div>
         {isEditing ? (
           <LabelPicker selectedIds={editLabelIds} onChange={setEditLabelIds} />
-        ) : task.labels.length > 0 ? (
+        ) : (task.labels ?? []).length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
-            {task.labels.map(l => <LabelBadge key={l.id} label={l} />)}
+            {(task.labels ?? []).map(l => <LabelBadge key={l.id} label={l} />)}
           </div>
         ) : (
           <p className="m-0 text-sm text-muted-foreground">No labels</p>

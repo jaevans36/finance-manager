@@ -107,9 +107,9 @@ export const TaskItem = memo(({
               assignedByUsername={task.assignedByUsername ?? null}
             />
           )}
-          {task.labels.slice(0, 3).map(l => <LabelBadge key={l.id} label={l} />)}
-          {task.labels.length > 3 && (
-            <span className="text-xs text-muted-foreground">+{task.labels.length - 3}</span>
+          {(task.labels ?? []).slice(0, 3).map(l => <LabelBadge key={l.id} label={l} />)}
+          {(task.labels ?? []).length > 3 && (
+            <span className="text-xs text-muted-foreground">+{(task.labels ?? []).length - 3}</span>
           )}
           {isOverdue && <Badge variant="destructive">OVERDUE</Badge>}
           {task.hasSubtasks && (

@@ -17,6 +17,7 @@ import { ThemeProvider } from '@life-manager/ui';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastProvider } from '../../src/contexts/ToastContext';
+import { KeyboardShortcutProvider } from '../../src/providers/KeyboardShortcutProvider';
 
 interface ProviderOptions {
   /** Include BrowserRouter — default true */
@@ -45,7 +46,9 @@ export const renderWithProviders = (
     let wrapped = (
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          {children}
+          <KeyboardShortcutProvider>
+            {children}
+          </KeyboardShortcutProvider>
         </ThemeProvider>
       </QueryClientProvider>
     );
@@ -54,9 +57,11 @@ export const renderWithProviders = (
       wrapped = (
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
-            <ToastProvider>
-              {children}
-            </ToastProvider>
+            <KeyboardShortcutProvider>
+              <ToastProvider>
+                {children}
+              </ToastProvider>
+            </KeyboardShortcutProvider>
           </ThemeProvider>
         </QueryClientProvider>
       );
