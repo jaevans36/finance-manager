@@ -57,6 +57,7 @@ interface TaskDetailModalProps {
       priority?: Priority;
       dueDate?: string;
       labelIds?: string[];
+      reminderAt?: string;
     },
   ) => Promise<void>;
   onCancel: () => void;
@@ -134,6 +135,15 @@ export const TaskDetailModal = ({
   const [showOverflow, setShowOverflow] = useState(false);
   const [editLabelIds, setEditLabelIds] = useState<string[]>(task.labels.map(l => l.id));
 
+  // Reminder state — convert stored UTC ISO string to local datetime-local value
+  const toDatetimeLocalValue = (iso: string | null): string => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+  const [reminderAt, setReminderAt] = useState<string>(() => toDatetimeLocalValue(task.reminderAt));
+
   // Edit-mode form state (React Hook Form)
   const { register, handleSubmit: rhfHandleSubmit, watch, reset: resetForm, formState: { errors: formErrors, isSubmitting } } = useEditTaskForm({
     title: task.title,
@@ -143,6 +153,12 @@ export const TaskDetailModal = ({
   });
   const [apiError, setApiError] = useState('');
   const watchedTitle = watch('title');
+  const watchedDueDate = watch('dueDate');
+
+  const canShowReminder =
+    'Notification' in window &&
+    Notification.permission !== 'denied' &&
+    !!watchedDueDate;
 
   // Merge RHF ref with our titleInputRef
   const { ref: titleRegRef, ...titleRegRest } = register('title');
@@ -244,6 +260,7 @@ export const TaskDetailModal = ({
       dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
     });
     setEditLabelIds(task.labels.map(l => l.id));
+    setReminderAt(toDatetimeLocalValue(task.reminderAt));
     setApiError('');
     setIsEditing(true);
   };
@@ -256,12 +273,17 @@ export const TaskDetailModal = ({
   const onSave = async (data: UpdateTaskInput) => {
     setApiError('');
     try {
+      if (reminderAt && 'Notification' in window && Notification.permission === 'default') {
+        await Notification.requestPermission();
+      }
+
       await onSubmit(task.id, {
         title: data.title?.trim() || task.title,
         description: data.description?.trim() || undefined,
         priority: data.priority as Priority || undefined,
         dueDate: data.dueDate || undefined,
         labelIds: editLabelIds,
+        reminderAt: reminderAt ? new Date(reminderAt).toISOString() : undefined,
       });
     } catch (err: unknown) {
       setApiError(err instanceof Error ? err.message : 'Failed to update task');
@@ -635,6 +657,31 @@ export const TaskDetailModal = ({
               <span className="text-sm text-muted-foreground">No due date</span>
             )}
           </div>
+
+          {/* Reminder — shown in edit mode when canShowReminder, or in view mode when set */}
+          {(isEditing ? canShowReminder : !!task.reminderAt) && (
+            <>
+              <span className="flex items-center justify-center text-muted-foreground">
+                <Clock size={16} aria-hidden="true" />
+              </span>
+              <span className="text-sm font-medium text-muted-foreground" id="meta-reminder-label">Remind me</span>
+              <div className="min-w-0 text-sm text-foreground" aria-labelledby="meta-reminder-label">
+                {isEditing ? (
+                  <input
+                    id="reminderAt"
+                    type="datetime-local"
+                    value={reminderAt}
+                    onChange={e => setReminderAt(e.target.value)}
+                    disabled={isSubmitting}
+                    aria-label="Remind me"
+                    className="w-full rounded border border-input bg-background px-2 py-1 text-sm"
+                  />
+                ) : task.reminderAt ? (
+                  <span>{new Date(task.reminderAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                ) : null}
+              </div>
+            </>
+          )}
         </div>
 
         <Separator />

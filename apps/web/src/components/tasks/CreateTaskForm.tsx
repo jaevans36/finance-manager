@@ -20,6 +20,7 @@ interface CreateTaskFormProps {
     groupId?: string;
     subtaskTitles?: string[];
     labelIds?: string[];
+    reminderAt?: string;
   }) => Promise<void>;
   onCancel: () => void;
   groups?: TaskGroup[];
@@ -39,6 +40,13 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
   const subtaskInputRef = useRef<HTMLInputElement>(null);
 
   const watchedTitle = watch('title');
+  const watchedDueDate = watch('dueDate');
+  const [reminderAt, setReminderAt] = useState<string>('');
+
+  const canShowReminder =
+    'Notification' in window &&
+    Notification.permission !== 'denied' &&
+    !!watchedDueDate;
 
   const handleAddSubtask = useCallback(() => {
     const trimmed = subtaskInput.trim();
@@ -70,6 +78,10 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
     setApiError('');
 
     try {
+      if (reminderAt && 'Notification' in window && Notification.permission === 'default') {
+        await Notification.requestPermission();
+      }
+
       await onSubmit({
         title: data.title.trim(),
         description: data.description?.trim() || undefined,
@@ -78,6 +90,7 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
         groupId: data.groupId || undefined,
         subtaskTitles: subtaskTitles.length > 0 ? subtaskTitles : undefined,
         labelIds: selectedLabelIds.length > 0 ? selectedLabelIds : undefined,
+        reminderAt: reminderAt ? new Date(reminderAt).toISOString() : undefined,
       });
       // Reset form
       reset({ title: '', description: '', priority: 'Medium', dueDate: '', groupId: selectedGroupId || '' });
@@ -85,6 +98,7 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
       setSubtaskInput('');
       setIsAddingSubtask(false);
       setSelectedLabelIds([]);
+      setReminderAt('');
     } catch (err: unknown) {
       console.error('Task creation error:', err);
       if (err instanceof Error) {
@@ -187,6 +201,19 @@ export const CreateTaskForm = ({ onSubmit, onCancel, groups = [], selectedGroupI
           <Label>Labels</Label>
           <LabelPicker selectedIds={selectedLabelIds} onChange={setSelectedLabelIds} />
         </div>
+
+        {canShowReminder && (
+          <div className="mb-4">
+            <label htmlFor="reminderAt" className="block text-sm font-medium mb-1">Remind me</label>
+            <input
+              id="reminderAt"
+              type="datetime-local"
+              value={reminderAt}
+              onChange={e => setReminderAt(e.target.value)}
+              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm"
+            />
+          </div>
+        )}
 
         {/* Subtasks section */}
         <div className="mb-4">
