@@ -12,6 +12,9 @@ import { WhatsNewModal } from './components/WhatsNewModal';
 import { AppHeader } from './components/AppHeader';
 import { useTasks } from '@/hooks/queries';
 import versionData from '@workspace/VERSION.json';
+import { KeyboardShortcutProvider, useShortcutContext } from './providers/KeyboardShortcutProvider';
+import { useKeyboardShortcut } from './hooks/useKeyboardShortcut';
+import { ShortcutCheatSheet } from './components/shortcuts/ShortcutCheatSheet';
 
 // Lazy load pages for code splitting
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
@@ -37,6 +40,13 @@ const AdminLogs = lazy(() => import('./pages/admin/AdminLogs'));
 const HelpPage = lazy(() => import('./pages/help/HelpPage'));
 const NotFoundPage = lazy(() => import('./pages/errors/NotFoundPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+
+function ShortcutCheatSheetController() {
+  const { cheatSheetOpen, setCheatSheetOpen } = useShortcutContext();
+  useKeyboardShortcut({ key: '?', handler: () => setCheatSheetOpen(true), description: 'Open shortcuts', group: 'Help' });
+  useKeyboardShortcut({ key: 'Escape', handler: () => setCheatSheetOpen(false), description: 'Close / deselect', group: 'Global' });
+  return <ShortcutCheatSheet open={cheatSheetOpen} onClose={() => setCheatSheetOpen(false)} />;
+}
 
 function TaskReminderSync() {
   const { isAuthenticated } = useAuth();
@@ -82,6 +92,8 @@ function App() {
           <ToastProvider>
             <AuthProvider>
               <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <KeyboardShortcutProvider>
+              <ShortcutCheatSheetController />
               <div className="font-sans text-foreground antialiased">
               <a href="#main-content" className="skip-to-content">
                 Skip to content
@@ -232,6 +244,7 @@ function App() {
               </Suspense>
               </main>
               </div>
+              </KeyboardShortcutProvider>
             </BrowserRouter>
           </AuthProvider>
         </ToastProvider>

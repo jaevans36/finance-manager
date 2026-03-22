@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
-import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
+import { useKeyboardShortcut } from '../../hooks/useKeyboardShortcut';
 import { taskService, type Task, type TaskStatus, type UrgencyLevel, type ImportanceLevel, type EnergyLevel } from '../../services/taskService';
 import { eventService } from '../../services/eventService';
 import { taskGroupService } from '../../services/taskGroupService';
@@ -51,27 +51,15 @@ const TasksPage = () => {
   const { data: labels = [] } = useLabels();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Keyboard shortcuts: N = new item, / = search, Esc = close modals/unfocus search
-  useKeyboardShortcuts({
-    'n': () => {
-      if (!showCreateForm && !editingTask) {
-        setShowCreateForm(true);
-      }
-    },
-    '/': (event) => {
-      event.preventDefault();
-      searchInputRef.current?.focus();
-    },
-    'Escape': () => {
-      if (showCreateForm) {
-        setShowCreateForm(false);
-      } else if (editingTask) {
-        setEditingTask(null);
-      } else if (document.activeElement === searchInputRef.current) {
-        searchInputRef.current?.blur();
-      }
-    }
-  }, [showCreateForm, editingTask]);
+  // Navigation shortcuts
+  useKeyboardShortcut({ key: 'g+t', handler: () => navigate('/tasks'), description: 'Go to Tasks', group: 'Navigation' });
+  useKeyboardShortcut({ key: 'g+c', handler: () => navigate('/calendar'), description: 'Go to Calendar', group: 'Navigation' });
+  useKeyboardShortcut({ key: 'g+d', handler: () => navigate('/'), description: 'Go to Dashboard', group: 'Navigation' });
+  useKeyboardShortcut({ key: 'g+m', handler: () => navigate('/matrix'), description: 'Go to Matrix', group: 'Navigation' });
+
+  // Task operation shortcuts
+  useKeyboardShortcut({ key: 'n', handler: () => { if (!showCreateForm && !editingTask) setShowCreateForm(true); }, description: 'New task', group: 'Tasks' });
+  useKeyboardShortcut({ key: '/', handler: () => searchInputRef.current?.focus(), description: 'Focus search', group: 'Tasks' });
 
   const loadTasks = async (view?: 'all' | 'mine' | 'assigned-to-me' | 'assigned-by-me') => {
     try {
