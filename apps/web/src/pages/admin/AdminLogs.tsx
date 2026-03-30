@@ -150,7 +150,7 @@ const AdminLogs = () => {
         <div className="flex items-center gap-2 border-b border-border bg-card px-4 py-2">
           <Terminal size={14} className="text-muted-foreground" />
           <span className="text-xs font-mono text-muted-foreground">
-            finance-api-{new Date().toISOString().slice(0, 10).replace(/-/g, '')}.log
+            life-api-{new Date().toISOString().slice(0, 10).replace(/-/g, '')}.log
           </span>
           {autoRefresh && (
             <span className="ml-auto flex items-center gap-1 text-[11px] text-success">

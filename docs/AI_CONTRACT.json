@@ -18,8 +18,8 @@
         "unit": "xUnit + Moq + FluentAssertions",
         "integration": "xUnit + WebApplicationFactory + EF Core InMemory"
       },
-      "entryPoint": "apps/finance-api/Program.cs",
-      "projectFile": "apps/finance-api/FinanceApi.csproj"
+      "entryPoint": "apps/life-api/Program.cs",
+      "projectFile": "apps/life-api/LifeApi.csproj"
     },
     "frontend": {
       "framework": "React 18",
@@ -172,7 +172,7 @@
 
   "architecturalConstraints": {
     "folderStructure": {
-      "backend": "apps/finance-api/Features/{Feature}/{Controllers|DTOs|Models|Services}/",
+      "backend": "apps/life-api/Features/{Feature}/{Controllers|DTOs|Models|Services}/",
       "frontend": {
         "pages": "apps/web/src/pages/{feature}/",
         "components": "apps/web/src/components/{feature}/",
@@ -184,8 +184,8 @@
         "applications": "specs/applications/{app-name}/"
       },
       "tests": {
-        "backendUnit": "apps/finance-api-tests/FinanceApi.UnitTests/Features/",
-        "backendIntegration": "apps/finance-api-tests/FinanceApi.IntegrationTests/Features/",
+        "backendUnit": "apps/life-api-tests/LifeApi.UnitTests/Features/",
+        "backendIntegration": "apps/life-api-tests/LifeApi.IntegrationTests/Features/",
         "frontendUnit": "apps/web/tests/components/",
         "e2e": "apps/web/e2e/"
       }

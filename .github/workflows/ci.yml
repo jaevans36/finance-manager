@@ -26,14 +26,14 @@ jobs:
 
       - name: Restore dependencies
         run: |
-          dotnet restore apps/finance-api/FinanceApi.csproj
-          dotnet restore apps/finance-api-tests/FinanceApi.UnitTests/FinanceApi.UnitTests.csproj
-          dotnet restore apps/finance-api-tests/FinanceApi.IntegrationTests/FinanceApi.IntegrationTests.csproj
+          dotnet restore apps/life-api/LifeApi.csproj
+          dotnet restore apps/life-api-tests/LifeApi.UnitTests/LifeApi.UnitTests.csproj
+          dotnet restore apps/life-api-tests/LifeApi.IntegrationTests/LifeApi.IntegrationTests.csproj
 
       - name: Run unit tests
         run: >
           dotnet test
-          apps/finance-api-tests/FinanceApi.UnitTests/FinanceApi.UnitTests.csproj
+          apps/life-api-tests/LifeApi.UnitTests/LifeApi.UnitTests.csproj
           --no-restore
           --configuration Release
           --logger "trx;LogFileName=unit-results.trx"
@@ -43,7 +43,7 @@ jobs:
         continue-on-error: true  # Integration tests require service fixes tracked separately
         run: >
           dotnet test
-          apps/finance-api-tests/FinanceApi.IntegrationTests/FinanceApi.IntegrationTests.csproj
+          apps/life-api-tests/LifeApi.IntegrationTests/LifeApi.IntegrationTests.csproj
           --no-restore
           --configuration Release
           --logger "trx;LogFileName=integration-results.trx"
@@ -151,10 +151,10 @@ jobs:
         run: pnpm typecheck
 
       - name: Restore .NET dependencies
-        run: dotnet restore apps/finance-api/FinanceApi.csproj
+        run: dotnet restore apps/life-api/LifeApi.csproj
 
       - name: Build API (type check via dotnet build)
-        run: dotnet build apps/finance-api/FinanceApi.csproj --configuration Release --no-restore
+        run: dotnet build apps/life-api/LifeApi.csproj --configuration Release --no-restore
 
   build:
     name: Build Check
@@ -198,14 +198,14 @@ jobs:
         run: pnpm --filter @life-manager/schema build
 
       - name: Restore .NET dependencies
-        run: dotnet restore apps/finance-api/FinanceApi.csproj
+        run: dotnet restore apps/life-api/LifeApi.csproj
 
       - name: Publish API
         run: >
-          dotnet publish apps/finance-api/FinanceApi.csproj
+          dotnet publish apps/life-api/LifeApi.csproj
           --configuration Release
           --no-restore
-          --output apps/finance-api/publish
+          --output apps/life-api/publish
 
       - name: Build frontend
         working-directory: apps/web
@@ -217,7 +217,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: api-publish
-          path: apps/finance-api/publish/
+          path: apps/life-api/publish/
           retention-days: 7
 
       - name: Upload web artifact
