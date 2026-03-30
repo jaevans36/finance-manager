@@ -17,6 +17,11 @@ namespace LifeApi.IntegrationTests.Helpers;
 /// </summary>
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
+    // Fixed name per factory instance — all requests share the same in-memory database.
+    // Must be a field (not inline Guid.NewGuid() in the lambda) because DbContextOptions
+    // is registered as Scoped by default; the lambda would otherwise re-evaluate per request.
+    private readonly string _dbName = $"InMemoryTestDb_{Guid.NewGuid()}";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureAppConfiguration((context, config) =>
@@ -40,17 +45,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(descriptor);
             }
 
-            // Use a unique in-memory database per factory instance to prevent test pollution
             services.AddDbContext<FinanceDbContext>(options =>
             {
-                options.UseInMemoryDatabase($"InMemoryTestDb_{Guid.NewGuid()}");
+                options.UseInMemoryDatabase(_dbName);
             });
-
-            // Build the service provider and create the database
-            var sp = services.BuildServiceProvider();
-            using var scope = sp.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<FinanceDbContext>();
-            db.Database.EnsureCreated();
         });
     }
 }

@@ -128,10 +128,9 @@ builder.Services.AddScoped<ILabelsService, LabelsService>();
 builder.Services.AddDbContext<FinanceDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Configure JWT Authentication (compatible with Node.js API)
-var jwtSecret = builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret is not configured");
-var key = Encoding.ASCII.GetBytes(jwtSecret);
-
+// Configure JWT Authentication
+// NOTE: jwtSecret is read inside the lambda so it is evaluated lazily (after Build()),
+// ensuring WebApplicationFactory.ConfigureAppConfiguration overrides are visible.
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -139,6 +138,8 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    var jwtSecret = builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret is not configured");
+    var key = Encoding.ASCII.GetBytes(jwtSecret);
     options.RequireHttpsMetadata = false;
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters

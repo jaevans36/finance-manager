@@ -38,6 +38,7 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>
         var request = new RegisterRequest
         {
             Email = $"test{Guid.NewGuid()}@example.com", // Unique email
+            Username = $"u{Guid.NewGuid():N}"[..16],
             Password = "Password123!"
         };
 
@@ -62,6 +63,7 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>
         var firstRequest = new RegisterRequest
         {
             Email = email,
+            Username = $"u{Guid.NewGuid():N}"[..16],
             Password = "Password123!"
         };
         await _client.PostAsJsonAsync("/api/v1/auth/register", firstRequest);
@@ -70,6 +72,7 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>
         var secondRequest = new RegisterRequest
         {
             Email = email,
+            Username = $"u{Guid.NewGuid():N}"[..16],
             Password = "DifferentPassword123!"
         };
 
@@ -87,6 +90,7 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>
         var request = new RegisterRequest
         {
             Email = "not-an-email",
+            Username = $"u{Guid.NewGuid():N}"[..16],
             Password = "Password123!"
         };
 
@@ -111,6 +115,7 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>
         var registerRequest = new RegisterRequest
         {
             Email = email,
+            Username = $"u{Guid.NewGuid():N}"[..16],
             Password = password
         };
         await _client.PostAsJsonAsync("/api/v1/auth/register", registerRequest);
@@ -144,6 +149,7 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>
         var registerRequest = new RegisterRequest
         {
             Email = email,
+            Username = $"u{Guid.NewGuid():N}"[..16],
             Password = "CorrectPassword123!"
         };
         await _client.PostAsJsonAsync("/api/v1/auth/register", registerRequest);
@@ -190,6 +196,7 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>
         var registerRequest = new RegisterRequest
         {
             Email = email,
+            Username = $"u{Guid.NewGuid():N}"[..16],
             Password = "Password123!"
         };
         var registerResponse = await _client.PostAsJsonAsync("/api/v1/auth/register", registerRequest);
@@ -228,6 +235,7 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>
         var registerRequest = new RegisterRequest
         {
             Email = email,
+            Username = $"u{Guid.NewGuid():N}"[..16],
             Password = "Password123!"
         };
         var registerResponse = await _client.PostAsJsonAsync("/api/v1/auth/register", registerRequest);
