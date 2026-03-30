@@ -43,7 +43,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: apps/finance-api/Dockerfile
+      dockerfile: apps/life-api/Dockerfile
     container_name: life-manager-api
     restart: unless-stopped
     # Port 5000 is NOT exposed to the host — nginx proxies /api/* internally

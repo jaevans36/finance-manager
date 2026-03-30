@@ -19,7 +19,7 @@
           "path": "apps/web/package.json",
           "jsonpath": "$.version"
         },
-        "apps/finance-api/FinanceApi.csproj"
+        "apps/life-api/LifeApi.csproj"
       ]
     }
   }
