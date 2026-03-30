@@ -53,6 +53,8 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${DB_NAME:-life_manager_prod};Username=${DB_USER:-life_manager};Password=${DB_PASSWORD}"
       Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: ${JWT_ISSUER:-https://life-manager}
+      Jwt__Audience: ${JWT_AUDIENCE:-https://life-manager}
       Cors__AllowedOrigins__0: "https://localhost"
       Cors__AllowedOrigins__1: ${FRONTEND_ORIGIN:-https://localhost}
     depends_on:
