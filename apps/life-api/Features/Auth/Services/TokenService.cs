@@ -44,7 +44,7 @@ public class TokenService : ITokenService
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(1),
+            expires: DateTime.UtcNow.AddMinutes(15),
             signingCredentials: credentials
         );
 
@@ -53,7 +53,9 @@ public class TokenService : ITokenService
 
     public string GenerateRefreshToken()
     {
-        return Guid.NewGuid().ToString() + Guid.NewGuid().ToString();
+        var bytes = new byte[64];
+        System.Security.Cryptography.RandomNumberGenerator.Fill(bytes);
+        return Convert.ToBase64String(bytes);
     }
 
     public ClaimsPrincipal? ValidateToken(string token)

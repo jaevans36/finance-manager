@@ -14,7 +14,12 @@ RUN dotnet publish -c Release -o /app/publish --no-restore
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
+RUN adduser --disabled-password --gecos "" appuser
+
 COPY --from=build /app/publish .
+
+RUN chown -R appuser /app
+USER appuser
 
 ENV ASPNETCORE_URLS=http://+:5000
 EXPOSE 5000
