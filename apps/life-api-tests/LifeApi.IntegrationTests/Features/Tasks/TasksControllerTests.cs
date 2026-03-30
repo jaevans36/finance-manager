@@ -32,6 +32,7 @@ public class TasksControllerTests : IClassFixture<CustomWebApplicationFactory>
         var registerRequest = new RegisterRequest
         {
             Email = $"tasktest{Guid.NewGuid()}@example.com",
+            Username = $"u{Guid.NewGuid():N}"[..16],
             Password = "Password123!"
         };
 

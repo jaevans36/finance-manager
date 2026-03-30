@@ -34,6 +34,7 @@ public class EventsControllerTests : IClassFixture<CustomWebApplicationFactory>
         var registerRequest = new RegisterRequest
         {
             Email = $"eventtest{Guid.NewGuid()}@example.com",
+            Username = $"u{Guid.NewGuid():N}"[..16],
             Password = "Password123!"
         };
 
