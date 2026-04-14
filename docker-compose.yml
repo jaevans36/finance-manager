@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: finance_manager_dev
+      POSTGRES_DB: life_manager_dev
     ports:
       - "5432:5432"
     volumes:

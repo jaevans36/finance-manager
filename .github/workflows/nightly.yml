@@ -42,23 +42,23 @@ jobs:
         run: pnpm --filter @life-manager/schema build
 
       - name: Restore .NET dependencies
-        run: dotnet restore apps/finance-api/FinanceApi.csproj
+        run: dotnet restore apps/life-api/LifeApi.csproj
 
       - name: Run unit tests
         run: >
           dotnet test
-          apps/finance-api-tests/FinanceApi.UnitTests/FinanceApi.UnitTests.csproj
+          apps/life-api-tests/LifeApi.UnitTests/LifeApi.UnitTests.csproj
           --no-restore
           --configuration Release
           --logger "trx;LogFileName=unit-results.trx"
           --results-directory TestResults
           --collect:"XPlat Code Coverage"
-          --settings apps/finance-api-tests/coverlet.runsettings
+          --settings apps/life-api-tests/coverlet.runsettings
 
       - name: Run integration tests
         run: >
           dotnet test
-          apps/finance-api-tests/FinanceApi.IntegrationTests/FinanceApi.IntegrationTests.csproj
+          apps/life-api-tests/LifeApi.IntegrationTests/LifeApi.IntegrationTests.csproj
           --no-restore
           --configuration Release
           --logger "trx;LogFileName=integration-results.trx"
@@ -110,7 +110,7 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Check for vulnerable NuGet packages
-        run: dotnet list "Finance Manager.sln" package --vulnerable --include-transitive
+        run: dotnet list "apps/life-api/LifeApi.csproj" package --vulnerable --include-transitive
         continue-on-error: true
 
   bundle-size:
