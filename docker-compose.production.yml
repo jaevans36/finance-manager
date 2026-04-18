@@ -18,6 +18,7 @@
 #   Frontend: https://life-manager        (or https://localhost)
 #   API:      proxied at https://life-manager/api/v1/
 #   Health:   https://life-manager/api/health
+#   Pi-hole:  http://192.168.1.209:8080/admin  (DNS admin — set router DNS to 192.168.1.209)
 
 services:
   postgres:
@@ -44,6 +45,8 @@ services:
     build:
       context: .
       dockerfile: apps/life-api/Dockerfile
+      tags:
+        - "life-manager-api:latest"
     container_name: life-manager-api
     restart: unless-stopped
     # Port 5000 is NOT exposed to the host — nginx proxies /api/* internally
@@ -67,6 +70,8 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      tags:
+        - "life-manager-web:latest"
       args:
         # VITE_API_URL is baked into the frontend bundle at build time.
         # With nginx proxying, the API is served from the same host — just use the origin.
@@ -85,10 +90,35 @@ services:
     networks:
       - life-manager
 
+  pihole:
+    image: pihole/pihole:latest
+    container_name: life-manager-pihole
+    restart: unless-stopped
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "8080:80"   # Admin UI at http://192.168.1.209:8080/admin
+    environment:
+      TZ: Europe/London
+      WEBPASSWORD: ${PIHOLE_PASSWORD:-changeme}
+      PIHOLE_DNS_1: 1.1.1.1
+      PIHOLE_DNS_2: 8.8.8.8
+    volumes:
+      - pihole_data:/etc/pihole
+      - pihole_dnsmasq:/etc/dnsmasq.d
+      # Pre-loads the life-manager → 192.168.1.209 DNS record
+      - ./config/pihole/custom.list:/etc/pihole/custom.list:ro
+    networks:
+      - life-manager
+
 networks:
   life-manager:
     driver: bridge
 
 volumes:
   postgres_data:
+    driver: local
+  pihole_data:
+    driver: local
+  pihole_dnsmasq:
     driver: local

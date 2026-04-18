@@ -45,6 +45,7 @@ lerna-debug.log*
 *.ntvs*
 *.njsproj
 *.sln
+!Finance Manager.sln
 *.sw?
 
 # Database
