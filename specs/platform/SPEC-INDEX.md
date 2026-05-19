@@ -222,6 +222,18 @@ This index maps features from the original `spec-v2-enhancements.md` to their ne
 
 **Tasks**: `platform/frontend-modernisation-tasks.md` (T1257-T1388, 132 tasks, ~9 weeks)
 
+### Phase 56-59 — Stocks & Shares Application
+
+| Phase | Feature | Location |
+|-------|---------|----------|
+| Phase 56 | Market Discovery & Watchlist | `applications/stocks/spec.md` |
+| Phase 57 | Portfolio Tracking | `applications/stocks/spec.md` |
+| Phase 58 | Stock Detail & Analysis | `applications/stocks/spec.md` |
+| Phase 59 | Dashboard Widget | `applications/stocks/spec.md` |
+
+**APIs**: Finnhub (primary, free tier — 30 req/s) + Alpha Vantage (market movers + daily chart, 25 req/min free)  
+**Tasks**: `applications/stocks/tasks.md` (T1500-T1576, 77 tasks, ~8 weeks)
+
 ## Quick Navigation
 
 ### Platform-Wide Features
@@ -274,6 +286,14 @@ Go to `applications/finance/` when looking for:
 - Debt management & payoff planning
 - AI-powered financial insights
 
+Go to `applications/stocks/` when looking for:
+- Live stock quotes & market data
+- Watchlist management
+- Personal portfolio tracking (holdings, unrealised P&L)
+- Stock detail pages (fundamentals, 100-day chart, news, analyst consensus)
+- Market hotlist (top gainers, losers, most active)
+- Configurable dashboard widget (hotlist/portfolio modes)
+
 ### Implementation Details
 
 Go to `applications/todo/tasks.md` for:
@@ -323,9 +343,12 @@ specs/
     ├── weather/
     │   ├── spec.md                   ← Weather app spec (Phase 32-35)
     │   └── tasks.md                  ← Weather tasks (T1055-T1104)
-    └── finance/
-        ├── spec.md                   ← Finance app spec (Phase 41-47)
-        └── tasks.md                  ← Finance tasks (T1155-T1256)
+    ├── finance/
+    │   ├── spec.md                   ← Finance app spec (Phase 41-47)
+    │   └── tasks.md                  ← Finance tasks (T1155-T1256)
+    └── stocks/
+        ├── spec.md                   ← Stocks & Shares spec (Phase 56-59)
+        └── tasks.md                  ← Stocks tasks (T1500-T1576)
 ```
 
 ## When Adding New Features
