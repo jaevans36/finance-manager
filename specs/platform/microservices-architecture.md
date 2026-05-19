@@ -86,6 +86,8 @@ Services communicate asynchronously via an event bus for cross-domain operations
 **Acceptance Scenarios**:
 
 1. **Given** a user completing a task in To Do, **When** the task is linked to a fitness habit, **Then** a `TaskCompleted` event is published and the Fitness service marks the habit as completed for the day
+2. **Given** a user marking a calendar event as done, **When** the event title matches a habit's `linkedEventPattern` (or the event ID is in the habit's `linkedEventIds`), **Then** an `EventCompleted` event is published and the Fitness service marks the matching habit complete for that day
+3. **Given** a user manually marking a habit complete, **When** the habit has a linked task for that day, **Then** a `HabitCompleted` event is published and the To Do service marks the corresponding task complete — bidirectional sync with first-completion-wins idempotency
 2. **Given** an event published to the bus, **When** the consuming service is temporarily unavailable, **Then** the event is retained in the queue and delivered when the service recovers
 3. **Given** a failed event processing, **When** retries are exhausted, **Then** the event moves to a dead letter queue for manual investigation
 4. **Given** an event received multiple times (due to retry), **When** the consumer processes it, **Then** idempotency ensures no duplicate side effects

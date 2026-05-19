@@ -125,13 +125,13 @@ This index maps features from the original `spec-v2-enhancements.md` to their ne
 | Phase 14 | Workout Tracking Foundation | `applications/fitness/spec.md` |
 | Phase 15 | Food & Nutrition Diary | `applications/fitness/spec.md` |
 | Phase 16 | Body Measurements & Goals | `applications/fitness/spec.md` |
-| Phase 17 | Habit Tracking (GitHub Grid) | `applications/fitness/spec.md` |
+| Phase 17 | Habit Tracking (GitHub Grid) — Categories & Event Linking | `applications/fitness/spec.md` |
 | Phase 18 | Meditation & Mindfulness | `applications/fitness/spec.md` |
 | Phase 19 | Wearable Device Integration | `applications/fitness/spec.md` |
 | Phase 20 | Workout Plans & Social | `applications/fitness/spec.md` |
 | Phase 21 | Fitness Dashboard | `applications/fitness/spec.md` |
 
-**Tasks**: `applications/fitness/tasks.md` (T800-T924, 125 tasks, ~13 weeks)
+**Tasks**: `applications/fitness/tasks.md` (T800-T924, T1389-T1403, 140 tasks, ~14.5 weeks)
 
 ### Phase 22-24 - Authentication Service
 
@@ -253,7 +253,7 @@ Go to `applications/fitness/` when looking for:
 - Workout tracking & exercise logging
 - Food & nutrition diary
 - Body measurements & goals
-- Habit tracking (GitHub-style grid)
+- Habit tracking (GitHub-style grid, categories, event/task auto-linking)
 - Meditation & mindfulness
 - Wearable device integration
 

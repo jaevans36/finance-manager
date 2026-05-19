@@ -81,8 +81,10 @@
 - [ ] T999 [US4] Implement RabbitMQ publisher service (publish events with routing keys) - 3h
 - [ ] T1000 [US4] Implement RabbitMQ consumer service (subscribe, retry, dead letter queue) - 4h
 - [ ] T1001 [US4] Implement idempotency handler (track processed event IDs, skip duplicates) - 3h
-- [ ] T1002 [US4] Define core events: TaskCompleted, HabitCompleted, UserRegistered, GoalAchieved - 2h
+- [ ] T1002 [US4] Define core events: TaskCompleted, HabitCompleted, EventCompleted, UserRegistered, GoalAchieved - 2h
 - [ ] T1003 [US4] Implement TaskCompleted → HabitCompleted cross-service event flow (todo→fitness) - 4h
+- [ ] T1003b [US4] Implement EventCompleted → HabitCompleted cross-service event flow (events→fitness, pattern/ID matching) - 3h
+- [ ] T1003c [US4] Implement HabitCompleted → TaskCompleted reverse flow (fitness→todo, bidirectional sync with idempotency guard) - 3h
 - [ ] T1004 [US4] Write unit tests for event publisher, consumer, and idempotency (12+ tests) - 3h
 - [ ] T1005 [US4] Write integration tests for event bus with RabbitMQ (8+ tests) - 3h
 

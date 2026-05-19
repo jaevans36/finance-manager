@@ -183,7 +183,22 @@ Users can define personal habits, track daily completion with a GitHub-style con
 9. **Given** a user viewing habit statistics, **When** they check an individual habit, **Then** they see total completions, longest streak, current streak, completion rate, and a monthly breakdown
 10. **Given** a user with multiple habits, **When** they view the habits dashboard, **Then** all active habits are displayed in a grid layout with mini contribution charts, current streaks, and progress bars
 
+#### Habit Categories
+
+11. **Given** a user creating a habit, **When** they assign it a category (e.g., "Health", "Productivity", "Learning", "Financial", "Social", "Custom"), **Then** the habit is tagged and can be filtered by category across the dashboard
+12. **Given** a user viewing the habits dashboard, **When** they filter by category, **Then** only habits in that category are shown with aggregate completion statistics for the selected category
+
+#### Event Linking & Automation
+
+13. **Given** a user linking a habit to a calendar event pattern, **When** they configure a pattern (e.g., "mark habit complete whenever I log an event matching 'Gym'"), **Then** completing that calendar event automatically marks the habit as done for that day via the event bus
+14. **Given** a user linking a habit to a specific recurring calendar event, **When** they attend and mark the event complete, **Then** the `EventCompleted` event is published, the Fitness service consumes it, and the habit is marked complete without manual intervention
+15. **Given** a habit configured to generate calendar events (task linking, extended), **When** the habit is due per its frequency, **Then** a calendar event is created in the Events app in addition to (or instead of) a task, at the user's configured preference
+16. **Given** a task linked to a habit, **When** the task is marked complete, **Then** the `TaskCompleted` event marks the habit complete for the day; conversely, marking the habit complete for a day marks any linked task for that day as done — bidirectional sync
+17. **Given** a habit with both a linked task and a linked event, **When** either the task or event is marked complete, **Then** the habit is marked complete for that day (first completion wins; subsequent completions are no-ops for that day)
+
 **Enhancement**: Habit reminders via push notification or email at user-specified times. Habit templates for common patterns (daily exercise, meditation, reading, hydration).
+
+> **Future consideration**: If habit tracking grows beyond fitness (e.g., financial habits, productivity habits), the Habits feature should be extracted to a standalone `Habits` application with its own service. The `category` field is the migration path — all habits with `category != 'fitness'` would move to the new service. This is not planned for the current roadmap but the data model supports it.
 
 ---
 
@@ -320,12 +335,16 @@ interface Habit {
   userId: string;
   name: string;
   description: string | null;
+  category: 'health' | 'fitness' | 'productivity' | 'learning' | 'financial' | 'social' | 'custom';
   colour: string;               // Hex colour for the contribution grid
   icon: string | null;          // Lucide icon name
   frequency: 'daily' | 'weekly' | 'custom';
   targetPerWeek: number | null; // e.g., 3 for "3 times a week"
   customDays: number[] | null;  // [1,3,5] for Mon/Wed/Fri (ISO weekday)
-  linkedTaskGroupId: string | null; // Optional link to task manager
+  linkedTaskGroupId: string | null; // Optional link to task manager (creates tasks on habit days)
+  linkedEventPattern: string | null; // Optional event title pattern — completing matching events marks habit complete
+  linkedEventIds: string[];     // Explicit calendar event IDs that auto-complete this habit when marked done
+  autoCompleteSource: 'task' | 'event' | 'both' | null; // Which sources trigger automatic completion
   isArchived: boolean;
   currentStreak: number;
   longestStreak: number;
@@ -415,16 +434,26 @@ DELETE /api/v1/fitness/goals/:id             Delete goal
 
 ### Habit Endpoints
 ```
-POST   /api/v1/fitness/habits                Create habit
-GET    /api/v1/fitness/habits                List habits (active/archived)
-GET    /api/v1/fitness/habits/:id            Get habit with completions
-PUT    /api/v1/fitness/habits/:id            Update habit
-PATCH  /api/v1/fitness/habits/:id/archive    Archive/unarchive habit
-DELETE /api/v1/fitness/habits/:id            Delete habit
-POST   /api/v1/fitness/habits/:id/complete   Mark habit complete for date
-DELETE /api/v1/fitness/habits/:id/complete   Remove completion for date
-GET    /api/v1/fitness/habits/:id/grid       Get contribution grid data (12 months)
-GET    /api/v1/fitness/habits/:id/stats      Get habit statistics
+POST   /api/v1/fitness/habits                          Create habit
+GET    /api/v1/fitness/habits                          List habits (active/archived, filterable by category)
+GET    /api/v1/fitness/habits/:id                      Get habit with completions
+PUT    /api/v1/fitness/habits/:id                      Update habit
+PATCH  /api/v1/fitness/habits/:id/archive              Archive/unarchive habit
+DELETE /api/v1/fitness/habits/:id                      Delete habit
+POST   /api/v1/fitness/habits/:id/complete             Mark habit complete for date
+DELETE /api/v1/fitness/habits/:id/complete             Remove completion for date
+GET    /api/v1/fitness/habits/:id/grid                 Get contribution grid data (12 months)
+GET    /api/v1/fitness/habits/:id/stats                Get habit statistics
+POST   /api/v1/fitness/habits/:id/link-event           Link habit to a calendar event ID or title pattern
+DELETE /api/v1/fitness/habits/:id/link-event/:eventId  Remove a specific event link
+GET    /api/v1/fitness/habits/categories               List all category values with completion counts
+```
+
+#### Internal Event Bus Endpoints (consumed by Fitness service, not directly exposed)
+```
+SUBSCRIBE  events/task.completed     → auto-complete linked habit for that day
+SUBSCRIBE  events/event.completed    → auto-complete pattern/linked habit for that day
+PUBLISH    events/habit.completed    → notify other services when habit is marked done
 ```
 
 ### Meditation Endpoints
