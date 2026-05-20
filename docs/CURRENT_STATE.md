@@ -66,6 +66,8 @@ Next immediate step: begin Phase 60 (Market Discovery & Watchlist) — backend A
 
 ### Platform (Parallel / Post-Stocks)
 
+- Phase 64–66: Life Manager MCP Server (`apps/life-mcp/`) — wraps the API for Claude CLI / Obsidian second-brain workflows (T1596–T1667)
+- Phase 64–66: Life Manager MCP Server (`apps/life-mcp/`) — wraps the API for Claude CLI / Obsidian second-brain workflows (T1596–T1667)
 - Work Stream 3: Rename remaining `finance-manager` references → `life-manager` in package names and repo
 - Work Stream 4: LAN deployment hardening (Docker Compose production profile, nginx reverse proxy)
 - Phase 22–24: Auth service extraction (currently embedded in monolith)

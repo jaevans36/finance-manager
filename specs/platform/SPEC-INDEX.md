@@ -246,6 +246,17 @@ This index maps features from the original `spec-v2-enhancements.md` to their ne
 **APIs**: Finnhub (primary, free tier — 30 req/s) + Alpha Vantage (market movers + daily chart, 25 req/min free)  
 **Tasks**: `applications/stocks/tasks.md` (T1519-T1595, 77 tasks, ~8 weeks)
 
+### Phase 64-66 — Life Manager MCP Server
+
+| Phase | Feature | Location |
+|-------|---------|----------|
+| Phase 64 | MCP Foundation + Task Tools | `platform/mcp-server.md` |
+| Phase 65 | Event + Statistics Tools + Resources | `platform/mcp-server.md` |
+| Phase 66 | SSE Transport + Integration Docs | `platform/mcp-server.md` |
+
+**Purpose**: MCP server (`apps/life-mcp/`) wrapping the Life Manager API for AI assistant consumption (Claude CLI, Claude Desktop, Copilot). Enables second-brain workflows with Obsidian + Claude CLI.  
+**Tasks**: `platform/mcp-server-tasks.md` (T1596-T1667, 72 tasks, ~4.5 weeks)
+
 ## Quick Navigation
 
 ### Platform-Wide Features
