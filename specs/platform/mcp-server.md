@@ -250,9 +250,80 @@ After running `npx @modelcontextprotocol/inspector` or installing globally, add 
 
 ---
 
-## Out of Scope (MVP)
+## Future Application Extensions (Phase 67–70)
 
-- **Fitness / Finance / Stocks tools** — added in future phases once those applications are built
+As each Life Manager application is built, the MCP server gains a corresponding tool phase. The rule is: **every new user-facing feature that reads or writes data should be considered for an MCP tool at the same time as API implementation**.
+
+### Phase 67 — Stocks & Shares Tools (after Phase 63)
+
+| Tool / Resource | Description |
+|---|---|
+| `get_watchlist` | Return the user's full watchlist with live quotes |
+| `add_to_watchlist` | Add a symbol to the watchlist |
+| `remove_from_watchlist` | Remove a symbol from the watchlist |
+| `get_portfolio` | Return all holdings with current value and P&L |
+| `add_holding` | Record a new stock holding |
+| `update_holding` | Update quantity or average cost of a holding |
+| `remove_holding` | Remove a holding from the portfolio |
+| `get_stock_quote` | Get a real-time quote for a given symbol |
+| `search_stocks` | Search stock symbols by name or ticker |
+| `get_market_movers` | Return top gainers, losers, and most active |
+| `life-manager://stocks/watchlist` | Resource: formatted watchlist with live prices |
+| `life-manager://stocks/portfolio` | Resource: portfolio summary with total value and day's P&L |
+
+**Tasks**: `platform/mcp-server-tasks.md` Phase 67 (T1668–T1683)
+
+### Phase 68 — Finance Tools (after Phase 47)
+
+| Tool / Resource | Description |
+|---|---|
+| `list_accounts` | List all financial accounts with current balances |
+| `list_transactions` | List transactions with optional date/category/account filter |
+| `get_budget_summary` | Return budget vs actual spend by category for current month |
+| `list_bills` | List upcoming bills with due dates and amounts |
+| `get_savings_goals` | Return all savings goals with progress |
+| `life-manager://finance/overview` | Resource: net worth snapshot + budget health + upcoming bills |
+
+**Tasks**: `platform/mcp-server-tasks.md` Phase 68 (T1684+, to be planned when Finance Phase 41-47 begins)
+
+### Phase 69 — Fitness Tools (after Phase 21)
+
+| Tool / Resource | Description |
+|---|---|
+| `log_workout` | Record a completed workout session |
+| `list_workouts` | List recent workout history |
+| `log_food` | Add a food diary entry |
+| `get_nutrition_summary` | Return today's macros vs targets |
+| `get_habit_grid` | Return habit tracking data (streaks, completion %) |
+| `log_measurement` | Record a body measurement |
+| `life-manager://fitness/today` | Resource: today's workout, nutrition, and habit summary |
+
+**Tasks**: `platform/mcp-server-tasks.md` Phase 69 (to be planned when Fitness Phase 14-21 begins)
+
+### Phase 70 — Weather Tools (after Phase 35)
+
+| Tool / Resource | Description |
+|---|---|
+| `get_current_weather` | Get current conditions for a saved location |
+| `get_forecast` | Get the 7-day forecast |
+| `list_weather_alerts` | Return any active severe weather alerts |
+| `life-manager://weather/now` | Resource: current conditions for the user's primary location |
+
+**Tasks**: `platform/mcp-server-tasks.md` Phase 70 (to be planned when Weather Phase 32-35 begins)
+
+---
+
+## MCP Extension Rule
+
+> **When building any new API endpoint that reads or writes user data, the implementing agent must check `specs/platform/mcp-server.md` Future Extensions and either (a) confirm the relevant tool is already specced, or (b) add it before implementation begins.**
+
+This ensures the MCP server stays in sync with the API surface without requiring a separate catch-up pass.
+
+---
+
+## Out of Scope (MVP — Phases 64–66)
+
+- **Stocks / Finance / Fitness / Weather tools** — covered in Phases 67–70 per app completion
 - **Write access to events via recurrence** — read-only for recurring events in MVP; mutation is complex
 - **Multi-user / shared task tools** — single service account per deployment
 - **OAuth / PKCE authentication** — password-based service account is sufficient for a personal deployment

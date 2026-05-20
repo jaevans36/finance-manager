@@ -255,7 +255,7 @@ This index maps features from the original `spec-v2-enhancements.md` to their ne
 | Phase 66 | SSE Transport + Integration Docs | `platform/mcp-server.md` |
 
 **Purpose**: MCP server (`apps/life-mcp/`) wrapping the Life Manager API for AI assistant consumption (Claude CLI, Claude Desktop, Copilot). Enables second-brain workflows with Obsidian + Claude CLI.  
-**Tasks**: `platform/mcp-server-tasks.md` (T1596-T1667, 72 tasks, ~4.5 weeks)
+**Tasks**: `platform/mcp-server-tasks.md` (T1596-T1667, 72 tasks, ~4.5 weeks; Phase 67 Stocks tools T1668-T1683 planned; Phases 68-70 stubs for Finance/Fitness/Weather)
 
 ## Quick Navigation
 
@@ -299,6 +299,14 @@ Go to `applications/weather/` when looking for:
 - Air quality index (AQI)
 - Radar & satellite imagery
 - Historical weather data
+
+Go to `applications/stocks/` when looking for:
+- Stock watchlist management
+- Portfolio & holdings tracking
+- Market hotlist (top gainers/losers/most active)
+- Stock detail, analyst data & news
+- Dashboard widget configuration
+- MCP tools for stocks data (Phase 67)
 
 Go to `applications/finance/` when looking for:
 - Transaction import & management (CSV)

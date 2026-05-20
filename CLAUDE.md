@@ -24,6 +24,7 @@
 3. **Test-Driven Development** — Write tests before or alongside implementation. No feature ships without passing tests. 300+ tests must remain green.
 4. **API-First Design** — Define OpenAPI contracts before implementation. All functionality accessible via RESTful API. Consistent error response format.
 5. **Compliance & Audit Trail** — All user actions logged with attribution and timestamps. Privacy controls mandatory for personal data.
+6. **Living Documentation** — Documentation is updated as part of implementation, never as a separate follow-up. Code and docs ship together. See "Documentation Requirements" below.
 
 ---
 
@@ -86,12 +87,29 @@
 2. Search for existing implementations before creating new files (`grep_search` first)
 3. Follow established folder conventions — match existing code structure
 
-### After completing a phase
-1. Mark tasks complete in the relevant `specs/applications/*/tasks.md`
+### Documentation Requirements
+
+#### During development (after every meaningful commit)
+
+| What changed | What to update |
+|---|---|
+| New API endpoint | `CHANGELOG.md`; if it exposes user data, check `specs/platform/mcp-server.md` Future Extensions and add the MCP tool if not yet listed |
+| Test count changes | `docs/testing/TEST-INVENTORY.md` — update counts immediately |
+| New environment variable | `appsettings.Development.json` example values + `docs/guides/LAN_DEPLOYMENT.md` |
+| Architecture decision | New ADR entry in `docs/ARCHITECTURAL_DECISIONS.md` |
+| Breaking change | Document in `CHANGELOG.md` with migration steps before merging |
+| New feature complete | Mark task `[x]` in the relevant tasks.md at the moment of completion |
+
+#### After completing a phase
+1. Mark all phase tasks complete `[x]` in the relevant tasks.md
 2. Create `docs/phases/phase-XX-name/complete.md` (see existing examples for template)
-3. Update `docs/testing/TEST-INVENTORY.md` with new test counts
-4. Bump version in `VERSION.json`, `package.json`, `.csproj`, and `CHANGELOG.md`
-5. Tag release: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
+3. Update `docs/testing/TEST-INVENTORY.md` with new total test counts
+4. Update `docs/CURRENT_STATE.md` — move completed phase into "What Has Been Built"; advance "What Is Currently Being Built"
+5. Update `specs/platform/SPEC-INDEX.md` if new phases, applications, or platform features were added
+6. Update `CLAUDE.md` task ID table if new task ID blocks were allocated during the phase
+7. If the phase built new data-bearing features, verify `specs/platform/mcp-server.md` Future Extensions has the corresponding MCP tool listed
+8. Bump version in `VERSION.json`, `package.json`, `.csproj`, and `CHANGELOG.md`
+9. Tag release: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
 
 ### Session handover (end of every session)
 Provide a structured summary: what changed, current build/test status, what's next, any decisions made. See `.github/copilot-instructions.md` for the full handover format template.
@@ -107,7 +125,7 @@ Provide a structured summary: what changed, current build/test status, what's ne
 4. Relevant spec file in `specs/applications/` or `specs/platform/`
 
 ### Task management
-- Task IDs: T001–T924 (Todo + Fitness), T925–T1154 (Platform), T1155–T1388 (Finance + Frontend), T1389–T1503 (Todo productivity), T1504–T1518 (Fitness habits), T1519–T1595 (Stocks)
+- Task IDs: T001–T924 (Todo + Fitness), T925–T1154 (Platform), T1155–T1388 (Finance + Frontend), T1389–T1503 (Todo productivity), T1504–T1518 (Fitness habits), T1519–T1595 (Stocks), T1596–T1667 (MCP Server — Phases 64–66), T1668–T1683 (Stocks MCP tools — Phase 67), T1684+ (Finance/Fitness/Weather MCP tools — Phases 68–70, to be allocated)
 - Mark tasks `[x]` complete immediately after implementation
 - Reference task IDs in commits and PRs
 

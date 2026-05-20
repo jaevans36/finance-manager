@@ -174,6 +174,60 @@
 | Phase 64 — Foundation + Task Tools | T1596–T1625 | 30 | 2 weeks |
 | Phase 65 — Event + Stats + Resources | T1626–T1649 | 24 | 1.5 weeks |
 | Phase 66 — SSE + Docs + Polish | T1650–T1667 | 18 | 1 week |
-| **Total** | **T1596–T1667** | **72** | **~4.5 weeks** |
+| Phase 67 — Stocks MCP Tools | T1668–T1683 | 16 | 1 week |
+| Phase 68 — Finance MCP Tools | T1684+ | TBD | after Phase 47 |
+| Phase 69 — Fitness MCP Tools | TBD | TBD | after Phase 21 |
+| Phase 70 — Weather MCP Tools | TBD | TBD | after Phase 35 |
+| **Total (Phases 64–67)** | **T1596–T1683** | **88** | **~5.5 weeks** |
 
-**Next available task ID**: T1668
+**Next available task ID**: T1684
+
+---
+
+## Phase 67: Stocks & Shares MCP Tools (Priority: P2)
+
+**Purpose**: Expose the Stocks & Shares application data via MCP tools and resources  
+**Estimated Effort**: 1 week (16 tasks)  
+**Dependencies**: Phase 63 (Stocks implementation complete), Phases 64–66 (MCP server foundation)
+
+- [ ] T1668 Create `apps/life-mcp/src/api/stocks-api.ts` — functions wrapping all stocks endpoints: `getWatchlist`, `addToWatchlist`, `removeFromWatchlist`, `getPortfolio`, `addHolding`, `updateHolding`, `removeHolding`, `getQuote`, `searchStocks`, `getMarketMovers` — 3h
+- [ ] T1669 Write unit tests for `stocks-api.ts` (each function, success + error paths — 12+ tests) — 2h
+- [ ] T1670 [P] Create `apps/life-mcp/src/types/stocks.ts` — `WatchlistItemResult`, `HoldingResult`, `PortfolioResult`, `QuoteResult`, `MarketMoverResult` interfaces — 1h
+- [ ] T1671 Implement `get_watchlist` tool — output: watchlist items with live quotes, grouped by symbol — 1.5h
+- [ ] T1672 Implement `add_to_watchlist` tool — input: `symbol`, `exchange?`; validates symbol format; output: added item — 1h
+- [ ] T1673 Implement `remove_from_watchlist` tool — input: `symbol`; output: confirmation — 30m
+- [ ] T1674 Implement `get_portfolio` tool — output: all holdings with current value, average cost, P&L (£ and %), total portfolio value — 2h
+- [ ] T1675 Implement `add_holding` tool — input: `symbol`, `quantity`, `averageCost`, `currency?`; output: created holding — 1h
+- [ ] T1676 Implement `update_holding` tool — input: `holdingId`, `quantity?`, `averageCost?`; output: updated holding — 1h
+- [ ] T1677 Implement `remove_holding` tool — input: `holdingId`; output: confirmation — 30m
+- [ ] T1678 Implement `get_stock_quote` tool — input: `symbol`; output: price, change, % change, 52-week high/low, market status — 1h
+- [ ] T1679 Implement `search_stocks` tool — input: `query` (min 2 chars); output: matching symbols with name, exchange, type — 1h
+- [ ] T1680 Implement `get_market_movers` tool — output: top 5 gainers, losers, and most active with price and % change — 1h
+- [ ] T1681 Implement `life-manager://stocks/watchlist` resource — formatted table of watchlist with live prices — 1.5h
+- [ ] T1682 Implement `life-manager://stocks/portfolio` resource — summary paragraph: total value, day's P&L, top holding — 1h
+- [ ] T1683 Register all stocks tools + resources; write Jest tests (20+ tests); update `docs/guides/MCP_TOOL_REFERENCE.md` — 2h
+
+---
+
+## Phase 68: Finance MCP Tools (Stub)
+
+**Status**: To be planned when Finance Application (Phase 41–47) implementation begins.  
+**Planned task range**: T1684+ (count TBD)  
+**Planned tools**: `list_accounts`, `list_transactions`, `get_budget_summary`, `list_bills`, `get_savings_goals`  
+**Planned resource**: `life-manager://finance/overview`
+
+---
+
+## Phase 69: Fitness MCP Tools (Stub)
+
+**Status**: To be planned when Fitness Application (Phase 14–21) implementation begins.  
+**Planned tools**: `log_workout`, `list_workouts`, `log_food`, `get_nutrition_summary`, `get_habit_grid`, `log_measurement`  
+**Planned resource**: `life-manager://fitness/today`
+
+---
+
+## Phase 70: Weather MCP Tools (Stub)
+
+**Status**: To be planned when Weather Application (Phase 32–35) implementation begins.  
+**Planned tools**: `get_current_weather`, `get_forecast`, `list_weather_alerts`  
+**Planned resource**: `life-manager://weather/now`
