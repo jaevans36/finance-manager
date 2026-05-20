@@ -1,7 +1,7 @@
 # Productivity Frameworks — Task Breakdown
 
 > Phases 55-57: Task Status & WIP Limits, Eisenhower Matrix, Energy Tagging & Smart Suggestions  
-> Task IDs: T1389-T1487 (99 tasks)  
+> Task IDs: T1389-T1503 (115 tasks)  
 > Estimated total effort: ~6 weeks
 
 ---

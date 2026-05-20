@@ -2,8 +2,10 @@
 
 This document tracks all automated tests in the Life Manager project. It serves as a reference for what's tested, coverage gaps, and maintenance responsibilities.
 
-**Last Updated**: 2026-01-18  
-**Total Tests**: 303 (Phase 13 complete: Events feature with 68 new tests)
+**Last Updated**: 2026-05-20  
+**Total Tests**: 387 (356 frontend + 26 backend unit + 5 labels integration — as of v1.0.0)
+
+> ⚠️ **Note**: The feature coverage matrix below reflects Phase 13. The suite has grown significantly since then (Phases 48–58, keyboard shortcuts, labels, service worker notifications). A full reconciliation of the coverage matrix is backlogged.
 
 ---
 
@@ -11,13 +13,11 @@ This document tracks all automated tests in the Life Manager project. It serves 
 
 | Type | Count | Run On | Duration | Location |
 |------|-------|--------|----------|----------|
-| Backend Unit | 62 (+18) | Every PR | ~45s | `apps/finance-api-tests/` |
-| Frontend Unit | 96 (+25) | Every PR | ~60s | `apps/web/tests/` |
-| Frontend Integration | 77 | Every PR | ~2.5min | `apps/web/tests/integration/` |
-| E2E (Playwright) | 37 (+9) | Every PR | ~6min | `apps/web/e2e/` |
-| Backend Integration | 16 (+16) | Every PR | ~1min | `apps/finance-api-tests/` |
-| Performance | 15 | Manual/Nightly | ~1min | `apps/web/tests/performance/` |
-| **Total** | **303** | | **~11min** | |
+| Frontend Unit + Integration | 356 | Every PR | ~4min | `apps/web/tests/` |
+| Backend Unit | 26 | Every PR | ~45s | `apps/life-api-tests/LifeApi.UnitTests/` |
+| Backend Integration | 5 (labels) | Every PR | ~30s | `apps/life-api-tests/LifeApi.IntegrationTests/` |
+| E2E (Playwright) | ~37 (est.) | Every PR | ~6min | `apps/web/e2e/` |
+| **Total** | **387+** | | **~11min** | |
 
 ---
 

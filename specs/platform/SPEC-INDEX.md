@@ -131,7 +131,7 @@ This index maps features from the original `spec-v2-enhancements.md` to their ne
 | Phase 20 | Workout Plans & Social | `applications/fitness/spec.md` |
 | Phase 21 | Fitness Dashboard | `applications/fitness/spec.md` |
 
-**Tasks**: `applications/fitness/tasks.md` (T800-T924, T1389-T1403, 140 tasks, ~14.5 weeks)
+**Tasks**: `applications/fitness/tasks.md` (T800-T924, T1504-T1518, 140 tasks, ~14.5 weeks)
 
 ### Phase 22-24 - Authentication Service
 
@@ -184,7 +184,7 @@ This index maps features from the original `spec-v2-enhancements.md` to their ne
 
 **Tasks**: `platform/database-abstraction-tasks.md` (T1105-T1126, 22 tasks, ~2.5 weeks)
 
-### Phase 38-40 - Project Rename (Life Manager → Life Manager)
+### Phase 38-40 - Project Rename (Finance Manager → Life Manager)
 
 | Phase | Feature | Location |
 |-------|---------|----------|
@@ -222,17 +222,29 @@ This index maps features from the original `spec-v2-enhancements.md` to their ne
 
 **Tasks**: `platform/frontend-modernisation-tasks.md` (T1257-T1388, 132 tasks, ~9 weeks)
 
-### Phase 56-59 — Stocks & Shares Application
+### Phase 55-57 — Todo Productivity Frameworks
 
 | Phase | Feature | Location |
 |-------|---------|----------|
-| Phase 56 | Market Discovery & Watchlist | `applications/stocks/spec.md` |
-| Phase 57 | Portfolio Tracking | `applications/stocks/spec.md` |
-| Phase 58 | Stock Detail & Analysis | `applications/stocks/spec.md` |
-| Phase 59 | Dashboard Widget | `applications/stocks/spec.md` |
+| Phase 55 | Task Status Workflow & WIP Limits | `applications/todo/productivity-frameworks-tasks.md` |
+| Phase 56 | Eisenhower Matrix | `applications/todo/eisenhower-matrix-feature.md` |
+| Phase 57 | Energy Tagging & Smart Suggestions | `applications/todo/energy-tagging-feature.md` |
+
+> **Phase 58** (Task Assignment + Event Sharing) was implemented in development but does not have a dedicated spec phase file; the features are documented in `applications/todo/events-feature.md` and `enhancements.md`.
+
+**Tasks**: `applications/todo/productivity-frameworks-tasks.md` (T1389-T1503, 115 tasks, ~6 weeks)
+
+### Phase 60-63 — Stocks & Shares Application
+
+| Phase | Feature | Location |
+|-------|---------|----------|
+| Phase 60 | Market Discovery & Watchlist | `applications/stocks/spec.md` |
+| Phase 61 | Portfolio Tracking | `applications/stocks/spec.md` |
+| Phase 62 | Stock Detail & Analysis | `applications/stocks/spec.md` |
+| Phase 63 | Dashboard Widget | `applications/stocks/spec.md` |
 
 **APIs**: Finnhub (primary, free tier — 30 req/s) + Alpha Vantage (market movers + daily chart, 25 req/min free)  
-**Tasks**: `applications/stocks/tasks.md` (T1500-T1576, 77 tasks, ~8 weeks)
+**Tasks**: `applications/stocks/tasks.md` (T1519-T1595, 77 tasks, ~8 weeks)
 
 ## Quick Navigation
 
@@ -293,7 +305,6 @@ Go to `applications/stocks/` when looking for:
 - Stock detail pages (fundamentals, 100-day chart, news, analyst consensus)
 - Market hotlist (top gainers, losers, most active)
 - Configurable dashboard widget (hotlist/portfolio modes)
-
 ### Implementation Details
 
 Go to `applications/todo/tasks.md` for:

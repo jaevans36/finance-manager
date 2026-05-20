@@ -1,19 +1,19 @@
 # Life Manager — AI Context
 
 > **Single source of truth for all AI agents working on this repository.**
-> Current name: Life Manager (rename to Life Manager in progress).
+> Current name: Life Manager (renamed from Finance Manager; rename complete).
 > Read this file first. For deeper context, follow the links in "Key File Map" below.
 
 ---
 
 ## Project Identity
 
-- **Name**: Life Manager → "Life Manager" (rename pending — see Work Stream 3 plan)
+- **Name**: Life Manager (formerly Finance Manager — rename complete)
 - **Type**: Multi-application personal productivity platform (monorepo)
 - **Repository**: `jaevans36/finance-manager`
 - **Stack**: .NET 8 API + React/TypeScript frontend + PostgreSQL
 - **Language**: British English throughout all code, comments, and documentation
-- **Current version**: 0.15.0 | Phase 50 (test infra & query migration) in progress
+- **Current version**: 1.0.0 (MVP launched) | Next: Phase 60-63 Stocks & Shares application
 
 ---
 
@@ -29,7 +29,7 @@
 
 ## Technology Stack
 
-### Backend (`apps/finance-api/`)
+### Backend (`apps/life-api/`)
 - .NET 8.0 / C# 12 / ASP.NET Core Web API
 - Entity Framework Core 8 + PostgreSQL 15 (Docker)
 - JWT Bearer auth (HS256) + BCrypt.Net password hashing
@@ -107,7 +107,7 @@ Provide a structured summary: what changed, current build/test status, what's ne
 4. Relevant spec file in `specs/applications/` or `specs/platform/`
 
 ### Task management
-- Task IDs are in `specs/applications/todo/tasks.md` (T001–T1388 allocated)
+- Task IDs: T001–T924 (Todo + Fitness), T925–T1154 (Platform), T1155–T1388 (Finance + Frontend), T1389–T1503 (Todo productivity), T1504–T1518 (Fitness habits), T1519–T1595 (Stocks)
 - Mark tasks `[x]` complete immediately after implementation
 - Reference task IDs in commits and PRs
 

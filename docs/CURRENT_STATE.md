@@ -1,6 +1,6 @@
 # Current State
 
-> **Last Updated**: 2026-03-20 | **Version**: 1.0.0 | **Branch**: `develop`
+> **Last Updated**: 2026-05-20 | **Version**: 1.0.0 | **Branch**: `develop`
 
 ---
 
@@ -47,24 +47,30 @@ The Life Manager productivity application is MVP-complete and ready for v1.0.0 r
 
 ## What Is Currently Being Built
 
-**v1.0.0 Release** (`develop` → `main`)
+**Stocks & Shares Application** (Phases 60-63, T1519-T1595) — Spec complete, implementation not yet started.
 
-All P1 and P2 features complete. Pending:
+See `specs/applications/stocks/spec.md` for the full specification.
 
-- Merge `develop` → `main` via PR
-- Create `v1.0.0` annotated tag
+Next immediate step: begin Phase 60 (Market Discovery & Watchlist) — backend API provider abstraction, Finnhub and Alpha Vantage integrations, watchlist CRUD, and frontend hotlist + watchlist components.
 
 ---
 
 ## What Comes Next
 
-### Post-launch (v1.1+)
+### Stocks & Shares Application (v1.1)
+
+- Phase 60: Market Discovery & Watchlist (T1519-T1548)
+- Phase 61: Portfolio Tracking (T1549-T1565)
+- Phase 62: Stock Detail & Analysis (T1566-T1583)
+- Phase 63: Dashboard Widget (T1584-T1595)
+
+### Platform (Parallel / Post-Stocks)
 
 - Work Stream 3: Rename remaining `finance-manager` references → `life-manager` in package names and repo
 - Work Stream 4: LAN deployment hardening (Docker Compose production profile, nginx reverse proxy)
 - Phase 22–24: Auth service extraction (currently embedded in monolith)
 - Phase 25–27: Microservices migration
-- Future apps: Finance, Fitness, Weather (specified but not built)
+- Future apps: Finance, Fitness, Weather (specified but not yet built)
 
 ---
 
@@ -101,9 +107,9 @@ All P1 and P2 features complete. Pending:
 | 13 | Events foundation | 0.13.0 |
 | v2 security | Multi-device sessions, account lockout, security headers, rate limiting | — |
 | 48–51 | Frontend modernisation (Tailwind + shadcn/ui, TanStack Query, React Hook Form + Zod) | — |
-| 55 | Task status workflow + WIP limits | — |
-| 56 | Eisenhower Matrix | — |
-| 57 | Energy tagging + smart suggestions | — |
+| 55 | Task status workflow + WIP limits (kanban board) | — |
+| 56 | Eisenhower Matrix (urgency/importance quadrants) | — |
+| 57 | Energy tagging + smart suggestions ("What Can I Do Now?") | — |
 | 58 | Task assignment + event sharing + notifications frontend | 0.15.0 |
 | WS1 | AI docs consolidation (CLAUDE.md) | — |
 | WS2 | MVP P1 gaps (health, export, 404, onboarding, env files, backup scripts) | — |

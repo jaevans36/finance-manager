@@ -402,9 +402,9 @@ The following are intentionally deferred for future phases:
 
 | Phase | Name | Priority | Depends On |
 |-------|------|----------|-----------|
-| **Phase 56** | Market Discovery & Watchlist | P1 | Auth Service |
-| **Phase 57** | Portfolio Tracking | P1 | Phase 56 |
-| **Phase 58** | Stock Detail & Analysis | P1 | Phase 56 |
-| **Phase 59** | Dashboard Widget | P2 | Phase 57, Phase 58, Application Hub |
+| **Phase 60** | Market Discovery & Watchlist | P1 | Auth Service |
+| **Phase 61** | Portfolio Tracking | P1 | Phase 60 |
+| **Phase 62** | Stock Detail & Analysis | P1 | Phase 60 |
+| **Phase 63** | Dashboard Widget | P2 | Phase 61, Phase 62, Application Hub |
 
-**Tasks**: `applications/stocks/tasks.md` (T1500–T1580, ~80 tasks, ~9 weeks)
+**Tasks**: `applications/stocks/tasks.md` (T1519–T1595, 77 tasks, ~8 weeks)
