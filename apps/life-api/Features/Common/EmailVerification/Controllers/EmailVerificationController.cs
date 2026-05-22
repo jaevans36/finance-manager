@@ -35,7 +35,14 @@ public class EmailVerificationController : ControllerBase
     [HttpPost("resend")]
     public async System.Threading.Tasks.Task<IActionResult> ResendVerification([FromBody] ResendVerificationRequest request)
     {
-        await _emailVerificationService.ResendVerificationEmailAsync(request.Email);
-        return Ok(new { message = "If an account exists with this email and is not verified, a verification email has been sent." });
+        try
+        {
+            await _emailVerificationService.ResendVerificationEmailAsync(request.Email);
+            return Ok(new { message = "If an account exists with this email and is not verified, a verification email has been sent." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = new { message = ex.Message } });
+        }
     }
 }

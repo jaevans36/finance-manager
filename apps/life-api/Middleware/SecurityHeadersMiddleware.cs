@@ -23,20 +23,20 @@ public class SecurityHeadersMiddleware
     public async Task InvokeAsync(HttpContext context)
     {
         // X-Content-Type-Options: Prevent MIME type sniffing
-        context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+        context.Response.Headers["X-Content-Type-Options"] = "nosniff";
 
         // X-Frame-Options: Prevent clickjacking attacks
-        context.Response.Headers.Add("X-Frame-Options", "DENY");
+        context.Response.Headers["X-Frame-Options"] = "DENY";
 
         // X-XSS-Protection: Enable XSS filter (legacy browsers)
-        context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
+        context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
 
         // Referrer-Policy: Control referrer information
-        context.Response.Headers.Add("Referrer-Policy", "strict-origin-when-cross-origin");
+        context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
 
         // Permissions-Policy: Control browser features
-        context.Response.Headers.Add("Permissions-Policy", 
-            "geolocation=(), microphone=(), camera=(), payment=()");
+        context.Response.Headers["Permissions-Policy"] =
+            "geolocation=(), microphone=(), camera=(), payment=()";
 
         // Content-Security-Policy: Prevent XSS and injection attacks
         // Note: In production, this should be more restrictive
@@ -60,15 +60,20 @@ public class SecurityHeadersMiddleware
               "base-uri 'self'; " +
               "form-action 'self'";
 
-        context.Response.Headers.Add("Content-Security-Policy", csp);
+        context.Response.Headers["Content-Security-Policy"] = csp;
+
+        // Cache-Control: Prevent caching of API responses (including error responses)
+        context.Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
+
+        // Cross-Origin-Resource-Policy: Prevent cross-origin resource reads
+        context.Response.Headers["Cross-Origin-Resource-Policy"] = "same-origin";
 
         // Strict-Transport-Security (HSTS): Enforce HTTPS
         // Only add in production with HTTPS
         if (!_env.IsDevelopment() && context.Request.IsHttps)
         {
-            context.Response.Headers.Add(
-                "Strict-Transport-Security",
-                "max-age=31536000; includeSubDomains; preload");
+            context.Response.Headers["Strict-Transport-Security"] =
+                "max-age=31536000; includeSubDomains; preload";
         }
 
         // Remove server information headers
@@ -78,7 +83,7 @@ public class SecurityHeadersMiddleware
         context.Response.Headers.Remove("X-AspNetMvc-Version");
 
         // Add security header for API responses
-        context.Response.Headers.Add("X-API-Version", "1.0");
+        context.Response.Headers["X-API-Version"] = "1.0";
 
         _logger.LogDebug("Security headers added for {Path}", context.Request.Path);
 
