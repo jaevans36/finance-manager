@@ -17,6 +17,22 @@ services:
       timeout: 5s
       retries: 5
 
+  finance-api:
+    build:
+      context: ./apps/finance-api
+      dockerfile: Dockerfile
+    container_name: finance-api
+    restart: unless-stopped
+    ports:
+      - "5002:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=life_manager_dev;Username=postgres;Password=password"
+      Jwt__Secret: "${JWT_SECRET:-your-secret-key-change-in-production}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
     driver: local
