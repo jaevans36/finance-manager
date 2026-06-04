@@ -483,3 +483,266 @@ GET    /api/v1/finance/exchange-rates         Current exchange rates
 - Historical rates stored for accurate historical conversions
 - Base currency configurable per user
 - Display both original and converted amounts
+
+---
+
+## UK-Specific Features
+
+### UK Account Types
+
+The standard account type list should be extended to include common UK-specific account types:
+
+| Account Type | Notes |
+|---|---|
+| `cash_isa` | Cash ISA — tax wrapper, annual allowance tracking |
+| `stocks_isa` | Stocks & Shares ISA — distinct from general investment account |
+| `sipp` | Self-Invested Personal Pension — balance tracking, annual contribution |
+| `premium_bonds` | NS&I Premium Bonds — no interest, prize tracking |
+| `lifetime_isa` | LISA — bonus tracking, 25% government bonus |
+
+ISA allowance tracking: display remaining annual ISA allowance (£20,000 for 2025/26) across all ISA accounts combined.
+
+### UK Tax Year Awareness
+
+All reporting **must** be filterable by UK tax year (6 April – 5 April) in addition to calendar year. This is important for:
+
+- Self-assessment preparation (sole traders, landlords, investors)
+- ISA allowance usage tracking
+- Capital gains tax summary (HMRC annual exemption)
+- Pension contribution tracking (annual allowance)
+
+The date range picker throughout the Finance module must include "This Tax Year" and "Last Tax Year" as preset options.
+
+### Additional UK-Relevant Features
+
+| Feature | Detail |
+|---|---|
+| **Cash flow forecasting** | Project account balance forward 30 / 60 / 90 days based on known recurring bills and expected income. Answers: "Will I go overdrawn before payday?" |
+| **Split transactions** | One payment split across multiple categories — e.g. a supermarket shop covering groceries, toiletries, and alcohol separately |
+| **Net worth timeline** | Graph net worth over time (not just the current snapshot). Motivating and useful for long-term financial planning |
+| **Financial calendar** | Month view showing income vs outgoings by date — not just totals. Useful for cash-flow planning when multiple large bills land in the same week |
+
+---
+
+## Spending Pots (Envelope Budgeting)
+
+The budgeting model should support an **envelope budgeting** approach where each spending category is a named pot with an individual budget allocation. This is in addition to the category-based budget system.
+
+### Pot Types
+
+| Pot | Type |
+|---|---|
+| Food & Groceries | Variable |
+| Fuel | Variable |
+| Eating Out / Takeaways | Variable / Discretionary |
+| Kids | Variable |
+| Clothing | Discretionary |
+| Entertainment | Discretionary |
+| Bills & Utilities | Fixed — auto-populated from recurring payment detection |
+| Subscriptions | Fixed — auto-populated from recurring detection |
+| Savings | Fixed allocation |
+| Emergency Fund | Fixed allocation |
+| Holiday / Travel | Savings goal |
+
+### Pot Behaviour
+- Transactions auto-assigned to pots based on merchant category
+- Manual reassignment where auto-categorisation is incorrect
+- Real-time pot balance: budget remaining vs spent
+- Visual indicators — progress bars per pot, colour-coded (green / amber / red)
+- Overspend alerts — notify when a pot is near (80%) or over (100%) budget
+- Rollover options — unused pot budget can roll to next month or reset
+
+---
+
+## Recurring Payment Detection & Bills Dashboard
+
+In addition to manually entered bills (User Story 4), the system should **automatically detect** recurring payments from imported transaction data.
+
+### Auto-Detection Logic
+- Identify repeat payments by merchant name, frequency (weekly / monthly / quarterly / annual), and amount stability
+- Classify automatically as:
+  - **Fixed Bills** — same merchant, same amount every period
+  - **Variable Bills** — same merchant, amount fluctuates (e.g. energy)
+  - **Subscriptions** — digital services (Netflix, Spotify, Adobe etc.)
+  - **Regular Spend** — same merchant, discretionary (e.g. gym, coffee shop)
+
+### Bills Dashboard View
+For each detected recurring payment, display:
+- Merchant name and logo (where available)
+- Average monthly cost
+- Last payment date
+- Next expected payment date
+- Payment trend: stable / increasing / decreasing
+- Category: Utilities / Insurance / Subscriptions / Debt / Other
+
+### Bill Intelligence
+- Flag bills that have **increased** since the last period — with the amount and percentage of increase
+- Flag subscriptions that have not been used recently (where detectable from other data)
+- Allow manual override: rename, recategorise, or mark a recurring payment as a one-off
+
+---
+
+## AI Agent Features
+
+### Subscription Auditor
+Runs monthly. Fetches 90 days of transactions, finds merchants with recurring monthly charges, flags ones not used recently. Outputs a structured list of "potentially unused subscriptions." **Execution (cancellation) always requires manual confirmation — the agent is an advisor, never an accountant.**
+
+### Negotiation Engine
+Pulls service history with a provider (ISP, mobile, utilities) and generates a persuasive, personalised email or chat script for retention / discount negotiations — referencing contract length, customer tenure, and competitor pricing.
+
+### Spending Velocity
+Not just "70% of budget used" but **"70% used in 10 days — projected to overspend by £45 at this rate."** Actionable, not merely informational.
+
+### Anomaly Detection
+Flag unusual transactions: spending spike in a category, potential duplicate charges, merchant the user has never used before above a configurable threshold.
+
+---
+
+## The Finance Oracle — Architecture Direction
+
+*Decision captured 2026-05-23. Treat finance as a data engineering problem, not just a CRUD app.*
+
+### Deterministic Data Access Layer
+
+The AI never calculates net worth or spending trends itself. It queries MCP tools that return raw, sanitised data, and the LLM performs semantic analysis on top. This keeps financial data **accurate and auditable**.
+
+```
+Claude (claude.ai / Claude Code / Claude mobile)
+        │
+        │  MCP over stdio (local) or SSE (remote via Tailscale)
+        │
+Life Manager MCP Server (local — Node.js, TypeScript)
+        │
+        │  SQL queries
+        │
+Finance Manager PostgreSQL schema (separate `finance` schema)
+```
+
+### Data Connectivity — Open Banking vs CSV
+
+| Option | Pros | Cons |
+|---|---|---|
+| **CSV Import** (MVP plan) | No third-party dependency, works offline, privacy-preserving | Manual, user friction, not real-time |
+| **TrueLayer / Enable Banking** | Real-time sync, PSD2 compliant, UK-native | Setup complexity, ongoing API cost, privacy considerations |
+| **Plaid** | Mature, great DX | Less UK bank coverage than TrueLayer |
+
+**Decision**: Build CSV import first (spec covers 7 UK banks). Layer Open Banking on top as a Phase 2 enhancement. Do not block Phase 41 on the Open Banking decision.
+
+### DB Isolation
+
+Consider a separate `finance` PostgreSQL schema to isolate sensitive financial data from the main application schema. This supports:
+- Future microservices extraction (finance service can own its schema)
+- Tighter access control and audit logging scoped to financial data
+- Clear data boundary for encryption at rest decisions
+
+---
+
+## MCP Tools — `finance_*` Namespace
+
+The Finance Manager exposes the following tools on the Life Manager MCP Server:
+
+### Transaction Tools
+| Tool | Description |
+|---|---|
+| `finance_get_transactions` | Get transactions filtered by date range, category, merchant, or pot |
+| `finance_get_transaction_summary` | Summarised spend totals by category for a given period |
+| `finance_search_transactions` | Full-text search across merchant names and notes |
+| `finance_add_manual_transaction` | Add a cash or manual transaction |
+| `finance_categorise_transaction` | Update the category or pot assignment of a transaction |
+
+### Bills & Recurring Payments
+| Tool | Description |
+|---|---|
+| `finance_get_recurring_payments` | List all detected recurring payments with trend data |
+| `finance_get_bills_due` | Return upcoming bills due within a specified number of days |
+| `finance_get_bill_history` | Get payment history for a specific bill / merchant |
+| `finance_flag_bill_for_review` | Mark a bill as needing review |
+
+### Budget & Pots
+| Tool | Description |
+|---|---|
+| `finance_get_pot_balances` | Return current balance, budget, and remaining for all pots |
+| `finance_get_pot_transactions` | Get all transactions assigned to a specific pot |
+| `finance_update_pot_budget` | Adjust the budget allocation for a pot |
+| `finance_get_monthly_budget_summary` | Full month overview — income, spent, remaining, pot breakdown |
+
+### Income & Savings
+| Tool | Description |
+|---|---|
+| `finance_get_income_summary` | Total income detected for a period |
+| `finance_get_savings_goals` | List all savings goals with progress |
+| `finance_update_savings_goal` | Update target amount or date for a savings goal |
+| `finance_get_disposable_income` | Calculate remaining disposable income after committed spend |
+
+### AI Assessments
+| Tool | Description |
+|---|---|
+| `finance_get_financial_health_score` | Return current health score with breakdown |
+| `finance_get_ai_insights` | Return queued AI-generated insights and recommendations |
+| `finance_run_spend_analysis` | Trigger a fresh AI analysis of recent transactions |
+| `finance_get_savings_opportunities` | Return AI-identified savings opportunities |
+| `finance_get_cashflow_forecast` | Project account balance 30 / 60 / 90 days forward |
+
+### Reporting
+| Tool | Description |
+|---|---|
+| `finance_get_monthly_report` | Full formatted report for a given month |
+| `finance_get_year_to_date_summary` | YTD spend, income, and savings summary |
+| `finance_get_tax_year_summary` | Summary filtered to the UK tax year (6 Apr – 5 Apr) |
+| `finance_compare_months` | Side-by-side comparison of two months |
+| `finance_export_transactions` | Export transactions as CSV for a given period |
+
+---
+
+## Data Privacy & Security
+
+- Financial data is highly sensitive — **AES-256 encryption at rest** for account balances, transaction descriptions, and account numbers
+- No third-party sharing of transaction data — CSV-only processing keeps data local
+- CSV files should be processed server-side and **optionally deleted** after import (user choice)
+- Consider a **PIN / biometric lock** for the Finance Manager module specifically, independent of the main app session
+- All MCP tool calls against financial data are logged with timestamp, tool name, and parameters for audit
+- MCP server should bind to localhost only by default — never exposed on the network without explicit Tailscale configuration
+- Read-only MCP tools and write MCP tools should have separate permission tiers
+
+---
+
+## Integration Points — Life Manager Ecosystem
+
+| Integration | Detail |
+|---|---|
+| **Bills → Calendar** | Due dates auto-create Life Manager calendar events |
+| **Overdue bills → Tasks** | Missed payment generates a task: "Pay [bill] — overdue" |
+| **Budget alerts → Notifications** | Existing notification system used for 80% / 100% pot threshold alerts |
+| **Finance summary → Weekly review** | Monthly / weekly spending digest feeds into second brain weekly review |
+| **Recipe Collection** | Grocery shopping lists from meal plans feed into the grocery pot; no double-entry |
+| **Nutrition Module** | Food cost per meal (from Pantry Tracker) contributes to running monthly food cost |
+| **Financial Health Score** | Surfaced on the main Life Manager dashboard widget |
+
+---
+
+## Phase Roadmap (Updated)
+
+| Phase | Features | Priority |
+|---|---|---|
+| Phase 41 (P1) — MVP Core | CSV import (7 UK bank formats), transaction parsing, accounts & transactions model, `finance` DB schema | P1 |
+| Phase 42 (P1) — Budgeting & Pots | Spending pots, budget allocation, transaction auto-categorisation, envelope budgeting UI | P1 |
+| Phase 43 (P2) — Bills & Savings | Recurring payment auto-detection, bills dashboard, bills calendar, savings goals | P2 |
+| Phase 44 (P1) — Dashboard | Monthly summary, reporting, spend vs budget charts, financial health score | P1 |
+| Phase 45 (P2) — UK Specifics | ISA / SIPP / Premium Bond account types, UK tax year reporting, cash flow forecasting, net worth timeline | P2 |
+| Phase 46 (P3) — Investment | Investment tracking, net worth view, FTSE / S&P benchmark comparison | P2 |
+| Phase 47 (P3) — Debt | Debt tracker, avalanche / snowball payoff planner, multi-currency, split transactions | P3 |
+| Phase 48 (P3) — AI Insights | Subscription Auditor, Negotiation Engine, Spending Velocity, Anomaly Detection, financial health score | P3 |
+| Phase 49 (P3) — MCP | Local MCP server, `finance_*` tools, AI Chat Interface ("How much did I spend on food last month?"), remote access via Tailscale | P3 |
+
+---
+
+## Decisions Needed Before Phase 41
+
+- [ ] **Open Banking vs CSV-first** — TrueLayer / Enable Banking now, or CSV import first and OB later? (Recommendation: CSV first)
+- [ ] **DB isolation** — Separate `finance` PostgreSQL schema now, or keep in main schema?
+- [ ] **Encryption at rest** — Which fields get AES-256? (Account numbers, balances, transaction descriptions?)
+- [ ] **Phase ordering** — Finance was originally planned after Stocks (Phase 60+). Is it being pulled forward?
+- [ ] **AI provider** — Spec references OpenAI for categorisation. Worth switching to Claude API given existing tooling?
+- [ ] **Multi-user scope** — Can a partner view / edit finance data, or strictly single-user for MVP?
+- [ ] **ISA / pension account types** — Add to Phase 41 data model or defer to Phase 45?
+- [ ] **MCP server scope** — Combined Life Manager MCP server from day one, or finance MCP built standalone first?

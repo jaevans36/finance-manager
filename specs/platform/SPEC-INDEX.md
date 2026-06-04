@@ -194,19 +194,21 @@ This index maps features from the original `spec-v2-enhancements.md` to their ne
 
 **Tasks**: `platform/project-rename-tasks.md` (T1127-T1154, 28 tasks, ~2 weeks)
 
-### Phase 41-47 - Finance Application
+### Phase 41-49 - Finance Application
 
 | Phase | Feature | Location |
 |-------|---------|----------|
-| Phase 41 | Accounts & Transaction Import | `applications/finance/spec.md` |
-| Phase 42 | Budgeting | `applications/finance/spec.md` |
-| Phase 43 | Bills & Savings Goals | `applications/finance/spec.md` |
+| Phase 41 | Accounts & Transaction Import (CSV, 7 UK banks) | `applications/finance/spec.md` |
+| Phase 42 | Budgeting & Spending Pots (envelope budgeting) | `applications/finance/spec.md` |
+| Phase 43 | Bills & Savings Goals (recurring payment auto-detection) | `applications/finance/spec.md` |
 | Phase 44 | Financial Dashboard & Reports | `applications/finance/spec.md` |
-| Phase 45 | Investment Tracking | `applications/finance/spec.md` |
-| Phase 46 | Debt Management & Multi-Currency | `applications/finance/spec.md` |
-| Phase 47 | AI Financial Insights | `applications/finance/spec.md` |
+| Phase 45 | UK Specifics (ISA/SIPP, tax year, cash flow forecast) | `applications/finance/spec.md` |
+| Phase 46 | Investment Tracking | `applications/finance/spec.md` |
+| Phase 47 | Debt Management, Multi-Currency, Split Transactions | `applications/finance/spec.md` |
+| Phase 48 | AI Insights (Subscription Auditor, Negotiation Engine, Anomaly Detection) | `applications/finance/spec.md` |
+| Phase 49 | MCP Server (`finance_*` tools) + AI Chat Interface | `applications/finance/spec.md` |
 
-**Tasks**: `applications/finance/tasks.md` (T1155-T1256, 102 tasks, ~11 weeks)
+**Tasks**: `applications/finance/tasks.md` (T1155-T1256, 102 tasks, ~11 weeks — tasks.md to be updated for Phases 48–49)
 
 ### Phase 48-54 - Frontend Modernisation
 
@@ -257,6 +259,34 @@ This index maps features from the original `spec-v2-enhancements.md` to their ne
 **Purpose**: MCP server (`apps/life-mcp/`) wrapping the Life Manager API for AI assistant consumption (Claude CLI, Claude Desktop, Copilot). Enables second-brain workflows with Obsidian + Claude CLI.  
 **Tasks**: `platform/mcp-server-tasks.md` (T1596-T1667, 72 tasks, ~4.5 weeks; Phase 67 Stocks tools T1668-T1683 planned; Phases 68-70 stubs for Finance/Fitness/Weather)
 
+### Recipe Collection Application
+
+| Phase | Feature | Location |
+|-------|---------|----------|
+| Phase 1 | Recipe storage, standard structure, full tag taxonomy, status tracking | `applications/recipes/spec.md` |
+| Phase 2 | Discovery — tag/text filtering, cuisine browsing, random suggestion, collections | `applications/recipes/spec.md` |
+| Phase 3 | Nutritional data layer, macro calculation per recipe, meal planning | `applications/recipes/spec.md` |
+| Phase 4 | Weekly meal planner, shopping list generation, Finance Manager grocery pot integration | `applications/recipes/spec.md` |
+| Phase 5 | AI meal suggestions, fasting-aware recommendations, MCP `recipes_*` tools, URL import | `applications/recipes/spec.md` |
+
+**Spec**: `applications/recipes/spec.md` | **Feature ID**: `013-recipe-collection`  
+**Note**: Standalone module at Life Manager level — consumed by Nutrition Module, Pantry Tracker, and Finance Manager. Tasks to be allocated.
+
+### Pantry & Ingredient Tracker
+
+| Phase | Feature | Location |
+|-------|---------|----------|
+| Phase 1 | Ingredient inventory (fridge / freezer / pantry), manual add / remove / consume | `applications/pantry/spec.md` |
+| Phase 2 | Expiry tracking, traffic-light freshness status, notifications, "Use It Up" view | `applications/pantry/spec.md` |
+| Phase 3 | Recipe matching — real-time inventory vs recipe collection, full / near-match display | `applications/pantry/spec.md` |
+| Phase 4 | Cost tracking — price per purchase, unit cost, cost per recipe, cost per macro | `applications/pantry/spec.md` |
+| Phase 5 | Smart shopping lists with pantry deduction, aisle grouping, Finance Manager link | `applications/pantry/spec.md` |
+| Phase 6 | Nutritional macro pipeline from pantry → recipe → nutrition log | `applications/pantry/spec.md` |
+| Phase 7 | Barcode scanning, receipt OCR, MCP `pantry_*` tools, price trend alerts | `applications/pantry/spec.md` |
+
+**Spec**: `applications/pantry/spec.md` | **Feature ID**: `014-pantry-tracker`  
+**Note**: Shared infrastructure module — powers Recipe Collection, Nutrition Module, and Finance Manager grocery tracking. Tasks to be allocated.
+
 ## Quick Navigation
 
 ### Platform-Wide Features
@@ -286,11 +316,13 @@ Go to `applications/todo/` when looking for:
 
 Go to `applications/fitness/` when looking for:
 - Workout tracking & exercise logging
-- Food & nutrition diary
+- Fasting Tracker (timer, protocols, fasting stages, coaching)
+- Nutrition & Macro Tracker (food database, barcode scanning, macro targets, AI insights)
 - Body measurements & goals
 - Habit tracking (GitHub-style grid, categories, event/task auto-linking)
 - Meditation & mindfulness
 - Wearable device integration
+- Fitness MCP tools (`fitness_*` namespace)
 
 Go to `applications/weather/` when looking for:
 - Current weather conditions & forecasts
@@ -309,22 +341,31 @@ Go to `applications/stocks/` when looking for:
 - MCP tools for stocks data (Phase 67)
 
 Go to `applications/finance/` when looking for:
-- Transaction import & management (CSV)
-- Budgeting & expense tracking
-- Bills & savings goals
+- Transaction import & management (CSV — 7 UK bank formats)
+- Budgeting & spending pots (envelope budgeting)
+- Bills dashboard & recurring payment auto-detection
+- Savings goals
+- UK-specific features (ISA, SIPP, tax year, cash flow forecasting)
 - Investment portfolio tracking
 - Financial dashboards & reports
 - Debt management & payoff planning
-- AI-powered financial insights
+- AI-powered financial insights (Subscription Auditor, Negotiation Engine)
+- Finance MCP tools (`finance_*` namespace)
 
-Go to `applications/stocks/` when looking for:
-- Live stock quotes & market data
-- Watchlist management
-- Personal portfolio tracking (holdings, unrealised P&L)
-- Stock detail pages (fundamentals, 100-day chart, news, analyst consensus)
-- Market hotlist (top gainers, losers, most active)
-- Configurable dashboard widget (hotlist/portfolio modes)
-### Implementation Details
+Go to `applications/recipes/` when looking for:
+- Recipe storage, tagging, and status tracking
+- Meal planning with macro projections
+- Shopping list generation
+- MCP tools (`recipes_*` namespace)
+- Integration with Pantry Tracker, Nutrition Module, Finance grocery pot
+
+Go to `applications/pantry/` when looking for:
+- Ingredient inventory (fridge / freezer / pantry)
+- Expiry tracking and "Use It Up" recipe suggestions
+- Recipe matching — what can I make right now?
+- Cost per recipe / cost per gram of protein
+- Smart shopping lists with pantry deduction
+- MCP tools (`pantry_*` namespace)
 
 Go to `applications/todo/tasks.md` for:
 - Detailed task breakdown

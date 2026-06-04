@@ -505,3 +505,254 @@ GET    /api/v1/fitness/statistics/monthly     Monthly fitness summary
 - No health data sharing without explicit user consent
 - GDPR-compliant data export and deletion
 - Audit logging for all data access
+
+---
+
+## Module: Fasting Tracker
+
+### Overview
+
+A dedicated fasting timer and scheduling module within the Fitness Application. It tracks active and historical fasts, displays real-time body-state awareness through fasting stages, manages hydration, and provides coaching nudges. It is tightly integrated with the Nutrition & Macro Tracker below.
+
+---
+
+### User Story 10 — Fasting Timer & Scheduling (Priority: P1)
+
+Users can start, stop, and schedule fasting windows using popular protocols, with real-time countdown and streak tracking.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user, **When** they start a fast with one tap, **Then** a timer begins counting up from zero with the current elapsed time shown prominently
+2. **Given** a user selecting a fasting protocol (16:8, 18:6, 20:4, 5:2, OMAD, or custom), **When** the protocol is active, **Then** the timer shows time remaining within the fasting window and time remaining in the eating window
+3. **Given** a user ending a fast, **When** they tap "Break Fast", **Then** the fast is recorded (start time, end time, duration, protocol), the eating window begins, and an optional break-fast meal suggestion is offered from the Recipe Collection
+4. **Given** a user wanting to plan their week, **When** they open the fasting schedule planner, **Then** they can assign fasting protocols to specific days of the week, with awareness of busy days or social events
+5. **Given** a user viewing their fasting history, **When** they open the stats view, **Then** they see: current streak, longest streak, total hours fasted (daily / weekly / monthly), and a calendar heat map of fasting days
+
+---
+
+### User Story 11 — Fasting Stages — Body State Awareness (Priority: P1)
+
+Users see a real-time display of their current fasting stage with plain-language descriptions of what is happening in the body.
+
+**Acceptance Scenarios**:
+
+1. **Given** an active fast, **When** the user views the fasting screen, **Then** the current stage is displayed with a name, elapsed-time range, and a plain-English description of what the body is doing at this stage
+2. **Given** the user transitioning from one stage to another, **When** the threshold is crossed, **Then** a notification is sent: "You've entered ketosis — fat burning is now your primary fuel source"
+3. **Given** a visual progress arc or timeline, **When** displayed, **Then** it shows all stages on a timeline with the current position marked clearly
+
+#### Fasting Stages Reference
+
+| Stage | Time Range | Body State |
+|---|---|---|
+| Fed state / digestion | 0–4 hrs | Digestion active, blood glucose elevated |
+| Post-absorptive | 4–8 hrs | Blood glucose stabilising, liver glycogen in use |
+| Early fasting | 8–12 hrs | Glycogen depletion begins, gluconeogenesis starts |
+| Ketosis begins | 12–18 hrs | Ketone bodies rising, fat burning increasing |
+| Deep ketosis | 18–24 hrs | Significant ketosis, autophagy begins |
+| Enhanced autophagy | 24+ hrs | Cellular repair and recycling accelerating |
+
+---
+
+### User Story 12 — Hydration Tracker (Priority: P2)
+
+Users can track daily water intake against a configurable goal, with regular reminders during fasting windows.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user, **When** they log a water intake (ml or cups), **Then** the daily total updates and a visual progress indicator shows progress towards their daily goal
+2. **Given** a user with a daily water goal set, **When** the goal is reached, **Then** a congratulatory notification is sent
+3. **Given** an active fast, **When** hydration reminders are enabled, **Then** notifications are sent at configurable intervals (e.g., every 2 hours) prompting the user to drink water
+4. **Given** the daily hydration view, **When** displayed, **Then** intake events are shown on a timeline alongside the fasting window for context
+
+---
+
+### Data Model Additions — Fasting Tracker
+
+```typescript
+interface FastingSession {
+  id: string;
+  userId: string;
+  protocol: '16_8' | '18_6' | '20_4' | '5_2' | 'omad' | 'custom';
+  targetFastingHours: number;
+  startedAt: string;           // ISO 8601
+  endedAt: string | null;      // null while fast is active
+  actualDurationMinutes: number | null;
+  completedTarget: boolean;
+  notes: string | null;
+  createdAt: string;
+}
+
+interface FastingSchedule {
+  id: string;
+  userId: string;
+  dayOfWeek: number;           // 1 = Monday … 7 = Sunday
+  protocol: string;
+  targetFastingHours: number;
+  isActive: boolean;
+}
+
+interface HydrationEntry {
+  id: string;
+  userId: string;
+  amountMl: number;
+  loggedAt: string;
+}
+
+interface HydrationGoal {
+  userId: string;
+  dailyTargetMl: number;
+  reminderIntervalMinutes: number | null;
+}
+```
+
+### API Endpoints — Fasting
+
+```
+POST   /api/v1/fitness/fasting/sessions/start   Start a fast
+POST   /api/v1/fitness/fasting/sessions/end     End the current fast
+GET    /api/v1/fitness/fasting/sessions         List fasting history
+GET    /api/v1/fitness/fasting/sessions/current Get active fast (null if none)
+GET    /api/v1/fitness/fasting/stats            Fasting statistics (streaks, totals, calendar)
+GET    /api/v1/fitness/fasting/schedules        Get weekly fasting schedule
+PUT    /api/v1/fitness/fasting/schedules        Update weekly fasting schedule
+
+POST   /api/v1/fitness/hydration                Log water intake
+GET    /api/v1/fitness/hydration/today          Today's hydration summary
+GET    /api/v1/fitness/hydration/goals          Get hydration goal
+PUT    /api/v1/fitness/hydration/goals          Update hydration goal
+```
+
+---
+
+## Module: Nutrition & Macro Tracker (Enhanced)
+
+### Overview
+
+A full food and nutrition tracking module. The existing User Story 3 (Food Tracking & Macro Estimation) is the foundation; this section adds the detailed feature set specified from real-world reference apps (MyFitnessPal, Cronometer, Nutracheck) with a UK-first food database and barcode scanning.
+
+---
+
+### User Story 13 — Food Database & Barcode Scanning (Priority: P1)
+
+Users can log food by searching a large UK-focused food database or scanning a product barcode, with portion size adjustment and favourite foods for quick re-logging.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user logging food, **When** they search by name, **Then** UK-branded products, supermarket own-brands, and common foods appear with auto-complete
+2. **Given** a user with a packaged food product, **When** they scan the barcode, **Then** the food is looked up via Open Food Facts and nutritional data pre-populates
+3. **Given** a food item, **When** the user selects it, **Then** they can adjust portion size in: grams, ml, cups, pieces, or defined serving sizes — and see macros update in real time
+4. **Given** a food the user logs regularly, **When** they mark it as a favourite, **Then** it appears at the top of the food search for fast re-logging
+5. **Given** a food not in the database, **When** the user adds it manually, **Then** they can enter name, serving size, and all macro values — saved as a custom food for future use
+6. **Given** a user in a hurry, **When** they use the quick-add option, **Then** they can log calories only without full macro breakdown
+
+---
+
+### User Story 14 — Personalised Macro Targets (Priority: P1)
+
+Users can set personalised macro targets based on their goals, body stats, and dietary preferences, with TDEE auto-calculation.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user completing the nutrition onboarding, **When** they provide: current weight, goal weight, height, age, activity level, and goal type, **Then** TDEE (Total Daily Energy Expenditure) and macro split are calculated using the Mifflin-St Jeor equation
+2. **Given** calculated targets, **When** the user views them, **Then** they can accept the auto-calculated values or override any macro target manually
+3. **Given** a user on a fasting protocol, **When** macro targets are displayed, **Then** targets are noted as applying to the eating window — not the full 24-hour period
+4. **Given** dietary preferences set (standard / low-carb / keto / high-protein / vegetarian / vegan), **When** targets are calculated, **Then** the macro split reflects the chosen dietary style
+5. **Given** a change in goal weight or activity level, **When** the user updates their profile, **Then** macro targets are recalculated and the user is notified of the change
+
+---
+
+### User Story 15 — Daily Macro Dashboard (Priority: P1)
+
+Users see a real-time summary of macros consumed vs targets for the current day, with per-meal breakdown.
+
+**Acceptance Scenarios**:
+
+1. **Given** food logged for the day, **When** the user views the nutrition dashboard, **Then** they see: calories consumed vs target, protein / carbs / fat as both grams and percentage of target — displayed as a ring or bar chart
+2. **Given** remaining macros, **When** displayed, **Then** the dashboard shows: "You have Xg protein / Xcal remaining today"
+3. **Given** per-meal logging, **When** the user views the daily log, **Then** macros are broken down by meal: breakfast, lunch, dinner, snacks — with per-meal subtotals
+4. **Given** weekly macro tracking, **When** the user views the weekly summary, **Then** daily averages are shown to smooth day-to-day variation
+
+---
+
+### User Story 16 — AI Nutrition Insights (Priority: P3)
+
+The system generates personalised coaching insights by analysing nutrition patterns, fasting data, and body composition trends.
+
+**Acceptance Scenarios**:
+
+1. **Given** a good nutrition day, **When** the daily summary runs, **Then** a positive coaching message is generated: "Good day — you hit your protein target and stayed under calories"
+2. **Given** a detectable pattern, **When** the AI identifies one, **Then** an insight is generated: "You consistently under-eat protein on days you fast past 18 hours"
+3. **Given** a fast ending, **When** the eating window begins, **Then** an AI-suggested break-fast meal is offered based on: fast duration, remaining macros, and available recipes from the Recipe Collection
+4. **Given** a potential nutritional deficiency, **When** detected from food logs, **Then** a coach alert is shown: "You haven't logged a good source of Vitamin D this week"
+5. **Given** fasting and nutrition data in combination, **When** the AI analyses both, **Then** a correlation insight is generated: "Your best fasting days nutritionally follow a high-protein dinner the night before"
+
+**UX Note**: All AI insights must use **positive, coaching framing** — never judgemental. The tone should feel like an informed friend, not a calorie auditor.
+
+---
+
+### Data Model Additions — Nutrition Module
+
+```typescript
+interface MacroTarget {
+  userId: string;
+  dailyCalories: number;
+  dailyProteinG: number;
+  dailyCarbsG: number;
+  dailyFatG: number;
+  dailyFibreG: number | null;
+  dietaryPreference: 'standard' | 'low_carb' | 'keto' | 'high_protein' | 'vegetarian' | 'vegan';
+  tdee: number;                    // Total Daily Energy Expenditure
+  activityLevel: 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active';
+  goal: 'weight_loss' | 'maintenance' | 'muscle_gain' | 'general_health';
+  updatedAt: string;
+}
+
+// FoodEntry (existing, extending)
+interface FoodEntry {
+  // ... existing fields ...
+  barcodeScanned: boolean;
+  openFoodFactsId: string | null;  // For barcode-sourced entries
+  fastingSessionId: string | null; // Links food entry to the eating window it was consumed in
+}
+```
+
+### API Endpoints — Nutrition (Additions)
+
+```
+GET    /api/v1/fitness/nutrition/targets          Get macro targets
+PUT    /api/v1/fitness/nutrition/targets          Update macro targets
+POST   /api/v1/fitness/nutrition/targets/calculate  Auto-calculate from body stats
+GET    /api/v1/fitness/nutrition/weekly-summary   Weekly macro averages and adherence rate
+GET    /api/v1/fitness/food/barcode/:barcode      Look up food by EAN barcode
+GET    /api/v1/fitness/nutrition/insights         AI-generated nutrition insights
+```
+
+---
+
+## MCP Tools — `fitness_*` Namespace (Nutrition Extension)
+
+| Tool | Description |
+|---|---|
+| `fitness_get_active_fast` | Return the current fasting session including elapsed time and current fasting stage |
+| `fitness_get_fasting_stats` | Return fasting statistics (streak, total hours, history) |
+| `fitness_get_nutrition_log` | Get food log entries for a given date or range |
+| `fitness_get_macro_summary` | Get daily macro totals vs targets for a date |
+| `fitness_get_weekly_nutrition` | Weekly nutrition averages and adherence |
+| `fitness_log_food` | Add a food entry to today's log |
+| `fitness_get_macro_targets` | Return current personalised macro targets |
+| `fitness_get_nutrition_insights` | Return AI-generated nutrition and fasting insights |
+| `fitness_get_meal_plan` | Return planned meals for a date (from Recipe Collection) |
+| `fitness_suggest_meals` | Suggest meals based on remaining macros, available pantry stock, and fasting context |
+| `fitness_get_hydration` | Return today's hydration log and progress vs goal |
+
+---
+
+## Reference Apps (Fasting & Nutrition)
+
+| App | What to Learn From |
+|---|---|
+| BodyFast | Fasting timer UX, stage visualisation, coaching tone |
+| MyFitnessPal | Food database scale, barcode scanning, macro ring UI |
+| Cronometer | Micronutrient depth, nutritional accuracy |
+| Nutracheck | UK-specific food database — very strong for branded products |
+| Lose It! | Clean macro UI, meal planning UX |
