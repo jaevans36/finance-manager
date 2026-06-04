@@ -1,7 +1,7 @@
-# Finance Manager - Development Startup Script
+# Life Manager - Development Startup Script
 # This script starts all required services for development
 
-Write-Host "Finance Manager - Starting Development Environment" -ForegroundColor Cyan
+Write-Host "Life Manager - Starting Development Environment" -ForegroundColor Cyan
 Write-Host ""
 
 # Change to project root
@@ -47,19 +47,30 @@ try {
         exit 1
     }
 
-    # Step 3: Check C# .NET API migrations
+    # Step 3: Check migrations for both APIs
     Write-Host ""
     Write-Host "Step 3: Checking .NET API migrations..." -ForegroundColor Yellow
-    Set-Location "apps/finance-api"
-    $efMigrations = dotnet ef migrations list 2>&1
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "[OK] EF Core migrations ready" -ForegroundColor Green
-    }
-    else {
-        Write-Host "[!] No migrations found" -ForegroundColor Yellow
-        Write-Host "    Run 'dotnet ef migrations add InitialMigration' in apps/finance-api" -ForegroundColor Gray
-    }
 
+    $dotnetEfPath = "$env:USERPROFILE\.dotnet\tools\dotnet-ef.exe"
+
+    Set-Location "apps/life-api"
+    if (Test-Path $dotnetEfPath) {
+        & $dotnetEfPath migrations list 2>&1 | Out-Null
+        if ($LASTEXITCODE -eq 0) { Write-Host "[OK] life-api migrations ready" -ForegroundColor Green }
+        else { Write-Host "[!] life-api: run 'dotnet ef migrations add <Name>' in apps/life-api" -ForegroundColor Yellow }
+    } else {
+        Write-Host "[OK] life-api migrations check skipped (dotnet-ef not found)" -ForegroundColor Gray
+    }
+    Set-Location "C:\Projects\Finance Manager"
+
+    Set-Location "apps/finance-api"
+    if (Test-Path $dotnetEfPath) {
+        & $dotnetEfPath migrations list 2>&1 | Out-Null
+        if ($LASTEXITCODE -eq 0) { Write-Host "[OK] finance-api migrations ready" -ForegroundColor Green }
+        else { Write-Host "[!] finance-api: run 'dotnet ef migrations add <Name>' in apps/finance-api" -ForegroundColor Yellow }
+    } else {
+        Write-Host "[OK] finance-api migrations check skipped (dotnet-ef not found)" -ForegroundColor Gray
+    }
     Set-Location "C:\Projects\Finance Manager"
 
     # Step 4: Start development servers
@@ -70,12 +81,14 @@ try {
     Write-Host "Development environment is starting!" -ForegroundColor Green
     Write-Host ""
     Write-Host "Services:" -ForegroundColor Cyan
-    Write-Host "   API (C# .NET):          http://localhost:5000" -ForegroundColor White
-    Write-Host "   Web (React):            http://localhost:5173" -ForegroundColor White
+    Write-Host "   Life API (.NET):        http://localhost:5000" -ForegroundColor White
+    Write-Host "   Finance API (.NET):     http://localhost:5002" -ForegroundColor White
+    Write-Host "   Web (React/Vite):       http://localhost:5173" -ForegroundColor White
     Write-Host "   Database (PostgreSQL):  localhost:5432" -ForegroundColor White
     Write-Host ""
-    Write-Host "Documentation:" -ForegroundColor Cyan
-    Write-Host "   Swagger UI:             http://localhost:5000/swagger" -ForegroundColor White
+    Write-Host "Swagger / API Docs:" -ForegroundColor Cyan
+    Write-Host "   Life API:               http://localhost:5000/swagger" -ForegroundColor White
+    Write-Host "   Finance API:            http://localhost:5002/swagger" -ForegroundColor White
     Write-Host ""
     Write-Host "Press Ctrl+C to stop all services" -ForegroundColor Yellow
     Write-Host "====================================================" -ForegroundColor Cyan
@@ -84,14 +97,20 @@ try {
     # Start all development servers in parallel
     $jobs = @()
 
-    # Start C# .NET API
-    $jobs += Start-Job -ScriptBlock {
+    # Start Life API (.NET)
+    $jobs += Start-Job -Name "life-api" -ScriptBlock {
+        Set-Location "C:\Projects\Finance Manager\apps\life-api"
+        dotnet watch run --launch-profile http
+    }
+
+    # Start Finance API (.NET)
+    $jobs += Start-Job -Name "finance-api" -ScriptBlock {
         Set-Location "C:\Projects\Finance Manager\apps\finance-api"
-        dotnet watch run
+        dotnet watch run --launch-profile http
     }
 
     # Start React Web App
-    $jobs += Start-Job -ScriptBlock {
+    $jobs += Start-Job -Name "web" -ScriptBlock {
         Set-Location "C:\Projects\Finance Manager\apps\web"
         $env:PATH = "$env:APPDATA\npm;$env:PATH"
         pnpm dev
@@ -103,7 +122,8 @@ try {
             foreach ($job in $jobs) {
                 $output = Receive-Job $job
                 if ($output) {
-                    Write-Host $output
+                    $prefix = "[$($job.Name)] "
+                    $output | ForEach-Object { Write-Host "$prefix$_" }
                 }
             }
             Start-Sleep -Milliseconds 100

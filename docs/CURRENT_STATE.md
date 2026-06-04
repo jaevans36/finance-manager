@@ -47,11 +47,15 @@ The Life Manager productivity application is MVP-complete and ready for v1.0.0 r
 
 ## What Is Currently Being Built
 
-**Stocks & Shares Application** (Phases 60-63, T1519-T1595) — Spec complete, implementation not yet started.
+**Finance Manager Application** (Phases 41–49, T1155–T1289) — tasks.md updated, ready to begin implementation.
 
-See `specs/applications/stocks/spec.md` for the full specification.
+Architecture decision: **standalone microservice** at `apps/finance-api/` (.NET 8), separate `finance` PostgreSQL schema, JWT token validation shared with `life-api`.
 
-Next immediate step: begin Phase 60 (Market Discovery & Watchlist) — backend API provider abstraction, Finnhub and Alpha Vantage integrations, watchlist CRUD, and frontend hotlist + watchlist components.
+Next immediate step: begin Phase 41 — create `apps/finance-api/` project (T1155), configure auth + Docker, define entities.
+
+> **Note**: Stocks & Shares Application (Phases 60–63) is deferred — Finance was pulled forward as HIGH PRIORITY.
+
+See `specs/applications/finance/spec.md` and `specs/applications/finance/tasks.md` for full specification and task breakdown.
 
 ---
 
@@ -67,12 +71,20 @@ Next immediate step: begin Phase 60 (Market Discovery & Watchlist) — backend A
 ### Platform (Parallel / Post-Stocks)
 
 - Phase 64–66: Life Manager MCP Server (`apps/life-mcp/`) — wraps the API for Claude CLI / Obsidian second-brain workflows (T1596–T1667)
-- Phase 64–66: Life Manager MCP Server (`apps/life-mcp/`) — wraps the API for Claude CLI / Obsidian second-brain workflows (T1596–T1667)
 - Work Stream 3: Rename remaining `finance-manager` references → `life-manager` in package names and repo
 - Work Stream 4: LAN deployment hardening (Docker Compose production profile, nginx reverse proxy)
 - Phase 22–24: Auth service extraction (currently embedded in monolith)
 - Phase 25–27: Microservices migration
-- Future apps: Finance, Fitness, Weather (specified but not yet built)
+
+### Future Applications (specified but not yet built)
+
+| App | Spec | Priority | Notes |
+|---|---|---|---|
+| Finance Manager | `specs/applications/finance/spec.md` | HIGH | CSV import, spending pots, bills, AI insights, MCP tools. UK-specific (ISA/SIPP, tax year). Phases 41–49. |
+| Fitness Application | `specs/applications/fitness/spec.md` | P2 | Workout tracking, Fasting Tracker module, Nutrition & Macro Tracker with barcode scanning, habit tracking |
+| Recipe Collection | `specs/applications/recipes/spec.md` | P2 | Standalone module. Personal cookbook + data layer for Nutrition, Pantry, Finance. MCP `recipes_*` tools. |
+| Pantry & Ingredient Tracker | `specs/applications/pantry/spec.md` | P3 | Shared infrastructure. Inventory, expiry tracking, recipe matching, cost-per-meal, smart shopping lists. |
+| Weather | `specs/applications/weather/` | P4 | Basic weather app — spec pending |
 
 ---
 
