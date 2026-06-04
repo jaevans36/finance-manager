@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FinanceApi.Migrations
 {
     [DbContext(typeof(FinanceDbContext))]
-    [Migration("20260604091112_AddBudgetsAndPots")]
+    [Migration("20260604091953_AddBudgetsAndPots")]
     partial class AddBudgetsAndPots
     {
         /// <inheritdoc />
@@ -148,13 +148,15 @@ namespace FinanceApi.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Colour")
-                        .HasColumnType("text");
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Icon")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Name")
                         .IsRequired()

@@ -49,8 +49,8 @@ namespace FinanceApi.Migrations
                     Type = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     BudgetAmount = table.Column<decimal>(type: "numeric(18,4)", precision: 18, scale: 4, nullable: false),
                     RolloverEnabled = table.Column<bool>(type: "boolean", nullable: false),
-                    Icon = table.Column<string>(type: "text", nullable: true),
-                    Colour = table.Column<string>(type: "text", nullable: true),
+                    Icon = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Colour = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: true),
                     CategoryIds = table.Column<string>(type: "text", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)

@@ -120,6 +120,8 @@ public class FinanceDbContext : DbContext
                   .HasConversion<string>()
                   .HasMaxLength(50);
             entity.HasIndex(p => p.UserId);
+            entity.Property(p => p.Icon).HasMaxLength(100);
+            entity.Property(p => p.Colour).HasMaxLength(7);
 
             // Store List<Guid> as a JSON string — compatible with both InMemory and PostgreSQL
             entity.Property(p => p.CategoryIds)
@@ -127,7 +129,7 @@ public class FinanceDbContext : DbContext
                       v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
                       v => System.Text.Json.JsonSerializer.Deserialize<List<Guid>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<Guid>())
                   .Metadata.SetValueComparer(new ValueComparer<List<Guid>>(
-                      (c1, c2) => c1!.SequenceEqual(c2!),
+                      (c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
                       c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
                       c => c.ToList()));
         });
