@@ -1,7 +1,9 @@
 using FinanceApi.Features.Accounts.Models;
+using FinanceApi.Features.Budgets.Models;
 using FinanceApi.Features.Categories.Models;
 using FinanceApi.Features.Transactions.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace FinanceApi.Data;
 
@@ -16,6 +18,8 @@ public class FinanceDbContext : DbContext
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Budget> Budgets => Set<Budget>();
+    public DbSet<SpendingPot> SpendingPots => Set<SpendingPot>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -90,6 +94,42 @@ public class FinanceDbContext : DbContext
                   .WithMany()
                   .HasForeignKey(t => t.CategoryId)
                   .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ── Budget ────────────────────────────────────────────────────────────
+        modelBuilder.Entity<Budget>(entity =>
+        {
+            entity.HasKey(b => b.Id);
+            entity.Property(b => b.Amount).HasPrecision(18, 4);
+            entity.Property(b => b.RolloverFromPrevious).HasPrecision(18, 4);
+            entity.HasIndex(b => new { b.UserId, b.Month, b.Year });
+
+            entity.HasOne(b => b.Category)
+                  .WithMany()
+                  .HasForeignKey(b => b.CategoryId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ── SpendingPot ───────────────────────────────────────────────────────
+        modelBuilder.Entity<SpendingPot>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+            entity.Property(p => p.Name).HasMaxLength(200).IsRequired();
+            entity.Property(p => p.BudgetAmount).HasPrecision(18, 4);
+            entity.Property(p => p.Type)
+                  .HasConversion<string>()
+                  .HasMaxLength(50);
+            entity.HasIndex(p => p.UserId);
+
+            // Store List<Guid> as a JSON string — compatible with both InMemory and PostgreSQL
+            entity.Property(p => p.CategoryIds)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<List<Guid>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<Guid>())
+                  .Metadata.SetValueComparer(new ValueComparer<List<Guid>>(
+                      (c1, c2) => c1!.SequenceEqual(c2!),
+                      c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                      c => c.ToList()));
         });
 
         // ── Seed system categories ───────────────────────────────────────────
