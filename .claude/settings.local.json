@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(curl -v --request OPTIONS \"http://localhost:5000/api/v1/auth/check-username\" -H \"Origin: http://life-manager\" -H \"Access-Control-Request-Method: POST\" -H \"Access-Control-Request-Headers: Content-Type\")"
+      "Bash(curl -v --request OPTIONS \"http://localhost:5000/api/v1/auth/check-username\" -H \"Origin: http://life-manager\" -H \"Access-Control-Request-Method: POST\" -H \"Access-Control-Request-Headers: Content-Type\")",
+      "Bash(dotnet tool:*)",
+      "Bash(where dotnet-ef:*)",
+      "Bash(claude plugin *)",
+      "Read(//c/Users/Jay/.claude/plugins/marketplace/claude-plugins-official/**)",
+      "Bash(python -c \"import json,sys; data=json.load\\(sys.stdin\\); [print\\(f'{p[\\\\\"name\\\\\"]}: {p.get\\(\\\\\"description\\\\\",\\\\\"\\\\\"\\)[:100]}'\\) for p in data.get\\('plugins',[]\\)]\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

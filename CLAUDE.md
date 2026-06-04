@@ -125,7 +125,7 @@ Provide a structured summary: what changed, current build/test status, what's ne
 4. Relevant spec file in `specs/applications/` or `specs/platform/`
 
 ### Task management
-- Task IDs: T001–T924 (Todo + Fitness), T925–T1154 (Platform), T1155–T1388 (Finance + Frontend), T1389–T1503 (Todo productivity), T1504–T1518 (Fitness habits), T1519–T1595 (Stocks), T1596–T1667 (MCP Server — Phases 64–66), T1668–T1683 (Stocks MCP tools — Phase 67), T1684+ (Finance/Fitness/Weather MCP tools — Phases 68–70, to be allocated)
+- Task IDs: T001–T924 (Todo + Fitness), T925–T1154 (Platform), T1155–T1289 (Finance — Phases 41–49), T1290–T1388 (unallocated — reserved for Finance expansions), T1389–T1503 (Todo productivity), T1504–T1518 (Fitness habits), T1519–T1595 (Stocks), T1596–T1667 (MCP Server — Phases 64–66), T1668–T1683 (Stocks MCP tools — Phase 67), T1684+ (Fitness/Weather MCP tools — Phases 68–70, to be allocated)
 - Mark tasks `[x]` complete immediately after implementation
 - Reference task IDs in commits and PRs
 
