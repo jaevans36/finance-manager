@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FinanceApi.Features.Budgets.Services;
 
+/// <summary>Budget management and spending progress calculation for a given month.</summary>
 public class BudgetService : IBudgetService
 {
     private readonly FinanceDbContext _db;
@@ -25,9 +26,30 @@ public class BudgetService : IBudgetService
             .OrderBy(b => b.Category!.Name)
             .ToListAsync(ct);
 
+        // Fetch all monthly spending in one query, keyed by category
+        var monthlySpend = await _db.Transactions
+            .Where(t => t.UserId == userId
+                     && t.CategoryId.HasValue
+                     && t.TransactionDate.Month == month
+                     && t.TransactionDate.Year == year
+                     && t.Type == TransactionType.Debit
+                     && !t.IsDuplicate)
+            .GroupBy(t => t.CategoryId!.Value)
+            .Select(g => new { CategoryId = g.Key, Spent = g.Sum(t => t.Amount) })
+            .ToDictionaryAsync(x => x.CategoryId, x => x.Spent, ct);
+
         var results = new List<BudgetWithProgress>(budgets.Count);
         foreach (var budget in budgets)
-            results.Add(await BuildProgressAsync(budget, ct));
+        {
+            var spent = monthlySpend.GetValueOrDefault(budget.CategoryId, 0m);
+            var total = budget.Amount + budget.RolloverFromPrevious;
+            var pct = total > 0 ? Math.Round(spent / total * 100, 1) : 0;
+            results.Add(new BudgetWithProgress(
+                budget.Id, budget.CategoryId,
+                budget.Category?.Name, budget.Category?.Colour, budget.Category?.Icon,
+                budget.Month, budget.Year, budget.Amount, spent, budget.RolloverFromPrevious,
+                pct, pct is >= 80 and < 100, pct >= 100));
+        }
 
         return results;
     }
@@ -45,7 +67,7 @@ public class BudgetService : IBudgetService
                 .Where(b => b.UserId == userId && b.Month == target.Month && b.Year == target.Year)
                 .ToListAsync(ct);
 
-            if (!budgets.Any()) continue;
+            if (budgets.Count == 0) continue;
 
             var categorySpends = new List<CategoryBudgetSpend>();
             foreach (var budget in budgets)
