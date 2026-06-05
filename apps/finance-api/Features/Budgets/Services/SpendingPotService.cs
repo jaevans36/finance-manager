@@ -21,17 +21,28 @@ public class SpendingPotService : ISpendingPotService
 
         if (pots.Count == 0) return Array.Empty<SpendingPotWithProgress>();
 
-        // Fetch all relevant transaction spending in a single query
-        var categorySpend = await _db.Transactions
-            .Where(t => t.UserId == userId
-                     && t.CategoryId.HasValue
-                     && t.TransactionDate.Month == month
-                     && t.TransactionDate.Year == year
-                     && t.Type == TransactionType.Debit
-                     && !t.IsDuplicate)
-            .GroupBy(t => t.CategoryId!.Value)
-            .Select(g => new { CategoryId = g.Key, Spent = g.Sum(t => t.Amount) })
-            .ToDictionaryAsync(x => x.CategoryId, x => x.Spent, ct);
+        // Only query transactions for categories actually mapped to a pot
+        var allCategoryIds = pots.SelectMany(p => p.CategoryIds).Distinct().ToHashSet();
+
+        Dictionary<Guid, decimal> categorySpend;
+        if (allCategoryIds.Count == 0)
+        {
+            categorySpend = new Dictionary<Guid, decimal>();
+        }
+        else
+        {
+            categorySpend = await _db.Transactions
+                .Where(t => t.UserId == userId
+                         && t.CategoryId.HasValue
+                         && allCategoryIds.Contains(t.CategoryId!.Value)
+                         && t.TransactionDate.Month == month
+                         && t.TransactionDate.Year == year
+                         && t.Type == TransactionType.Debit
+                         && !t.IsDuplicate)
+                .GroupBy(t => t.CategoryId!.Value)
+                .Select(g => new { CategoryId = g.Key, Spent = g.Sum(t => t.Amount) })
+                .ToDictionaryAsync(x => x.CategoryId, x => x.Spent, ct);
+        }
 
         return pots.Select(pot => BuildProgress(pot, categorySpend));
     }

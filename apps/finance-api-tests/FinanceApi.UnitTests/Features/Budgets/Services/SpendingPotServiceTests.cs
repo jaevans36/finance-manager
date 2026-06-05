@@ -199,6 +199,83 @@ public class SpendingPotServiceTests : IDisposable
         result.Should().BeFalse();
     }
 
+    [Fact]
+    public async Task GetPotsWithProgressAsync_WhenUserHasNoPots_ReturnsEmptyCollection()
+    {
+        var now = DateTime.UtcNow;
+
+        var result = await _sut.GetPotsWithProgressAsync(_userId, now.Month, now.Year);
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task AssignTransactionAsync_WhenTransactionCategoryNotInPot_AddsCategoryAndReturnsTrue()
+    {
+        var pot = new SpendingPot
+        {
+            UserId = _userId, Name = "Pot", Type = PotType.Custom,
+            BudgetAmount = 100m, CategoryIds = new List<Guid>()
+        };
+        var tx = new Transaction
+        {
+            UserId = _userId, AccountId = _accountId, CategoryId = _groceriesCategoryId,
+            Type = TransactionType.Debit, Amount = 20m, BaseCurrencyAmount = 20m,
+            Currency = "GBP", Description = "TEST", TransactionDate = DateOnly.FromDateTime(DateTime.UtcNow)
+        };
+        _db.SpendingPots.Add(pot);
+        _db.Transactions.Add(tx);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.AssignTransactionAsync(_userId, pot.Id, tx.Id);
+
+        result.Should().BeTrue();
+        var updated = await _db.SpendingPots.FindAsync(pot.Id);
+        updated!.CategoryIds.Should().Contain(_groceriesCategoryId);
+    }
+
+    [Fact]
+    public async Task AssignTransactionAsync_WhenCategoryAlreadyMapped_IsIdempotentAndReturnsTrue()
+    {
+        var pot = new SpendingPot
+        {
+            UserId = _userId, Name = "Pot", Type = PotType.Custom,
+            BudgetAmount = 100m, CategoryIds = new List<Guid> { _groceriesCategoryId }
+        };
+        var tx = new Transaction
+        {
+            UserId = _userId, AccountId = _accountId, CategoryId = _groceriesCategoryId,
+            Type = TransactionType.Debit, Amount = 20m, BaseCurrencyAmount = 20m,
+            Currency = "GBP", Description = "TEST", TransactionDate = DateOnly.FromDateTime(DateTime.UtcNow)
+        };
+        _db.SpendingPots.Add(pot);
+        _db.Transactions.Add(tx);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.AssignTransactionAsync(_userId, pot.Id, tx.Id);
+
+        result.Should().BeTrue();
+        var updated = await _db.SpendingPots.FindAsync(pot.Id);
+        updated!.CategoryIds.Should().HaveCount(1); // not duplicated
+    }
+
+    [Fact]
+    public async Task AssignTransactionAsync_WhenPotNotFound_ReturnsFalse()
+    {
+        var tx = new Transaction
+        {
+            UserId = _userId, AccountId = _accountId, CategoryId = _groceriesCategoryId,
+            Type = TransactionType.Debit, Amount = 20m, BaseCurrencyAmount = 20m,
+            Currency = "GBP", Description = "TEST", TransactionDate = DateOnly.FromDateTime(DateTime.UtcNow)
+        };
+        _db.Transactions.Add(tx);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.AssignTransactionAsync(_userId, Guid.NewGuid(), tx.Id);
+
+        result.Should().BeFalse();
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private Transaction MakeTx(decimal amount, Guid categoryId, DateOnly date) =>
