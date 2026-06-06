@@ -146,3 +146,88 @@ export interface CsvImportResult {
 export interface NetWorthResponse {
   netWorth: number;
 }
+
+// ── Budget types ──────────────────────────────────────────────────────────────
+
+export type PotType =
+  | 'Groceries' | 'Fuel' | 'EatingOut' | 'Kids' | 'Clothing'
+  | 'Entertainment' | 'Bills' | 'Subscriptions' | 'Savings'
+  | 'EmergencyFund' | 'Holiday' | 'Custom';
+
+export interface Budget {
+  id: string;
+  categoryId: string;
+  categoryName: string | null;
+  categoryColour: string | null;
+  categoryIcon: string | null;
+  month: number;
+  year: number;
+  amount: number;
+  spent: number;
+  rolloverFromPrevious: number;
+  percentageUsed: number;
+  isWarning: boolean;
+  isExceeded: boolean;
+}
+
+export interface CreateBudgetRequest {
+  categoryId: string;
+  month: number;
+  year: number;
+  amount: number;
+}
+
+export interface UpdateBudgetRequest {
+  amount?: number;
+}
+
+export interface CategoryBudgetSpend {
+  categoryName: string;
+  categoryColour: string | null;
+  budgeted: number;
+  spent: number;
+}
+
+export interface BudgetTrendPoint {
+  month: number;
+  year: number;
+  monthLabel: string;
+  categories: CategoryBudgetSpend[];
+}
+
+// ── Spending pot types ────────────────────────────────────────────────────────
+
+export interface SpendingPotWithProgress {
+  id: string;
+  name: string;
+  type: PotType;
+  budgetAmount: number;
+  spent: number;
+  remaining: number;
+  rolloverEnabled: boolean;
+  icon: string | null;
+  colour: string | null;
+  categoryIds: string[];
+  percentageUsed: number;
+  isWarning: boolean;
+  isExceeded: boolean;
+}
+
+export interface CreateSpendingPotRequest {
+  name: string;
+  type: PotType;
+  budgetAmount: number;
+  rolloverEnabled: boolean;
+  icon?: string;
+  colour?: string;
+  categoryIds: string[];
+}
+
+export interface UpdateSpendingPotRequest {
+  name?: string;
+  budgetAmount?: number;
+  rolloverEnabled?: boolean;
+  icon?: string;
+  colour?: string;
+  categoryIds?: string[];
+}
