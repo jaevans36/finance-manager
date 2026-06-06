@@ -15,10 +15,13 @@ public class PotsController : ControllerBase
 
     public PotsController(ISpendingPotService pots) => _pots = pots;
 
-    private Guid GetUserId() =>
-        Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)
+    private Guid GetUserId()
+    {
+        var sub = User.FindFirstValue(ClaimTypes.NameIdentifier)
             ?? User.FindFirstValue("sub")
-            ?? throw new UnauthorizedAccessException("User ID not found in token"));
+            ?? throw new UnauthorizedAccessException("User ID not found in token");
+        return Guid.Parse(sub);
+    }
 
     /// <summary>List all spending pots with live progress for the given month/year.</summary>
     [HttpGet]
@@ -64,9 +67,11 @@ public class PotsController : ControllerBase
     /// <summary>Manually assign a transaction's category to this pot.</summary>
     [HttpPost("{id:guid}/assign-transaction")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> AssignTransaction(Guid id, [FromQuery] Guid transactionId, CancellationToken ct)
     {
+        if (transactionId == Guid.Empty) return BadRequest("transactionId is required");
         var result = await _pots.AssignTransactionAsync(GetUserId(), id, transactionId, ct);
         return result ? Ok() : NotFound();
     }

@@ -15,10 +15,13 @@ public class BudgetsController : ControllerBase
 
     public BudgetsController(IBudgetService budgets) => _budgets = budgets;
 
-    private Guid GetUserId() =>
-        Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)
+    private Guid GetUserId()
+    {
+        var sub = User.FindFirstValue(ClaimTypes.NameIdentifier)
             ?? User.FindFirstValue("sub")
-            ?? throw new UnauthorizedAccessException("User ID not found in token"));
+            ?? throw new UnauthorizedAccessException("User ID not found in token");
+        return Guid.Parse(sub);
+    }
 
     /// <summary>List budgets for a given month/year (defaults to current month).</summary>
     [HttpGet]
@@ -38,8 +41,12 @@ public class BudgetsController : ControllerBase
     /// <summary>Budget trends: budgeted vs actual for the last N months.</summary>
     [HttpGet("trends")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetTrends([FromQuery] int months = 6, CancellationToken ct = default) =>
-        Ok(await _budgets.GetTrendsAsync(GetUserId(), months, ct));
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetTrends([FromQuery] int months = 6, CancellationToken ct = default)
+    {
+        if (months < 1 || months > 24) return BadRequest("months must be between 1 and 24");
+        return Ok(await _budgets.GetTrendsAsync(GetUserId(), months, ct));
+    }
 
     /// <summary>Create a budget for a category and month/year.</summary>
     [HttpPost]
