@@ -2,8 +2,8 @@
 
 This document tracks all automated tests in the Life Manager project. It serves as a reference for what's tested, coverage gaps, and maintenance responsibilities.
 
-**Last Updated**: 2026-05-20  
-**Total Tests**: 387 (356 frontend + 26 backend unit + 5 labels integration — as of v1.0.0)
+**Last Updated**: 2026-06-07  
+**Total Tests**: 391 (360 frontend + 26 backend unit + 5 labels integration — as of Phase 42)
 
 > ⚠️ **Note**: The feature coverage matrix below reflects Phase 13. The suite has grown significantly since then (Phases 48–58, keyboard shortcuts, labels, service worker notifications). A full reconciliation of the coverage matrix is backlogged.
 
@@ -13,11 +13,11 @@ This document tracks all automated tests in the Life Manager project. It serves 
 
 | Type | Count | Run On | Duration | Location |
 |------|-------|--------|----------|----------|
-| Frontend Unit + Integration | 356 | Every PR | ~4min | `apps/web/tests/` |
+| Frontend Unit + Integration | 360 | Every PR | ~4min | `apps/web/tests/` |
 | Backend Unit | 26 | Every PR | ~45s | `apps/life-api-tests/LifeApi.UnitTests/` |
 | Backend Integration | 5 (labels) | Every PR | ~30s | `apps/life-api-tests/LifeApi.IntegrationTests/` |
 | E2E (Playwright) | ~37 (est.) | Every PR | ~6min | `apps/web/e2e/` |
-| **Total** | **387+** | | **~11min** | |
+| **Total** | **391+** | | **~11min** | |
 
 ---
 
@@ -90,6 +90,16 @@ This document tracks all automated tests in the Life Manager project. It serves 
 | Event Badges | ❌ | ❌ | ✅ (1) | 85% |
 | Event Reminders | ✅ Backend (1) | ✅ Component (2) | ❌ | 75% |
 | Location Field | ✅ Backend (1) | ✅ Component (3) | ❌ | 80% |
+
+### Phase 42: Finance Budget Management (T1191-T1195)
+| Feature | Unit Tests | Integration Tests | E2E Tests | Coverage |
+|---------|------------|-------------------|-----------|----------|
+| Budget CRUD API | ✅ Backend (est. 12) | 🔄 In progress | ❌ | 70% |
+| BudgetForm Component | ✅ Component (4) | ✅ Component (4) | ❌ | 90% |
+| Budget Dashboard | ✅ Component (est. 6) | ✅ Component (est. 6) | ❌ | 85% |
+| Spending Pots | ✅ Component (est. 6) | ✅ Component (est. 6) | ❌ | 85% |
+| Category Management | 🔄 Backend coverage | ✅ Component (est. 4) | ❌ | 75% |
+| Budget Trends | 🔄 In progress | ❌ | ❌ | 40% |
 
 ---
 
