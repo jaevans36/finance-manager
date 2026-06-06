@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text;
 using FinanceApi.Data;
 using FinanceApi.Features.Accounts.Services;
+using FinanceApi.Features.Budgets.Services;
 using FinanceApi.Features.Categories.Services;
 using FinanceApi.Features.Transactions.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -153,6 +154,8 @@ try
     builder.Services.AddScoped<ITransactionService, TransactionService>();
     builder.Services.AddScoped<ICategoryService, CategoryService>();
     builder.Services.AddScoped<ICsvImportService, CsvImportService>();
+    builder.Services.AddScoped<IBudgetService, BudgetService>();
+    builder.Services.AddScoped<ISpendingPotService, SpendingPotService>();
 
     // ── Build + Middleware Pipeline ───────────────────────────────────────────
     var app = builder.Build();
