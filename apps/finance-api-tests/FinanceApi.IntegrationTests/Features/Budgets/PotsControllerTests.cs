@@ -12,11 +12,13 @@ namespace FinanceApi.IntegrationTests.Features.Budgets;
 public class PotsControllerTests
 {
     private readonly HttpClient _client;
+    private readonly FinanceWebApplicationFactory _factory;
     private readonly Guid _userId = Guid.NewGuid();
     private static readonly Guid GroceriesCategoryId = Guid.Parse("10000000-0000-0000-0000-000000000101");
 
     public PotsControllerTests(FinanceWebApplicationFactory factory)
     {
+        _factory = factory;
         _client = factory.CreateClient();
         _client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", JwtTestHelper.GenerateToken(_userId));
@@ -30,6 +32,7 @@ public class PotsControllerTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var pots = await response.Content.ReadFromJsonAsync<List<SpendingPotWithProgress>>();
         pots.Should().NotBeNull();
+        pots!.Should().BeEmpty();
     }
 
     [Fact]
@@ -98,5 +101,15 @@ public class PotsControllerTests
             $"/api/v1/finance/pots/{pot!.Id}/assign-transaction?transactionId={Guid.Empty}", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetPots_WhenUnauthenticated_Returns401()
+    {
+        var unauthClient = _factory.CreateClient();
+
+        var response = await unauthClient.GetAsync("/api/v1/finance/pots");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 }
