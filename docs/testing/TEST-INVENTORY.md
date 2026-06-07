@@ -3,7 +3,7 @@
 This document tracks all automated tests in the Life Manager project. It serves as a reference for what's tested, coverage gaps, and maintenance responsibilities.
 
 **Last Updated**: 2026-06-07  
-**Total Tests**: 391 (360 frontend + 26 backend unit + 5 labels integration — as of Phase 42)
+**Total Tests**: 403 (372 frontend + 26 backend unit + 5 labels integration — as of Phase 42)
 
 > ⚠️ **Note**: The feature coverage matrix below reflects Phase 13. The suite has grown significantly since then (Phases 48–58, keyboard shortcuts, labels, service worker notifications). A full reconciliation of the coverage matrix is backlogged.
 
@@ -13,7 +13,7 @@ This document tracks all automated tests in the Life Manager project. It serves 
 
 | Type | Count | Run On | Duration | Location |
 |------|-------|--------|----------|----------|
-| Frontend Unit + Integration | 360 | Every PR | ~4min | `apps/web/tests/` |
+| Frontend Unit + Integration | 372 | Every PR | ~4min | `apps/web/tests/` |
 | Backend Unit | 26 | Every PR | ~45s | `apps/life-api-tests/LifeApi.UnitTests/` |
 | Backend Integration | 5 (labels) | Every PR | ~30s | `apps/life-api-tests/LifeApi.IntegrationTests/` |
 | E2E (Playwright) | ~37 (est.) | Every PR | ~6min | `apps/web/e2e/` |

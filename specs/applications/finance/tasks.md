@@ -108,14 +108,14 @@
 
 ### Frontend (Week 2)
 
-- [ ] T1189 [P] [US2] Create `Budget` + `SpendingPot` TypeScript interfaces — 1h
-- [ ] T1190 [P] [US2] Create `budgetService` + `potService` API methods — 1h
-- [ ] T1191 [US2] Create `BudgetDashboard` component — category progress bars, green/amber/red colour states at 0%/80%/100%, overspend amount shown — 5h
-- [ ] T1192 [US2] Create `SpendingPots` component — pot cards (name, icon, budget, spent, remaining), envelope-style progress bars, rollover toggle — 5h
-- [ ] T1193 [US2] Create `BudgetForm` component — create/edit budget: category selector, amount input, rollover option — 3h
-- [ ] T1194 [US2] Create `BudgetTrends` component — monthly bar chart comparing budgeted vs actual by category (Recharts) — 4h
-- [ ] T1195 [US2] Write Jest tests for budget and pot components (10+ tests) — 2h
-- [ ] T1196 [US2] Write E2E test for budget + pot creation, transaction assignment, and threshold alert flow — 3h
+- [x] T1189 [P] [US2] Create `Budget` + `SpendingPot` TypeScript interfaces — 1h
+- [x] T1190 [P] [US2] Create `budgetService` + `potService` API methods — 1h
+- [x] T1191 [US2] Create `BudgetDashboard` component — category progress bars, green/amber/red colour states at 0%/80%/100%, overspend amount shown — 5h
+- [x] T1192 [US2] Create `SpendingPots` component — pot cards (name, icon, budget, spent, remaining), envelope-style progress bars, rollover toggle — 5h
+- [x] T1193 [US2] Create `BudgetForm` component — create/edit budget: category selector, amount input, rollover option — 3h
+- [x] T1194 [US2] Create `BudgetTrends` component — monthly bar chart comparing budgeted vs actual by category (Recharts) — 4h
+- [x] T1195 [US2] Write Jest tests for budget and pot components (10+ tests) — 2h
+- [x] T1196 [US2] Write E2E test for budget + pot creation, transaction assignment, and threshold alert flow — 3h
 
 **Checkpoint**: Users can set monthly budgets and spending pots; transactions auto-assign to pots; colour-coded progress with overspend alerts
 
