@@ -98,13 +98,13 @@
 
 ### Backend: Entities & Services (Week 1)
 
-- [ ] T1182 [P] [US2] Define `Budget` entity (userId, categoryId, month, year, amount, rolloverFromPrevious) and `SpendingPot` entity (userId, name, type, budgetAmount, rolloverEnabled) — 3h
-- [ ] T1183 [US2] Create EF Core migration for `budgets` and `spending_pots` tables — 1h
-- [ ] T1184 [US2] Implement `BudgetService` — CRUD, spending progress calculation (join transactions by category+month), 80%/100% threshold alert trigger, next-month auto-creation from template — 5h
-- [ ] T1185 [US2] Implement `SpendingPotService` — CRUD, transaction auto-assignment to pot by merchant category mapping, pot balance calculation, rollover logic — 5h
-- [ ] T1186 [US2] Implement `BudgetsController` + `PotsController` — CRUD, `GET /finance/budgets/current`, `GET /finance/budgets/trends`, `POST /finance/pots/:id/assign-transaction` — 4h
-- [ ] T1187 [US2] Write unit tests for `BudgetService` + `SpendingPotService` (14+ tests) — 3h
-- [ ] T1188 [US2] Write integration tests for budget and pot endpoints (8+ tests) — 2h
+- [x] T1182 [P] [US2] Define `Budget` entity (userId, categoryId, month, year, amount, rolloverFromPrevious) and `SpendingPot` entity (userId, name, type, budgetAmount, rolloverEnabled) — 3h
+- [x] T1183 [US2] Create EF Core migration for `budgets` and `spending_pots` tables — 1h
+- [x] T1184 [US2] Implement `BudgetService` — CRUD, spending progress calculation (join transactions by category+month), 80%/100% threshold alert trigger, next-month auto-creation from template — 5h
+- [x] T1185 [US2] Implement `SpendingPotService` — CRUD, transaction auto-assignment to pot by merchant category mapping, pot balance calculation, rollover logic — 5h
+- [x] T1186 [US2] Implement `BudgetsController` + `PotsController` — CRUD, `GET /finance/budgets/current`, `GET /finance/budgets/trends`, `POST /finance/pots/:id/assign-transaction` — 4h
+- [x] T1187 [US2] Write unit tests for `BudgetService` + `SpendingPotService` (14+ tests) — 3h
+- [x] T1188 [US2] Write integration tests for budget and pot endpoints (8+ tests) — 2h
 
 ### Frontend (Week 2)
 
