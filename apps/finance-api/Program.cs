@@ -2,8 +2,10 @@ using System.Reflection;
 using System.Text;
 using FinanceApi.Data;
 using FinanceApi.Features.Accounts.Services;
+using FinanceApi.Features.Bills.Services;
 using FinanceApi.Features.Budgets.Services;
 using FinanceApi.Features.Categories.Services;
+using FinanceApi.Features.SavingsGoals.Services;
 using FinanceApi.Features.Transactions.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -156,6 +158,9 @@ try
     builder.Services.AddScoped<ICsvImportService, CsvImportService>();
     builder.Services.AddScoped<IBudgetService, BudgetService>();
     builder.Services.AddScoped<ISpendingPotService, SpendingPotService>();
+    builder.Services.AddScoped<IBillService, BillService>();
+    builder.Services.AddScoped<IRecurringPaymentDetector, RecurringPaymentDetector>();
+    builder.Services.AddScoped<ISavingsGoalService, SavingsGoalService>();
 
     // ── Build + Middleware Pipeline ───────────────────────────────────────────
     var app = builder.Build();

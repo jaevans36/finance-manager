@@ -1,6 +1,8 @@
 using FinanceApi.Features.Accounts.Models;
+using FinanceApi.Features.Bills.Models;
 using FinanceApi.Features.Budgets.Models;
 using FinanceApi.Features.Categories.Models;
+using FinanceApi.Features.SavingsGoals.Models;
 using FinanceApi.Features.Transactions.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -20,6 +22,8 @@ public class FinanceDbContext : DbContext
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Budget> Budgets => Set<Budget>();
     public DbSet<SpendingPot> SpendingPots => Set<SpendingPot>();
+    public DbSet<Bill> Bills => Set<Bill>();
+    public DbSet<SavingsGoal> SavingsGoals => Set<SavingsGoal>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -132,6 +136,33 @@ public class FinanceDbContext : DbContext
                       (c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
                       c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
                       c => c.ToList()));
+        });
+
+        // ── Bill ──────────────────────────────────────────────────────────────
+        modelBuilder.Entity<Bill>(entity =>
+        {
+            entity.HasKey(b => b.Id);
+            entity.Property(b => b.Name).HasMaxLength(200).IsRequired();
+            entity.Property(b => b.Amount).HasPrecision(18, 4);
+            entity.Property(b => b.Frequency).HasConversion<string>().HasMaxLength(20);
+            entity.HasIndex(b => b.UserId);
+
+            entity.HasOne(b => b.Category)
+                  .WithMany()
+                  .HasForeignKey(b => b.CategoryId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ── SavingsGoal ───────────────────────────────────────────────────────
+        modelBuilder.Entity<SavingsGoal>(entity =>
+        {
+            entity.HasKey(g => g.Id);
+            entity.Property(g => g.Name).HasMaxLength(200).IsRequired();
+            entity.Property(g => g.TargetAmount).HasPrecision(18, 4);
+            entity.Property(g => g.CurrentAmount).HasPrecision(18, 4);
+            entity.Property(g => g.MonthlyContribution).HasPrecision(18, 4);
+            entity.Property(g => g.Status).HasConversion<string>().HasMaxLength(20);
+            entity.HasIndex(g => g.UserId);
         });
 
         // ── Seed system categories ───────────────────────────────────────────
