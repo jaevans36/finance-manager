@@ -111,7 +111,7 @@ export function BudgetTrends() {
                 tickFormatter={(v: number) => `£${v}`}
               />
               <Tooltip
-                formatter={(value: number) => `£${value.toFixed(2)}`}
+                formatter={(value: number | undefined) => value != null ? `£${value.toFixed(2)}` : ''}
                 contentStyle={{
                   background: '#fff',
                   border: '1px solid rgba(0,0,0,0.1)',

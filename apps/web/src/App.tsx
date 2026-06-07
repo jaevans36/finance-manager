@@ -40,6 +40,7 @@ const AdminLogs = lazy(() => import('./pages/admin/AdminLogs'));
 const HelpPage = lazy(() => import('./pages/help/HelpPage'));
 const NotFoundPage = lazy(() => import('./pages/errors/NotFoundPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const FinancePage = lazy(() => import('./pages/finance/FinancePage'));
 
 function ShortcutCheatSheetController() {
   const { cheatSheetOpen, setCheatSheetOpen } = useShortcutContext();
@@ -235,6 +236,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <NotificationsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/finance"
+                  element={
+                    <ProtectedRoute>
+                      <FinancePage />
                     </ProtectedRoute>
                   }
                 />
