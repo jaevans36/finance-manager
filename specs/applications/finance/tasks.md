@@ -129,25 +129,25 @@
 
 ### Backend (Week 1)
 
-- [ ] T1197 [P] [US4] Define `Bill` entity (name, amount, frequency, dueDay, reminderDaysBefore, isPaid, lastPaidDate) and `SavingsGoal` entity (targetAmount, currentAmount, targetDate, monthlyContribution, status) — 3h
-- [ ] T1198 [US4/US5] Create EF Core migration for `bills` and `savings_goals` tables — 1h
-- [ ] T1199 [US4] Implement `RecurringPaymentDetector` — analyse 90 days of transactions, group by merchant name, detect frequency (weekly/monthly/quarterly/annual) and amount stability; classify as Fixed Bill / Variable Bill / Subscription / Regular Spend — 6h
-- [ ] T1200 [US4] Implement `BillService` — CRUD, upcoming bill list, payment marking (match against imported transaction), price-change detection (flag amount increases vs last period) — 4h
-- [ ] T1201 [US4] Implement `BillsController` — CRUD, `GET /finance/bills/upcoming`, `PATCH /finance/bills/:id/pay`, `POST /finance/bills/detect-recurring` — 3h
-- [ ] T1202 [US5] Implement `SavingsGoalService` — CRUD, contributions, on-track projection (current rate vs required rate), milestone notifications — 4h
-- [ ] T1203 [US5] Implement `GoalsController` — CRUD, `POST /finance/goals/:id/contribute` — 2h
-- [ ] T1204 [US4/US5] Write unit tests for `RecurringPaymentDetector`, `BillService`, `SavingsGoalService` (16+ tests) — 3h
-- [ ] T1205 [US4/US5] Write integration tests for bills and goals endpoints (10+ tests) — 3h
+- [x] T1197 [P] [US4] Define `Bill` entity (name, amount, frequency, dueDay, reminderDaysBefore, isPaid, lastPaidDate) and `SavingsGoal` entity (targetAmount, currentAmount, targetDate, monthlyContribution, status) — 3h
+- [x] T1198 [US4/US5] Create EF Core migration for `bills` and `savings_goals` tables — 1h
+- [x] T1199 [US4] Implement `RecurringPaymentDetector` — analyse 90 days of transactions, group by merchant name, detect frequency (weekly/monthly/quarterly/annual) and amount stability; classify as Fixed Bill / Variable Bill / Subscription / Regular Spend — 6h
+- [x] T1200 [US4] Implement `BillService` — CRUD, upcoming bill list, payment marking (match against imported transaction), price-change detection (flag amount increases vs last period) — 4h
+- [x] T1201 [US4] Implement `BillsController` — CRUD, `GET /finance/bills/upcoming`, `PATCH /finance/bills/:id/pay`, `POST /finance/bills/detect-recurring` — 3h
+- [x] T1202 [US5] Implement `SavingsGoalService` — CRUD, contributions, on-track projection (current rate vs required rate), milestone notifications — 4h
+- [x] T1203 [US5] Implement `GoalsController` — CRUD, `POST /finance/goals/:id/contribute` — 2h
+- [x] T1204 [US4/US5] Write unit tests for `RecurringPaymentDetector`, `BillService`, `SavingsGoalService` (16+ tests) — 3h
+- [x] T1205 [US4/US5] Write integration tests for bills and goals endpoints (10+ tests) — 3h
 
 ### Frontend (Week 2)
 
-- [ ] T1206 [P] [US4/US5] Create `Bill`, `RecurringPattern`, `SavingsGoal` TypeScript interfaces — 2h
-- [ ] T1207 [US4] Create `BillsDashboard` component — upcoming bills timeline, monthly recurring total, calendar dot markers — 4h
-- [ ] T1208 [US4] Create `RecurringDetected` component — auto-detected payments grid (merchant, avg cost, trend badge: stable/increasing/decreasing), confirm as bill or dismiss — 4h
-- [ ] T1209 [US4] Create `BillForm` component — name, amount, frequency, due day, category, reminder days — 3h
-- [ ] T1210 [US5] Create `SavingsGoalsDashboard` component — goal cards with progress bars, on-track status, projected completion date — 4h
-- [ ] T1211 [US5] Create `SavingsGoalForm` component — target amount, deadline, monthly contribution — 2h
-- [ ] T1212 [US4/US5] Write Jest tests for bills and savings components (8+ tests) — 2h
+- [x] T1206 [P] [US4/US5] Create `Bill`, `RecurringPattern`, `SavingsGoal` TypeScript interfaces — 2h
+- [x] T1207 [US4] Create `BillsDashboard` component — upcoming bills timeline, monthly recurring total, calendar dot markers — 4h
+- [x] T1208 [US4] Create `RecurringDetected` component — auto-detected payments grid (merchant, avg cost, trend badge: stable/increasing/decreasing), confirm as bill or dismiss — 4h
+- [x] T1209 [US4] Create `BillForm` component — name, amount, frequency, due day, category, reminder days — 3h
+- [x] T1210 [US5] Create `SavingsGoalsDashboard` component — goal cards with progress bars, on-track status, projected completion date — 4h
+- [x] T1211 [US5] Create `SavingsGoalForm` component — target amount, deadline, monthly contribution — 2h
+- [x] T1212 [US4/US5] Write Jest tests for bills and savings components (8+ tests) — 2h
 
 **Checkpoint**: Bills tracked manually + auto-detected from imported transactions; savings goals with projection
 

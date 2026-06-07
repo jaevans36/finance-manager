@@ -231,3 +231,102 @@ export interface UpdateSpendingPotRequest {
   colour?: string;
   categoryIds?: string[];
 }
+
+// ── Bill types ────────────────────────────────────────────────────────────────
+
+export type BillFrequency = 'Weekly' | 'Monthly' | 'Quarterly' | 'Annual';
+export type RecurringFrequency = 'Weekly' | 'Monthly' | 'Quarterly' | 'Annual' | 'Unknown';
+export type RecurringPatternType = 'FixedBill' | 'VariableBill' | 'Subscription' | 'RegularSpend';
+export type AmountTrend = 'Stable' | 'Increasing' | 'Decreasing';
+
+export interface Bill {
+  id: string;
+  userId: string;
+  name: string;
+  amount: number;
+  frequency: BillFrequency;
+  dueDay: number;
+  reminderDaysBefore: number;
+  isPaid: boolean;
+  lastPaidDate: string | null;
+  categoryId: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpcomingBill {
+  bill: Bill;
+  nextDueDate: string;
+  daysUntilDue: number;
+  isReminderDue: boolean;
+}
+
+export interface RecurringPattern {
+  merchantName: string;
+  averageAmount: number;
+  minAmount: number;
+  maxAmount: number;
+  detectedFrequency: RecurringFrequency;
+  patternType: RecurringPatternType;
+  amountTrend: AmountTrend;
+  occurrencesInPeriod: number;
+  lastOccurrence: string | null;
+}
+
+export interface CreateBillRequest {
+  name: string;
+  amount: number;
+  frequency: BillFrequency;
+  dueDay: number;
+  reminderDaysBefore: number;
+  categoryId?: string;
+}
+
+export interface UpdateBillRequest {
+  name?: string;
+  amount?: number;
+  frequency?: BillFrequency;
+  dueDay?: number;
+  reminderDaysBefore?: number;
+  categoryId?: string;
+}
+
+// ── Savings goal types ────────────────────────────────────────────────────────
+
+export type SavingsGoalStatus = 'Active' | 'Achieved' | 'Abandoned';
+
+export interface SavingsGoal {
+  id: string;
+  userId: string;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  targetDate: string | null;
+  monthlyContribution: number;
+  status: SavingsGoalStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SavingsGoalWithProjection {
+  goal: SavingsGoal;
+  percentageComplete: number;
+  monthsToTarget: number;
+  projectedCompletionDate: string | null;
+  isOnTrack: boolean;
+}
+
+export interface CreateSavingsGoalRequest {
+  name: string;
+  targetAmount: number;
+  targetDate?: string;
+  monthlyContribution: number;
+}
+
+export interface UpdateSavingsGoalRequest {
+  name?: string;
+  targetAmount?: number;
+  targetDate?: string;
+  monthlyContribution?: number;
+}
