@@ -7,6 +7,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: life_manager_dev
+      POSTGRES_HOST_AUTH_METHOD: md5
     ports:
       - "5432:5432"
     volumes:
