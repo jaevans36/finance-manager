@@ -82,6 +82,19 @@
 .\view-logs.ps1      # View application logs
 ```
 
+### Database backup (critical — read before suggesting a DB reset)
+
+```powershell
+.\scripts\backup-db.ps1                  # Manual backup now (stores in %USERPROFILE%\life-manager-backups\)
+.\scripts\restore-db.ps1 -Latest         # Restore most recent backup
+.\scripts\restore-db.ps1                 # List backups and choose one
+.\scripts\setup-backup-schedule.ps1      # Register daily 02:00 Windows Scheduled Task
+.\scripts\safe-db-reset.ps1              # Backup first, THEN docker-compose down -v
+.\scripts\reset-user-password.ps1 -Email "..." -NewPassword "..."  # Reset a user's password
+```
+
+> **NEVER suggest `docker-compose down -v` directly.** That destroys the Docker volume and all user data with no warning. Always use `.\scripts\safe-db-reset.ps1` instead — it backs up first. See `docs/guides/BACKUP-RESTORE.md` for full restore procedures.
+
 ### Before coding
 1. Check `docs/CURRENT_STATE.md` — what is actively being built
 2. Search for existing implementations before creating new files (`grep_search` first)
