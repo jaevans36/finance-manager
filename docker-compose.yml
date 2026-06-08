@@ -7,9 +7,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: life_manager_dev
+      # TODO: revert to scram-sha-256 (PG15 default) once the Npgsql auth failure
+      # root cause is understood. md5 is weaker but unblocks local dev for now.
       POSTGRES_HOST_AUTH_METHOD: md5
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
