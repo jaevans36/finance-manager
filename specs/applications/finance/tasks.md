@@ -46,47 +46,92 @@
 
 ### Project Setup (Day 1)
 
-- [ ] T1155 [P] [US1] Create `apps/finance-api/` project: `dotnet new webapi -n FinanceApi --output apps/finance-api/ --framework net8.0`; add to `Finance Manager.sln` — 3h
-- [ ] T1156 [P] [US1] Add NuGet packages: `Npgsql.EntityFrameworkCore.PostgreSQL`, `CsvHelper`, `Microsoft.AspNetCore.Authentication.JwtBearer`, `Serilog.AspNetCore`, `Swashbuckle.AspNetCore` — 1h
-- [ ] T1157 [P] [US1] Configure JWT bearer auth in `Program.cs` — validate tokens using same `Jwt:Secret` + `Jwt:Issuer` as life-api (shared config); extract `userId` claim — 2h
-- [ ] T1158 [US1] Add `finance-api` service to `docker-compose.yml` (port 5002, `ASPNETCORE_ENVIRONMENT=Development`, PostgreSQL connection) — 2h
-- [ ] T1159 [US1] Configure CORS in `Program.cs` to allow `http://localhost:5173` (Vite dev) and production web origin — 1h
+- [x] T1155 [P] [US1] Create `apps/finance-api/` project: `dotnet new webapi -n FinanceApi --output apps/finance-api/ --framework net8.0`; add to `Finance Manager.sln` — 3h
+- [x] T1156 [P] [US1] Add NuGet packages: `Npgsql.EntityFrameworkCore.PostgreSQL`, `CsvHelper`, `Microsoft.AspNetCore.Authentication.JwtBearer`, `Serilog.AspNetCore`, `Swashbuckle.AspNetCore` — 1h
+- [x] T1157 [P] [US1] Configure JWT bearer auth in `Program.cs` — validate tokens using same `Jwt:Secret` + `Jwt:Issuer` as life-api (shared config); extract `userId` claim — 2h
+- [x] T1158 [US1] Add `finance-api` service to `docker-compose.yml` (port 5002, `ASPNETCORE_ENVIRONMENT=Development`, PostgreSQL connection) — 2h
+- [x] T1159 [US1] Configure CORS in `Program.cs` to allow `http://localhost:5173` (Vite dev) and production web origin — 1h
 
 ### Backend: Entities & DB Schema (Days 2–3)
 
-- [ ] T1160 [P] [US1] Define `Account` entity in `apps/finance-api/Data/Entities/` — include UK account types (`checking`, `savings`, `credit`, `cash_isa`, `stocks_isa`, `sipp`, `premium_bonds`, `lifetime_isa`, `investment`, `mortgage`), GBP default — 3h
-- [ ] T1161 [P] [US1] Define `Transaction` entity — include `userId`, `importBatchId`, `isDuplicate`, `importSource`, `type` (income/expense/transfer), `baseCurrencyAmount`, `isRecurring` — 3h
-- [ ] T1162 [US1] Define `Category` entity (system-level + user-custom, parent/child for subcategories, Lucide icon name, hex colour) — 2h
-- [ ] T1163 [US1] Create `FinanceDbContext` with `modelBuilder.HasDefaultSchema("finance")` and all entity DbSets — 2h
-- [ ] T1164 [US1] Create initial EF Core migration for `accounts`, `transactions`, `categories` tables in `finance` schema — 1h
-- [ ] T1165 [US1] Seed default system categories: Groceries, Transport, Utilities, Entertainment, Eating Out, Fuel, Clothing, Healthcare, Subscriptions, Income, Transfer — 2h
+- [x] T1160 [P] [US1] Define `Account` entity — UK account types (Checking/Savings/Credit/CashIsa/StocksIsa/Sipp/PremiumBonds/LifetimeIsa/Investment/Mortgage/Loan/Other), GBP default — 3h
+- [x] T1161 [P] [US1] Define `Transaction` entity — include `userId`, `importBatchId`, `isDuplicate`, `importSource`, `type` (Debit/Credit/Transfer), `baseCurrencyAmount`, `isRecurring`, `payee`, `originalDescription` — 3h
+- [x] T1162 [US1] Define `Category` entity (system-level + user-custom, parent/child for subcategories, Lucide icon name, hex colour) — 2h
+- [x] T1163 [US1] Create `FinanceDbContext` with `modelBuilder.HasDefaultSchema("finance")` and all entity DbSets — 2h
+- [x] T1164 [US1] Create initial EF Core migration `20260603170349_InitialCreate` for `accounts`, `transactions`, `categories` tables in `finance` schema — 1h
+- [x] T1165 [US1] Seed 26 default system categories (11 top-level + 15 sub-categories) with Lucide icons and hex colours — 2h
 
 ### Backend: Services & API (Days 4–7)
 
-- [ ] T1166 [US1] Implement `AccountService` — CRUD, balance recalculation from transactions, net worth calculation (sum all active accounts) — 4h
-- [ ] T1167 [US1] Implement `AccountsController` — `POST /finance/accounts`, `GET /finance/accounts`, `GET /finance/accounts/:id`, `PUT /finance/accounts/:id`, `DELETE /finance/accounts/:id`, `GET /finance/accounts/net-worth` — 3h
-- [ ] T1168 [US1] Implement `CsvImportService` using CsvHelper — bank format registry, auto-detection by header fingerprint — 5h
-- [ ] T1169 [US1] Create bank format adapters: Lloyds, Barclays, HSBC, Nationwide, Monzo, Starling, Generic (user-mapped columns) — 4h
-- [ ] T1170 [US1] Implement duplicate transaction detection — SHA-256 hash of (accountId + date + amount + description); flag `isDuplicate`, do not auto-reject — 3h
-- [ ] T1171 [US1] Implement `TransactionService` — CRUD, full-text search, filtering (category/date/amount/type), pagination, rule-based auto-categorisation by keyword matching — 5h
-- [ ] T1172 [US1] Implement `TransactionsController` — CRUD, `POST /finance/transactions/import`, `GET /finance/transactions/search`, `POST /finance/transactions/categorise` — 3h
+- [x] T1166 [US1] Implement `AccountService` — CRUD, balance update on transaction import, net worth calculation (sum all active non-excluded accounts) — 4h
+- [x] T1167 [US1] Implement `AccountsController` — `GET /finance/accounts`, `GET /finance/accounts/{id}`, `POST`, `PATCH /{id}`, `DELETE /{id}`, `GET /finance/accounts/net-worth` — 3h
+- [x] T1168 [US1] Implement `CsvImportService` using CsvHelper — bank format registry, `ImportAsync` with batch ID, description normalisation, balance update — 5h
+- [x] T1169 [US1] Create bank format adapters in `CsvImportService`: Barclays, Monzo, Starling, Lloyds, HSBC, NatWest, Generic — 4h
+- [x] T1170 [US1] Implement duplicate detection — exact match on AccountId + TransactionDate + Amount + OriginalDescription; flag `isDuplicate`, include in result count — 3h
+- [x] T1171 [US1] Implement `TransactionService` — CRUD, full-text search (description/payee/reference), filtering (accountId, dateRange, categoryId, type), pagination ordered by date desc — 5h
+- [x] T1172 [US1] Implement `TransactionsController` — `GET /finance/transactions`, `GET /{id}`, `POST`, `PATCH /{id}`, `DELETE /{id}`, `POST /import`, `GET /import/formats` — 3h
 
 ### Tests (Days 7–8)
 
-- [ ] T1173 [US1] Write unit tests for `CsvImportService` with real sample CSV files for all 7 formats (18+ tests) — 3h
-- [ ] T1174 [US1] Write unit tests for `AccountService` + `TransactionService` (15+ tests) — 3h
-- [ ] T1175 [US1] Write integration tests for accounts and transactions controllers (12+ tests) — 3h
+- [x] T1173 [US1] Write unit tests for `CsvImportService` — all 7 bank formats, duplicate detection, balance updates, description normalisation, batch ID (18 tests) — 3h
+- [x] T1174 [US1] Write unit tests for `AccountService` + `TransactionService` (15+ tests) — 3h
+- [x] T1175 [US1] Write integration tests for accounts and transactions controllers (12+ tests) — 3h
 
 ### Frontend (Week 2)
 
-- [ ] T1176 [P] [US1] Create Finance TypeScript interfaces (`Account`, `Transaction`, `Category`, `ImportResult`, `ImportBatch`) in `apps/web/src/types/finance.ts` — 2h
-- [ ] T1177 [P] [US1] Create `financeApiClient` (axios instance pointing to finance-api base URL from env var `VITE_FINANCE_API_URL`); create `accountService` + `transactionService` — 2h
-- [ ] T1178 [US1] Create `CsvImport` component — drag-and-drop upload, bank format auto-detection display, generic column-mapping fallback UI, duplicate review step — 6h
-- [ ] T1179 [US1] Create `TransactionList` component — filterable/sortable/paginated data table; category colour chips; search bar; bulk recategorise — 5h
-- [ ] T1180 [US1] Create `AccountsDashboard` component — account cards (type, balance, institution), net worth total, "Add Account" action — 4h
-- [ ] T1181 [US1] Write Jest tests for `CsvImport`, `TransactionList`, `AccountsDashboard` (10+ tests) — 2h
+- [x] T1176 [P] [US1] Create Finance TypeScript interfaces (`Account`, `AccountSummary`, `Transaction`, `Category`, `CsvImportResult`, `PagedResult`, `NetWorthResponse`) in `apps/web/src/types/finance.ts` — 2h
+- [x] T1177 [P] [US1] Create `financeApiClient` (axios instance, `VITE_FINANCE_API_URL`, JWT interceptor); create `accountsService` + `transactionsService` — 2h
+- [x] T1178 [US1] Create `CsvImport` component — drag-and-drop upload zone, bank format selector, import result summary (imported/duplicates/errors) — 6h
+- [x] T1179 [US1] Create `TransactionList` component — paginated list with reviewed indicator, recurring/duplicate badges, category chip, amount colour-coded — 5h
+- [x] T1180 [US1] Create `AccountsDashboard` component — net worth card, account list with type icons and balances, "Add account" action — 4h
+- [x] T1181 [US1] Write Jest tests for `CsvImport` (6), `TransactionList` (8), `AccountsDashboard` (6) — total 20 tests — 2h
 
-**Checkpoint**: Users can create accounts, import CSV from 7 UK bank formats, view categorised transaction list with search/filter
+### Phase 41 Additions (not in original spec — added 2026-06-08)
+
+- [x] T1182a [US1] Create `AccountForm` component — name, type selector, institution, initial balance, excludeFromNetWorth toggle — 3h
+- [x] T1182b [US1] Write Jest tests for `AccountForm` (6 tests) — 1h
+- [x] T1182c [US1] Create `TransactionFilters` component — search, date range, category selector, type selector — 3h
+- [x] T1182d [US1] Create `TransactionDetailPanel` component — modal; shows full details; edit category/notes; marks as reviewed — 4h
+- [x] T1182e [US1] Write Jest tests for `TransactionFilters` (6) + `TransactionDetailPanel` (5) — total 11 tests — 2h
+- [x] T1182f [US1] Add Accounts + Transactions tabs to `FinancePage` — Accounts: AccountsDashboard + AccountForm; Transactions: account selector → TransactionFilters + TransactionList + TransactionDetailPanel + CsvImport — 4h
+
+### Merchant Normalisation (new — 2026-06-08)
+
+- [x] T1290 [P] [US1] Define `IMerchantNormalisationService`; implement `MerchantNormalisationService` with 50+ UK merchant patterns; case-insensitive matching; populate `Payee` field — 4h
+- [x] T1291 [US1] Integrate `MerchantNormalisationService` into `CsvImportService.ImportAsync()` — sets `Payee` when match found — 1h
+- [x] T1292 [US1] Register `IMerchantNormalisationService` as singleton in `Program.cs` — 0.5h
+- [x] T1293 [US1] Write unit tests for `MerchantNormalisationService` (27 tests) — 2h
+
+### Category Rules Engine (new — 2026-06-08)
+
+- [x] T1294 [P] [US1] Define `CategoryRule` entity (UserId, Pattern, MatchType: Contains/StartsWith/Exact, CategoryId, Priority, IsActive, AppliedCount) — 2h
+- [x] T1295 [US1] Create EF Core migration `AddCategoryRules` for `category_rules` table — 1h
+- [x] T1296 [US1] Implement `CategoryRulesService` — CRUD, `ApplyRuleAsync`, `ApplyRulesToAllUnreviewedAsync` — 4h
+- [x] T1297 [US1] Implement `CategoryRulesController` — `GET /finance/category-rules`, `POST`, `PATCH /{id}`, `DELETE /{id}`, `POST /apply-all` — 3h
+- [x] T1298 [US1] Register `ICategoryRulesService` in `Program.cs` — 0.5h
+- [x] T1299 [US1] Write unit tests for `CategoryRulesService` (12 tests) — 3h
+- [x] T1300 [US1] Write integration tests for `CategoryRulesController` (7 tests) — 2h
+- [ ] T1301 [US1] Create `CategoryRulesManager` frontend component — rules list table (pattern, match type, category, applied count), toggle active, delete, "Create rule" form — 4h
+- [ ] T1302 [US1] Write Jest tests for `CategoryRulesManager` (4+ tests) — 1h
+
+### Sinking Funds (new — 2026-06-08, deferred to Phase 42 extension)
+
+- [ ] T1303 [P] [US2] Add `SinkingFund` to `PotType` enum; add nullable `AnnualAmount` (decimal?) and `NextPaymentDate` (DateOnly?) to `SpendingPot` entity; create migration — 2h
+- [ ] T1304 [US2] Update `SpendingPotService` — when `Type == SinkingFund`, derive `MonthlyAllocation = AnnualAmount / 12`; expose `MonthsRemaining` and `IsReady` in the progress DTO — 3h
+- [ ] T1305 [US2] Create `SinkingFundCard` frontend component — annual amount, monthly allocation, progress bar (accumulated/target), countdown, "Ready" badge — 3h
+- [ ] T1306 [US2] Write unit tests for sinking fund logic in `SpendingPotService` (4+ tests) and Jest tests for `SinkingFundCard` (3+ tests) — 2h
+
+### Payday-Aware Budgeting Period (new — 2026-06-08, deferred to Phase 45)
+
+- [ ] T1307 [P] [US-UK] Define `UserFinanceSettings` entity (UserId unique, PaydayDay int?, BaseCurrency string) in `Features/Settings/Models/` — 2h
+- [ ] T1308 [US-UK] Create EF Core migration for `user_finance_settings` table — 1h
+- [ ] T1309 [US-UK] Implement `FinanceSettingsService` + `FinanceSettingsController` — `GET /finance/settings`, `PUT /finance/settings` — 3h
+- [ ] T1310 [US-UK] Implement `PayPeriodCalculator` static helper — `GetCurrentPeriod(paydayDay?)` returns `(DateOnly From, DateOnly To)`, handles month boundary crossing — 2h
+- [ ] T1311 [US-UK] Integrate `PayPeriodCalculator` into `BudgetService.GetCurrentBudgetsAsync()` — use pay period when PaydayDay is configured — 2h
+- [ ] T1312 [US-UK] Create `FinanceSettings` frontend component — payday day selector (1–28 or "use calendar month"), base currency selector — 2h
+- [ ] T1313 [US-UK] Write unit tests for `PayPeriodCalculator` — payday in same month, payday crosses month end, no payday setting (6+ tests) — 2h
+
+**Checkpoint**: Users can create accounts, import CSV from 7 UK bank formats, view categorised transaction list with search/filter; merchant names are normalised; category rules auto-assign on import
 
 ---
 

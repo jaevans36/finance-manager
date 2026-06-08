@@ -2,6 +2,7 @@ using FinanceApi.Features.Accounts.Models;
 using FinanceApi.Features.Bills.Models;
 using FinanceApi.Features.Budgets.Models;
 using FinanceApi.Features.Categories.Models;
+using FinanceApi.Features.CategoryRules.Models;
 using FinanceApi.Features.SavingsGoals.Models;
 using FinanceApi.Features.Transactions.Models;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,7 @@ public class FinanceDbContext : DbContext
     public DbSet<SpendingPot> SpendingPots => Set<SpendingPot>();
     public DbSet<Bill> Bills => Set<Bill>();
     public DbSet<SavingsGoal> SavingsGoals => Set<SavingsGoal>();
+    public DbSet<CategoryRule> CategoryRules => Set<CategoryRule>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -163,6 +165,19 @@ public class FinanceDbContext : DbContext
             entity.Property(g => g.MonthlyContribution).HasPrecision(18, 4);
             entity.Property(g => g.Status).HasConversion<string>().HasMaxLength(20);
             entity.HasIndex(g => g.UserId);
+        });
+
+        // ── CategoryRule ─────────────────────────────────────────────────────
+        modelBuilder.Entity<CategoryRule>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+            entity.Property(r => r.Pattern).HasMaxLength(200).IsRequired();
+            entity.Property(r => r.MatchType).HasConversion<string>().HasMaxLength(20);
+            entity.HasIndex(r => r.UserId);
+            entity.HasOne(r => r.Category)
+                  .WithMany()
+                  .HasForeignKey(r => r.CategoryId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         // ── Seed system categories ───────────────────────────────────────────

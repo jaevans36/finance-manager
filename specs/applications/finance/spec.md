@@ -582,6 +582,203 @@ For each detected recurring payment, display:
 
 ---
 
+## Merchant Normalisation
+
+Bank CSV exports contain noisy, machine-generated descriptions: `AMZN*1X2Y3Z LUXEMBOURG`, `TFL TRAVEL CH 000001`, `PAYPAL *EBAY`. Merchant normalisation transforms these into clean, human-readable names before any other processing.
+
+### Normalisation Pipeline
+
+Each imported transaction passes through two stages:
+
+1. **Prefix stripping** — remove common UK bank prefixes (`PURCHASE`, `CONTACTLESS`, `FASTER PAYMENT`, `BACS CREDIT`, `DD`)
+2. **Merchant lookup** — match the stripped description against a curated pattern dictionary and replace with the canonical merchant name
+
+The normalised name is stored in the `Payee` field. The original bank text is always preserved in `OriginalDescription`.
+
+### Merchant Pattern Dictionary (initial set)
+
+The dictionary maps regex patterns to canonical names, grouped by category:
+
+| Pattern | Canonical Name | Category |
+|---|---|---|
+| `AMZN\*`, `AMAZON` | Amazon | Shopping |
+| `NETFLIX` | Netflix | Subscriptions |
+| `SPOTIFY` | Spotify | Subscriptions |
+| `APPLE\.COM`, `APPLE STORE`, `ITUNES` | Apple | Subscriptions |
+| `GOOGLE \*`, `GOOGLE PAY` | Google | Subscriptions |
+| `DISNEY\+`, `DISNEY PLUS` | Disney+ | Subscriptions |
+| `TFL TRAVEL`, `TFL\.GOV` | Transport for London | Transport |
+| `UBER \*`, `UBEREATS` | Uber | Transport |
+| `DELIVEROO` | Deliveroo | Eating Out |
+| `JUST EAT` | Just Eat | Eating Out |
+| `TESCO` | Tesco | Groceries |
+| `SAINSBURY` | Sainsbury's | Groceries |
+| `ASDA` | ASDA | Groceries |
+| `LIDL` | Lidl | Groceries |
+| `ALDI` | Aldi | Groceries |
+| `MORRISONS` | Morrisons | Groceries |
+| `WAITROSE` | Waitrose | Groceries |
+| `MARKS AND SPENCER`, `M&S` | Marks & Spencer | Shopping |
+| `COSTA` | Costa Coffee | Eating Out |
+| `STARBUCKS` | Starbucks | Eating Out |
+| `PRET A MANGER`, `PRET` | Pret A Manger | Eating Out |
+| `MCDONALD` | McDonald's | Eating Out |
+| `BP`, `BP\*` | BP | Fuel |
+| `SHELL` | Shell | Fuel |
+| `ESSO` | Esso | Fuel |
+| `EDF ENERGY`, `EDF` | EDF Energy | Utilities |
+| `BRITISH GAS` | British Gas | Utilities |
+| `OCTOPUS ENERGY` | Octopus Energy | Utilities |
+| `VIRGIN MEDIA` | Virgin Media | Utilities |
+| `SKY` | Sky | Utilities |
+| `BT GROUP`, `BT\.COM` | BT | Utilities |
+| `PAYPAL \*` | PayPal (+ merchant suffix) | Shopping |
+| `ETSY` | Etsy | Shopping |
+| `EBAY` | eBay | Shopping |
+| `HMRC` | HMRC | Tax |
+| `DVLA` | DVLA | Transport |
+
+### User Override
+
+When a user corrects a `Payee` name on a transaction, they are offered the option to:
+
+- Update this transaction only
+- Update all transactions from the same original description pattern
+- Create a permanent rule (see Category Rules Engine below)
+
+---
+
+## Category Rules Engine
+
+Users should not have to manually categorise every imported transaction. The rules engine learns from the transaction data and the user's corrections to auto-assign categories.
+
+### How Rules Work
+
+A `CategoryRule` specifies: given a transaction whose `Payee` (or `Description`) **contains** / **starts with** / **exactly matches** a pattern, assign it to a specific category.
+
+Rules are applied in priority order after merchant normalisation, before the transaction is saved. The first matching rule wins.
+
+### Rule Sources
+
+Rules are created from three places:
+
+1. **Automatic from merchant normalisation** — when a merchant is in the normalisation dictionary, a rule is auto-suggested for that merchant's canonical category (e.g. Tesco → Groceries). User can accept or dismiss.
+2. **Manual correction** — when a user recategorises a transaction, they are offered: "Always categorise [Merchant] as [Category]?" Accepting creates a rule.
+3. **User-defined** — user can create rules manually via the Category Rules Manager UI.
+
+### Rule Entity
+
+```
+CategoryRule:
+  id, userId
+  pattern (string — the merchant name or substring to match)
+  matchType (Contains | StartsWith | Exact)
+  categoryId (FK → categories)
+  priority (integer — lower = higher priority)
+  isActive (bool)
+  appliedCount (int — times applied, for UI display)
+  createdAt, updatedAt
+```
+
+### Category Rules Manager (UI)
+
+A dedicated settings panel listing all user rules:
+
+- Rule pattern, match type, assigned category, times applied
+- Toggle active/inactive
+- Delete rule
+- Drag to reorder (priority)
+- "Apply rules to existing transactions" — retrospectively apply all rules to unreviewed transactions
+
+### Integration Points
+
+- `CsvImportService.ImportAsync()` — applies rules after normalisation, before saving
+- `TransactionService.UpdateTransactionAsync()` — when category changes, prompt to create rule
+- `GET /finance/category-rules` — list rules
+- `POST /finance/category-rules` — create rule
+- `PATCH /finance/category-rules/{id}` — update (toggle active, change priority)
+- `DELETE /finance/category-rules/{id}` — delete rule
+- `POST /finance/category-rules/apply-all` — apply all active rules to unreviewed transactions
+
+---
+
+## Sinking Funds
+
+A sinking fund is the financial planning concept of setting aside a fixed monthly amount for a large irregular expense — spreading the cost so it doesn't feel like a financial shock when it arrives.
+
+**Examples**: Annual car insurance (£600 → £50/month), MOT + service (£400 → £33/month), boiler service (£120 → £10/month), Christmas spending (£500 → £42/month).
+
+### Sinking Fund as a Pot Type
+
+The `SpendingPot` entity supports a `SinkingFund` pot type with additional fields:
+
+- `AnnualAmount` — the full annual cost being spread
+- `NextPaymentDate` — when the lump sum will next be needed (e.g. insurance renewal)
+- `MonthlyAllocation = AnnualAmount / 12` (derived)
+- `AccumulatedAmount` — total set aside so far this cycle
+- `MonthsRemaining` — until the next payment date
+
+### Sinking Fund Behaviour
+
+- Contributions are tracked manually (user taps "Set aside this month's allocation")
+- OR automatically deducted from disposable income calculation (Phase 44+)
+- When `AccumulatedAmount >= AnnualAmount`, the fund shows "Ready" status
+- After the payment date passes, the fund resets for the next cycle
+
+### Display
+
+Sinking fund cards show:
+
+- Annual amount and monthly allocation
+- Progress bar: accumulated vs target
+- Countdown: "Ready in N months" or "Ready"
+- Next payment date
+
+---
+
+## Payday-Aware Budgeting Period
+
+Most budget apps reset on the 1st of the month. This is wrong for most people — if you're paid on the 25th, your "month" runs 25th → 24th, and a calendar-month reset means the first 24 days of your budget are already half-spent before you even get paid.
+
+### User Setting
+
+Users can configure a `PaydayDay` (1–28) in Finance Settings. When set:
+
+- All budget calculations switch from "calendar month" to "pay period" (last PaydayDay → next PaydayDay)
+- The budget overview header shows the pay period dates: "25 May – 24 Jun"
+- The days-remaining counter counts to the next payday, not the end of the calendar month
+- Historical budgets remain aligned to the pay period they belonged to
+
+### Calculation Logic
+
+```
+if PaydayDay is set:
+    periodStart = most recent occurrence of PaydayDay (inclusive)
+    periodEnd   = next occurrence of PaydayDay (exclusive)
+else:
+    periodStart = first day of calendar month
+    periodEnd   = last day of calendar month
+```
+
+When today IS the payday, the new period starts today.
+
+### Finance Settings Entity
+
+```
+UserFinanceSettings:
+  id, userId (unique)
+  paydayDay (int? — null = use calendar month, 1–28 = use pay period)
+  baseCurrency (string — ISO 4217, default "GBP")
+  createdAt, updatedAt
+```
+
+Finance Settings are accessed via:
+
+- `GET /finance/settings` — get current user's settings
+- `PUT /finance/settings` — update settings
+
+---
+
 ## AI Agent Features
 
 ### Subscription Auditor

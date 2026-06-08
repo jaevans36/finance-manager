@@ -34,7 +34,7 @@ public class CsvImportServiceTests : IDisposable
         });
         _db.SaveChanges();
 
-        _sut = new CsvImportService(_db);
+        _sut = new CsvImportService(_db, new MerchantNormalisationService());
     }
 
     public void Dispose() => _db.Dispose();

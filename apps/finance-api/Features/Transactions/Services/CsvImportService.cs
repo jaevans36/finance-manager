@@ -14,6 +14,7 @@ namespace FinanceApi.Features.Transactions.Services;
 public class CsvImportService : ICsvImportService
 {
     private readonly FinanceDbContext _db;
+    private readonly IMerchantNormalisationService _merchantNormaliser;
 
     private static readonly HashSet<string> SupportedFormats = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -26,9 +27,10 @@ public class CsvImportService : ICsvImportService
         "generic"
     };
 
-    public CsvImportService(FinanceDbContext db)
+    public CsvImportService(FinanceDbContext db, IMerchantNormalisationService merchantNormaliser)
     {
         _db = db;
+        _merchantNormaliser = merchantNormaliser;
     }
 
     public IEnumerable<string> GetSupportedFormats() => SupportedFormats;
@@ -64,6 +66,9 @@ public class CsvImportService : ICsvImportService
                 t.OriginalDescription == row.Description,
                 ct);
 
+            var stripped = NormaliseDescription(row.Description);
+            var payee = _merchantNormaliser.Normalise(stripped);
+
             var transaction = new Transaction
             {
                 UserId = userId,
@@ -73,7 +78,8 @@ public class CsvImportService : ICsvImportService
                 Amount = Math.Abs(row.Amount),
                 BaseCurrencyAmount = Math.Abs(row.Amount),
                 Currency = "GBP",
-                Description = NormaliseDescription(row.Description),
+                Description = stripped,
+                Payee = payee != stripped ? payee : null,
                 OriginalDescription = row.Description,
                 Reference = row.Reference,
                 TransactionDate = row.TransactionDate,
