@@ -1,3 +1,6 @@
+# AI brainstorming session files
+.superpowers/
+
 # Dependencies
 node_modules/
 .pnp
