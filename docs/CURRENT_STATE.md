@@ -32,6 +32,7 @@ The Life Manager productivity application is MVP-complete and ready for v1.0.0 r
 - **Health check** — `GET /api/health` with DB connectivity
 - **Data export** — `GET /api/v1/auth/export-data` downloads all user data as JSON
 - **Production setup** — `.env.example`, backup/restore scripts, `PRODUCTION-SETUP.md`
+- **Dev password reset bypass** — `/dev/reset-password` page and `POST /api/v1/dev/reset-password` endpoint, double-gated by environment + config flag; see `docs/guides/DEV-PASSWORD-RESET.md`
 
 ### Technical Foundation (Complete)
 

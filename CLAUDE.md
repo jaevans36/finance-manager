@@ -91,6 +91,7 @@
 .\scripts\setup-backup-schedule.ps1      # Register daily 02:00 Windows Scheduled Task
 .\scripts\safe-db-reset.ps1              # Backup first, THEN docker-compose down -v
 .\scripts\reset-user-password.ps1 -Email "..." -NewPassword "..."  # Reset a user's password
+# Dev UI bypass: enable DevFeatures:AllowDirectPasswordReset + VITE_ENABLE_DEV_RESET, visit /dev/reset-password. See docs/guides/DEV-PASSWORD-RESET.md
 ```
 
 > **NEVER suggest `docker-compose down -v` directly.** That destroys the Docker volume and all user data with no warning. Always use `.\scripts\safe-db-reset.ps1` instead — it backs up first. See `docs/guides/BACKUP-RESTORE.md` for full restore procedures.
