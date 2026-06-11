@@ -12,7 +12,13 @@ public record AccountSummary(
     string? Colour,
     string? Icon,
     bool IsActive,
-    bool ExcludeFromNetWorth
+    bool ExcludeFromNetWorth,
+    decimal? CreditLimit = null,
+    decimal? InterestRate = null,
+    decimal? PromotionalBalance = null,
+    decimal? PromotionalRate = null,
+    DateOnly? PromotionalExpiry = null,
+    decimal? PromotionalRevertRate = null
 );
 
 public record CreateAccountRequest(
@@ -25,7 +31,13 @@ public record CreateAccountRequest(
     string? Colour,
     string? Icon,
     bool ExcludeFromNetWorth,
-    string? Notes
+    string? Notes,
+    decimal? CreditLimit = null,
+    decimal? InterestRate = null,
+    decimal? PromotionalBalance = null,
+    decimal? PromotionalRate = null,
+    DateOnly? PromotionalExpiry = null,
+    decimal? PromotionalRevertRate = null
 );
 
 public record UpdateAccountRequest(
@@ -39,7 +51,13 @@ public record UpdateAccountRequest(
     string? Colour,
     string? Icon,
     bool? ExcludeFromNetWorth,
-    string? Notes
+    string? Notes,
+    decimal? CreditLimit = null,
+    decimal? InterestRate = null,
+    decimal? PromotionalBalance = null,
+    decimal? PromotionalRate = null,
+    DateOnly? PromotionalExpiry = null,
+    decimal? PromotionalRevertRate = null
 );
 
 public interface IAccountService

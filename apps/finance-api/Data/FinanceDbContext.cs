@@ -48,6 +48,11 @@ public class FinanceDbContext : DbContext
             entity.Property(a => a.Type)
                   .HasConversion<string>()
                   .HasMaxLength(50);
+            entity.Property(a => a.CreditLimit).HasPrecision(18, 4);
+            entity.Property(a => a.InterestRate).HasPrecision(6, 3);
+            entity.Property(a => a.PromotionalBalance).HasPrecision(18, 4);
+            entity.Property(a => a.PromotionalRate).HasPrecision(6, 3);
+            entity.Property(a => a.PromotionalRevertRate).HasPrecision(6, 3);
 
             entity.HasIndex(a => a.UserId);
 

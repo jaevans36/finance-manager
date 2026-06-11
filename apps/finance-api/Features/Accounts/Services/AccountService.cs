@@ -21,7 +21,9 @@ public class AccountService : IAccountService
             .OrderBy(a => a.Name)
             .Select(a => new AccountSummary(
                 a.Id, a.Name, a.Type, a.Currency, a.Balance,
-                a.Institution, a.Colour, a.Icon, a.IsActive, a.ExcludeFromNetWorth))
+                a.Institution, a.Colour, a.Icon, a.IsActive, a.ExcludeFromNetWorth,
+                a.CreditLimit, a.InterestRate, a.PromotionalBalance,
+                a.PromotionalRate, a.PromotionalExpiry, a.PromotionalRevertRate))
             .ToListAsync(ct);
     }
 
@@ -45,7 +47,13 @@ public class AccountService : IAccountService
             Colour = request.Colour,
             Icon = request.Icon,
             ExcludeFromNetWorth = request.ExcludeFromNetWorth,
-            Notes = request.Notes
+            Notes = request.Notes,
+            CreditLimit = request.CreditLimit,
+            InterestRate = request.InterestRate,
+            PromotionalBalance = request.PromotionalBalance,
+            PromotionalRate = request.PromotionalRate,
+            PromotionalExpiry = request.PromotionalExpiry,
+            PromotionalRevertRate = request.PromotionalRevertRate,
         };
 
         _db.Accounts.Add(account);
@@ -71,6 +79,12 @@ public class AccountService : IAccountService
         if (request.Icon is not null) account.Icon = request.Icon;
         if (request.ExcludeFromNetWorth is not null) account.ExcludeFromNetWorth = request.ExcludeFromNetWorth.Value;
         if (request.Notes is not null) account.Notes = request.Notes;
+        if (request.CreditLimit is not null) account.CreditLimit = request.CreditLimit;
+        if (request.InterestRate is not null) account.InterestRate = request.InterestRate;
+        if (request.PromotionalBalance is not null) account.PromotionalBalance = request.PromotionalBalance;
+        if (request.PromotionalRate is not null) account.PromotionalRate = request.PromotionalRate;
+        if (request.PromotionalExpiry is not null) account.PromotionalExpiry = request.PromotionalExpiry;
+        if (request.PromotionalRevertRate is not null) account.PromotionalRevertRate = request.PromotionalRevertRate;
         account.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync(ct);

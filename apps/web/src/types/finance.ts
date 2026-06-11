@@ -19,7 +19,16 @@ export type TransactionType = 'Debit' | 'Credit' | 'Transfer';
 export type ImportSource = 'Manual' | 'CsvImport' | 'BankSync';
 export type BankFormat = 'barclays' | 'hsbc' | 'lloyds' | 'monzo' | 'starling' | 'natwest' | 'generic';
 
-export interface Account {
+export interface CreditDetail {
+  creditLimit?: number;
+  interestRate?: number;
+  promotionalBalance?: number;
+  promotionalRate?: number;
+  promotionalExpiry?: string;   // DateOnly serialised as "YYYY-MM-DD"
+  promotionalRevertRate?: number;
+}
+
+export interface Account extends CreditDetail {
   id: string;
   userId: string;
   name: string;
@@ -37,7 +46,7 @@ export interface Account {
   updatedAt: string;
 }
 
-export interface AccountSummary {
+export interface AccountSummary extends CreditDetail {
   id: string;
   name: string;
   type: AccountType;
@@ -50,7 +59,7 @@ export interface AccountSummary {
   excludeFromNetWorth: boolean;
 }
 
-export interface CreateAccountRequest {
+export interface CreateAccountRequest extends CreditDetail {
   name: string;
   type: AccountType;
   currency: string;
@@ -63,7 +72,7 @@ export interface CreateAccountRequest {
   notes?: string;
 }
 
-export interface UpdateAccountRequest {
+export interface UpdateAccountRequest extends CreditDetail {
   name?: string;
   type?: AccountType;
   currency?: string;

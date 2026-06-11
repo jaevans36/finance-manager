@@ -62,6 +62,26 @@ public class Account
 
     public string? Notes { get; set; }
 
+    // ── Credit & loan detail ──────────────────────────────────────────────────
+
+    /// <summary>Credit limit for Credit accounts; overdraft limit for Checking accounts.</summary>
+    public decimal? CreditLimit { get; set; }
+
+    /// <summary>Standard interest rate as a percentage (e.g. 24.9 for 24.9% APR).</summary>
+    public decimal? InterestRate { get; set; }
+
+    /// <summary>Amount currently on a promotional/0% rate deal.</summary>
+    public decimal? PromotionalBalance { get; set; }
+
+    /// <summary>Rate applied to the promotional balance (typically 0 for 0% deals).</summary>
+    public decimal? PromotionalRate { get; set; }
+
+    /// <summary>Date the promotional deal or fixed rate expires.</summary>
+    public DateOnly? PromotionalExpiry { get; set; }
+
+    /// <summary>Rate the promotional balance reverts to after the deal expires.</summary>
+    public decimal? PromotionalRevertRate { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

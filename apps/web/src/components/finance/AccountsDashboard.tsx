@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Wallet, TrendingUp, CreditCard, PiggyBank, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Wallet, TrendingUp, CreditCard, PiggyBank, Plus, Pencil, Trash2, AlertTriangle } from 'lucide-react';
 import { accountsService } from '../../services/accounts-service';
 import type { AccountSummary, AccountType } from '../../types/finance';
 import { cn } from '../../lib/utils';
@@ -34,6 +34,103 @@ function formatBalance(amount: number, currency: string): string {
     currency,
     minimumFractionDigits: 2,
   }).format(amount);
+}
+
+function formatRate(rate: number): string {
+  return `${rate.toFixed(rate % 1 === 0 ? 0 : 1)}%`;
+}
+
+function daysUntil(dateStr: string): number {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const expiry = new Date(dateStr);
+  return Math.round((expiry.getTime() - today.getTime()) / 86_400_000);
+}
+
+function formatExpiryDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function CreditDetail({ account }: { account: AccountSummary }) {
+  if (account.type !== 'Credit' && account.type !== 'Checking' && account.type !== 'Mortgage' && account.type !== 'Loan') {
+    return null;
+  }
+  if (!account.creditLimit && !account.interestRate && !account.promotionalBalance && !account.promotionalExpiry) {
+    return null;
+  }
+
+  const owed = Math.abs(account.balance);
+  const available = account.creditLimit != null ? account.creditLimit - owed : null;
+  const promoBalance = account.promotionalBalance ?? 0;
+  const standardBalance = Math.max(0, owed - promoBalance);
+  const expiryDays = account.promotionalExpiry ? daysUntil(account.promotionalExpiry) : null;
+  const expiryWarning = expiryDays != null && expiryDays <= 90;
+  const expiryExpired = expiryDays != null && expiryDays < 0;
+
+  return (
+    <div className="px-4 pb-3 space-y-1.5 border-t border-gray-100 dark:border-gray-700/60 pt-2 mt-0.5">
+
+      {/* Promotional balance row */}
+      {promoBalance > 0 && account.promotionalExpiry && (
+        <div className="flex items-start gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+          {expiryWarning && !expiryExpired && (
+            <AlertTriangle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+          )}
+          <span>
+            {formatBalance(promoBalance, account.currency)} at {formatRate(account.promotionalRate ?? 0)}
+            {' '}until{' '}
+            <span className={cn(expiryWarning && !expiryExpired && 'text-amber-600 dark:text-amber-400 font-medium')}>
+              {formatExpiryDate(account.promotionalExpiry)}
+            </span>
+            {expiryWarning && !expiryExpired && (
+              <span className="text-amber-600 dark:text-amber-400">
+                {' '}({expiryDays === 0 ? 'expires today' : `${expiryDays}d remaining`})
+              </span>
+            )}
+            {expiryExpired && <span className="text-red-500"> (expired)</span>}
+            {account.promotionalRevertRate != null && (
+              <span className="text-gray-400"> → reverts to {formatRate(account.promotionalRevertRate)}</span>
+            )}
+          </span>
+        </div>
+      )}
+
+      {/* Standard/purchase balance row */}
+      {standardBalance > 0 && account.interestRate != null && (
+        <p className="text-xs text-gray-600 dark:text-gray-400">
+          {formatBalance(standardBalance, account.currency)} at {formatRate(account.interestRate)} APR
+        </p>
+      )}
+
+      {/* Interest rate only (no balance breakdown) — loans, mortgages */}
+      {promoBalance === 0 && account.interestRate != null && account.type !== 'Credit' && (
+        <p className="text-xs text-gray-600 dark:text-gray-400">
+          {account.type === 'Mortgage' ? 'Fixed rate' : 'Interest rate'}: {formatRate(account.interestRate)}
+          {account.promotionalExpiry && (
+            <>
+              {' '}· expires{' '}
+              <span className={cn(expiryWarning && !expiryExpired && 'text-amber-600 dark:text-amber-400 font-medium')}>
+                {formatExpiryDate(account.promotionalExpiry)}
+              </span>
+              {expiryWarning && !expiryExpired && (
+                <span className="text-amber-600 dark:text-amber-400"> ({expiryDays}d)</span>
+              )}
+            </>
+          )}
+        </p>
+      )}
+
+      {/* Available credit */}
+      {available != null && (
+        <p className="text-xs text-gray-600 dark:text-gray-400">
+          <span className={cn('font-medium', available <= 0 ? 'text-red-500' : 'text-green-600 dark:text-green-400')}>
+            {formatBalance(Math.max(0, available), account.currency)} available
+          </span>
+          {' '}of {formatBalance(account.creditLimit!, account.currency)} limit
+        </p>
+      )}
+    </div>
+  );
 }
 
 interface AccountsDashboardProps {
@@ -84,6 +181,11 @@ export function AccountsDashboard({ onAccountSelect, onAddAccount, onEdit }: Acc
     }
   };
 
+  // Count how many accounts have expiring deals within 90 days
+  const expiringCount = accounts.filter(a =>
+    a.promotionalExpiry && daysUntil(a.promotionalExpiry) >= 0 && daysUntil(a.promotionalExpiry) <= 90
+  ).length;
+
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -114,6 +216,18 @@ export function AccountsDashboard({ onAccountSelect, onAddAccount, onEdit }: Acc
         </div>
       )}
 
+      {/* Expiry warning banner */}
+      {expiringCount > 0 && (
+        <div className="flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-4 py-2.5 text-sm text-amber-800 dark:text-amber-300">
+          <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+          <span>
+            {expiringCount === 1
+              ? '1 promotional deal expires within 90 days'
+              : `${expiringCount} promotional deals expire within 90 days`}
+          </span>
+        </div>
+      )}
+
       {/* Account list */}
       <div className="space-y-2">
         {accounts.map((account) => {
@@ -133,7 +247,7 @@ export function AccountsDashboard({ onAccountSelect, onAddAccount, onEdit }: Acc
                 >
                   <div
                     className="flex h-9 w-9 items-center justify-center rounded-full flex-shrink-0"
-                    style={{ backgroundColor: account.colour ?? '#3B82F6' + '20' }}
+                    style={{ backgroundColor: (account.colour ?? '#3B82F6') + '20' }}
                   >
                     <Icon
                       className="h-4 w-4"
@@ -177,6 +291,9 @@ export function AccountsDashboard({ onAccountSelect, onAddAccount, onEdit }: Acc
                   </button>
                 </div>
               </div>
+
+              {/* Credit detail breakdown */}
+              <CreditDetail account={account} />
 
               {/* Inline delete confirmation */}
               {isConfirmingDelete && (
