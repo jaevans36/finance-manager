@@ -125,27 +125,45 @@ export function CsvImport({ accountId, onImportComplete }: CsvImportProps) {
 
       {/* Result */}
       {result && (
-        <div className="rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4 space-y-2">
+        <div className="rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4 space-y-3">
           <div className="flex items-center gap-2 text-green-600 dark:text-green-400 font-medium text-sm">
             <CheckCircle2 className="h-4 w-4" />
             Import complete
           </div>
-          <div className="grid grid-cols-3 gap-3 text-sm">
+          <div className="grid grid-cols-4 gap-2 text-sm">
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">{result.imported}</div>
               <div className="text-xs text-gray-500 dark:text-gray-400">Imported</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{result.duplicates}</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">Duplicates skipped</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">Duplicates</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{result.skipped ?? 0}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">Skipped</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600 dark:text-red-400">{result.errors}</div>
               <div className="text-xs text-gray-500 dark:text-gray-400">Errors</div>
             </div>
           </div>
+
+          {(result.skipMessages?.length ?? 0) > 0 && (
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-orange-700 dark:text-orange-400">Skipped rows:</p>
+              {result.skipMessages.map((msg, i) => (
+                <div key={i} className="flex items-start gap-1 text-xs text-orange-600 dark:text-orange-400">
+                  <Info className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                  <span>{msg}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
           {result.errorMessages.length > 0 && (
-            <div className="mt-2 space-y-1">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-red-700 dark:text-red-400">Errors:</p>
               {result.errorMessages.map((msg, i) => (
                 <div key={i} className="flex items-start gap-1 text-xs text-red-600 dark:text-red-400">
                   <Info className="h-3 w-3 flex-shrink-0 mt-0.5" />

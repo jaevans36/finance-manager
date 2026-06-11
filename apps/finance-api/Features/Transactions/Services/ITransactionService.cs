@@ -66,7 +66,9 @@ public record CsvImportResult(
     int Duplicates,
     int Errors,
     IEnumerable<string> ErrorMessages,
-    Guid BatchId
+    Guid BatchId,
+    int Skipped = 0,
+    IEnumerable<string>? SkipMessages = null
 );
 
 public interface ITransactionService

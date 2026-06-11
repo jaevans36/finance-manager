@@ -48,9 +48,10 @@ public class CsvImportService : ICsvImportService
         var duplicates = 0;
 
         List<ParsedCsvRow> rows;
+        List<string> skipMessages;
         try
         {
-            rows = ParseCsv(csvStream, bankFormat);
+            (rows, skipMessages) = ParseCsv(csvStream, bankFormat);
         }
         catch (Exception ex)
         {
@@ -110,10 +111,19 @@ public class CsvImportService : ICsvImportService
 
         await _db.SaveChangesAsync(ct);
 
-        return new CsvImportResult(imported, duplicates, errors.Count, errors, batchId);
+        // Cap skip messages at 20 to avoid overwhelming the response
+        const int MaxSkipMessages = 20;
+        var cappedSkips = skipMessages.Count > MaxSkipMessages
+            ? skipMessages.Take(MaxSkipMessages)
+                .Append($"… and {skipMessages.Count - MaxSkipMessages} more skipped row(s) not shown")
+                .ToList()
+            : skipMessages;
+
+        return new CsvImportResult(imported, duplicates, errors.Count, errors, batchId,
+            Skipped: skipMessages.Count, SkipMessages: cappedSkips);
     }
 
-    private List<ParsedCsvRow> ParseCsv(Stream stream, string format)
+    private (List<ParsedCsvRow> Rows, List<string> Skipped) ParseCsv(Stream stream, string format)
     {
         return format.ToLowerInvariant() switch
         {
@@ -130,18 +140,17 @@ public class CsvImportService : ICsvImportService
     // ── Bank-specific parsers ─────────────────────────────────────────────────
 
     /// <summary>
-    /// Barclays CSV: Date,Memo,Amount
-    /// Date format: DD/MM/YYYY
+    /// Barclays CSV: Date,Memo,Amount — date dd/MM/yyyy, signed amount.
     /// </summary>
-    private static List<ParsedCsvRow> ParseBarclays(Stream stream)
+    private static (List<ParsedCsvRow>, List<string>) ParseBarclays(Stream stream)
     {
         var rows = new List<ParsedCsvRow>();
+        var skipped = new List<string>();
+        var rowNum = 0;
         using var reader = new StreamReader(stream);
         using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
         {
-            HasHeaderRecord = true,
-            MissingFieldFound = null,
-            TrimOptions = TrimOptions.Trim
+            HasHeaderRecord = true, MissingFieldFound = null, TrimOptions = TrimOptions.Trim
         });
 
         csv.Read();
@@ -149,37 +158,35 @@ public class CsvImportService : ICsvImportService
 
         while (csv.Read())
         {
+            rowNum++;
             var dateStr = csv.GetField(0) ?? string.Empty;
             var description = csv.GetField(1) ?? string.Empty;
-            var amountStr = csv.GetField(2) ?? "0";
+            var amountStr = csv.GetField(2) ?? string.Empty;
 
-            if (!DateOnly.TryParseExact(dateStr, "dd/MM/yyyy", out var date)) continue;
-            if (!decimal.TryParse(amountStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount)) continue;
+            if (!DateOnly.TryParseExact(dateStr, "dd/MM/yyyy", out var date))
+            { skipped.Add($"Row {rowNum}: unrecognised date '{dateStr}' — expected dd/MM/yyyy"); continue; }
+            if (!decimal.TryParse(amountStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount))
+            { skipped.Add($"Row {rowNum}: could not parse amount '{amountStr}'"); continue; }
 
-            rows.Add(new ParsedCsvRow(
-                date,
-                description,
-                amount,
-                amount >= 0 ? TransactionType.Credit : TransactionType.Debit,
-                null));
+            rows.Add(new ParsedCsvRow(date, description, amount,
+                amount >= 0 ? TransactionType.Credit : TransactionType.Debit, null));
         }
 
-        return rows;
+        return (rows, skipped);
     }
 
     /// <summary>
-    /// Monzo CSV: Transaction ID,Date,Time,Type,Name,Emoji,Category,Amount,Currency,Local amount,Local currency,Notes and #tags,Address,Description,Receipt,Money Out,Money In
-    /// Date format: DD/MM/YYYY
+    /// Monzo CSV: Transaction ID,Date,…,Name,…,Amount,… — date dd/MM/yyyy, signed amount.
     /// </summary>
-    private static List<ParsedCsvRow> ParseMonzo(Stream stream)
+    private static (List<ParsedCsvRow>, List<string>) ParseMonzo(Stream stream)
     {
         var rows = new List<ParsedCsvRow>();
+        var skipped = new List<string>();
+        var rowNum = 0;
         using var reader = new StreamReader(stream);
         using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
         {
-            HasHeaderRecord = true,
-            MissingFieldFound = null,
-            TrimOptions = TrimOptions.Trim
+            HasHeaderRecord = true, MissingFieldFound = null, TrimOptions = TrimOptions.Trim
         });
 
         csv.Read();
@@ -187,38 +194,36 @@ public class CsvImportService : ICsvImportService
 
         while (csv.Read())
         {
+            rowNum++;
             var txId = csv.GetField("Transaction ID") ?? string.Empty;
             var dateStr = csv.GetField("Date") ?? string.Empty;
             var name = csv.GetField("Name") ?? string.Empty;
-            var amountStr = csv.GetField("Amount") ?? "0";
+            var amountStr = csv.GetField("Amount") ?? string.Empty;
 
-            if (!DateOnly.TryParseExact(dateStr, "dd/MM/yyyy", out var date)) continue;
-            if (!decimal.TryParse(amountStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount)) continue;
+            if (!DateOnly.TryParseExact(dateStr, "dd/MM/yyyy", out var date))
+            { skipped.Add($"Row {rowNum}: unrecognised date '{dateStr}' — expected dd/MM/yyyy"); continue; }
+            if (!decimal.TryParse(amountStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount))
+            { skipped.Add($"Row {rowNum}: could not parse amount '{amountStr}'"); continue; }
 
-            rows.Add(new ParsedCsvRow(
-                date,
-                name,
-                amount,
-                amount >= 0 ? TransactionType.Credit : TransactionType.Debit,
-                txId));
+            rows.Add(new ParsedCsvRow(date, name, amount,
+                amount >= 0 ? TransactionType.Credit : TransactionType.Debit, txId));
         }
 
-        return rows;
+        return (rows, skipped);
     }
 
     /// <summary>
-    /// Starling CSV: Date,Counter Party,Reference,Type,Amount (GBP),Balance (GBP)
-    /// Date format: DD/MM/YYYY
+    /// Starling CSV: Date,Counter Party,Reference,Type,Amount (GBP),Balance (GBP) — date dd/MM/yyyy.
     /// </summary>
-    private static List<ParsedCsvRow> ParseStarling(Stream stream)
+    private static (List<ParsedCsvRow>, List<string>) ParseStarling(Stream stream)
     {
         var rows = new List<ParsedCsvRow>();
+        var skipped = new List<string>();
+        var rowNum = 0;
         using var reader = new StreamReader(stream);
         using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
         {
-            HasHeaderRecord = true,
-            MissingFieldFound = null,
-            TrimOptions = TrimOptions.Trim
+            HasHeaderRecord = true, MissingFieldFound = null, TrimOptions = TrimOptions.Trim
         });
 
         csv.Read();
@@ -226,38 +231,36 @@ public class CsvImportService : ICsvImportService
 
         while (csv.Read())
         {
+            rowNum++;
             var dateStr = csv.GetField("Date") ?? string.Empty;
             var counterParty = csv.GetField("Counter Party") ?? string.Empty;
             var reference = csv.GetField("Reference") ?? string.Empty;
-            var amountStr = csv.GetField("Amount (GBP)") ?? "0";
+            var amountStr = csv.GetField("Amount (GBP)") ?? string.Empty;
 
-            if (!DateOnly.TryParseExact(dateStr, "dd/MM/yyyy", out var date)) continue;
-            if (!decimal.TryParse(amountStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount)) continue;
+            if (!DateOnly.TryParseExact(dateStr, "dd/MM/yyyy", out var date))
+            { skipped.Add($"Row {rowNum}: unrecognised date '{dateStr}' — expected dd/MM/yyyy"); continue; }
+            if (!decimal.TryParse(amountStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount))
+            { skipped.Add($"Row {rowNum}: could not parse amount '{amountStr}'"); continue; }
 
-            rows.Add(new ParsedCsvRow(
-                date,
-                counterParty,
-                amount,
-                amount >= 0 ? TransactionType.Credit : TransactionType.Debit,
-                reference));
+            rows.Add(new ParsedCsvRow(date, counterParty, amount,
+                amount >= 0 ? TransactionType.Credit : TransactionType.Debit, reference));
         }
 
-        return rows;
+        return (rows, skipped);
     }
 
     /// <summary>
-    /// Lloyds CSV: Transaction Date,Transaction Type,Sort Code,Account Number,Transaction Description,Debit Amount,Credit Amount,Balance
-    /// Date format: DD/MM/YYYY
+    /// Lloyds CSV: Transaction Date,…,Transaction Description,Debit Amount,Credit Amount,Balance — date dd/MM/yyyy.
     /// </summary>
-    private static List<ParsedCsvRow> ParseLloyds(Stream stream)
+    private static (List<ParsedCsvRow>, List<string>) ParseLloyds(Stream stream)
     {
         var rows = new List<ParsedCsvRow>();
+        var skipped = new List<string>();
+        var rowNum = 0;
         using var reader = new StreamReader(stream);
         using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
         {
-            HasHeaderRecord = true,
-            MissingFieldFound = null,
-            TrimOptions = TrimOptions.Trim
+            HasHeaderRecord = true, MissingFieldFound = null, TrimOptions = TrimOptions.Trim
         });
 
         csv.Read();
@@ -265,84 +268,78 @@ public class CsvImportService : ICsvImportService
 
         while (csv.Read())
         {
+            rowNum++;
             var dateStr = csv.GetField("Transaction Date") ?? string.Empty;
             var description = csv.GetField("Transaction Description") ?? string.Empty;
             var debitStr = csv.GetField("Debit Amount") ?? string.Empty;
             var creditStr = csv.GetField("Credit Amount") ?? string.Empty;
 
-            if (!DateOnly.TryParseExact(dateStr, "dd/MM/yyyy", out var date)) continue;
+            if (!DateOnly.TryParseExact(dateStr, "dd/MM/yyyy", out var date))
+            { skipped.Add($"Row {rowNum}: unrecognised date '{dateStr}' — expected dd/MM/yyyy"); continue; }
 
             decimal amount;
             TransactionType type;
 
             if (!string.IsNullOrWhiteSpace(creditStr) &&
                 decimal.TryParse(creditStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var credit))
-            {
-                amount = credit;
-                type = TransactionType.Credit;
-            }
+            { amount = credit; type = TransactionType.Credit; }
             else if (decimal.TryParse(debitStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var debit))
-            {
-                amount = debit;
-                type = TransactionType.Debit;
-            }
-            else continue;
+            { amount = debit; type = TransactionType.Debit; }
+            else
+            { skipped.Add($"Row {rowNum}: could not parse debit '{debitStr}' or credit '{creditStr}'"); continue; }
 
             rows.Add(new ParsedCsvRow(date, description, amount, type, null));
         }
 
-        return rows;
+        return (rows, skipped);
     }
 
     /// <summary>
-    /// HSBC UK CSV: no header row; columns are Date, Description, Amount (signed).
-    /// Date format: dd/MM/yyyy. Negative amount = debit, positive = credit.
+    /// HSBC UK CSV: no header row; Date / Description / SignedAmount — date dd/MM/yyyy.
     /// Amounts may be quoted with thousands separators, e.g. "-2,300.00".
     /// </summary>
-    private static List<ParsedCsvRow> ParseHsbc(Stream stream)
+    private static (List<ParsedCsvRow>, List<string>) ParseHsbc(Stream stream)
     {
         var rows = new List<ParsedCsvRow>();
+        var skipped = new List<string>();
+        var rowNum = 0;
         using var reader = new StreamReader(stream);
         using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
         {
-            HasHeaderRecord = false,
-            MissingFieldFound = null,
-            TrimOptions = TrimOptions.Trim
+            HasHeaderRecord = false, MissingFieldFound = null, TrimOptions = TrimOptions.Trim
         });
 
         while (csv.Read())
         {
+            rowNum++;
             var dateStr = csv.GetField(0) ?? string.Empty;
             var description = csv.GetField(1) ?? string.Empty;
-            var amountStr = csv.GetField(2) ?? "0";
+            var amountStr = csv.GetField(2) ?? string.Empty;
 
-            if (!DateOnly.TryParseExact(dateStr.Trim(), "dd/MM/yyyy", out var date)) continue;
-            if (!decimal.TryParse(amountStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount)) continue;
+            if (!DateOnly.TryParseExact(dateStr.Trim(), "dd/MM/yyyy", out var date))
+            { skipped.Add($"Row {rowNum}: unrecognised date '{dateStr}' — expected dd/MM/yyyy"); continue; }
+            if (!decimal.TryParse(amountStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount))
+            { skipped.Add($"Row {rowNum}: could not parse amount '{amountStr}'"); continue; }
 
-            rows.Add(new ParsedCsvRow(
-                date,
-                description,
-                amount,
-                amount >= 0 ? TransactionType.Credit : TransactionType.Debit,
-                null));
+            rows.Add(new ParsedCsvRow(date, description, amount,
+                amount >= 0 ? TransactionType.Credit : TransactionType.Debit, null));
         }
 
-        return rows;
+        return (rows, skipped);
     }
 
     /// <summary>
-    /// NatWest CSV: Date,Type,Description,Value,Balance,Account Name,Account Number
-    /// Date format: DD/MM/YYYY
+    /// NatWest CSV: Date,Type,Description,Value,Balance,… — date dd/MM/yyyy, signed Value.
     /// </summary>
-    private static List<ParsedCsvRow> ParseNatwest(Stream stream)
+    private static (List<ParsedCsvRow>, List<string>) ParseNatwest(Stream stream)
     {
         var rows = new List<ParsedCsvRow>();
+        var skipped = new List<string>();
+        var rowNum = 0;
         using var reader = new StreamReader(stream);
         using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
         {
-            HasHeaderRecord = true,
-            MissingFieldFound = null,
-            TrimOptions = TrimOptions.Trim
+            HasHeaderRecord = true, MissingFieldFound = null, TrimOptions = TrimOptions.Trim
         });
 
         csv.Read();
@@ -350,37 +347,35 @@ public class CsvImportService : ICsvImportService
 
         while (csv.Read())
         {
+            rowNum++;
             var dateStr = csv.GetField("Date") ?? string.Empty;
             var description = csv.GetField("Description") ?? string.Empty;
-            var valueStr = csv.GetField("Value") ?? "0";
+            var valueStr = csv.GetField("Value") ?? string.Empty;
 
-            if (!DateOnly.TryParseExact(dateStr, "dd/MM/yyyy", out var date)) continue;
-            if (!decimal.TryParse(valueStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount)) continue;
+            if (!DateOnly.TryParseExact(dateStr, "dd/MM/yyyy", out var date))
+            { skipped.Add($"Row {rowNum}: unrecognised date '{dateStr}' — expected dd/MM/yyyy"); continue; }
+            if (!decimal.TryParse(valueStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount))
+            { skipped.Add($"Row {rowNum}: could not parse amount '{valueStr}'"); continue; }
 
-            rows.Add(new ParsedCsvRow(
-                date,
-                description,
-                amount,
-                amount >= 0 ? TransactionType.Credit : TransactionType.Debit,
-                null));
+            rows.Add(new ParsedCsvRow(date, description, amount,
+                amount >= 0 ? TransactionType.Credit : TransactionType.Debit, null));
         }
 
-        return rows;
+        return (rows, skipped);
     }
 
     /// <summary>
-    /// Generic CSV: Date,Description,Amount
-    /// Tries common date formats. Positive = credit, negative = debit.
+    /// Generic CSV: Date,Description,Amount — tries common date formats.
     /// </summary>
-    private static List<ParsedCsvRow> ParseGeneric(Stream stream)
+    private static (List<ParsedCsvRow>, List<string>) ParseGeneric(Stream stream)
     {
         var rows = new List<ParsedCsvRow>();
+        var skipped = new List<string>();
+        var rowNum = 0;
         using var reader = new StreamReader(stream);
         using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
         {
-            HasHeaderRecord = true,
-            MissingFieldFound = null,
-            TrimOptions = TrimOptions.Trim
+            HasHeaderRecord = true, MissingFieldFound = null, TrimOptions = TrimOptions.Trim
         });
 
         csv.Read();
@@ -390,29 +385,28 @@ public class CsvImportService : ICsvImportService
 
         while (csv.Read())
         {
+            rowNum++;
             var dateStr = csv.GetField(0) ?? string.Empty;
             var description = csv.GetField(1) ?? string.Empty;
-            var amountStr = csv.GetField(2) ?? "0";
+            var amountStr = csv.GetField(2) ?? string.Empty;
 
             DateOnly date = default;
-            var parsed = false;
+            var dateParsed = false;
             foreach (var fmt in dateFormats)
             {
-                if (DateOnly.TryParseExact(dateStr, fmt, out date)) { parsed = true; break; }
+                if (DateOnly.TryParseExact(dateStr, fmt, out date)) { dateParsed = true; break; }
             }
-            if (!parsed) continue;
+            if (!dateParsed)
+            { skipped.Add($"Row {rowNum}: unrecognised date '{dateStr}'"); continue; }
 
-            if (!decimal.TryParse(amountStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount)) continue;
+            if (!decimal.TryParse(amountStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount))
+            { skipped.Add($"Row {rowNum}: could not parse amount '{amountStr}'"); continue; }
 
-            rows.Add(new ParsedCsvRow(
-                date,
-                description,
-                amount,
-                amount >= 0 ? TransactionType.Credit : TransactionType.Debit,
-                null));
+            rows.Add(new ParsedCsvRow(date, description, amount,
+                amount >= 0 ? TransactionType.Credit : TransactionType.Debit, null));
         }
 
-        return rows;
+        return (rows, skipped);
     }
 
     /// <summary>Normalise common bank description noise for cleaner display.</summary>

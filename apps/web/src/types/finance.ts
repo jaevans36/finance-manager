@@ -150,6 +150,8 @@ export interface CsvImportResult {
   errors: number;
   errorMessages: string[];
   batchId: string;
+  skipped: number;
+  skipMessages: string[];
 }
 
 export interface NetWorthResponse {
