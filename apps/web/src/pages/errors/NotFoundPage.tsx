@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom';
-import { Home, ArrowLeft } from 'lucide-react';
+import { Home, ArrowLeft, LogIn } from 'lucide-react';
 import { Button } from '../../components/ui/button';
+import { useAuth } from '../../contexts/AuthContext';
 
 const NotFoundPage = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-8 text-center">
@@ -21,10 +23,17 @@ const NotFoundPage = () => {
           <ArrowLeft size={16} className="mr-2" />
           Go back
         </Button>
-        <Button onClick={() => navigate('/dashboard')}>
-          <Home size={16} className="mr-2" />
-          Go to dashboard
-        </Button>
+        {isAuthenticated ? (
+          <Button onClick={() => navigate('/dashboard')}>
+            <Home size={16} className="mr-2" />
+            Go to dashboard
+          </Button>
+        ) : (
+          <Button onClick={() => navigate('/login')}>
+            <LogIn size={16} className="mr-2" />
+            Log in
+          </Button>
+        )}
       </div>
     </div>
   );
