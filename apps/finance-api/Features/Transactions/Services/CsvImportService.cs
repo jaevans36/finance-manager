@@ -295,8 +295,9 @@ public class CsvImportService : ICsvImportService
     }
 
     /// <summary>
-    /// HSBC CSV: Date,Description,Debit,Credit,Balance
-    /// Date format: DD MM YYYY (space-separated)
+    /// HSBC UK CSV: no header row; columns are Date, Description, Amount (signed).
+    /// Date format: dd/MM/yyyy. Negative amount = debit, positive = credit.
+    /// Amounts may be quoted with thousands separators, e.g. "-2,300.00".
     /// </summary>
     private static List<ParsedCsvRow> ParseHsbc(Stream stream)
     {
@@ -304,41 +305,26 @@ public class CsvImportService : ICsvImportService
         using var reader = new StreamReader(stream);
         using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
         {
-            HasHeaderRecord = true,
+            HasHeaderRecord = false,
             MissingFieldFound = null,
             TrimOptions = TrimOptions.Trim
         });
 
-        csv.Read();
-        csv.ReadHeader();
-
         while (csv.Read())
         {
-            var dateStr = csv.GetField("Date") ?? string.Empty;
-            var description = csv.GetField("Description") ?? string.Empty;
-            var debitStr = csv.GetField("Debit") ?? string.Empty;
-            var creditStr = csv.GetField("Credit") ?? string.Empty;
+            var dateStr = csv.GetField(0) ?? string.Empty;
+            var description = csv.GetField(1) ?? string.Empty;
+            var amountStr = csv.GetField(2) ?? "0";
 
-            if (!DateOnly.TryParseExact(dateStr.Trim(), "dd MM yyyy", out var date) &&
-                !DateOnly.TryParseExact(dateStr.Trim(), "dd/MM/yyyy", out date)) continue;
+            if (!DateOnly.TryParseExact(dateStr.Trim(), "dd/MM/yyyy", out var date)) continue;
+            if (!decimal.TryParse(amountStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount)) continue;
 
-            decimal amount;
-            TransactionType type;
-
-            if (!string.IsNullOrWhiteSpace(creditStr) &&
-                decimal.TryParse(creditStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var credit))
-            {
-                amount = credit;
-                type = TransactionType.Credit;
-            }
-            else if (decimal.TryParse(debitStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var debit))
-            {
-                amount = debit;
-                type = TransactionType.Debit;
-            }
-            else continue;
-
-            rows.Add(new ParsedCsvRow(date, description, amount, type, null));
+            rows.Add(new ParsedCsvRow(
+                date,
+                description,
+                amount,
+                amount >= 0 ? TransactionType.Credit : TransactionType.Debit,
+                null));
         }
 
         return rows;

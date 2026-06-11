@@ -151,15 +151,33 @@ public class CsvImportServiceTests : IDisposable
     // ── HSBC parser ───────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task ImportAsync_WhenHsbcCsvSpaceDateFormat_ParsesCorrectly()
+    public async Task ImportAsync_WhenHsbcCsv_ImportsDebitsAndCreditsCorrectly()
     {
-        var csv = "Date,Description,Debit,Credit,Balance\n" +
-                  "01 01 2025,SAINSBURY'S,42.00,,458.00";
+        // HSBC UK export: no header row, columns are Date / Description / SignedAmount
+        var csv = "01/01/2025,SAINSBURY'S,-42.00\n" +
+                  "02/01/2025,SALARY,1500.00";
         var result = await ImportCsvAsync(csv, "hsbc");
 
-        result.Imported.Should().Be(1);
-        var tx = await _db.Transactions.SingleAsync(t => t.AccountId == _accountId);
-        tx.TransactionDate.Should().Be(new DateOnly(2025, 1, 1));
+        result.Imported.Should().Be(2);
+        var transactions = await _db.Transactions.Where(t => t.AccountId == _accountId).OrderBy(t => t.TransactionDate).ToListAsync();
+        transactions[0].Type.Should().Be(TransactionType.Debit);
+        transactions[0].Amount.Should().Be(42.00m);
+        transactions[1].Type.Should().Be(TransactionType.Credit);
+        transactions[1].Amount.Should().Be(1500.00m);
+    }
+
+    [Fact]
+    public async Task ImportAsync_WhenHsbcCsvWithQuotedThousandAmounts_ParsesCorrectly()
+    {
+        // Large amounts are quoted with thousands separators in HSBC exports
+        var csv = "01/01/2025,STANDING ORDER,\"-2300.00\"\n" +
+                  "02/01/2025,CREDIT IN,\"4553.50\"";
+        var result = await ImportCsvAsync(csv, "hsbc");
+
+        result.Imported.Should().Be(2);
+        var transactions = await _db.Transactions.Where(t => t.AccountId == _accountId).OrderBy(t => t.TransactionDate).ToListAsync();
+        transactions[0].Amount.Should().Be(2300.00m);
+        transactions[1].Amount.Should().Be(4553.50m);
     }
 
     // ── NatWest parser ────────────────────────────────────────────────────────
