@@ -19,7 +19,7 @@ Write-Host ""
 $jobs = @()
 
 $jobs += Start-Job -ScriptBlock {
-    Set-Location "C:\Projects\Finance Manager\apps\finance-api"
+    Set-Location "C:\Projects\Finance Manager\apps\life-api"
     dotnet watch run
 }
 
