@@ -20,9 +20,23 @@ try {
         Write-Host "[OK] Docker is running" -ForegroundColor Green
     }
 
-    # Step 2: Start PostgreSQL container
+    # Step 2: Clear any stale processes holding the dev ports
     Write-Host ""
-    Write-Host "Step 2: Starting PostgreSQL database..." -ForegroundColor Yellow
+    Write-Host "Step 2: Clearing any stale processes on dev ports..." -ForegroundColor Yellow
+    @(5000, 5001, 5002, 5003, 5173) | ForEach-Object {
+        $port = $_
+        Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue |
+            Select-Object -ExpandProperty OwningProcess |
+            ForEach-Object {
+                Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue
+                Write-Host "   Cleared stale process on port $port" -ForegroundColor Gray
+            }
+    }
+    Write-Host "[OK] Ports clear" -ForegroundColor Green
+
+    # Step 3: Start PostgreSQL container
+    Write-Host ""
+    Write-Host "Step 3: Starting PostgreSQL database..." -ForegroundColor Yellow
     docker-compose up -d
     if ($LASTEXITCODE -ne 0) {
         Write-Host "[X] Failed to start database" -ForegroundColor Red
@@ -47,9 +61,9 @@ try {
         exit 1
     }
 
-    # Step 3: Check migrations for both APIs
+    # Step 4: Check migrations for both APIs
     Write-Host ""
-    Write-Host "Step 3: Checking .NET API migrations..." -ForegroundColor Yellow
+    Write-Host "Step 4: Checking .NET API migrations..." -ForegroundColor Yellow
 
     $dotnetEfPath = "$env:USERPROFILE\.dotnet\tools\dotnet-ef.exe"
 
@@ -73,9 +87,9 @@ try {
     }
     Set-Location "C:\Projects\Finance Manager"
 
-    # Step 4: Start development servers
+    # Step 5: Start development servers
     Write-Host ""
-    Write-Host "Step 4: Starting development servers..." -ForegroundColor Yellow
+    Write-Host "Step 5: Starting development servers..." -ForegroundColor Yellow
     Write-Host ""
     Write-Host "====================================================" -ForegroundColor Cyan
     Write-Host "Development environment is starting!" -ForegroundColor Green

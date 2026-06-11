@@ -1,19 +1,24 @@
-# Stop all Finance Manager services
+# Stop all Life Manager services
 
-Write-Host "Stopping Finance Manager services..." -ForegroundColor Yellow
+Write-Host "Stopping Life Manager services..." -ForegroundColor Yellow
 Set-Location "C:\Projects\Finance Manager"
 
-# Stop Node.js processes (API and Web)
-Write-Host "Stopping Node.js services..." -ForegroundColor Cyan
-Get-Process -Name "node" -ErrorAction SilentlyContinue | Stop-Process -Force
-Write-Host "[OK] Node.js services stopped" -ForegroundColor Green
+# Kill anything holding the known API and dev-server ports
+Write-Host "Freeing ports..." -ForegroundColor Cyan
+@(5000, 5001, 5002, 5003, 5173) | ForEach-Object {
+    $port = $_
+    Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue |
+        Select-Object -ExpandProperty OwningProcess |
+        ForEach-Object {
+            Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue
+        }
+}
 
-# Stop .NET processes (Finance API)
-Write-Host "Stopping .NET Finance API..." -ForegroundColor Cyan
-Get-Process -Name "dotnet" -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "*finance-api*" } | Stop-Process -Force
-# Fallback: stop all dotnet watch processes
-Get-Process -Name "dotnet" -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -like "*watch*" } | Stop-Process -Force
-Write-Host "[OK] .NET services stopped" -ForegroundColor Green
+# Kill remaining dotnet and node processes
+Write-Host "Stopping .NET and Node.js processes..." -ForegroundColor Cyan
+Get-Process -Name "dotnet" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+Get-Process -Name "node"   -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+Write-Host "[OK] API and web services stopped" -ForegroundColor Green
 
 # Stop Docker containers
 Write-Host "Stopping database..." -ForegroundColor Cyan
@@ -23,4 +28,4 @@ Write-Host "[OK] Database stopped" -ForegroundColor Green
 Write-Host ""
 Write-Host "[OK] All services stopped" -ForegroundColor Green
 Write-Host ""
-Write-Host "To start again, run: .\start-dev.ps1" -ForegroundColor Yellow
+Write-Host "To start again, run: .\scripts\start-dev.ps1" -ForegroundColor Yellow
