@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   BookOpen, ListTodo, FolderKanban, Calendar, BarChart3,
-  Users, Settings, ChevronRight, Hash,
+  Users, Settings, ChevronRight, Hash, PiggyBank,
 } from 'lucide-react';
 import { PageLayout } from '../../components/layout/PageLayout';
 import { cn } from '../../lib/utils';
@@ -15,6 +15,7 @@ const SECTIONS = [
   { id: 'progress', label: 'Weekly progress', icon: BarChart3 },
   { id: 'sharing', label: 'Sharing groups', icon: Users },
   { id: 'account', label: 'Account & settings', icon: Settings },
+  { id: 'finance', label: 'Finance', icon: PiggyBank },
 ] as const;
 
 type SectionId = typeof SECTIONS[number]['id'];
@@ -320,6 +321,97 @@ function AccountSection() {
   );
 }
 
+function FinanceSection() {
+  return (
+    <>
+      <H2>Finance</H2>
+      <P>
+        The Finance module helps you track your money across accounts, budgets, bills, and savings goals.
+        Access it via <strong>Finance</strong> in the top navigation. Everything is organised into seven tabs.
+      </P>
+
+      <H3>Accounts</H3>
+      <P>
+        Accounts represent your real-world financial accounts — current accounts, savings, credit cards,
+        ISAs, investments, mortgages, and loans.
+      </P>
+      <Ul items={[
+        'Your net worth (total across all accounts) is shown at the top of the Accounts tab.',
+        'Each account displays its balance, type, and institution name.',
+        'Click an account to jump to its transaction history.',
+        'Add a new account with the + button — set a name, type, institution, currency, and opening balance.',
+      ]} />
+
+      <H3>Transactions</H3>
+      <P>
+        Transactions are imported or manually recorded movements of money within an account.
+      </P>
+      <Ul items={[
+        'Each transaction shows: payee, date, category, amount (positive = money in, negative = money out), and a reviewed indicator.',
+        <>Transactions flagged as <Badge variant="info">Recurring</Badge> or <Badge variant="warning">Duplicate</Badge> are badged automatically.</>,
+        'Click a transaction to open a detail panel where you can edit the category, add notes, or mark it as reviewed.',
+        'Use the filter toolbar to narrow by date range, category, or amount.',
+        <>Import transactions in bulk via the <strong>Import CSV</strong> button — useful for uploading a bank export.</>,
+      ]} />
+
+      <H3>Budgets</H3>
+      <P>
+        Budgets let you set a monthly spending limit per category and track how much you have used.
+      </P>
+      <Ul items={[
+        'Each budget shows a progress bar: green when on track, amber near the limit (~80%), red when exceeded.',
+        'The overspend amount is shown in red if you go over budget.',
+        'Budgets are per-category and reset each month.',
+        'Add a budget with the + button — choose a category and a monthly limit.',
+      ]} />
+
+      <H3>Spending pots</H3>
+      <P>
+        Spending pots are named envelopes of money set aside for a specific purpose within a budget period.
+      </P>
+      <Ul items={[
+        'Each pot shows how much has been spent and how much remains.',
+        <>Enable <strong>Rollover</strong> on a pot to carry unspent amounts forward into the next month.</>,
+        'Pots with a <Badge variant="success">Left</Badge> balance have money remaining; pots showing <Badge variant="warning">Over</Badge> have exceeded their allocation.',
+        'Useful for irregular expenses like clothing or travel where a single monthly budget category is too broad.',
+      ]} />
+
+      <H3>Bills</H3>
+      <P>
+        Bills tracks your regular outgoings — subscriptions, utilities, rent, and any other recurring payments.
+      </P>
+      <Ul items={[
+        'Each bill has a name, frequency (weekly, monthly, quarterly, or annual), amount, and due date.',
+        'The Bills tab shows upcoming payments due within the next 30 days, sorted by due date.',
+        'A monthly total is calculated automatically across all your bills.',
+        'Due-date labels tell you exactly when each payment falls: "Due today", "Due tomorrow", or "Due in X days".',
+        'Mark a bill as paid once you have made the payment.',
+      ]} />
+
+      <H3>Savings goals</H3>
+      <P>
+        Savings goals let you track progress towards a financial target — a holiday, emergency fund, new purchase, or anything else.
+      </P>
+      <Ul items={[
+        'Each goal shows its current amount, target amount, and a colour-coded progress bar.',
+        <>Goals are marked <Badge variant="success">Achieved</Badge> when the target is reached, or <Badge variant="warning">Behind</Badge> if contributions are falling short.</>,
+        'Set a monthly contribution amount to see a projected completion date.',
+        'Add a new goal with the + button — enter a name, target amount, and optional monthly contribution.',
+      ]} />
+
+      <H3>Trends</H3>
+      <P>
+        The Trends tab shows a bar chart comparing your budgeted amounts against actual spending over the past 3 or 6 months.
+      </P>
+      <Ul items={[
+        'Green bars represent your budgeted amount per category; red bars show actual spending.',
+        'Switch between 3-month and 6-month views using the toggle.',
+        'Use trends to spot categories where you consistently overspend and adjust your budgets accordingly.',
+      ]} />
+    </>
+  );
+}
+
 const SECTION_CONTENT: Record<SectionId, React.ReactNode> = {
   'getting-started': <GettingStartedSection />,
   'tasks': <TasksSection />,
@@ -328,6 +420,7 @@ const SECTION_CONTENT: Record<SectionId, React.ReactNode> = {
   'progress': <ProgressSection />,
   'sharing': <SharingSection />,
   'account': <AccountSection />,
+  'finance': <FinanceSection />,
 };
 
 // --- Page ---
