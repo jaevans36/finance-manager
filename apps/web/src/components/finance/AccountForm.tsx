@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { accountsService } from '../../services/accounts-service';
-import type { AccountType, CreateAccountRequest } from '../../types/finance';
+import type { AccountSummary, AccountType, CreateAccountRequest, UpdateAccountRequest } from '../../types/finance';
 import { cn } from '../../lib/utils';
+import { getErrorMessage } from '../../utils/errorHelpers';
 
 const ACCOUNT_TYPES: { value: AccountType; label: string }[] = [
   { value: 'Checking',     label: 'Current account' },
@@ -21,14 +22,18 @@ const ACCOUNT_TYPES: { value: AccountType; label: string }[] = [
 interface AccountFormProps {
   onSuccess: () => void;
   onCancel: () => void;
+  accountId?: string;
+  initialData?: AccountSummary;
 }
 
-export function AccountForm({ onSuccess, onCancel }: AccountFormProps) {
-  const [name, setName] = useState('');
-  const [type, setType] = useState<AccountType>('Checking');
-  const [institution, setInstitution] = useState('');
-  const [initialBalance, setInitialBalance] = useState('0');
-  const [excludeFromNetWorth, setExcludeFromNetWorth] = useState(false);
+export function AccountForm({ onSuccess, onCancel, accountId, initialData }: AccountFormProps) {
+  const isEdit = !!accountId;
+
+  const [name, setName] = useState(initialData?.name ?? '');
+  const [type, setType] = useState<AccountType>(initialData?.type ?? 'Checking');
+  const [institution, setInstitution] = useState(initialData?.institution ?? '');
+  const [balance, setBalance] = useState(String(initialData?.balance ?? '0'));
+  const [excludeFromNetWorth, setExcludeFromNetWorth] = useState(initialData?.excludeFromNetWorth ?? false);
   const [nameError, setNameError] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,21 +48,31 @@ export function AccountForm({ onSuccess, onCancel }: AccountFormProps) {
       return;
     }
 
-    const request: CreateAccountRequest = {
-      name: name.trim(),
-      type,
-      currency: 'GBP',
-      initialBalance: parseFloat(initialBalance) || 0,
-      institution: institution.trim() || undefined,
-      excludeFromNetWorth,
-    };
-
     setIsLoading(true);
     try {
-      await accountsService.createAccount(request);
+      if (isEdit) {
+        const request: UpdateAccountRequest = {
+          name: name.trim(),
+          type,
+          balance: parseFloat(balance) || 0,
+          institution: institution.trim() || undefined,
+          excludeFromNetWorth,
+        };
+        await accountsService.updateAccount(accountId, request);
+      } else {
+        const request: CreateAccountRequest = {
+          name: name.trim(),
+          type,
+          currency: 'GBP',
+          initialBalance: parseFloat(balance) || 0,
+          institution: institution.trim() || undefined,
+          excludeFromNetWorth,
+        };
+        await accountsService.createAccount(request);
+      }
       onSuccess();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to save account');
+      setError(getErrorMessage(err, 'Failed to save account. Please check your details and try again.'));
     } finally {
       setIsLoading(false);
     }
@@ -113,15 +128,15 @@ export function AccountForm({ onSuccess, onCancel }: AccountFormProps) {
       </div>
 
       <div>
-        <label htmlFor="initial-balance" className="block text-sm font-medium text-foreground mb-1">
+        <label htmlFor="balance" className="block text-sm font-medium text-foreground mb-1">
           Current balance (£)
         </label>
         <input
-          id="initial-balance"
+          id="balance"
           type="number"
           step="0.01"
-          value={initialBalance}
-          onChange={e => setInitialBalance(e.target.value)}
+          value={balance}
+          onChange={e => setBalance(e.target.value)}
           className={fieldClass}
         />
       </div>
@@ -146,7 +161,7 @@ export function AccountForm({ onSuccess, onCancel }: AccountFormProps) {
           disabled={isLoading}
           className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
         >
-          {isLoading ? 'Saving…' : 'Save account'}
+          {isLoading ? 'Saving…' : isEdit ? 'Save changes' : 'Save account'}
         </button>
         <button
           type="button"

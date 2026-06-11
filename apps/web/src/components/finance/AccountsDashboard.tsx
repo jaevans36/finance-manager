@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Wallet, TrendingUp, CreditCard, PiggyBank, Plus } from 'lucide-react';
+import { Wallet, TrendingUp, CreditCard, PiggyBank, Plus, Pencil, Trash2 } from 'lucide-react';
 import { accountsService } from '../../services/accounts-service';
 import type { AccountSummary, AccountType } from '../../types/finance';
 import { cn } from '../../lib/utils';
@@ -39,31 +39,50 @@ function formatBalance(amount: number, currency: string): string {
 interface AccountsDashboardProps {
   onAccountSelect?: (account: AccountSummary) => void;
   onAddAccount?: () => void;
+  onEdit?: (account: AccountSummary) => void;
 }
 
-export function AccountsDashboard({ onAccountSelect, onAddAccount }: AccountsDashboardProps) {
+export function AccountsDashboard({ onAccountSelect, onAddAccount, onEdit }: AccountsDashboardProps) {
   const [accounts, setAccounts] = useState<AccountSummary[]>([]);
   const [netWorth, setNetWorth] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const [accs, nw] = await Promise.all([
-          accountsService.getAccounts(),
-          accountsService.getNetWorth(),
-        ]);
-        setAccounts(accs);
-        setNetWorth(nw.netWorth);
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : 'Failed to load accounts');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    load();
-  }, []);
+  const load = async () => {
+    try {
+      const [accs, nw] = await Promise.all([
+        accountsService.getAccounts(),
+        accountsService.getNetWorth(),
+      ]);
+      setAccounts(accs);
+      setNetWorth(nw.netWorth);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load accounts');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const handleDelete = async (id: string) => {
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await accountsService.deleteAccount(id);
+      setConfirmDeleteId(null);
+      setAccounts(prev => prev.filter(a => a.id !== id));
+      const nw = await accountsService.getNetWorth();
+      setNetWorth(nw.netWorth);
+    } catch {
+      setDeleteError('Failed to delete account. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -99,39 +118,93 @@ export function AccountsDashboard({ onAccountSelect, onAddAccount }: AccountsDas
       <div className="space-y-2">
         {accounts.map((account) => {
           const Icon = ACCOUNT_TYPE_ICONS[account.type] ?? Wallet;
+          const isConfirmingDelete = confirmDeleteId === account.id;
+
           return (
-            <button
+            <div
               key={account.id}
-              onClick={() => onAccountSelect?.(account)}
-              className="w-full flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-left hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
+              className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden"
             >
-              <div
-                className="flex h-9 w-9 items-center justify-center rounded-full flex-shrink-0"
-                style={{ backgroundColor: account.colour ?? '#3B82F6' + '20' }}
-              >
-                <Icon
-                  className="h-4 w-4"
-                  style={{ color: account.colour ?? '#3B82F6' }}
-                />
+              {/* Main row */}
+              <div className="flex items-center gap-3 px-4 py-3">
+                <button
+                  onClick={() => onAccountSelect?.(account)}
+                  className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                >
+                  <div
+                    className="flex h-9 w-9 items-center justify-center rounded-full flex-shrink-0"
+                    style={{ backgroundColor: account.colour ?? '#3B82F6' + '20' }}
+                  >
+                    <Icon
+                      className="h-4 w-4"
+                      style={{ color: account.colour ?? '#3B82F6' }}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{account.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {ACCOUNT_TYPE_LABELS[account.type]}
+                      {account.institution && ` · ${account.institution}`}
+                    </p>
+                  </div>
+                  <span
+                    className={cn(
+                      'text-sm font-semibold tabular-nums flex-shrink-0 mr-2',
+                      account.balance < 0
+                        ? 'text-red-600 dark:text-red-400'
+                        : 'text-gray-900 dark:text-gray-100'
+                    )}
+                  >
+                    {formatBalance(account.balance, account.currency)}
+                  </span>
+                </button>
+
+                {/* Action buttons */}
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <button
+                    onClick={() => { setConfirmDeleteId(null); onEdit?.(account); }}
+                    title="Edit account"
+                    className="p-1.5 rounded text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => { setDeleteError(null); setConfirmDeleteId(isConfirmingDelete ? null : account.id); }}
+                    title="Delete account"
+                    className="p-1.5 rounded text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{account.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {ACCOUNT_TYPE_LABELS[account.type]}
-                  {account.institution && ` · ${account.institution}`}
-                </p>
-              </div>
-              <span
-                className={cn(
-                  'text-sm font-semibold tabular-nums flex-shrink-0',
-                  account.balance < 0
-                    ? 'text-red-600 dark:text-red-400'
-                    : 'text-gray-900 dark:text-gray-100'
-                )}
-              >
-                {formatBalance(account.balance, account.currency)}
-              </span>
-            </button>
+
+              {/* Inline delete confirmation */}
+              {isConfirmingDelete && (
+                <div className="border-t border-gray-200 dark:border-gray-700 bg-red-50 dark:bg-red-950/20 px-4 py-3">
+                  <p className="text-sm text-red-700 dark:text-red-400 mb-2">
+                    Delete <strong>{account.name}</strong>? This cannot be undone.
+                  </p>
+                  {deleteError && (
+                    <p className="text-xs text-red-600 dark:text-red-400 mb-2">{deleteError}</p>
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleDelete(account.id)}
+                      disabled={isDeleting}
+                      className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                    >
+                      {isDeleting ? 'Deleting…' : 'Yes, delete'}
+                    </button>
+                    <button
+                      onClick={() => { setConfirmDeleteId(null); setDeleteError(null); }}
+                      className="rounded-md border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           );
         })}
       </div>

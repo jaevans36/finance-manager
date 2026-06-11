@@ -44,6 +44,7 @@ export default function FinancePage() {
 
   // Accounts + Transactions state
   const [selectedAccount, setSelectedAccount] = useState<AccountSummary | null>(null);
+  const [editingAccount, setEditingAccount] = useState<AccountSummary | null>(null);
   const [txFilters, setTxFilters] = useState<Partial<TxFilters>>({});
   const [txPage, setTxPage] = useState(1);
   const [txData, setTxData] = useState<PagedResult<Transaction> | null>(null);
@@ -90,6 +91,7 @@ export default function FinancePage() {
 
   const handleSaved = () => {
     setShowForm(false);
+    setEditingAccount(null);
     setRefreshKey(k => k + 1);
     if (activeTab === 'accounts') loadTransactions();
   };
@@ -98,6 +100,7 @@ export default function FinancePage() {
     setActiveTab(tab);
     setShowForm(false);
     setShowImport(false);
+    setEditingAccount(null);
   };
 
   const canAddOnTab = !['trends', 'transactions'].includes(activeTab);
@@ -133,7 +136,22 @@ export default function FinancePage() {
       {/* ── Accounts tab ─────────────────────────────────────────────────── */}
       {activeTab === 'accounts' && (
         <section className="space-y-6">
-          {showForm ? (
+          {editingAccount ? (
+            <div className="rounded-xl border border-border bg-card p-6 max-w-md">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-semibold text-foreground">Edit account</h3>
+                <button onClick={() => setEditingAccount(null)} className="text-muted-foreground hover:text-foreground">
+                  <X size={18} />
+                </button>
+              </div>
+              <AccountForm
+                accountId={editingAccount.id}
+                initialData={editingAccount}
+                onSuccess={handleSaved}
+                onCancel={() => setEditingAccount(null)}
+              />
+            </div>
+          ) : showForm ? (
             <div className="rounded-xl border border-border bg-card p-6 max-w-md">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-base font-semibold text-foreground">Add account</h3>
@@ -151,7 +169,12 @@ export default function FinancePage() {
               <Plus size={16} /> Add account
             </button>
           )}
-          <AccountsDashboard key={refreshKey} onAccountSelect={handleAccountSelect} onAddAccount={() => setShowForm(true)} />
+          <AccountsDashboard
+            key={refreshKey}
+            onAccountSelect={handleAccountSelect}
+            onAddAccount={() => { setEditingAccount(null); setShowForm(true); }}
+            onEdit={account => { setShowForm(false); setEditingAccount(account); }}
+          />
         </section>
       )}
 
