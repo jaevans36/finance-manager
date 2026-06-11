@@ -1,7 +1,9 @@
+using System.Text.Json.Serialization;
 using FinanceApi.Features.Categories.Models;
 
 namespace FinanceApi.Features.Bills.Models;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum BillFrequency { Weekly, Monthly, Quarterly, Annual }
 
 public class Bill

@@ -1,5 +1,8 @@
+using System.Text.Json.Serialization;
+
 namespace FinanceApi.Features.SavingsGoals.Models;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum SavingsGoalStatus { Active, Achieved, Abandoned }
 
 public class SavingsGoal

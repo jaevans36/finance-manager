@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using FinanceApi.Features.Transactions.Models;
 
 namespace FinanceApi.Features.Accounts.Models;
@@ -5,6 +6,7 @@ namespace FinanceApi.Features.Accounts.Models;
 /// <summary>
 /// UK bank/investment account types supported by the Finance Manager.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum AccountType
 {
     Checking,

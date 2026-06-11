@@ -1,7 +1,9 @@
+using System.Text.Json.Serialization;
 using FinanceApi.Features.Categories.Models;
 
 namespace FinanceApi.Features.CategoryRules.Models;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum RuleMatchType { Contains, StartsWith, Exact }
 
 public class CategoryRule

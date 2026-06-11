@@ -1,8 +1,11 @@
+using System.Text.Json.Serialization;
+
 namespace FinanceApi.Features.Budgets.Models;
 
 /// <summary>
 /// UK spending pot types that users can create custom budgets for.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum PotType
 {
     Groceries,

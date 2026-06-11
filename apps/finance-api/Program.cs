@@ -50,6 +50,8 @@ try
         {
             opts.JsonSerializerOptions.DefaultIgnoreCondition =
                 System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+            opts.JsonSerializerOptions.Converters.Add(
+                new System.Text.Json.Serialization.JsonStringEnumConverter());
         });
 
     // ── Swagger ─────────────────────────────────────────────────────────────

@@ -1,9 +1,11 @@
+using System.Text.Json.Serialization;
 using FinanceApi.Features.Accounts.Models;
 using FinanceApi.Features.Categories.Models;
 
 namespace FinanceApi.Features.Transactions.Models;
 
 /// <summary>Transaction type discriminator.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum TransactionType
 {
     Debit,
@@ -12,6 +14,7 @@ public enum TransactionType
 }
 
 /// <summary>Source of the transaction record.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ImportSource
 {
     Manual,
