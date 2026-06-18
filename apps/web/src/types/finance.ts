@@ -57,6 +57,8 @@ export interface AccountSummary extends CreditDetail {
   icon: string | null;
   isActive: boolean;
   excludeFromNetWorth: boolean;
+  mortgageStartDate?: string | null;   // DateOnly serialised as "YYYY-MM-DD"
+  mortgageTermYears?: number | null;
 }
 
 export interface CreateAccountRequest extends CreditDetail {
@@ -70,6 +72,8 @@ export interface CreateAccountRequest extends CreditDetail {
   icon?: string;
   excludeFromNetWorth: boolean;
   notes?: string;
+  mortgageStartDate?: string;
+  mortgageTermYears?: number;
 }
 
 export interface UpdateAccountRequest extends CreditDetail {
@@ -84,6 +88,8 @@ export interface UpdateAccountRequest extends CreditDetail {
   icon?: string;
   excludeFromNetWorth?: boolean;
   notes?: string;
+  mortgageStartDate?: string;
+  mortgageTermYears?: number;
 }
 
 export interface Category {
@@ -113,6 +119,7 @@ export interface Transaction {
   isDuplicate: boolean;
   importSource: ImportSource;
   createdAt: string;
+  notes: string | null;
 }
 
 export interface CreateTransactionRequest {
@@ -135,6 +142,9 @@ export interface UpdateTransactionRequest {
   payee?: string;
   notes?: string;
   isReviewed?: boolean;
+  type?: TransactionType;
+  amount?: number;
+  transactionDate?: string;
 }
 
 export interface PagedResult<T> {
@@ -254,6 +264,7 @@ export interface Bill {
   id: string;
   userId: string;
   name: string;
+  description: string | null;
   amount: number;
   frequency: BillFrequency;
   dueDay: number;
@@ -276,6 +287,7 @@ export interface UpcomingBill {
 export interface RecurringPattern {
   merchantName: string;
   averageAmount: number;
+  latestAmount: number;
   minAmount: number;
   maxAmount: number;
   detectedFrequency: RecurringFrequency;
@@ -283,6 +295,7 @@ export interface RecurringPattern {
   amountTrend: AmountTrend;
   occurrencesInPeriod: number;
   lastOccurrence: string | null;
+  isLikelyInactive: boolean;
 }
 
 export interface CreateBillRequest {
@@ -292,6 +305,7 @@ export interface CreateBillRequest {
   dueDay: number;
   reminderDaysBefore: number;
   categoryId?: string;
+  description?: string;
 }
 
 export interface UpdateBillRequest {
@@ -301,6 +315,8 @@ export interface UpdateBillRequest {
   dueDay?: number;
   reminderDaysBefore?: number;
   categoryId?: string;
+  isActive?: boolean;
+  description?: string;
 }
 
 // ── Savings goal types ────────────────────────────────────────────────────────

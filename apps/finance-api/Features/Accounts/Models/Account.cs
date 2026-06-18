@@ -82,6 +82,14 @@ public class Account
     /// <summary>Rate the promotional balance reverts to after the deal expires.</summary>
     public decimal? PromotionalRevertRate { get; set; }
 
+    // ── Mortgage detail ───────────────────────────────────────────────────────
+
+    /// <summary>Date the mortgage started (draw-down date).</summary>
+    public DateOnly? MortgageStartDate { get; set; }
+
+    /// <summary>Original mortgage term in years (e.g. 25).</summary>
+    public int? MortgageTermYears { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

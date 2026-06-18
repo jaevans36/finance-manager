@@ -24,6 +24,7 @@ const INTEREST_RATE_TYPES: AccountType[] = ['Credit', 'Loan', 'Mortgage', 'Check
 const OVERDRAFT_TYPES: AccountType[] = ['Checking'];
 const CREDIT_LIMIT_TYPES: AccountType[] = ['Credit'];
 const FIXED_RATE_EXPIRY_TYPES: AccountType[] = ['Mortgage'];
+const MORTGAGE_TYPES: AccountType[] = ['Mortgage'];
 
 interface AccountFormProps {
   onSuccess: () => void;
@@ -49,6 +50,10 @@ export function AccountForm({ onSuccess, onCancel, accountId, initialData }: Acc
   const [promotionalExpiry, setPromotionalExpiry] = useState(initialData?.promotionalExpiry ?? '');
   const [promotionalRevertRate, setPromotionalRevertRate] = useState(initialData?.promotionalRevertRate != null ? String(initialData.promotionalRevertRate) : '');
 
+  // Mortgage detail fields
+  const [mortgageStartDate, setMortgageStartDate] = useState(initialData?.mortgageStartDate ?? '');
+  const [mortgageTermYears, setMortgageTermYears] = useState(initialData?.mortgageTermYears != null ? String(initialData.mortgageTermYears) : '');
+
   const [nameError, setNameError] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,6 +63,24 @@ export function AccountForm({ onSuccess, onCancel, accountId, initialData }: Acc
   const showInterestRate = INTEREST_RATE_TYPES.includes(type);
   const showPromoFields = CREDIT_TYPES.includes(type);
   const showFixedRateExpiry = FIXED_RATE_EXPIRY_TYPES.includes(type);
+  const showMortgageFields = MORTGAGE_TYPES.includes(type);
+
+  const remainingTermLabel = (() => {
+    if (!mortgageStartDate || !mortgageTermYears) return null;
+    const termYears = parseInt(mortgageTermYears, 10);
+    if (isNaN(termYears) || termYears <= 0) return null;
+    const start = new Date(mortgageStartDate);
+    const end = new Date(start);
+    end.setFullYear(end.getFullYear() + termYears);
+    const now = new Date();
+    if (end <= now) return 'Mortgage term has ended';
+    const totalMonths = (end.getFullYear() - now.getFullYear()) * 12 + (end.getMonth() - now.getMonth());
+    const years = Math.floor(totalMonths / 12);
+    const months = totalMonths % 12;
+    if (years === 0) return `${months} month${months !== 1 ? 's' : ''} remaining`;
+    if (months === 0) return `${years} year${years !== 1 ? 's' : ''} remaining`;
+    return `${years} year${years !== 1 ? 's' : ''} ${months} month${months !== 1 ? 's' : ''} remaining`;
+  })();
 
   const parsedOptional = (val: string) => val.trim() === '' ? undefined : parseFloat(val);
 
@@ -78,6 +101,8 @@ export function AccountForm({ onSuccess, onCancel, accountId, initialData }: Acc
       promotionalRate: showPromoFields ? parsedOptional(promotionalRate) : undefined,
       promotionalExpiry: (showPromoFields || showFixedRateExpiry) && promotionalExpiry ? promotionalExpiry : undefined,
       promotionalRevertRate: showPromoFields ? parsedOptional(promotionalRevertRate) : undefined,
+      mortgageStartDate: showMortgageFields && mortgageStartDate ? mortgageStartDate : undefined,
+      mortgageTermYears: showMortgageFields && mortgageTermYears ? parseInt(mortgageTermYears, 10) || undefined : undefined,
     };
 
     setIsLoading(true);
@@ -295,6 +320,47 @@ export function AccountForm({ onSuccess, onCancel, accountId, initialData }: Acc
             className={fieldClass}
           />
           <p className={hintClass}>When your current fixed-rate deal ends</p>
+        </div>
+      )}
+
+      {/* ── Mortgage term ─────────────────────────────────────────────────── */}
+      {showMortgageFields && (
+        <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-3">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Mortgage term</p>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="mortgage-start-date" className={labelClass}>Start date</label>
+              <input
+                id="mortgage-start-date"
+                type="date"
+                value={mortgageStartDate}
+                onChange={e => setMortgageStartDate(e.target.value)}
+                className={fieldClass}
+              />
+              <p className={hintClass}>When the mortgage completed</p>
+            </div>
+            <div>
+              <label htmlFor="mortgage-term-years" className={labelClass}>Original term (years)</label>
+              <input
+                id="mortgage-term-years"
+                type="number"
+                min="1"
+                max="40"
+                step="1"
+                value={mortgageTermYears}
+                onChange={e => setMortgageTermYears(e.target.value)}
+                placeholder="e.g. 25"
+                className={fieldClass}
+              />
+            </div>
+          </div>
+
+          {remainingTermLabel && (
+            <p className="text-sm font-medium text-foreground">
+              {remainingTermLabel}
+            </p>
+          )}
         </div>
       )}
 

@@ -18,7 +18,9 @@ public record AccountSummary(
     decimal? PromotionalBalance = null,
     decimal? PromotionalRate = null,
     DateOnly? PromotionalExpiry = null,
-    decimal? PromotionalRevertRate = null
+    decimal? PromotionalRevertRate = null,
+    DateOnly? MortgageStartDate = null,
+    int? MortgageTermYears = null
 );
 
 public record CreateAccountRequest(
@@ -37,7 +39,9 @@ public record CreateAccountRequest(
     decimal? PromotionalBalance = null,
     decimal? PromotionalRate = null,
     DateOnly? PromotionalExpiry = null,
-    decimal? PromotionalRevertRate = null
+    decimal? PromotionalRevertRate = null,
+    DateOnly? MortgageStartDate = null,
+    int? MortgageTermYears = null
 );
 
 public record UpdateAccountRequest(
@@ -57,7 +61,9 @@ public record UpdateAccountRequest(
     decimal? PromotionalBalance = null,
     decimal? PromotionalRate = null,
     DateOnly? PromotionalExpiry = null,
-    decimal? PromotionalRevertRate = null
+    decimal? PromotionalRevertRate = null,
+    DateOnly? MortgageStartDate = null,
+    int? MortgageTermYears = null
 );
 
 public interface IAccountService

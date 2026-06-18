@@ -23,7 +23,8 @@ public class AccountService : IAccountService
                 a.Id, a.Name, a.Type, a.Currency, a.Balance,
                 a.Institution, a.Colour, a.Icon, a.IsActive, a.ExcludeFromNetWorth,
                 a.CreditLimit, a.InterestRate, a.PromotionalBalance,
-                a.PromotionalRate, a.PromotionalExpiry, a.PromotionalRevertRate))
+                a.PromotionalRate, a.PromotionalExpiry, a.PromotionalRevertRate,
+                a.MortgageStartDate, a.MortgageTermYears))
             .ToListAsync(ct);
     }
 
@@ -54,6 +55,8 @@ public class AccountService : IAccountService
             PromotionalRate = request.PromotionalRate,
             PromotionalExpiry = request.PromotionalExpiry,
             PromotionalRevertRate = request.PromotionalRevertRate,
+            MortgageStartDate = request.MortgageStartDate,
+            MortgageTermYears = request.MortgageTermYears,
         };
 
         _db.Accounts.Add(account);
@@ -85,6 +88,8 @@ public class AccountService : IAccountService
         if (request.PromotionalRate is not null) account.PromotionalRate = request.PromotionalRate;
         if (request.PromotionalExpiry is not null) account.PromotionalExpiry = request.PromotionalExpiry;
         if (request.PromotionalRevertRate is not null) account.PromotionalRevertRate = request.PromotionalRevertRate;
+        if (request.MortgageStartDate is not null) account.MortgageStartDate = request.MortgageStartDate;
+        if (request.MortgageTermYears is not null) account.MortgageTermYears = request.MortgageTermYears;
         account.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync(ct);
