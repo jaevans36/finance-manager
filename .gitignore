@@ -1,5 +1,6 @@
-# AI brainstorming session files
+# AI tooling — local config, not project code
 .superpowers/
+.claude/settings.local.json
 
 # Dependencies
 node_modules/
