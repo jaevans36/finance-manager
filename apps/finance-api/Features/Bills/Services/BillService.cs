@@ -17,6 +17,14 @@ public class BillService : IBillService
             .OrderBy(b => b.DueDay)
             .ToListAsync(ct);
 
+    public async Task<IEnumerable<Bill>> GetAllBillsAsync(Guid userId, CancellationToken ct = default)
+        => await _db.Bills
+            .Include(b => b.Category)
+            .Where(b => b.UserId == userId)
+            .OrderBy(b => b.IsActive ? 0 : 1)
+            .ThenBy(b => b.Name)
+            .ToListAsync(ct);
+
     public async Task<IEnumerable<UpcomingBill>> GetUpcomingBillsAsync(
         Guid userId, DateTime? today = null, int daysAhead = 30, CancellationToken ct = default)
     {
@@ -41,6 +49,7 @@ public class BillService : IBillService
         {
             UserId = userId,
             Name = request.Name,
+            Description = request.Description,
             Amount = request.Amount,
             Frequency = request.Frequency,
             DueDay = request.DueDay,
@@ -58,16 +67,18 @@ public class BillService : IBillService
     {
         var bill = await _db.Bills
             .Include(b => b.Category)
-            .FirstOrDefaultAsync(b => b.Id == billId && b.UserId == userId && b.IsActive, ct);
+            .FirstOrDefaultAsync(b => b.Id == billId && b.UserId == userId, ct);
 
         if (bill is null) return null;
 
         if (request.Name is not null) bill.Name = request.Name;
+        if (request.Description is not null) bill.Description = request.Description == string.Empty ? null : request.Description;
         if (request.Amount.HasValue) bill.Amount = request.Amount.Value;
         if (request.Frequency.HasValue) bill.Frequency = request.Frequency.Value;
         if (request.DueDay.HasValue) bill.DueDay = request.DueDay.Value;
         if (request.ReminderDaysBefore.HasValue) bill.ReminderDaysBefore = request.ReminderDaysBefore.Value;
         if (request.CategoryId.HasValue) bill.CategoryId = request.CategoryId.Value;
+        if (request.IsActive.HasValue) bill.IsActive = request.IsActive.Value;
         bill.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
         return bill;
@@ -79,8 +90,7 @@ public class BillService : IBillService
             .FirstOrDefaultAsync(b => b.Id == billId && b.UserId == userId, ct);
 
         if (bill is null) return false;
-        bill.IsActive = false;
-        bill.UpdatedAt = DateTime.UtcNow;
+        _db.Bills.Remove(bill);
         await _db.SaveChangesAsync(ct);
         return true;
     }

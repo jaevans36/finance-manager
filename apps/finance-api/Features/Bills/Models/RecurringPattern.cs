@@ -14,10 +14,12 @@ public enum AmountTrend { Stable, Increasing, Decreasing }
 public record RecurringPattern(
     string MerchantName,
     decimal AverageAmount,
+    decimal LatestAmount,
     decimal MinAmount,
     decimal MaxAmount,
     RecurringFrequency DetectedFrequency,
     RecurringPatternType PatternType,
     AmountTrend AmountTrend,
     int OccurrencesInPeriod,
-    DateOnly? LastOccurrence);
+    DateOnly? LastOccurrence,
+    bool IsLikelyInactive = false);

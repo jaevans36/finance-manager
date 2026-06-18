@@ -9,6 +9,7 @@ import type { AccountSummary, Category, PagedResult, Transaction } from '../../t
 
 import { AccountsDashboard } from '../../components/finance/AccountsDashboard';
 import { AccountForm } from '../../components/finance/AccountForm';
+import { AddTransactionForm } from '../../components/finance/AddTransactionForm';
 import { CsvImport } from '../../components/finance/CsvImport';
 import { TransactionFilters } from '../../components/finance/TransactionFilters';
 import { TransactionList } from '../../components/finance/TransactionList';
@@ -50,6 +51,7 @@ export default function FinancePage() {
   const [txData, setTxData] = useState<PagedResult<Transaction> | null>(null);
   const [txLoading, setTxLoading] = useState(false);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [showAddTx, setShowAddTx] = useState(false);
 
   useEffect(() => {
     financeCategoryService.getCategories()
@@ -100,6 +102,7 @@ export default function FinancePage() {
     setActiveTab(tab);
     setShowForm(false);
     setShowImport(false);
+    setShowAddTx(false);
     setEditingAccount(null);
   };
 
@@ -195,13 +198,31 @@ export default function FinancePage() {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setShowImport(v => !v)}
+                    onClick={() => { setShowAddTx(v => !v); setShowImport(false); }}
+                    className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    {showAddTx ? 'Cancel' : 'Add manually'}
+                  </button>
+                  <button
+                    onClick={() => { setShowImport(v => !v); setShowAddTx(false); }}
                     className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
                   >
                     {showImport ? 'Hide import' : 'Import CSV'}
                   </button>
                 </div>
               </div>
+
+              {showAddTx && (
+                <div className="rounded-xl border border-border bg-card p-5 max-w-lg">
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Add transaction manually</h3>
+                  <AddTransactionForm
+                    accountId={selectedAccount.id}
+                    categories={categories}
+                    onAdded={() => { setShowAddTx(false); loadTransactions(); }}
+                    onCancel={() => setShowAddTx(false)}
+                  />
+                </div>
+              )}
 
               {showImport && (
                 <div className="rounded-xl border border-border bg-card p-5 max-w-lg">
@@ -290,16 +311,15 @@ export default function FinancePage() {
                     <h3 className="text-base font-semibold text-foreground">New bill</h3>
                     <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
                   </div>
-                  <BillForm onSuccess={handleSaved} />
+                  <BillForm onSuccess={handleSaved} onCancel={() => setShowForm(false)} />
                 </div>
               )}
             </div>
           )}
-          <div>
-            <h2 className="text-base font-semibold text-foreground mb-3">Upcoming bills</h2>
-            <BillsDashboard key={refreshKey} onAddBill={() => setShowForm(true)} />
-          </div>
-          <div><RecurringDetected /></div>
+
+          <BillsDashboard key={refreshKey} onAddBill={() => setShowForm(true)} />
+
+          <RecurringDetected onBillSaved={handleSaved} />
         </section>
       )}
 
@@ -339,6 +359,7 @@ export default function FinancePage() {
           categories={categories}
           onClose={() => setSelectedTx(null)}
           onUpdated={() => { setSelectedTx(null); loadTransactions(); }}
+          onDeleted={() => { setSelectedTx(null); loadTransactions(); }}
         />
       )}
     </PageLayout>

@@ -11,6 +11,7 @@ public class Bill
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid UserId { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
     public decimal Amount { get; set; }
     public BillFrequency Frequency { get; set; }
 
@@ -36,7 +37,8 @@ public record CreateBillRequest(
     BillFrequency Frequency,
     int DueDay,
     int ReminderDaysBefore,
-    Guid? CategoryId);
+    Guid? CategoryId,
+    string? Description = null);
 
 public record UpdateBillRequest(
     string? Name = null,
@@ -44,7 +46,9 @@ public record UpdateBillRequest(
     BillFrequency? Frequency = null,
     int? DueDay = null,
     int? ReminderDaysBefore = null,
-    Guid? CategoryId = null);
+    Guid? CategoryId = null,
+    bool? IsActive = null,
+    string? Description = null);
 
 public record UpcomingBill(
     Bill Bill,

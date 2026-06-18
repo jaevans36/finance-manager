@@ -6,17 +6,27 @@ const FREQUENCIES: BillFrequency[] = ['Weekly', 'Monthly', 'Quarterly', 'Annual'
 
 interface BillFormProps {
   onSuccess: () => void;
+  onCancel?: () => void;
+  billId?: string;
   defaultName?: string;
+  defaultDescription?: string;
   defaultAmount?: number;
   defaultFrequency?: BillFrequency;
+  defaultDueDay?: number;
+  defaultReminderDays?: number;
 }
 
-export function BillForm({ onSuccess, defaultName = '', defaultAmount, defaultFrequency = 'Monthly' }: BillFormProps) {
+export function BillForm({
+  onSuccess, onCancel, billId,
+  defaultName = '', defaultDescription = '', defaultAmount,
+  defaultFrequency = 'Monthly', defaultDueDay, defaultReminderDays,
+}: BillFormProps) {
   const [name, setName] = useState(defaultName);
+  const [description, setDescription] = useState(defaultDescription);
   const [amount, setAmount] = useState(defaultAmount?.toString() ?? '');
   const [frequency, setFrequency] = useState<BillFrequency>(defaultFrequency);
-  const [dueDay, setDueDay] = useState('1');
-  const [reminderDays, setReminderDays] = useState('3');
+  const [dueDay, setDueDay] = useState(defaultDueDay?.toString() ?? '1');
+  const [reminderDays, setReminderDays] = useState(defaultReminderDays?.toString() ?? '3');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -29,14 +39,26 @@ export function BillForm({ onSuccess, defaultName = '', defaultAmount, defaultFr
     setError(null);
     setIsSubmitting(true);
     try {
-      const request: CreateBillRequest = {
-        name: name.trim(),
-        amount: parsedAmount,
-        frequency,
-        dueDay: parseInt(dueDay, 10),
-        reminderDaysBefore: parseInt(reminderDays, 10),
-      };
-      await billService.createBill(request);
+      if (billId) {
+        await billService.updateBill(billId, {
+          name: name.trim(),
+          description: description.trim() || undefined,
+          amount: parsedAmount,
+          frequency,
+          dueDay: parseInt(dueDay, 10),
+          reminderDaysBefore: parseInt(reminderDays, 10),
+        });
+      } else {
+        const request: CreateBillRequest = {
+          name: name.trim(),
+          description: description.trim() || undefined,
+          amount: parsedAmount,
+          frequency,
+          dueDay: parseInt(dueDay, 10),
+          reminderDaysBefore: parseInt(reminderDays, 10),
+        };
+        await billService.createBill(request);
+      }
       onSuccess();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to save bill.');
@@ -56,6 +78,19 @@ export function BillForm({ onSuccess, defaultName = '', defaultAmount, defaultFr
           value={name}
           onChange={e => setName(e.target.value)}
           placeholder="e.g. Netflix, Electricity"
+          className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Description <span className="font-normal text-gray-400">(optional)</span>
+        </label>
+        <input
+          type="text"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          placeholder="e.g. Home broadband, Joint account direct debit"
           className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
@@ -124,13 +159,24 @@ export function BillForm({ onSuccess, defaultName = '', defaultAmount, defaultFr
         <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
       )}
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-      >
-        {isSubmitting ? 'Saving…' : 'Save bill'}
-      </button>
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+        >
+          {isSubmitting ? 'Saving…' : billId ? 'Save changes' : 'Save bill'}
+        </button>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
     </form>
   );
 }

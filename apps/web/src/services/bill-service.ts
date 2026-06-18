@@ -34,9 +34,17 @@ export const billService = {
     return financeApiClient.delete(`/api/v1/finance/bills/${id}`).then(() => undefined);
   },
 
-  detectRecurring(): Promise<RecurringPattern[]> {
+  getAllBills(): Promise<Bill[]> {
+    return financeApiClient.get<Bill[]>('/api/v1/finance/bills/all').then(r => r.data);
+  },
+
+  setActive(id: string, isActive: boolean): Promise<Bill> {
+    return financeApiClient.put<Bill>(`/api/v1/finance/bills/${id}`, { isActive }).then(r => r.data);
+  },
+
+  detectRecurring(days = 365): Promise<RecurringPattern[]> {
     return financeApiClient
-      .post<RecurringPattern[]>('/api/v1/finance/bills/detect-recurring')
+      .post<RecurringPattern[]>('/api/v1/finance/bills/detect-recurring', null, { params: { days } })
       .then(r => r.data);
   },
 };

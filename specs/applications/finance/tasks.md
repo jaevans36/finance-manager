@@ -95,6 +95,17 @@
 - [x] T1182e [US1] Write Jest tests for `TransactionFilters` (6) + `TransactionDetailPanel` (5) — total 11 tests — 2h
 - [x] T1182f [US1] Add Accounts + Transactions tabs to `FinancePage` — Accounts: AccountsDashboard + AccountForm; Transactions: account selector → TransactionFilters + TransactionList + TransactionDetailPanel + CsvImport — 4h
 
+### Credit Account Enhancements (new — 2026-06-11)
+
+- [x] T1314 [P] [US1] Add 6 credit detail fields to `Account` entity: `CreditLimit`, `InterestRate`, `PromotionalBalance`, `PromotionalRate`, `PromotionalExpiry` (DateOnly?), `PromotionalRevertRate`; configure `HasPrecision` in `FinanceDbContext` — 2h
+- [x] T1315 [US1] Create EF Core migration `AddCreditAccountFields` for new nullable columns — 0.5h
+- [x] T1316 [US1] Extend `AccountSummary`, `CreateAccountRequest`, `UpdateAccountRequest` DTOs with new optional fields (default null); update `AccountService` mapping — 2h
+- [x] T1317 [US1] Add `[JsonConverter(typeof(JsonStringEnumConverter))]` to all Finance API enum types (`AccountType`, `TransactionType`, `ImportSource`, `BillFrequency`, `RecurringFrequency`, `RecurringPatternType`, `AmountTrend`, `PotType`, `SavingsGoalStatus`, `RuleMatchType`) and register globally in `Program.cs` — 1h
+- [x] T1318 [P] [US1] Add `CreditDetail` interface to `finance.ts`; extend `Account`, `AccountSummary`, `CreateAccountRequest`, `UpdateAccountRequest` — 1h
+- [x] T1319 [US1] Extend `AccountForm` with edit mode support + conditional fields per account type: credit limit (Credit), overdraft limit (Checking), interest rate (Credit/Loan/Mortgage/Checking), promotional deal box (Credit — balance, rate, expiry, revert rate), fixed rate expiry (Mortgage) — 4h
+- [x] T1320 [US1] Add `CreditDetail` sub-component to `AccountsDashboard`: promotional balance row with rate/expiry/revert-rate; standard balance at APR; available credit vs limit; 90-day expiry warning indicator; page-level warning banner — 3h
+- [x] T1321 [US1] Add edit (pencil) and delete (trash with inline confirmation) actions to `AccountsDashboard` account rows — 2h
+
 ### Merchant Normalisation (new — 2026-06-08)
 
 - [x] T1290 [P] [US1] Define `IMerchantNormalisationService`; implement `MerchantNormalisationService` with 50+ UK merchant patterns; case-insensitive matching; populate `Payee` field — 4h

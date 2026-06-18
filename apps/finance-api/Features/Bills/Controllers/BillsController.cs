@@ -27,6 +27,11 @@ public class BillsController : ControllerBase
     public async Task<IActionResult> GetBills(CancellationToken ct)
         => Ok(await _bills.GetBillsAsync(UserId, ct));
 
+    /// <summary>List all bills including inactive ones.</summary>
+    [HttpGet("all")]
+    public async Task<IActionResult> GetAllBills(CancellationToken ct)
+        => Ok(await _bills.GetAllBillsAsync(UserId, ct));
+
     /// <summary>List upcoming bills within the specified look-ahead window (default 30 days).</summary>
     [HttpGet("upcoming")]
     public async Task<IActionResult> GetUpcoming([FromQuery] int days = 30, CancellationToken ct = default)
@@ -60,7 +65,7 @@ public class BillsController : ControllerBase
         return success ? NoContent() : NotFound();
     }
 
-    /// <summary>Soft-delete a bill.</summary>
+    /// <summary>Permanently delete a bill.</summary>
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteBill(Guid id, CancellationToken ct)
     {
@@ -68,8 +73,8 @@ public class BillsController : ControllerBase
         return success ? NoContent() : NotFound();
     }
 
-    /// <summary>Detect recurring payment patterns from the last 90 days of transactions.</summary>
+    /// <summary>Detect recurring payment patterns from the last N days of transactions (default 365).</summary>
     [HttpPost("detect-recurring")]
-    public async Task<IActionResult> DetectRecurring(CancellationToken ct)
-        => Ok(await _detector.DetectAsync(UserId, ct));
+    public async Task<IActionResult> DetectRecurring([FromQuery] int days = 365, CancellationToken ct = default)
+        => Ok(await _detector.DetectAsync(UserId, days, ct));
 }

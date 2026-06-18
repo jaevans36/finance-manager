@@ -12,9 +12,11 @@ public partial class RecurringPaymentDetector : IRecurringPaymentDetector
 
     public RecurringPaymentDetector(FinanceDbContext db) => _db = db;
 
-    public async Task<IEnumerable<RecurringPattern>> DetectAsync(Guid userId, CancellationToken ct = default)
+    public async Task<IEnumerable<RecurringPattern>> DetectAsync(Guid userId, int days = 365, CancellationToken ct = default)
     {
-        var cutoff = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-90));
+        var cutoff = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-days));
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
         var transactions = await _db.Transactions
             .Where(t => t.UserId == userId
                      && t.Type == TransactionType.Debit
@@ -40,16 +42,30 @@ public partial class RecurringPaymentDetector : IRecurringPaymentDetector
             var trend = DetectAmountTrend(amounts);
             var patternType = ClassifyPattern(frequency, amounts.Min(), amounts.Max(), avg);
 
+            var expectedIntervalDays = frequency switch
+            {
+                RecurringFrequency.Weekly => 7.0,
+                RecurringFrequency.Monthly => 30.0,
+                RecurringFrequency.Quarterly => 91.0,
+                RecurringFrequency.Annual => 365.0,
+                _ => 30.0
+            };
+            var daysSinceLast = (today.ToDateTime(TimeOnly.MinValue) -
+                                 items.Last().TransactionDate.ToDateTime(TimeOnly.MinValue)).TotalDays;
+            var isLikelyInactive = daysSinceLast > expectedIntervalDays * 1.5;
+
             patterns.Add(new RecurringPattern(
                 group.Key,
                 Math.Round(avg, 2),
+                items.Last().Amount,
                 amounts.Min(),
                 amounts.Max(),
                 frequency,
                 patternType,
                 trend,
                 items.Count,
-                items.Last().TransactionDate));
+                items.Last().TransactionDate,
+                isLikelyInactive));
         }
 
         return patterns.OrderByDescending(p => p.AverageAmount);

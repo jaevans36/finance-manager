@@ -134,7 +134,7 @@ public class RecurringPaymentDetectorTests : IDisposable
     }
 
     [Fact]
-    public async Task DetectAsync_IgnoresTransactionsOlderThan90Days()
+    public async Task DetectAsync_WhenDaysParam90_IgnoresTransactionsOutsideWindow()
     {
         var now = DateTime.UtcNow;
         _db.Transactions.AddRange(
@@ -142,9 +142,23 @@ public class RecurringPaymentDetectorTests : IDisposable
             MakeTx("OLD SERVICE", 10m, now.AddDays(-91)));
         await _db.SaveChangesAsync();
 
-        var result = await _sut.DetectAsync(_userId);
+        var result = await _sut.DetectAsync(_userId, days: 90);
 
         result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task DetectAsync_DefaultLookback365Days_IncludesTransactionsWithinWindow()
+    {
+        var now = DateTime.UtcNow;
+        _db.Transactions.AddRange(
+            MakeTx("OLD SERVICE", 10m, now.AddDays(-200)),
+            MakeTx("OLD SERVICE", 10m, now.AddDays(-170)));
+        await _db.SaveChangesAsync();
+
+        var result = (await _sut.DetectAsync(_userId)).ToList();
+
+        result.Should().HaveCount(1);
     }
 
     [Fact]
