@@ -1,157 +1,163 @@
 # Life Manager - Development Startup Script
-# This script starts all required services for development
 
 Write-Host "Life Manager - Starting Development Environment" -ForegroundColor Cyan
 Write-Host ""
-
-# Change to project root
 Set-Location "C:\Projects\Finance Manager"
 
-# Step 1: Check if Docker Desktop is running
+# -- Step 1: Check Docker is running ------------------------------------------
 Write-Host "Step 1: Checking Docker..." -ForegroundColor Yellow
-try {
-    $dockerInfo = docker info 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "[X] Docker is not running. Starting Docker Desktop..." -ForegroundColor Red
-        Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
-        Write-Host "Waiting 30 seconds for Docker to start..." -ForegroundColor Yellow
-        Start-Sleep -Seconds 30
-    } else {
-        Write-Host "[OK] Docker is running" -ForegroundColor Green
+$dockerReady = $false
+$dockerAttempts = 0
+while (-not $dockerReady -and $dockerAttempts -lt 60) {
+    $pipe = Get-ChildItem -Path "\\.\pipe\" | Where-Object { $_.Name -like "dockerDesktopLinuxEngine" }
+    if ($pipe) {
+        docker ps 2>&1 | Out-Null
+        if ($LASTEXITCODE -eq 0) { $dockerReady = $true; break }
     }
-
-    # Step 2: Clear any stale processes holding the dev ports
+    if ($dockerAttempts -eq 0) { Write-Host "   Waiting for Docker engine" -NoNewline -ForegroundColor Yellow }
+    Write-Host "." -NoNewline -ForegroundColor Yellow
+    Start-Sleep -Seconds 2
+    $dockerAttempts++
+}
+if (-not $dockerReady) {
     Write-Host ""
-    Write-Host "Step 2: Clearing any stale processes on dev ports..." -ForegroundColor Yellow
-    @(5000, 5001, 5002, 5003, 5173) | ForEach-Object {
-        $port = $_
-        Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue |
-            Select-Object -ExpandProperty OwningProcess |
-            ForEach-Object {
-                Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue
-                Write-Host "   Cleared stale process on port $port" -ForegroundColor Gray
-            }
-    }
-    Write-Host "[OK] Ports clear" -ForegroundColor Green
+    Write-Host "[X] Docker engine is not ready after $($dockerAttempts * 2)s." -ForegroundColor Red
+    Write-Host "    Check Docker Desktop in the system tray - wait for the whale icon" -ForegroundColor Yellow
+    Write-Host "    to stop animating, then re-run this script." -ForegroundColor Yellow
+    exit 1
+}
+Write-Host " ready" -ForegroundColor Green
+Write-Host "[OK] Docker is ready" -ForegroundColor Green
 
-    # Step 3: Start PostgreSQL container
-    Write-Host ""
-    Write-Host "Step 3: Starting PostgreSQL database..." -ForegroundColor Yellow
-    docker-compose up -d
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "[X] Failed to start database" -ForegroundColor Red
-        exit 1
-    }
-    
-    Write-Host "Waiting for database to be ready..." -ForegroundColor Yellow
-    $maxAttempts = 30
-    $attempt = 0
-    while ($attempt -lt $maxAttempts) {
-        $containerStatus = docker ps --filter "name=life-manager-db" --format "{{.Status}}"
-        if ($containerStatus -like "*healthy*") {
-            Write-Host "[OK] Database is ready" -ForegroundColor Green
-            break
+# -- Step 2: Clear stale processes on dev ports --------------------------------
+Write-Host ""
+Write-Host "Step 2: Clearing stale processes on dev ports..." -ForegroundColor Yellow
+@(5000, 5001, 5002, 5003, 5173) | ForEach-Object {
+    $port = $_
+    Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue |
+        Select-Object -ExpandProperty OwningProcess |
+        ForEach-Object {
+            Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue
+            Write-Host "   Cleared stale process on port $port" -ForegroundColor Gray
         }
-        Start-Sleep -Seconds 1
-        $attempt++
-    }
+}
+Write-Host "[OK] Ports clear" -ForegroundColor Green
 
-    if ($attempt -eq $maxAttempts) {
-        Write-Host "[X] Database failed to start" -ForegroundColor Red
-        exit 1
-    }
+# -- Step 3: Start PostgreSQL --------------------------------------------------
+Write-Host ""
+Write-Host "Step 3: Starting PostgreSQL..." -ForegroundColor Yellow
+docker-compose up -d postgres 2>&1 | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "[X] Failed to start database container" -ForegroundColor Red
+    exit 1
+}
 
-    # Step 4: Check migrations for both APIs
+Write-Host "   Waiting for database to be healthy" -NoNewline -ForegroundColor Yellow
+$maxAttempts = 40
+$attempt = 0
+$dbReady = $false
+while ($attempt -lt $maxAttempts) {
+    $status = docker ps --filter "name=life-manager-db" --format "{{.Status}}" 2>&1
+    if ($status -like "*healthy*") {
+        $dbReady = $true
+        Write-Host " done ($($attempt)s)" -ForegroundColor Green
+        break
+    }
+    Write-Host "." -NoNewline -ForegroundColor Yellow
+    Start-Sleep -Seconds 1
+    $attempt++
+}
+if (-not $dbReady) {
     Write-Host ""
-    Write-Host "Step 4: Checking .NET API migrations..." -ForegroundColor Yellow
+    Write-Host "[X] Database did not become healthy after ${maxAttempts}s" -ForegroundColor Red
+    Write-Host "    Check:  docker ps" -ForegroundColor Yellow
+    Write-Host "    Logs:   docker logs life-manager-db" -ForegroundColor Yellow
+    exit 1
+}
 
-    $dotnetEfPath = "$env:USERPROFILE\.dotnet\tools\dotnet-ef.exe"
-
-    Set-Location "apps/life-api"
-    if (Test-Path $dotnetEfPath) {
-        & $dotnetEfPath migrations list 2>&1 | Out-Null
-        if ($LASTEXITCODE -eq 0) { Write-Host "[OK] life-api migrations ready" -ForegroundColor Green }
-        else { Write-Host "[!] life-api: run 'dotnet ef migrations add <Name>' in apps/life-api" -ForegroundColor Yellow }
-    } else {
-        Write-Host "[OK] life-api migrations check skipped (dotnet-ef not found)" -ForegroundColor Gray
-    }
-    Set-Location "C:\Projects\Finance Manager"
-
-    Set-Location "apps/finance-api"
-    if (Test-Path $dotnetEfPath) {
-        & $dotnetEfPath migrations list 2>&1 | Out-Null
-        if ($LASTEXITCODE -eq 0) { Write-Host "[OK] finance-api migrations ready" -ForegroundColor Green }
-        else { Write-Host "[!] finance-api: run 'dotnet ef migrations add <Name>' in apps/finance-api" -ForegroundColor Yellow }
-    } else {
-        Write-Host "[OK] finance-api migrations check skipped (dotnet-ef not found)" -ForegroundColor Gray
-    }
-    Set-Location "C:\Projects\Finance Manager"
-
-    # Step 5: Start development servers
-    Write-Host ""
-    Write-Host "Step 5: Starting development servers..." -ForegroundColor Yellow
-    Write-Host ""
-    Write-Host "====================================================" -ForegroundColor Cyan
-    Write-Host "Development environment is starting!" -ForegroundColor Green
-    Write-Host ""
-    Write-Host "Services:" -ForegroundColor Cyan
-    Write-Host "   Life API (.NET):        http://localhost:5000" -ForegroundColor White
-    Write-Host "   Finance API (.NET):     http://localhost:5002" -ForegroundColor White
-    Write-Host "   Web (React/Vite):       http://localhost:5173" -ForegroundColor White
-    Write-Host "   Database (PostgreSQL):  localhost:5432" -ForegroundColor White
-    Write-Host ""
-    Write-Host "Swagger / API Docs:" -ForegroundColor Cyan
-    Write-Host "   Life API:               http://localhost:5000/swagger" -ForegroundColor White
-    Write-Host "   Finance API:            http://localhost:5002/swagger" -ForegroundColor White
-    Write-Host ""
-    Write-Host "Press Ctrl+C to stop all services" -ForegroundColor Yellow
-    Write-Host "====================================================" -ForegroundColor Cyan
-    Write-Host ""
-
-    # Start all development servers in parallel
-    $jobs = @()
-
-    # Start Life API (.NET)
-    $jobs += Start-Job -Name "life-api" -ScriptBlock {
-        Set-Location "C:\Projects\Finance Manager\apps\life-api"
-        dotnet watch run --launch-profile http
-    }
-
-    # Start Finance API (.NET)
-    $jobs += Start-Job -Name "finance-api" -ScriptBlock {
-        Set-Location "C:\Projects\Finance Manager\apps\finance-api"
-        dotnet watch run --launch-profile http
-    }
-
-    # Start React Web App
-    $jobs += Start-Job -Name "web" -ScriptBlock {
-        Set-Location "C:\Projects\Finance Manager\apps\web"
-        $env:PATH = "$env:APPDATA\npm;$env:PATH"
-        pnpm dev
-    }
-
-    # Monitor jobs and display output
-    try {
-        while ($true) {
-            foreach ($job in $jobs) {
-                $output = Receive-Job $job
-                if ($output) {
-                    $prefix = "[$($job.Name)] "
-                    $output | ForEach-Object { Write-Host "$prefix$_" }
-                }
-            }
-            Start-Sleep -Milliseconds 100
-        }
-    }
-    finally {
-        Write-Host ""
-        Write-Host "Stopping all services..." -ForegroundColor Yellow
-        $jobs | Stop-Job
-        $jobs | Remove-Job
+# -- Step 4: Migration check ---------------------------------------------------
+Write-Host ""
+Write-Host "Step 4: Checking migrations..." -ForegroundColor Yellow
+$dotnetEf = "$env:USERPROFILE\.dotnet\tools\dotnet-ef.exe"
+foreach ($api in @("life-api", "finance-api")) {
+    Set-Location "C:\Projects\Finance Manager\apps\$api"
+    if (Test-Path $dotnetEf) {
+        & $dotnetEf migrations list 2>&1 | Out-Null
+        if ($LASTEXITCODE -eq 0) { Write-Host "[OK] $api migrations ready" -ForegroundColor Green }
+        else { Write-Host "[!] $api - check migrations manually" -ForegroundColor Yellow }
     }
 }
-catch {
+Set-Location "C:\Projects\Finance Manager"
+
+# -- Step 5: Start development servers ----------------------------------------
+Write-Host ""
+Write-Host "Step 5: Starting development servers..." -ForegroundColor Yellow
+Write-Host ""
+Write-Host "   life-api     http://localhost:5000   (Swagger: /swagger)" -ForegroundColor DarkGray
+Write-Host "   finance-api  http://localhost:5002   (Swagger: /swagger)" -ForegroundColor DarkGray
+Write-Host "   web          http://localhost:5173" -ForegroundColor DarkGray
+Write-Host ""
+Write-Host "Press Ctrl+C to stop all services" -ForegroundColor DarkGray
+Write-Host ""
+
+$jobs = @()
+$jobs += Start-Job -Name "life-api" -ScriptBlock {
+    Set-Location "C:\Projects\Finance Manager\apps\life-api"
+    dotnet watch run --launch-profile http
+}
+$jobs += Start-Job -Name "finance-api" -ScriptBlock {
+    Set-Location "C:\Projects\Finance Manager\apps\finance-api"
+    dotnet watch run --launch-profile http
+}
+$jobs += Start-Job -Name "web" -ScriptBlock {
+    Set-Location "C:\Projects\Finance Manager\apps\web"
+    $env:PATH = "$env:APPDATA\npm;$env:PATH"
+    pnpm dev
+}
+
+$colors = @{ "life-api" = "Cyan"; "finance-api" = "Green"; "web" = "Yellow" }
+$ready = @{}
+$bannerShown = $false
+
+try {
+    while ($true) {
+        foreach ($job in $jobs) {
+            $lines = Receive-Job $job
+            if (-not $lines) { continue }
+            $color = if ($colors[$job.Name]) { $colors[$job.Name] } else { "Gray" }
+            foreach ($line in $lines) {
+                Write-Host "[$($job.Name)] $line" -ForegroundColor $color
+
+                # .NET API ready signal
+                if (-not $ready[$job.Name] -and $line -like "*Now listening on*") {
+                    $ready[$job.Name] = $true
+                    Write-Host "  --> $($job.Name) is ready" -ForegroundColor Green
+                }
+                # Vite ready signal
+                if (-not $ready[$job.Name] -and ($line -like "*Local:*http*" -or $line -like "*ready in*")) {
+                    $ready[$job.Name] = $true
+                    Write-Host "  --> $($job.Name) is ready" -ForegroundColor Green
+                }
+            }
+        }
+
+        if (-not $bannerShown -and $ready.Count -eq $jobs.Count) {
+            $bannerShown = $true
+            Write-Host ""
+            Write-Host "==========================================" -ForegroundColor Green
+            Write-Host "  All services ready!" -ForegroundColor Green
+            Write-Host "  App:          http://localhost:5173" -ForegroundColor White
+            Write-Host "  Finance API:  http://localhost:5002/swagger" -ForegroundColor White
+            Write-Host "==========================================" -ForegroundColor Green
+            Write-Host ""
+        }
+
+        Start-Sleep -Milliseconds 200
+    }
+}
+finally {
     Write-Host ""
-    Write-Host "[X] Error: $($_.Exception.Message)" -ForegroundColor Red
-    exit 1
+    Write-Host "Stopping all services..." -ForegroundColor Yellow
+    $jobs | Stop-Job
+    $jobs | Remove-Job
 }
