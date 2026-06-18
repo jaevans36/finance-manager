@@ -110,6 +110,28 @@ public class TransactionService : ITransactionService
         if (request.Payee is not null) transaction.Payee = request.Payee;
         if (request.Notes is not null) transaction.Notes = request.Notes;
         if (request.IsReviewed is not null) transaction.IsReviewed = request.IsReviewed.Value;
+        if (request.TransactionDate.HasValue) transaction.TransactionDate = request.TransactionDate.Value;
+
+        if (request.Amount.HasValue || request.Type.HasValue)
+        {
+            var oldAmount = transaction.Amount;
+            var oldType = transaction.Type;
+            var newAmount = request.Amount ?? oldAmount;
+            var newType = request.Type ?? oldType;
+
+            var account = await _db.Accounts.FindAsync(new object[] { transaction.AccountId }, ct);
+            if (account is not null)
+            {
+                account.Balance += oldType == TransactionType.Credit ? -oldAmount : oldAmount;
+                account.Balance += newType == TransactionType.Credit ? newAmount : -newAmount;
+                account.UpdatedAt = DateTime.UtcNow;
+            }
+
+            transaction.Amount = newAmount;
+            transaction.BaseCurrencyAmount = newAmount;
+            transaction.Type = newType;
+        }
+
         transaction.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync(ct);
@@ -154,6 +176,7 @@ public class TransactionService : ITransactionService
             t.IsRecurring,
             t.IsDuplicate,
             t.ImportSource,
-            t.CreatedAt
+            t.CreatedAt,
+            t.Notes
         );
 }

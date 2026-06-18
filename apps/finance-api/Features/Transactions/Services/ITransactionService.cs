@@ -36,7 +36,8 @@ public record TransactionDto(
     bool IsRecurring,
     bool IsDuplicate,
     ImportSource ImportSource,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    string? Notes
 );
 
 public record CreateTransactionRequest(
@@ -58,7 +59,10 @@ public record UpdateTransactionRequest(
     string? Description,
     string? Payee,
     string? Notes,
-    bool? IsReviewed
+    bool? IsReviewed,
+    TransactionType? Type = null,
+    decimal? Amount = null,
+    DateOnly? TransactionDate = null
 );
 
 public record CsvImportResult(
