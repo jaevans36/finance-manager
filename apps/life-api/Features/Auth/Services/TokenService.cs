@@ -40,11 +40,17 @@ public class TokenService : ITokenService
             claims.Add(new Claim(ClaimTypes.Role, "Admin"));
         }
 
+        var expiresInMinutes = _configuration.GetValue<int>("Jwt:ExpiresInMinutes", 15);
+        // -1 means "never expire" — intended for development only
+        var expiry = expiresInMinutes < 0
+            ? DateTime.UtcNow.AddYears(10)
+            : DateTime.UtcNow.AddMinutes(expiresInMinutes);
+
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(15),
+            expires: expiry,
             signingCredentials: credentials
         );
 
