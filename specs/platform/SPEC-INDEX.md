@@ -201,14 +201,15 @@ This index maps features from the original `spec-v2-enhancements.md` to their ne
 | Phase 41 | Accounts & Transaction Import (CSV, 7 UK banks) | `applications/finance/spec.md` |
 | Phase 42 | Budgeting & Spending Pots (envelope budgeting) | `applications/finance/spec.md` |
 | Phase 43 | Bills & Savings Goals (recurring payment auto-detection) | `applications/finance/spec.md` |
+| Phase 43b | Bill-to-Account Linking & Financial Affordability Engine | `applications/finance/debt-burndown.md` |
 | Phase 44 | Financial Dashboard & Reports | `applications/finance/spec.md` |
 | Phase 45 | UK Specifics (ISA/SIPP, tax year, cash flow forecast) | `applications/finance/spec.md` |
 | Phase 46 | Investment Tracking | `applications/finance/spec.md` |
-| Phase 47 | Debt Management, Multi-Currency, Split Transactions | `applications/finance/spec.md` |
+| Phase 47 | Debt Burndown & Payoff Planning (severity scoring, Avalanche/Snowball, waterfall chart) | `applications/finance/debt-burndown.md` |
 | Phase 48 | AI Insights (Subscription Auditor, Negotiation Engine, Anomaly Detection) | `applications/finance/spec.md` |
 | Phase 49 | MCP Server (`finance_*` tools) + AI Chat Interface | `applications/finance/spec.md` |
 
-**Tasks**: `applications/finance/tasks.md` (T1155-T1256, 102 tasks, ~11 weeks — tasks.md to be updated for Phases 48–49)
+**Tasks**: `applications/finance/tasks.md` (T1155–T1357, ~169 tasks, ~19.5 weeks)
 
 ### Phase 48-54 - Frontend Modernisation
 

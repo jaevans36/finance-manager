@@ -207,6 +207,26 @@
 
 **Checkpoint**: Bills tracked manually + auto-detected from imported transactions; savings goals with projection
 
+### Phase 43 Additions — Bill-to-Account Linking (new — 2026-06-19)
+
+- [ ] T1322 [P] [US4] Add `AccountId?` (Guid? nullable FK → Accounts) to `Bill` entity; update `FinanceDbContext` navigation; create migration `AddBillAccountLink` — 1.5h
+- [ ] T1323 [US4] Update `BillService` — include `AccountName` in query projections; add `GetByAccountIdAsync`; include `AccountId` + `AccountName` in `BillResponse` DTO — 2h
+- [ ] T1324 [US4] Add account-filter to `BillsController`: `GET /finance/bills?accountId={id}` — 1h
+- [ ] T1325 [US4] Implement bill-to-transaction matching on import — fuzzy payee (contains bill name), amount ±10%, date ±5 days of due day; matched transaction marks bill paid and sets `Transaction.BillId` — 3h
+- [ ] T1326 [US4] Update `BillForm` — optional account selector (dropdown of user's active accounts); null = unlinked — 2h
+- [ ] T1327 [US4] Update `BillsDashboard` — show linked account name badge on each bill card; "Not linked" badge when `AccountId` is null — 2h
+- [ ] T1328 [US1] Update `AccountsDashboard` — "Monthly commitments: £X/mo" line beneath balance for accounts with linked bills; tooltip lists linked bill names — 2h
+- [ ] T1329 [US4] Write unit tests for bill-account linking in `BillService` (8+ tests: link, unlink, get-by-account, matching criteria) — 2h
+- [ ] T1330 [US4] Write Jest tests for updated `BillForm`, `BillsDashboard`, `AccountsDashboard` (6+ tests) — 1.5h
+
+### Phase 43b — Financial Affordability Engine (new — 2026-06-19)
+
+- [ ] T1331 [P] [US-UK] Add `ManualMonthlyIncome` (decimal?) to `UserFinanceSettings` entity; extend `FinanceSettingsDto`; create migration `AddManualIncomeToSettings` — 1h
+- [ ] T1332 [US-UK] Implement `AffordabilityService` — income detection (90-day credit scan: large regular credits, cadence ±3 days, payroll patterns); committed costs (active bills + minimum payments); discretionary (budget totals or transaction average fallback); safe surplus = income - committed - discretionary - buffer; return `IncomeConfidence` (High/Medium/Low) — 5h
+- [ ] T1333 [US-UK] Implement `AffordabilityController` — `GET /finance/affordability` (full breakdown), `PUT /finance/affordability/income` (manual income override) — 2h
+- [ ] T1334 [US-UK] Write unit tests for `AffordabilityService` (10+ tests — High/Medium/Low confidence paths, manual override, budget vs average fallback, empty transaction history) — 3h
+- [ ] T1335 [US-UK] Create `AffordabilityPanel` frontend component — detected income, committed costs, discretionary, buffer, safe surplus summary; "How is this calculated?" expandable section; manual income input when confidence is Low or user requests — 4h
+
 ---
 
 ## Phase 44: Financial Dashboard & Reports (Priority: P1)
@@ -293,31 +313,54 @@
 
 ---
 
-## Phase 47: Debt Management, Multi-Currency & Split Transactions (Priority: P3)
+## Phase 47: Debt Burndown & Payoff Planning (Priority: P3)
 
-**Purpose**: Debt tracker with payoff calculators, multi-currency support  
-**Estimated Effort**: 1.5 weeks (12 tasks)  
-**Dependencies**: Phase 41 complete
+**Purpose**: Severity-scored debt overview, Avalanche/Snowball/Custom payoff strategies, affordability-driven projection, waterfall visualisation  
+**Full spec**: `specs/applications/finance/debt-burndown.md`  
+**Estimated Effort**: 2.5 weeks (21 tasks)  
+**Dependencies**: Phase 41 complete; Phase 43 Phase 43b (AffordabilityService) required for pre-filled extra payment
 
-### Backend
+> **Note**: Original thin Phase 47 skeleton (T1249–T1252, T1254–T1257, T1259–T1260) is superseded by this expanded spec.
+> T1253 (ExchangeRateService) and T1258 (CurrencySettings) are retained below as the multi-currency section.
 
-- [ ] T1249 [P] [US9] Define `Debt` entity (type, originalAmount, currentBalance, interestRate, minimumPayment, dueDay, lender) — 2h
-- [ ] T1250 [US9] Create EF Core migration for `debts` table — 1h
-- [ ] T1251 [US9] Implement `DebtService` — CRUD, snowball (lowest balance first) and avalanche (highest rate first) payoff calculators, total interest paid projection — 5h
-- [ ] T1252 [US9] Implement `DebtsController` — CRUD, `GET /finance/debts/payoff-plan?strategy=snowball|avalanche` — 3h
-- [ ] T1253 [US8] Implement `ExchangeRateService` — daily rates from ECB free XML feed, 24h cache in memory, GBP base currency, `Convert(amount, from, to)` — 3h
-- [ ] T1254 [US8/US9] Write unit tests for `DebtService` + `ExchangeRateService` (12+ tests) — 2h
-- [ ] T1255 [US8/US9] Write integration tests for debt and currency endpoints (8+ tests) — 2h
+### Backend: Account Model Extensions
 
-### Frontend
+- [ ] T1336 [P] [US9] Extend `Account` entity with `MinimumMonthlyPayment` (decimal?), `CurrentMonthlyPayment` (decimal?), `LoanEndDate` (DateOnly?), `IsInterestOnly` (bool default false); update `FinanceDbContext`; create migration `AddDebtPaymentFields` — 2h
+- [ ] T1337 [US9] Update `AccountSummary`, `CreateAccountRequest`, `UpdateAccountRequest` DTOs with new fields; update `AccountService` mapping; update `AccountForm` with conditional fields per type (min payment: Credit/Loan; current payment: all debt types; loan end date: Loan only; interest-only toggle: Mortgage only) — 3h
 
-- [ ] T1256 [US9] Create `DebtTracker` component — debt list (lender, balance, rate, minimum payment), total owed summary, monthly minimum total — 4h
-- [ ] T1257 [US9] Create `PayoffCalculator` component — snowball vs avalanche side-by-side: months to payoff, total interest, monthly payment schedule table — 5h
-- [ ] T1258 [US8] Create `CurrencySettings` component — base currency selector (GBP default), toggle to show foreign account values in original vs base currency — 3h
-- [ ] T1259 [US8/US9] Write Jest tests for debt and currency components (6+ tests) — 2h
-- [ ] T1260 [US1–US9] Write comprehensive E2E test for the full finance flow (import → budget → bills → dashboard) — 3h
+### Backend: Debt Severity & Projection
 
-**Checkpoint**: Debt payoff planning with snowball/avalanche; multi-currency support with ECB rates
+- [ ] T1338 [P] [US9] Implement `DebtSeverityService` — scoring algorithm: base = `InterestRate`; promo expiry urgency bonus (≤90 days to revert rate); credit utilisation penalty (>80% adds +5); mortgage downweight (×0.4); return scored list with severity badges (Critical/High/Moderate/Low) — 4h
+- [ ] T1339 [US9] Implement `DebtProjectionService` — monthly loop: interest accrual on each debt, minimum payments applied, extra payment applied to priority debt by strategy; freed minimums cascade on payoff; always compute both Avalanche and Snowball for comparison; return `MonthlySnapshot[]` per debt — 6h
+- [ ] T1340 [US9] Implement `DebtController` — `GET /finance/debt/overview` (severity scores, weighted avg rate, monthly interest cost, payoff-at-minimums date), `POST /finance/debt/projection` (request: strategy, customOrder, extraPayment, includedAccountIds, excludeMortgage) — 3h
+- [ ] T1341 [US9] Write unit tests for `DebtSeverityService` (10+ tests — rate-only, promo expiry <90 days, promo expiry >90 days, utilisation >80%, mortgage downweight, combined) — 3h
+- [ ] T1342 [US9] Write unit tests for `DebtProjectionService` (12+ tests — Avalanche order, Snowball order, cascading minimums, extra payment = 0, single debt, strategy comparison output) — 4h
+- [ ] T1343 [US9] Write integration tests for `DebtController` (8+ tests) — 2h
+
+### Frontend: Debt Burndown Dashboard
+
+- [ ] T1344 [P] [US9] Add debt projection TypeScript interfaces to `finance.ts`: `DebtOverview`, `DebtSeverityItem`, `ProjectionRequest`, `ProjectionResponse`, `MonthlySnapshot` — 1h
+- [ ] T1345 [US9] Create `DebtOverviewCard` — severity-ranked list with Critical/High/Moderate/Low badges, total debt, weighted avg rate, total monthly interest, debt-free date at minimums only, mortgage include/exclude toggle — 4h
+- [ ] T1346 [US9] Create `DebtStrategySelector` — Avalanche/Snowball/Custom three-way toggle; extra payment slider (pre-filled from `AffordabilityService` safe surplus, user can adjust); per-account include/exclude toggles; strategy comparison line "Snowball costs £X more but closes Y accounts Z months sooner" — 5h
+- [ ] T1347 [US9] Create `DebtProjectionPanel` — debt-free headline date, total interest you'll pay, interest saved vs minimums-only, per-account payoff date table — 4h
+- [ ] T1348 [US9] Create `DebtWaterfallChart` — horizontal Recharts bar chart; one row per debt; bar from now to payoff month; colour-coded by severity; vertical "today" marker; tooltip shows balance at hovered month — 5h
+- [ ] T1349 [US9] Create `DebtBurndownDashboard` — orchestrator: `AffordabilityPanel` + `DebtOverviewCard` + `DebtStrategySelector` + `DebtProjectionPanel` + `DebtWaterfallChart`; add "Debt" tab to `FinancePage`; extra payment slider changes trigger client-side re-projection without new API call (call API only on strategy/account changes) — 4h
+- [ ] T1350 [US9] Write Jest tests for debt components (10+ tests — severity badges, strategy toggle, slider updates projection, waterfall data mapping) — 3h
+- [ ] T1351 [US9] Write E2E test for debt payoff (Avalanche with 3 accounts: assert highest-rate eliminated first, freed minimum cascades to next, chart updated) — 3h
+
+### Multi-Currency (carried from original Phase 47 spec)
+
+- [ ] T1352 [US8] Implement `ExchangeRateService` — daily rates from ECB free XML feed, 24h in-memory cache, GBP base, `Convert(amount, from, to)` — 3h
+- [ ] T1353 [US8] Implement `CurrencyController` — `GET /finance/currency/rates` — 1h
+- [ ] T1354 [US8] Write unit tests for `ExchangeRateService` (6+ tests — happy path, cache hit, feed unavailable fallback) — 1.5h
+- [ ] T1355 [US8] Create `CurrencySettings` frontend component — base currency selector (GBP default), toggle foreign account values between original and base currency — 3h
+- [ ] T1356 [US8] Write Jest tests for `CurrencySettings` (3+ tests) — 1h
+
+### Full Finance E2E
+
+- [ ] T1357 [US1–US9] Write comprehensive E2E test for the full finance flow: CSV import → budget setup → bill linking → debt overview → Avalanche projection → dashboard — 3h
+
+**Checkpoint**: Severity-scored debt overview; Avalanche/Snowball/Custom projection with waterfall chart; affordability-driven extra payment pre-fill; multi-currency support with ECB rates
 
 ---
 
@@ -386,16 +429,18 @@
 
 | Phase | Name | Priority | Tasks | Est. Effort |
 |-------|------|----------|-------|-------------|
-| 41 | Accounts & Transactions (+ project setup) | P1 | T1155–T1181 (27) | 2.5 weeks |
+| 41 | Accounts & Transactions (+ project setup) | P1 | T1155–T1181 (27) + T1290–T1321 (additions) | 2.5 weeks |
 | 42 | Budgeting & Spending Pots | P1 | T1182–T1196 (15) | 2 weeks |
 | 43 | Bills, Recurring Detection & Savings Goals | P2 | T1197–T1212 (16) | 2 weeks |
+| 43 additions | Bill-to-Account Linking | P2 | T1322–T1330 (9) | 1 week |
+| 43b | Financial Affordability Engine | P2 | T1331–T1335 (5) | 1 week |
 | 44 | Financial Dashboard & Reports | P1 | T1213–T1225 (13) | 1.5 weeks |
 | 45 | UK Specifics (ISA, Tax Year, Cash Flow) | P2 | T1226–T1235 (10) | 1.5 weeks |
 | 46 | Investment Tracking | P2 | T1236–T1248 (13) | 1.5 weeks |
-| 47 | Debt, Multi-Currency & Split Transactions | P3 | T1249–T1260 (12) | 1.5 weeks |
+| 47 | Debt Burndown & Payoff Planning | P3 | T1336–T1357 (22) | 2.5 weeks |
 | 48 | AI Insights & Agent Features | P3 | T1261–T1274 (14) | 2 weeks |
 | 49 | MCP Server Integration | P3 | T1275–T1289 (15) | 2 weeks |
-| **Total** | | | **135 tasks** | **~16.5 weeks** |
+| **Total** | | | **~169 tasks** | **~19.5 weeks** |
 
 ### MVP Completion (Phases 41–44)
 
