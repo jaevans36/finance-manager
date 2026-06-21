@@ -3,12 +3,19 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '../utils/test-utils';
 import { DebtBurndownDashboard } from '../../src/components/finance/DebtBurndownDashboard';
-import type { DebtOverviewResponse, DebtProjectionResponse } from '../../src/types/finance';
+import type { AffordabilityData, DebtOverviewResponse, DebtProjectionResponse } from '../../src/types/finance';
 
 jest.mock('../../src/services/debt-service', () => ({
   debtService: {
     getOverview: jest.fn(),
     getProjection: jest.fn(),
+  },
+}));
+
+jest.mock('../../src/services/affordability-service', () => ({
+  affordabilityService: {
+    getAffordability: jest.fn(),
+    updateManualIncome: jest.fn(),
   },
 }));
 
@@ -18,6 +25,7 @@ jest.mock('../../src/components/finance/DebtWaterfallChart', () => ({
 }));
 
 const { debtService } = jest.requireMock('../../src/services/debt-service');
+const { affordabilityService } = jest.requireMock('../../src/services/affordability-service');
 
 const makeOverview = (overrides: Partial<DebtOverviewResponse> = {}): DebtOverviewResponse => ({
   debts: [
@@ -61,10 +69,24 @@ const makeProjection = (): DebtProjectionResponse => ({
   ],
 });
 
+const makeAffordability = (overrides: Partial<AffordabilityData> = {}): AffordabilityData => ({
+  monthlyIncome: 3000,
+  incomeConfidence: 'High',
+  incomeSource: 'Detected',
+  committedCosts: 800,
+  discretionarySpend: 600,
+  emergencyBuffer: 200,
+  safeSurplus: 1400,
+  suggestedDebtPayment: 1260,
+  calculatedAt: '2026-06-21',
+  ...overrides,
+});
+
 describe('DebtBurndownDashboard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     debtService.getProjection.mockResolvedValue(makeProjection());
+    affordabilityService.getAffordability.mockResolvedValue(makeAffordability());
   });
 
   it('shows loading state initially', () => {
@@ -76,7 +98,9 @@ describe('DebtBurndownDashboard', () => {
   });
 
   it('shows debt-free message when there are no debts', async () => {
-    debtService.getOverview.mockResolvedValue(makeOverview({ debts: [], totalDebt: 0, totalMinimumPayments: 0, totalCurrentPayments: 0 }));
+    debtService.getOverview.mockResolvedValue(
+      makeOverview({ debts: [], totalDebt: 0, totalMinimumPayments: 0, totalCurrentPayments: 0 })
+    );
 
     renderWithProviders(<DebtBurndownDashboard />);
 
@@ -85,12 +109,35 @@ describe('DebtBurndownDashboard', () => {
     });
   });
 
+  it('shows recommendation card with suggested payment', async () => {
+    debtService.getOverview.mockResolvedValue(makeOverview());
+
+    renderWithProviders(<DebtBurndownDashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Recommended monthly payment')).toBeInTheDocument();
+    });
+    expect(screen.getByText('£1,260')).toBeInTheDocument();
+  });
+
+  it('shows income-not-detected card when affordability has no income', async () => {
+    affordabilityService.getAffordability.mockResolvedValue(
+      makeAffordability({ monthlyIncome: 0, incomeConfidence: 'Low', incomeSource: 'Detected', safeSurplus: 0, suggestedDebtPayment: 0 })
+    );
+    debtService.getOverview.mockResolvedValue(makeOverview());
+
+    renderWithProviders(<DebtBurndownDashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Income not detected')).toBeInTheDocument();
+    });
+  });
+
   it('shows debt overview and strategy selector when debts exist', async () => {
     debtService.getOverview.mockResolvedValue(makeOverview());
 
     renderWithProviders(<DebtBurndownDashboard />);
 
-    // Wait for loading to clear (overviewLoading starts true; clears after both promises resolve)
     await waitFor(() => {
       expect(screen.queryByText(/loading debt overview/i)).not.toBeInTheDocument();
     }, { timeout: 3000 });
@@ -101,14 +148,14 @@ describe('DebtBurndownDashboard', () => {
     expect(screen.getByText('Snowball')).toBeInTheDocument();
   });
 
-  it('auto-runs Avalanche projection on load', async () => {
+  it('auto-runs Avalanche projection using the suggested payment', async () => {
     debtService.getOverview.mockResolvedValue(makeOverview());
 
     renderWithProviders(<DebtBurndownDashboard />);
 
     await waitFor(() => {
       expect(debtService.getProjection).toHaveBeenCalledWith(
-        expect.objectContaining({ strategy: 'Avalanche' })
+        expect.objectContaining({ strategy: 'Avalanche', extraMonthlyPayment: 1260 })
       );
     });
   });
@@ -135,7 +182,6 @@ describe('DebtBurndownDashboard', () => {
       expect(screen.getByText('Paydown calculator')).toBeInTheDocument();
     });
 
-    // Strategy buttons contain description text — match by partial accessible name
     await user.click(screen.getByRole('button', { name: /^snowball/i }));
     await user.click(screen.getByRole('button', { name: 'Calculate projection' }));
 

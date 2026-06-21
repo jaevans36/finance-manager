@@ -29,6 +29,7 @@ interface DebtStrategySelectorProps {
   ) => void;
   isLoading?: boolean;
   initialExtraPayment?: number;
+  suggestedPayment?: number;
 }
 
 export function DebtStrategySelector({
@@ -36,6 +37,7 @@ export function DebtStrategySelector({
   onSubmit,
   isLoading = false,
   initialExtraPayment = 0,
+  suggestedPayment,
 }: DebtStrategySelectorProps) {
   const [strategy, setStrategy] = useState<DebtStrategy>('Avalanche');
   const [extraPayment, setExtraPayment] = useState(
@@ -103,9 +105,20 @@ export function DebtStrategySelector({
             placeholder="0 — pay minimums only"
             className={fieldClass}
           />
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Amount above your minimums to throw at the priority debt each month
-          </p>
+          <div className="mt-1 flex items-center gap-2">
+            <p className="text-xs text-muted-foreground flex-1">
+              Amount above your minimums to throw at the priority debt each month
+            </p>
+            {suggestedPayment != null && suggestedPayment > 0 && parseFloat(extraPayment) !== suggestedPayment && (
+              <button
+                type="button"
+                onClick={() => setExtraPayment(String(suggestedPayment))}
+                className="text-xs text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap shrink-0"
+              >
+                Reset to suggested ({new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(suggestedPayment)})
+              </button>
+            )}
+          </div>
         </div>
       )}
 
