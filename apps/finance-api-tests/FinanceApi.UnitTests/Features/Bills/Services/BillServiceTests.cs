@@ -60,12 +60,70 @@ public class BillServiceTests : IDisposable
         result.First().Name.Should().Be("Active");
     }
 
+    [Fact]
+    public async Task GetBillsAsync_WhenLinkedToAccount_IncludesAccountName()
+    {
+        var account = MakeAccount("Barclays Current");
+        _db.Accounts.Add(account);
+        var bill = MakeBill(_userId, "Electricity", accountId: account.Id);
+        _db.Bills.Add(bill);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetBillsAsync(_userId);
+
+        result.First().AccountName.Should().Be("Barclays Current");
+        result.First().AccountId.Should().Be(account.Id);
+    }
+
+    [Fact]
+    public async Task GetBillsAsync_WhenNotLinkedToAccount_AccountNameIsNull()
+    {
+        _db.Bills.Add(MakeBill(_userId, "Netflix"));
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetBillsAsync(_userId);
+
+        result.First().AccountName.Should().BeNull();
+        result.First().AccountId.Should().BeNull();
+    }
+
+    // ── GetByAccountIdAsync ──────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetByAccountIdAsync_ReturnsOnlyBillsLinkedToSpecifiedAccount()
+    {
+        var account1 = MakeAccount("Account 1");
+        var account2 = MakeAccount("Account 2");
+        _db.Accounts.AddRange(account1, account2);
+        _db.Bills.Add(MakeBill(_userId, "Netflix", accountId: account1.Id));
+        _db.Bills.Add(MakeBill(_userId, "Spotify", accountId: account2.Id));
+        _db.Bills.Add(MakeBill(_userId, "Unlinked"));
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetByAccountIdAsync(_userId, account1.Id);
+
+        result.Should().HaveCount(1);
+        result.First().Name.Should().Be("Netflix");
+    }
+
+    [Fact]
+    public async Task GetByAccountIdAsync_WhenNoBillsLinked_ReturnsEmpty()
+    {
+        var account = MakeAccount("Empty Account");
+        _db.Accounts.Add(account);
+        _db.Bills.Add(MakeBill(_userId, "Unlinked"));
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetByAccountIdAsync(_userId, account.Id);
+
+        result.Should().BeEmpty();
+    }
+
     // ── GetUpcomingBillsAsync ────────────────────────────────────────────────
 
     [Fact]
     public async Task GetUpcomingBillsAsync_WhenMonthlyBillDueLaterThisMonth_IncludesInResults()
     {
-        // Bill due on 28th; today is well before that
         var today = new DateTime(2026, 6, 7, 0, 0, 0, DateTimeKind.Utc);
         _db.Bills.Add(MakeBill(_userId, "Broadband", dueDay: 28, frequency: BillFrequency.Monthly));
         await _db.SaveChangesAsync();
@@ -94,7 +152,6 @@ public class BillServiceTests : IDisposable
     public async Task GetUpcomingBillsAsync_WhenBillDueBeyondWindow_ExcludesFromResults()
     {
         var today = new DateTime(2026, 6, 7, 0, 0, 0, DateTimeKind.Utc);
-        // June 5 has already passed; next due = July 5 = 28 days away; window is 20 days → excluded
         _db.Bills.Add(MakeBill(_userId, "Insurance", dueDay: 5, frequency: BillFrequency.Monthly));
         await _db.SaveChangesAsync();
 
@@ -107,7 +164,6 @@ public class BillServiceTests : IDisposable
     public async Task GetUpcomingBillsAsync_WhenWithinReminderWindow_SetsIsReminderDueTrue()
     {
         var today = new DateTime(2026, 6, 7, 0, 0, 0, DateTimeKind.Utc);
-        // Due June 10 (3 days away); reminder = 5 days before → should flag
         _db.Bills.Add(MakeBill(_userId, "Gas", dueDay: 10, frequency: BillFrequency.Monthly, reminderDaysBefore: 5));
         await _db.SaveChangesAsync();
 
@@ -131,6 +187,20 @@ public class BillServiceTests : IDisposable
         _db.Bills.Should().HaveCount(1);
     }
 
+    [Fact]
+    public async Task CreateBillAsync_WithAccountId_LinksToAccount()
+    {
+        var account = MakeAccount("Monzo");
+        _db.Accounts.Add(account);
+        await _db.SaveChangesAsync();
+
+        var request = new CreateBillRequest("Gym", 40m, BillFrequency.Monthly, 1, 3, null, AccountId: account.Id);
+        var result = await _sut.CreateBillAsync(_userId, request);
+
+        result.AccountId.Should().Be(account.Id);
+        result.AccountName.Should().Be("Monzo");
+    }
+
     // ── UpdateBillAsync ──────────────────────────────────────────────────────
 
     [Fact]
@@ -144,6 +214,36 @@ public class BillServiceTests : IDisposable
 
         result.Should().NotBeNull();
         result!.Amount.Should().Be(35m);
+    }
+
+    [Fact]
+    public async Task UpdateBillAsync_CanLinkBillToAccount()
+    {
+        var account = MakeAccount("Starling");
+        _db.Accounts.Add(account);
+        var bill = MakeBill(_userId, "Broadband");
+        _db.Bills.Add(bill);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.UpdateBillAsync(_userId, bill.Id, new UpdateBillRequest(AccountId: account.Id));
+
+        result!.AccountId.Should().Be(account.Id);
+        result.AccountName.Should().Be("Starling");
+    }
+
+    [Fact]
+    public async Task UpdateBillAsync_CanUnlinkBillFromAccount()
+    {
+        var account = MakeAccount("HSBC");
+        _db.Accounts.Add(account);
+        var bill = MakeBill(_userId, "Netflix", accountId: account.Id);
+        _db.Bills.Add(bill);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.UpdateBillAsync(_userId, bill.Id, new UpdateBillRequest(AccountId: null));
+
+        result!.AccountId.Should().BeNull();
+        result.AccountName.Should().BeNull();
     }
 
     [Fact]
@@ -190,7 +290,7 @@ public class BillServiceTests : IDisposable
     // ── DeleteBillAsync ──────────────────────────────────────────────────────
 
     [Fact]
-    public async Task DeleteBillAsync_WhenBillExists_SoftDeletesIt()
+    public async Task DeleteBillAsync_WhenBillExists_RemovesItFromDatabase()
     {
         var bill = MakeBill(_userId, "Mortgage");
         _db.Bills.Add(bill);
@@ -200,7 +300,7 @@ public class BillServiceTests : IDisposable
 
         success.Should().BeTrue();
         var stored = await _db.Bills.FindAsync(bill.Id);
-        stored!.IsActive.Should().BeFalse();
+        stored.Should().BeNull();
     }
 
     [Fact]
@@ -224,7 +324,8 @@ public class BillServiceTests : IDisposable
         int dueDay = 1,
         BillFrequency frequency = BillFrequency.Monthly,
         int reminderDaysBefore = 3,
-        bool isActive = true) => new()
+        bool isActive = true,
+        Guid? accountId = null) => new()
     {
         Id = Guid.NewGuid(),
         UserId = userId,
@@ -234,5 +335,16 @@ public class BillServiceTests : IDisposable
         DueDay = dueDay,
         ReminderDaysBefore = reminderDaysBefore,
         IsActive = isActive,
+        AccountId = accountId,
+    };
+
+    private Account MakeAccount(string name) => new()
+    {
+        Id = Guid.NewGuid(),
+        UserId = _userId,
+        Name = name,
+        Type = AccountType.Checking,
+        Currency = "GBP",
+        Balance = 0m,
     };
 }

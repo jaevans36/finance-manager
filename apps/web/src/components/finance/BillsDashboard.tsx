@@ -113,6 +113,7 @@ export function BillsDashboard({ onAddBill }: BillsDashboardProps) {
             defaultFrequency={bill.frequency}
             defaultDueDay={bill.dueDay}
             defaultReminderDays={bill.reminderDaysBefore}
+            defaultAccountId={bill.accountId ?? undefined}
             onSuccess={() => { setEditingBillId(null); load(); }}
             onCancel={() => setEditingBillId(null)}
           />
@@ -227,6 +228,10 @@ function BillRow({
             {FREQUENCY_LABEL[bill.frequency]}
             {dueLabel && <span> · {dueLabel}</span>}
             {bill.isPaid && <span className="ml-1 text-green-600 dark:text-green-400">· Paid</span>}
+            {bill.accountName
+              ? <span className="ml-1 text-blue-600 dark:text-blue-400">· {bill.accountName}</span>
+              : <span className="ml-1 text-gray-400 dark:text-gray-500">· Not linked</span>
+            }
           </p>
         )}
       </div>

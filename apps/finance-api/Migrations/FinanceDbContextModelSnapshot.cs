@@ -53,6 +53,10 @@ namespace FinanceApi.Migrations
                         .HasMaxLength(3)
                         .HasColumnType("character varying(3)");
 
+                    b.Property<decimal?>("CurrentMonthlyPayment")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
                     b.Property<bool>("ExcludeFromNetWorth")
                         .HasColumnType("boolean");
 
@@ -70,6 +74,22 @@ namespace FinanceApi.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
+
+                    b.Property<bool>("IsInterestOnly")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateOnly?>("LoanEndDate")
+                        .HasColumnType("date");
+
+                    b.Property<decimal?>("MinimumMonthlyPayment")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<DateOnly?>("MortgageStartDate")
+                        .HasColumnType("date");
+
+                    b.Property<int?>("MortgageTermYears")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -93,12 +113,6 @@ namespace FinanceApi.Migrations
                     b.Property<decimal?>("PromotionalRevertRate")
                         .HasPrecision(6, 3)
                         .HasColumnType("numeric(6,3)");
-
-                    b.Property<DateOnly?>("MortgageStartDate")
-                        .HasColumnType("date");
-
-                    b.Property<int?>("MortgageTermYears")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -124,6 +138,9 @@ namespace FinanceApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("AccountId")
+                        .HasColumnType("uuid");
+
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)");
@@ -134,7 +151,7 @@ namespace FinanceApi.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string?>("Description")
+                    b.Property<string>("Description")
                         .HasColumnType("text");
 
                     b.Property<int>("DueDay")
@@ -169,6 +186,8 @@ namespace FinanceApi.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
 
                     b.HasIndex("CategoryId");
 
@@ -735,6 +754,27 @@ namespace FinanceApi.Migrations
                     b.ToTable("SavingsGoals", "finance");
                 });
 
+            modelBuilder.Entity("FinanceApi.Features.Settings.Models.UserFinanceSettings", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("EmergencyBuffer")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasDefaultValue(200m);
+
+                    b.Property<decimal?>("ManualMonthlyIncome")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("UserFinanceSettings", "finance");
+                });
+
             modelBuilder.Entity("FinanceApi.Features.Transactions.Models.Transaction", b =>
                 {
                     b.Property<Guid>("Id")
@@ -751,6 +791,9 @@ namespace FinanceApi.Migrations
                     b.Property<decimal>("BaseCurrencyAmount")
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)");
+
+                    b.Property<Guid?>("BillId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid?>("CategoryId")
                         .HasColumnType("uuid");
@@ -821,6 +864,8 @@ namespace FinanceApi.Migrations
 
                     b.HasIndex("AccountId");
 
+                    b.HasIndex("BillId");
+
                     b.HasIndex("CategoryId");
 
                     b.HasIndex("ImportBatchId");
@@ -834,10 +879,17 @@ namespace FinanceApi.Migrations
 
             modelBuilder.Entity("FinanceApi.Features.Bills.Models.Bill", b =>
                 {
+                    b.HasOne("FinanceApi.Features.Accounts.Models.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("FinanceApi.Features.Categories.Models.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Account");
 
                     b.Navigation("Category");
                 });
@@ -881,6 +933,11 @@ namespace FinanceApi.Migrations
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("FinanceApi.Features.Bills.Models.Bill", null)
+                        .WithMany()
+                        .HasForeignKey("BillId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("FinanceApi.Features.Categories.Models.Category", "Category")
                         .WithMany()

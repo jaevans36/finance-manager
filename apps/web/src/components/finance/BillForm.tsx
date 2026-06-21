@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { billService } from '../../services/bill-service';
-import type { BillFrequency, CreateBillRequest } from '../../types/finance';
+import { accountsService } from '../../services/accounts-service';
+import type { AccountSummary, BillFrequency, CreateBillRequest } from '../../types/finance';
 
 const FREQUENCIES: BillFrequency[] = ['Weekly', 'Monthly', 'Quarterly', 'Annual'];
 
@@ -14,12 +15,14 @@ interface BillFormProps {
   defaultFrequency?: BillFrequency;
   defaultDueDay?: number;
   defaultReminderDays?: number;
+  defaultAccountId?: string;
 }
 
 export function BillForm({
   onSuccess, onCancel, billId,
   defaultName = '', defaultDescription = '', defaultAmount,
   defaultFrequency = 'Monthly', defaultDueDay, defaultReminderDays,
+  defaultAccountId,
 }: BillFormProps) {
   const [name, setName] = useState(defaultName);
   const [description, setDescription] = useState(defaultDescription);
@@ -27,8 +30,16 @@ export function BillForm({
   const [frequency, setFrequency] = useState<BillFrequency>(defaultFrequency);
   const [dueDay, setDueDay] = useState(defaultDueDay?.toString() ?? '1');
   const [reminderDays, setReminderDays] = useState(defaultReminderDays?.toString() ?? '3');
+  const [accountId, setAccountId] = useState<string>(defaultAccountId ?? '');
+  const [accounts, setAccounts] = useState<AccountSummary[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    accountsService.getAccounts()
+      .then(setAccounts)
+      .catch(() => { /* accounts are best-effort */ });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +58,7 @@ export function BillForm({
           frequency,
           dueDay: parseInt(dueDay, 10),
           reminderDaysBefore: parseInt(reminderDays, 10),
+          accountId: accountId || null,
         });
       } else {
         const request: CreateBillRequest = {
@@ -56,6 +68,7 @@ export function BillForm({
           frequency,
           dueDay: parseInt(dueDay, 10),
           reminderDaysBefore: parseInt(reminderDays, 10),
+          accountId: accountId || undefined,
         };
         await billService.createBill(request);
       }
@@ -155,6 +168,24 @@ export function BillForm({
         </div>
       </div>
 
+      {accounts.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Debits from account <span className="font-normal text-gray-400">(optional)</span>
+          </label>
+          <select
+            value={accountId}
+            onChange={e => setAccountId(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Not linked to an account</option>
+            {accounts.map(a => (
+              <option key={a.id} value={a.id}>{a.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {error && (
         <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
       )}
@@ -165,7 +196,7 @@ export function BillForm({
           disabled={isSubmitting}
           className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
         >
-          {isSubmitting ? 'Saving…' : billId ? 'Save changes' : 'Save bill'}
+          {isSubmitting ? 'Saving...' : billId ? 'Save changes' : 'Save bill'}
         </button>
         {onCancel && (
           <button

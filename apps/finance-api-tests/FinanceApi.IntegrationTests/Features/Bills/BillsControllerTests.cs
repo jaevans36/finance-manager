@@ -28,7 +28,7 @@ public class BillsControllerTests
         var response = await _client.GetAsync("/api/v1/finance/bills");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var bills = await response.Content.ReadFromJsonAsync<List<Bill>>();
+        var bills = await response.Content.ReadFromJsonAsync<List<BillResponse>>();
         bills.Should().NotBeNull().And.BeEmpty();
     }
 
@@ -48,11 +48,13 @@ public class BillsControllerTests
         var response = await _client.PostAsJsonAsync("/api/v1/finance/bills", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        var bill = await response.Content.ReadFromJsonAsync<Bill>();
+        var bill = await response.Content.ReadFromJsonAsync<BillResponse>();
         bill.Should().NotBeNull();
         bill!.Name.Should().Be("Netflix");
         bill.Amount.Should().Be(9.99m);
         bill.IsActive.Should().BeTrue();
+        bill.AccountId.Should().BeNull();
+        bill.AccountName.Should().BeNull();
     }
 
     [Fact]
@@ -71,7 +73,7 @@ public class BillsControllerTests
         var response = await _client.GetAsync("/api/v1/finance/bills/upcoming");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var upcoming = await response.Content.ReadFromJsonAsync<List<UpcomingBill>>();
+        var upcoming = await response.Content.ReadFromJsonAsync<List<UpcomingBillResponse>>();
         upcoming.Should().NotBeNull().And.BeEmpty();
     }
 
@@ -81,7 +83,7 @@ public class BillsControllerTests
         var created = await _client.PostAsJsonAsync("/api/v1/finance/bills",
             new CreateBillRequest("Electric", 60m, BillFrequency.Monthly, 15, 5, null));
         created.StatusCode.Should().Be(HttpStatusCode.Created);
-        var bill = await created.Content.ReadFromJsonAsync<Bill>();
+        var bill = await created.Content.ReadFromJsonAsync<BillResponse>();
 
         var response = await _client.PatchAsync($"/api/v1/finance/bills/{bill!.Id}/pay", null);
 
@@ -89,19 +91,33 @@ public class BillsControllerTests
     }
 
     [Fact]
-    public async Task DeleteBill_WhenBillExists_Returns204AndSoftDeletes()
+    public async Task DeleteBill_WhenBillExists_Returns204AndRemovesBill()
     {
         var created = await _client.PostAsJsonAsync("/api/v1/finance/bills",
             new CreateBillRequest("Gym", 30m, BillFrequency.Monthly, 10, 3, null));
-        var bill = await created.Content.ReadFromJsonAsync<Bill>();
+        var bill = await created.Content.ReadFromJsonAsync<BillResponse>();
 
         var deleteResponse = await _client.DeleteAsync($"/api/v1/finance/bills/{bill!.Id}");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        // Soft-deleted — should not appear in the list
         var listResponse = await _client.GetAsync("/api/v1/finance/bills");
-        var bills = await listResponse.Content.ReadFromJsonAsync<List<Bill>>();
+        var bills = await listResponse.Content.ReadFromJsonAsync<List<BillResponse>>();
         bills.Should().NotContain(b => b.Id == bill.Id);
+    }
+
+    [Fact]
+    public async Task GetBills_WithAccountIdFilter_ReturnsOnlyLinkedBills()
+    {
+        // Create two bills, neither linked — filter by random account should return empty
+        await _client.PostAsJsonAsync("/api/v1/finance/bills",
+            new CreateBillRequest("Netflix", 9.99m, BillFrequency.Monthly, 1, 3, null));
+
+        var randomAccountId = Guid.NewGuid();
+        var response = await _client.GetAsync($"/api/v1/finance/bills?accountId={randomAccountId}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var bills = await response.Content.ReadFromJsonAsync<List<BillResponse>>();
+        bills.Should().BeEmpty();
     }
 
     [Fact]

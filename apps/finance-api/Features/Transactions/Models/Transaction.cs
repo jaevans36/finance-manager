@@ -77,6 +77,9 @@ public class Transaction
 
     public ImportSource ImportSource { get; set; } = ImportSource.Manual;
 
+    /// <summary>Set when this transaction was matched to a linked bill during CSV import.</summary>
+    public Guid? BillId { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

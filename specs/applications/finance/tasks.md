@@ -209,23 +209,23 @@
 
 ### Phase 43 Additions — Bill-to-Account Linking (new — 2026-06-19)
 
-- [ ] T1322 [P] [US4] Add `AccountId?` (Guid? nullable FK → Accounts) to `Bill` entity; update `FinanceDbContext` navigation; create migration `AddBillAccountLink` — 1.5h
-- [ ] T1323 [US4] Update `BillService` — include `AccountName` in query projections; add `GetByAccountIdAsync`; include `AccountId` + `AccountName` in `BillResponse` DTO — 2h
-- [ ] T1324 [US4] Add account-filter to `BillsController`: `GET /finance/bills?accountId={id}` — 1h
-- [ ] T1325 [US4] Implement bill-to-transaction matching on import — fuzzy payee (contains bill name), amount ±10%, date ±5 days of due day; matched transaction marks bill paid and sets `Transaction.BillId` — 3h
-- [ ] T1326 [US4] Update `BillForm` — optional account selector (dropdown of user's active accounts); null = unlinked — 2h
-- [ ] T1327 [US4] Update `BillsDashboard` — show linked account name badge on each bill card; "Not linked" badge when `AccountId` is null — 2h
-- [ ] T1328 [US1] Update `AccountsDashboard` — "Monthly commitments: £X/mo" line beneath balance for accounts with linked bills; tooltip lists linked bill names — 2h
-- [ ] T1329 [US4] Write unit tests for bill-account linking in `BillService` (8+ tests: link, unlink, get-by-account, matching criteria) — 2h
-- [ ] T1330 [US4] Write Jest tests for updated `BillForm`, `BillsDashboard`, `AccountsDashboard` (6+ tests) — 1.5h
+- [x] T1322 [P] [US4] Add `AccountId?` (Guid? nullable FK → Accounts) to `Bill` entity; update `FinanceDbContext` navigation; create migration `AddBillAccountLink` — 1.5h
+- [x] T1323 [US4] Update `BillService` — include `AccountName` in query projections; add `GetByAccountIdAsync`; include `AccountId` + `AccountName` in `BillResponse` DTO — 2h
+- [x] T1324 [US4] Add account-filter to `BillsController`: `GET /finance/bills?accountId={id}` — 1h
+- [x] T1325 [US4] Implement bill-to-transaction matching on import — fuzzy payee (contains bill name), amount ±10%, date ±5 days of due day; matched transaction marks bill paid and sets `Transaction.BillId` — 3h
+- [x] T1326 [US4] Update `BillForm` — optional account selector (dropdown of user's active accounts); null = unlinked — 2h
+- [x] T1327 [US4] Update `BillsDashboard` — show linked account name badge on each bill card; "Not linked" badge when `AccountId` is null — 2h
+- [x] T1328 [US1] Update `AccountsDashboard` — "Monthly commitments: £X/mo" line beneath balance for accounts with linked bills; tooltip lists linked bill names — 2h
+- [x] T1329 [US4] Write unit tests for bill-account linking in `BillService` (8+ tests: link, unlink, get-by-account, matching criteria) — 2h
+- [x] T1330 [US4] Write Jest tests for updated `BillForm`, `BillsDashboard`, `AccountsDashboard` (6+ tests) — 1.5h
 
 ### Phase 43b — Financial Affordability Engine (new — 2026-06-19)
 
-- [ ] T1331 [P] [US-UK] Add `ManualMonthlyIncome` (decimal?) to `UserFinanceSettings` entity; extend `FinanceSettingsDto`; create migration `AddManualIncomeToSettings` — 1h
-- [ ] T1332 [US-UK] Implement `AffordabilityService` — income detection (90-day credit scan: large regular credits, cadence ±3 days, payroll patterns); committed costs (active bills + minimum payments); discretionary (budget totals or transaction average fallback); safe surplus = income - committed - discretionary - buffer; return `IncomeConfidence` (High/Medium/Low) — 5h
-- [ ] T1333 [US-UK] Implement `AffordabilityController` — `GET /finance/affordability` (full breakdown), `PUT /finance/affordability/income` (manual income override) — 2h
-- [ ] T1334 [US-UK] Write unit tests for `AffordabilityService` (10+ tests — High/Medium/Low confidence paths, manual override, budget vs average fallback, empty transaction history) — 3h
-- [ ] T1335 [US-UK] Create `AffordabilityPanel` frontend component — detected income, committed costs, discretionary, buffer, safe surplus summary; "How is this calculated?" expandable section; manual income input when confidence is Low or user requests — 4h
+- [x] T1331 [P] [US-UK] Add `ManualMonthlyIncome` (decimal?) to `UserFinanceSettings` entity; extend `FinanceSettingsDto`; create migration `AddManualIncomeToSettings` — 1h
+- [x] T1332 [US-UK] Implement `AffordabilityService` — income detection (90-day credit scan: large regular credits, cadence ±3 days, payroll patterns); committed costs (active bills + minimum payments); discretionary (budget totals or transaction average fallback); safe surplus = income - committed - discretionary - buffer; return `IncomeConfidence` (High/Medium/Low) — 5h
+- [x] T1333 [US-UK] Implement `AffordabilityController` — `GET /finance/affordability` (full breakdown), `PUT /finance/affordability/income` (manual income override) — 2h
+- [x] T1334 [US-UK] Write unit tests for `AffordabilityService` (10+ tests — High/Medium/Low confidence paths, manual override, budget vs average fallback, empty transaction history) — 3h
+- [x] T1335 [US-UK] Create `AffordabilityPanel` frontend component — detected income, committed costs, discretionary, buffer, safe surplus summary; "How is this calculated?" expandable section; manual income input when confidence is Low or user requests — 4h
 
 ---
 
@@ -325,28 +325,28 @@
 
 ### Backend: Account Model Extensions
 
-- [ ] T1336 [P] [US9] Extend `Account` entity with `MinimumMonthlyPayment` (decimal?), `CurrentMonthlyPayment` (decimal?), `LoanEndDate` (DateOnly?), `IsInterestOnly` (bool default false); update `FinanceDbContext`; create migration `AddDebtPaymentFields` — 2h
-- [ ] T1337 [US9] Update `AccountSummary`, `CreateAccountRequest`, `UpdateAccountRequest` DTOs with new fields; update `AccountService` mapping; update `AccountForm` with conditional fields per type (min payment: Credit/Loan; current payment: all debt types; loan end date: Loan only; interest-only toggle: Mortgage only) — 3h
+- [x] T1336 [P] [US9] Extend `Account` entity with `MinimumMonthlyPayment` (decimal?), `CurrentMonthlyPayment` (decimal?), `LoanEndDate` (DateOnly?), `IsInterestOnly` (bool default false); update `FinanceDbContext`; create migration `AddDebtPaymentFields` — 2h
+- [x] T1337 [US9] Update `AccountSummary`, `CreateAccountRequest`, `UpdateAccountRequest` DTOs with new fields; update `AccountService` mapping; update `AccountForm` with conditional fields per type (min payment: Credit/Loan; current payment: all debt types; loan end date: Loan only; interest-only toggle: Mortgage only) — 3h
 
 ### Backend: Debt Severity & Projection
 
-- [ ] T1338 [P] [US9] Implement `DebtSeverityService` — scoring algorithm: base = `InterestRate`; promo expiry urgency bonus (≤90 days to revert rate); credit utilisation penalty (>80% adds +5); mortgage downweight (×0.4); return scored list with severity badges (Critical/High/Moderate/Low) — 4h
-- [ ] T1339 [US9] Implement `DebtProjectionService` — monthly loop: interest accrual on each debt, minimum payments applied, extra payment applied to priority debt by strategy; freed minimums cascade on payoff; always compute both Avalanche and Snowball for comparison; return `MonthlySnapshot[]` per debt — 6h
-- [ ] T1340 [US9] Implement `DebtController` — `GET /finance/debt/overview` (severity scores, weighted avg rate, monthly interest cost, payoff-at-minimums date), `POST /finance/debt/projection` (request: strategy, customOrder, extraPayment, includedAccountIds, excludeMortgage) — 3h
-- [ ] T1341 [US9] Write unit tests for `DebtSeverityService` (10+ tests — rate-only, promo expiry <90 days, promo expiry >90 days, utilisation >80%, mortgage downweight, combined) — 3h
-- [ ] T1342 [US9] Write unit tests for `DebtProjectionService` (12+ tests — Avalanche order, Snowball order, cascading minimums, extra payment = 0, single debt, strategy comparison output) — 4h
-- [ ] T1343 [US9] Write integration tests for `DebtController` (8+ tests) — 2h
+- [x] T1338 [P] [US9] Implement `DebtSeverityService` — scoring algorithm: base = `InterestRate`; promo expiry urgency bonus (≤90 days to revert rate); credit utilisation penalty (>80% adds +5); mortgage downweight (×0.4); return scored list with severity badges (Critical/High/Moderate/Low) — 4h
+- [x] T1339 [US9] Implement `DebtProjectionService` — monthly loop: interest accrual on each debt, minimum payments applied, extra payment applied to priority debt by strategy; freed minimums cascade on payoff; always compute both Avalanche and Snowball for comparison; return `MonthlySnapshot[]` per debt — 6h
+- [x] T1340 [US9] Implement `DebtController` — `GET /finance/debt/overview` (severity scores, weighted avg rate, monthly interest cost, payoff-at-minimums date), `POST /finance/debt/projection` (request: strategy, customOrder, extraPayment, includedAccountIds, excludeMortgage) — 3h
+- [x] T1341 [US9] Write unit tests for `DebtSeverityService` (10+ tests — rate-only, promo expiry <90 days, promo expiry >90 days, utilisation >80%, mortgage downweight, combined) — 3h
+- [x] T1342 [US9] Write unit tests for `DebtProjectionService` (12+ tests — Avalanche order, Snowball order, cascading minimums, extra payment = 0, single debt, strategy comparison output) — 4h
+- [x] T1343 [US9] Write integration tests for `DebtController` (8+ tests) — 2h
 
 ### Frontend: Debt Burndown Dashboard
 
-- [ ] T1344 [P] [US9] Add debt projection TypeScript interfaces to `finance.ts`: `DebtOverview`, `DebtSeverityItem`, `ProjectionRequest`, `ProjectionResponse`, `MonthlySnapshot` — 1h
-- [ ] T1345 [US9] Create `DebtOverviewCard` — severity-ranked list with Critical/High/Moderate/Low badges, total debt, weighted avg rate, total monthly interest, debt-free date at minimums only, mortgage include/exclude toggle — 4h
-- [ ] T1346 [US9] Create `DebtStrategySelector` — Avalanche/Snowball/Custom three-way toggle; extra payment slider (pre-filled from `AffordabilityService` safe surplus, user can adjust); per-account include/exclude toggles; strategy comparison line "Snowball costs £X more but closes Y accounts Z months sooner" — 5h
-- [ ] T1347 [US9] Create `DebtProjectionPanel` — debt-free headline date, total interest you'll pay, interest saved vs minimums-only, per-account payoff date table — 4h
-- [ ] T1348 [US9] Create `DebtWaterfallChart` — horizontal Recharts bar chart; one row per debt; bar from now to payoff month; colour-coded by severity; vertical "today" marker; tooltip shows balance at hovered month — 5h
-- [ ] T1349 [US9] Create `DebtBurndownDashboard` — orchestrator: `AffordabilityPanel` + `DebtOverviewCard` + `DebtStrategySelector` + `DebtProjectionPanel` + `DebtWaterfallChart`; add "Debt" tab to `FinancePage`; extra payment slider changes trigger client-side re-projection without new API call (call API only on strategy/account changes) — 4h
-- [ ] T1350 [US9] Write Jest tests for debt components (10+ tests — severity badges, strategy toggle, slider updates projection, waterfall data mapping) — 3h
-- [ ] T1351 [US9] Write E2E test for debt payoff (Avalanche with 3 accounts: assert highest-rate eliminated first, freed minimum cascades to next, chart updated) — 3h
+- [x] T1344 [P] [US9] Add debt projection TypeScript interfaces to `finance.ts`: `DebtOverview`, `DebtSeverityItem`, `ProjectionRequest`, `ProjectionResponse`, `MonthlySnapshot` — 1h
+- [x] T1345 [US9] Create `DebtOverviewCard` — severity-ranked list with Critical/High/Moderate/Low badges, total debt, weighted avg rate, total monthly interest, debt-free date at minimums only, mortgage include/exclude toggle — 4h
+- [x] T1346 [US9] Create `DebtStrategySelector` — Avalanche/Snowball/Custom three-way toggle; extra payment slider (pre-filled from `AffordabilityService` safe surplus, user can adjust); per-account include/exclude toggles; strategy comparison line "Snowball costs £X more but closes Y accounts Z months sooner" — 5h
+- [x] T1347 [US9] Create `DebtProjectionPanel` — debt-free headline date, total interest you'll pay, interest saved vs minimums-only, per-account payoff date table — 4h
+- [x] T1348 [US9] Create `DebtWaterfallChart` — horizontal Recharts bar chart; one row per debt; bar from now to payoff month; colour-coded by severity; vertical "today" marker; tooltip shows balance at hovered month — 5h
+- [x] T1349 [US9] Create `DebtBurndownDashboard` — orchestrator: `AffordabilityPanel` + `DebtOverviewCard` + `DebtStrategySelector` + `DebtProjectionPanel` + `DebtWaterfallChart`; add "Debt" tab to `FinancePage`; extra payment slider changes trigger client-side re-projection without new API call (call API only on strategy/account changes) — 4h
+- [x] T1350 [US9] Write Jest tests for debt components (10+ tests — severity badges, strategy toggle, slider updates projection, waterfall data mapping) — 3h
+- [x] T1351 [US9] Write E2E test for debt payoff (Avalanche with 3 accounts: assert highest-rate eliminated first, freed minimum cascades to next, chart updated) — 3h
 
 ### Multi-Currency (carried from original Phase 47 spec)
 
@@ -358,7 +358,7 @@
 
 ### Full Finance E2E
 
-- [ ] T1357 [US1–US9] Write comprehensive E2E test for the full finance flow: CSV import → budget setup → bill linking → debt overview → Avalanche projection → dashboard — 3h
+- [x] T1357 [US1–US9] Write comprehensive E2E test for the full finance flow: CSV import → budget setup → bill linking → debt overview → Avalanche projection → dashboard — 3h
 
 **Checkpoint**: Severity-scored debt overview; Avalanche/Snowball/Custom projection with waterfall chart; affordability-driven extra payment pre-fill; multi-currency support with ECB rates
 

@@ -1,6 +1,7 @@
 using CsvHelper;
 using CsvHelper.Configuration;
 using FinanceApi.Data;
+using FinanceApi.Features.Bills.Models;
 using FinanceApi.Features.Transactions.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -46,6 +47,7 @@ public class CsvImportService : ICsvImportService
         var errors = new List<string>();
         var imported = 0;
         var duplicates = 0;
+        var importedTransactions = new List<Transaction>();
 
         List<ParsedCsvRow> rows;
         List<string> skipMessages;
@@ -97,6 +99,7 @@ public class CsvImportService : ICsvImportService
             else
             {
                 imported++;
+                importedTransactions.Add(transaction);
                 // Update account balance for non-duplicate transactions
                 var account = await _db.Accounts.FindAsync(new object[] { accountId }, ct);
                 if (account is not null)
@@ -111,6 +114,17 @@ public class CsvImportService : ICsvImportService
 
         await _db.SaveChangesAsync(ct);
 
+        // ── Bill-to-transaction matching ──────────────────────────────────────
+        if (importedTransactions.Count > 0)
+        {
+            var linkedBills = await _db.Bills
+                .Where(b => b.UserId == userId && b.AccountId == accountId && b.IsActive)
+                .ToListAsync(ct);
+
+            if (linkedBills.Count > 0)
+                await MatchBillsToTransactionsAsync(linkedBills, importedTransactions, ct);
+        }
+
         // Cap skip messages at 20 to avoid overwhelming the response
         const int MaxSkipMessages = 20;
         var cappedSkips = skipMessages.Count > MaxSkipMessages
@@ -121,6 +135,50 @@ public class CsvImportService : ICsvImportService
 
         return new CsvImportResult(imported, duplicates, errors.Count, errors, batchId,
             Skipped: skipMessages.Count, SkipMessages: cappedSkips);
+    }
+
+    private async Task MatchBillsToTransactionsAsync(
+        IEnumerable<Bill> bills,
+        IEnumerable<Transaction> transactions,
+        CancellationToken ct)
+    {
+        var changed = false;
+        foreach (var tx in transactions)
+        {
+            var txDesc = (tx.Description ?? string.Empty).ToLowerInvariant();
+            var txPayee = (tx.Payee ?? string.Empty).ToLowerInvariant();
+
+            foreach (var bill in bills)
+            {
+                if (tx.BillId.HasValue) break; // already matched
+
+                var billName = bill.Name.ToLowerInvariant();
+                var descMatch = txDesc.Contains(billName) || txPayee.Contains(billName);
+                if (!descMatch) continue;
+
+                // Amount within ±10%
+                var tolerance = bill.Amount * 0.10m;
+                var amountMatch = Math.Abs(tx.Amount - bill.Amount) <= tolerance;
+                if (!amountMatch) continue;
+
+                // Date within ±5 days of bill.DueDay in the transaction's month
+                var txDate = tx.TransactionDate.ToDateTime(TimeOnly.MinValue);
+                var dueDay = Math.Min(bill.DueDay, DateTime.DaysInMonth(txDate.Year, txDate.Month));
+                var dueDate = new DateTime(txDate.Year, txDate.Month, dueDay);
+                var dateMatch = Math.Abs((txDate - dueDate).Days) <= 5;
+                if (!dateMatch) continue;
+
+                // Match found — link and mark paid
+                tx.BillId = bill.Id;
+                bill.IsPaid = true;
+                bill.LastPaidDate = txDate;
+                bill.UpdatedAt = DateTime.UtcNow;
+                changed = true;
+                break;
+            }
+        }
+
+        if (changed) await _db.SaveChangesAsync(ct);
     }
 
     private (List<ParsedCsvRow> Rows, List<string> Skipped) ParseCsv(Stream stream, string format)

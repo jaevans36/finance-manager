@@ -22,10 +22,14 @@ public class BillsController : ControllerBase
 
     private Guid UserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-    /// <summary>List all active bills for the authenticated user.</summary>
+    /// <summary>List all active bills for the authenticated user. Optionally filter by linked account.</summary>
     [HttpGet]
-    public async Task<IActionResult> GetBills(CancellationToken ct)
-        => Ok(await _bills.GetBillsAsync(UserId, ct));
+    public async Task<IActionResult> GetBills([FromQuery] Guid? accountId, CancellationToken ct)
+    {
+        if (accountId.HasValue)
+            return Ok(await _bills.GetByAccountIdAsync(UserId, accountId.Value, ct));
+        return Ok(await _bills.GetBillsAsync(UserId, ct));
+    }
 
     /// <summary>List all bills including inactive ones.</summary>
     [HttpGet("all")]

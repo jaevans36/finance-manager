@@ -1,8 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Wallet, TrendingUp, CreditCard, PiggyBank, Plus, Pencil, Trash2, AlertTriangle } from 'lucide-react';
 import { accountsService } from '../../services/accounts-service';
-import type { AccountSummary, AccountType } from '../../types/finance';
+import { billService } from '../../services/bill-service';
+import type { AccountSummary, AccountType, Bill } from '../../types/finance';
 import { cn } from '../../lib/utils';
+
+function monthlyAmount(bill: Bill): number {
+  if (bill.frequency === 'Monthly') return bill.amount;
+  if (bill.frequency === 'Weekly') return bill.amount * 4.33;
+  if (bill.frequency === 'Quarterly') return bill.amount / 3;
+  if (bill.frequency === 'Annual') return bill.amount / 12;
+  return 0;
+}
 
 const ACCOUNT_TYPE_ICONS: Partial<Record<AccountType, React.ElementType>> = {
   Checking: Wallet,
@@ -142,6 +151,7 @@ interface AccountsDashboardProps {
 export function AccountsDashboard({ onAccountSelect, onAddAccount, onEdit }: AccountsDashboardProps) {
   const [accounts, setAccounts] = useState<AccountSummary[]>([]);
   const [netWorth, setNetWorth] = useState<number | null>(null);
+  const [billsByAccount, setBillsByAccount] = useState<Map<string, Bill[]>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -150,12 +160,24 @@ export function AccountsDashboard({ onAccountSelect, onAddAccount, onEdit }: Acc
 
   const load = async () => {
     try {
-      const [accs, nw] = await Promise.all([
+      const [accs, nw, allBills] = await Promise.all([
         accountsService.getAccounts(),
         accountsService.getNetWorth(),
+        billService.getBills().catch(() => [] as Bill[]),
       ]);
       setAccounts(accs);
       setNetWorth(nw.netWorth);
+
+      // Group active bills by accountId
+      const grouped = new Map<string, Bill[]>();
+      for (const bill of allBills) {
+        if (bill.accountId) {
+          const existing = grouped.get(bill.accountId) ?? [];
+          existing.push(bill);
+          grouped.set(bill.accountId, existing);
+        }
+      }
+      setBillsByAccount(grouped);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load accounts');
     } finally {
@@ -294,6 +316,18 @@ export function AccountsDashboard({ onAccountSelect, onAddAccount, onEdit }: Acc
 
               {/* Credit detail breakdown */}
               <CreditDetail account={account} />
+
+              {/* Monthly commitments from linked bills */}
+              {(() => {
+                const linked = billsByAccount.get(account.id);
+                if (!linked || linked.length === 0) return null;
+                const total = linked.reduce((sum, b) => sum + monthlyAmount(b), 0);
+                return (
+                  <div className="px-4 pb-3 text-xs text-gray-500 dark:text-gray-400" title={linked.map(b => b.name).join(', ')}>
+                    Monthly commitments: <span className="font-medium text-gray-700 dark:text-gray-300">£{total.toFixed(2)}/mo</span>
+                  </div>
+                );
+              })()}
 
               {/* Inline delete confirmation */}
               {isConfirmingDelete && (
