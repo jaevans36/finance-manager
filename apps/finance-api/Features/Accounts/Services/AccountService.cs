@@ -24,7 +24,8 @@ public class AccountService : IAccountService
                 a.Institution, a.Colour, a.Icon, a.IsActive, a.ExcludeFromNetWorth,
                 a.CreditLimit, a.InterestRate, a.PromotionalBalance,
                 a.PromotionalRate, a.PromotionalExpiry, a.PromotionalRevertRate,
-                a.MortgageStartDate, a.MortgageTermYears))
+                a.MortgageStartDate, a.MortgageTermYears,
+                a.IsInterestOnly, a.MinimumMonthlyPayment, a.CurrentMonthlyPayment, a.LoanEndDate))
             .ToListAsync(ct);
     }
 
@@ -57,6 +58,10 @@ public class AccountService : IAccountService
             PromotionalRevertRate = request.PromotionalRevertRate,
             MortgageStartDate = request.MortgageStartDate,
             MortgageTermYears = request.MortgageTermYears,
+            IsInterestOnly = request.IsInterestOnly,
+            MinimumMonthlyPayment = request.MinimumMonthlyPayment,
+            CurrentMonthlyPayment = request.CurrentMonthlyPayment,
+            LoanEndDate = request.LoanEndDate,
         };
 
         _db.Accounts.Add(account);
@@ -90,6 +95,10 @@ public class AccountService : IAccountService
         if (request.PromotionalRevertRate is not null) account.PromotionalRevertRate = request.PromotionalRevertRate;
         if (request.MortgageStartDate is not null) account.MortgageStartDate = request.MortgageStartDate;
         if (request.MortgageTermYears is not null) account.MortgageTermYears = request.MortgageTermYears;
+        if (request.IsInterestOnly is not null) account.IsInterestOnly = request.IsInterestOnly.Value;
+        if (request.MinimumMonthlyPayment is not null) account.MinimumMonthlyPayment = request.MinimumMonthlyPayment;
+        if (request.CurrentMonthlyPayment is not null) account.CurrentMonthlyPayment = request.CurrentMonthlyPayment;
+        if (request.LoanEndDate is not null) account.LoanEndDate = request.LoanEndDate;
         account.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync(ct);

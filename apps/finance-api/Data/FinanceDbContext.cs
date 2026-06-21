@@ -4,6 +4,7 @@ using FinanceApi.Features.Budgets.Models;
 using FinanceApi.Features.Categories.Models;
 using FinanceApi.Features.CategoryRules.Models;
 using FinanceApi.Features.SavingsGoals.Models;
+using FinanceApi.Features.Settings.Models;
 using FinanceApi.Features.Transactions.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -26,6 +27,7 @@ public class FinanceDbContext : DbContext
     public DbSet<Bill> Bills => Set<Bill>();
     public DbSet<SavingsGoal> SavingsGoals => Set<SavingsGoal>();
     public DbSet<CategoryRule> CategoryRules => Set<CategoryRule>();
+    public DbSet<UserFinanceSettings> UserFinanceSettings => Set<UserFinanceSettings>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -53,6 +55,8 @@ public class FinanceDbContext : DbContext
             entity.Property(a => a.PromotionalBalance).HasPrecision(18, 4);
             entity.Property(a => a.PromotionalRate).HasPrecision(6, 3);
             entity.Property(a => a.PromotionalRevertRate).HasPrecision(6, 3);
+            entity.Property(a => a.MinimumMonthlyPayment).HasPrecision(18, 4);
+            entity.Property(a => a.CurrentMonthlyPayment).HasPrecision(18, 4);
 
             entity.HasIndex(a => a.UserId);
 
@@ -104,6 +108,12 @@ public class FinanceDbContext : DbContext
             entity.HasOne(t => t.Category)
                   .WithMany()
                   .HasForeignKey(t => t.CategoryId)
+                  .OnDelete(DeleteBehavior.SetNull);
+
+            // Nullable FK to linked bill — set during CSV import matching
+            entity.HasOne<Bill>()
+                  .WithMany()
+                  .HasForeignKey(t => t.BillId)
                   .OnDelete(DeleteBehavior.SetNull);
         });
 
@@ -158,6 +168,11 @@ public class FinanceDbContext : DbContext
                   .WithMany()
                   .HasForeignKey(b => b.CategoryId)
                   .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(b => b.Account)
+                  .WithMany()
+                  .HasForeignKey(b => b.AccountId)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
 
         // ── SavingsGoal ───────────────────────────────────────────────────────
@@ -183,6 +198,14 @@ public class FinanceDbContext : DbContext
                   .WithMany()
                   .HasForeignKey(r => r.CategoryId)
                   .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ── UserFinanceSettings ───────────────────────────────────────────────
+        modelBuilder.Entity<UserFinanceSettings>(entity =>
+        {
+            entity.HasKey(s => s.UserId);
+            entity.Property(s => s.ManualMonthlyIncome).HasPrecision(18, 4);
+            entity.Property(s => s.EmergencyBuffer).HasPrecision(18, 4).HasDefaultValue(200m);
         });
 
         // ── Seed system categories ───────────────────────────────────────────

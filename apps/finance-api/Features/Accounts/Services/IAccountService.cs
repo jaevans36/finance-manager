@@ -20,7 +20,11 @@ public record AccountSummary(
     DateOnly? PromotionalExpiry = null,
     decimal? PromotionalRevertRate = null,
     DateOnly? MortgageStartDate = null,
-    int? MortgageTermYears = null
+    int? MortgageTermYears = null,
+    bool IsInterestOnly = false,
+    decimal? MinimumMonthlyPayment = null,
+    decimal? CurrentMonthlyPayment = null,
+    DateOnly? LoanEndDate = null
 );
 
 public record CreateAccountRequest(
@@ -41,7 +45,11 @@ public record CreateAccountRequest(
     DateOnly? PromotionalExpiry = null,
     decimal? PromotionalRevertRate = null,
     DateOnly? MortgageStartDate = null,
-    int? MortgageTermYears = null
+    int? MortgageTermYears = null,
+    bool IsInterestOnly = false,
+    decimal? MinimumMonthlyPayment = null,
+    decimal? CurrentMonthlyPayment = null,
+    DateOnly? LoanEndDate = null
 );
 
 public record UpdateAccountRequest(
@@ -63,7 +71,11 @@ public record UpdateAccountRequest(
     DateOnly? PromotionalExpiry = null,
     decimal? PromotionalRevertRate = null,
     DateOnly? MortgageStartDate = null,
-    int? MortgageTermYears = null
+    int? MortgageTermYears = null,
+    bool? IsInterestOnly = null,
+    decimal? MinimumMonthlyPayment = null,
+    decimal? CurrentMonthlyPayment = null,
+    DateOnly? LoanEndDate = null
 );
 
 public interface IAccountService

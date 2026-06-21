@@ -90,6 +90,20 @@ public class Account
     /// <summary>Original mortgage term in years (e.g. 25).</summary>
     public int? MortgageTermYears { get; set; }
 
+    /// <summary>Whether the mortgage is interest-only (false = capital repayment).</summary>
+    public bool IsInterestOnly { get; set; }
+
+    // ── Debt payment detail ───────────────────────────────────────────────────
+
+    /// <summary>Minimum monthly payment required — applies to Credit and Loan accounts.</summary>
+    public decimal? MinimumMonthlyPayment { get; set; }
+
+    /// <summary>Current actual monthly payment the user is making toward this debt.</summary>
+    public decimal? CurrentMonthlyPayment { get; set; }
+
+    /// <summary>Date the loan is scheduled to end — applies to Loan accounts.</summary>
+    public DateOnly? LoanEndDate { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

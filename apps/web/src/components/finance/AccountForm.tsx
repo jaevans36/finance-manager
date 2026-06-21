@@ -25,6 +25,9 @@ const OVERDRAFT_TYPES: AccountType[] = ['Checking'];
 const CREDIT_LIMIT_TYPES: AccountType[] = ['Credit'];
 const FIXED_RATE_EXPIRY_TYPES: AccountType[] = ['Mortgage'];
 const MORTGAGE_TYPES: AccountType[] = ['Mortgage'];
+const DEBT_TYPES: AccountType[] = ['Credit', 'Loan', 'Mortgage'];
+const MINIMUM_PAYMENT_TYPES: AccountType[] = ['Credit', 'Loan'];
+const LOAN_TYPES: AccountType[] = ['Loan'];
 
 interface AccountFormProps {
   onSuccess: () => void;
@@ -53,6 +56,12 @@ export function AccountForm({ onSuccess, onCancel, accountId, initialData }: Acc
   // Mortgage detail fields
   const [mortgageStartDate, setMortgageStartDate] = useState(initialData?.mortgageStartDate ?? '');
   const [mortgageTermYears, setMortgageTermYears] = useState(initialData?.mortgageTermYears != null ? String(initialData.mortgageTermYears) : '');
+  const [isInterestOnly, setIsInterestOnly] = useState(initialData?.isInterestOnly ?? false);
+
+  // Debt payment fields
+  const [minimumMonthlyPayment, setMinimumMonthlyPayment] = useState(initialData?.minimumMonthlyPayment != null ? String(initialData.minimumMonthlyPayment) : '');
+  const [currentMonthlyPayment, setCurrentMonthlyPayment] = useState(initialData?.currentMonthlyPayment != null ? String(initialData.currentMonthlyPayment) : '');
+  const [loanEndDate, setLoanEndDate] = useState(initialData?.loanEndDate ?? '');
 
   const [nameError, setNameError] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -64,6 +73,9 @@ export function AccountForm({ onSuccess, onCancel, accountId, initialData }: Acc
   const showPromoFields = CREDIT_TYPES.includes(type);
   const showFixedRateExpiry = FIXED_RATE_EXPIRY_TYPES.includes(type);
   const showMortgageFields = MORTGAGE_TYPES.includes(type);
+  const showDebtPaymentFields = DEBT_TYPES.includes(type);
+  const showMinimumPayment = MINIMUM_PAYMENT_TYPES.includes(type);
+  const showLoanEndDate = LOAN_TYPES.includes(type);
 
   const remainingTermLabel = (() => {
     if (!mortgageStartDate || !mortgageTermYears) return null;
@@ -103,6 +115,10 @@ export function AccountForm({ onSuccess, onCancel, accountId, initialData }: Acc
       promotionalRevertRate: showPromoFields ? parsedOptional(promotionalRevertRate) : undefined,
       mortgageStartDate: showMortgageFields && mortgageStartDate ? mortgageStartDate : undefined,
       mortgageTermYears: showMortgageFields && mortgageTermYears ? parseInt(mortgageTermYears, 10) || undefined : undefined,
+      isInterestOnly: showMortgageFields ? isInterestOnly : undefined,
+      minimumMonthlyPayment: showMinimumPayment ? parsedOptional(minimumMonthlyPayment) : undefined,
+      currentMonthlyPayment: showDebtPaymentFields ? parsedOptional(currentMonthlyPayment) : undefined,
+      loanEndDate: showLoanEndDate && loanEndDate ? loanEndDate : undefined,
     };
 
     setIsLoading(true);
@@ -360,6 +376,69 @@ export function AccountForm({ onSuccess, onCancel, accountId, initialData }: Acc
             <p className="text-sm font-medium text-foreground">
               {remainingTermLabel}
             </p>
+          )}
+
+          <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isInterestOnly}
+              onChange={e => setIsInterestOnly(e.target.checked)}
+              className="rounded"
+            />
+            Interest-only mortgage
+          </label>
+        </div>
+      )}
+
+      {/* ── Debt payments ─────────────────────────────────────────────────── */}
+      {showDebtPaymentFields && (
+        <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-3">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Debt payments</p>
+
+          {showMinimumPayment && (
+            <div>
+              <label htmlFor="minimum-monthly-payment" className={labelClass}>Minimum monthly payment (£)</label>
+              <input
+                id="minimum-monthly-payment"
+                type="number"
+                step="0.01"
+                min="0"
+                value={minimumMonthlyPayment}
+                onChange={e => setMinimumMonthlyPayment(e.target.value)}
+                placeholder="e.g. 25"
+                className={fieldClass}
+              />
+              <p className={hintClass}>The minimum required payment set by your lender</p>
+            </div>
+          )}
+
+          <div>
+            <label htmlFor="current-monthly-payment" className={labelClass}>Current monthly payment (£)</label>
+            <input
+              id="current-monthly-payment"
+              type="number"
+              step="0.01"
+              min="0"
+              value={currentMonthlyPayment}
+              onChange={e => setCurrentMonthlyPayment(e.target.value)}
+              placeholder="e.g. 200"
+              className={fieldClass}
+            />
+            <p className={hintClass}>What you actually pay each month (can exceed the minimum)</p>
+          </div>
+
+          {showLoanEndDate && (
+            <div>
+              <label htmlFor="loan-end-date" className={labelClass}>Loan end date</label>
+              <input
+                id="loan-end-date"
+                type="date"
+                value={loanEndDate}
+                onChange={e => setLoanEndDate(e.target.value)}
+                className={fieldClass}
+              />
+              <p className={hintClass}>When the loan is scheduled to be fully repaid</p>
+            </div>
           )}
         </div>
       )}

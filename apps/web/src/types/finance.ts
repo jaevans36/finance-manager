@@ -59,6 +59,10 @@ export interface AccountSummary extends CreditDetail {
   excludeFromNetWorth: boolean;
   mortgageStartDate?: string | null;   // DateOnly serialised as "YYYY-MM-DD"
   mortgageTermYears?: number | null;
+  isInterestOnly?: boolean;
+  minimumMonthlyPayment?: number | null;
+  currentMonthlyPayment?: number | null;
+  loanEndDate?: string | null;         // DateOnly serialised as "YYYY-MM-DD"
 }
 
 export interface CreateAccountRequest extends CreditDetail {
@@ -74,6 +78,10 @@ export interface CreateAccountRequest extends CreditDetail {
   notes?: string;
   mortgageStartDate?: string;
   mortgageTermYears?: number;
+  isInterestOnly?: boolean;
+  minimumMonthlyPayment?: number;
+  currentMonthlyPayment?: number;
+  loanEndDate?: string;
 }
 
 export interface UpdateAccountRequest extends CreditDetail {
@@ -90,6 +98,10 @@ export interface UpdateAccountRequest extends CreditDetail {
   notes?: string;
   mortgageStartDate?: string;
   mortgageTermYears?: number;
+  isInterestOnly?: boolean;
+  minimumMonthlyPayment?: number | null;
+  currentMonthlyPayment?: number | null;
+  loanEndDate?: string | null;
 }
 
 export interface Category {
@@ -275,6 +287,8 @@ export interface Bill {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  accountId: string | null;
+  accountName: string | null;
 }
 
 export interface UpcomingBill {
@@ -306,6 +320,7 @@ export interface CreateBillRequest {
   reminderDaysBefore: number;
   categoryId?: string;
   description?: string;
+  accountId?: string;
 }
 
 export interface UpdateBillRequest {
@@ -317,6 +332,7 @@ export interface UpdateBillRequest {
   categoryId?: string;
   isActive?: boolean;
   description?: string;
+  accountId?: string | null;
 }
 
 // ── Savings goal types ────────────────────────────────────────────────────────
@@ -356,4 +372,89 @@ export interface UpdateSavingsGoalRequest {
   targetAmount?: number;
   targetDate?: string;
   monthlyContribution?: number;
+}
+
+// ── Debt types ────────────────────────────────────────────────────────────────
+
+export type DebtStrategy = 'Avalanche' | 'Snowball' | 'Custom';
+export type DebtSeverityLabel = 'Low' | 'Medium' | 'High' | 'Critical';
+
+export interface DebtAccountSummary {
+  accountId: string;
+  name: string;
+  type: string;
+  balance: number;
+  interestRate: number | null;
+  minimumMonthlyPayment: number | null;
+  currentMonthlyPayment: number | null;
+  promotionalRate: number | null;
+  promotionalExpiry: string | null;
+  loanEndDate: string | null;
+  severityScore: number;
+  severityLabel: DebtSeverityLabel;
+  severityReason: string | null;
+}
+
+export interface DebtOverviewResponse {
+  debts: DebtAccountSummary[];
+  totalDebt: number;
+  totalMinimumPayments: number;
+  totalCurrentPayments: number;
+}
+
+export interface CustomAllocation {
+  accountId: string;
+  monthlyPayment: number;
+}
+
+export interface ProjectionRequest {
+  strategy: DebtStrategy;
+  extraMonthlyPayment: number | null;
+  customAllocations: CustomAllocation[] | null;
+}
+
+export interface AccountBalance {
+  accountId: string;
+  name: string;
+  balance: number;
+}
+
+export interface DebtProjectionMonth {
+  month: number;
+  label: string;
+  balances: AccountBalance[];
+  totalRemaining: number;
+}
+
+export interface PayoffOrder {
+  accountId: string;
+  name: string;
+  monthPaidOff: number;
+  paidOffDate: string;
+}
+
+export interface DebtProjectionResponse {
+  strategy: DebtStrategy;
+  monthsToFreedom: number;
+  estimatedFreedomDate: string;
+  totalInterestPaid: number;
+  schedule: DebtProjectionMonth[];
+  payoffOrder: PayoffOrder[];
+}
+
+// ── Affordability types ───────────────────────────────────────────────────────
+
+export type IncomeConfidence = 'High' | 'Medium' | 'Low';
+export type IncomeSource = 'Detected' | 'Manual';
+
+export interface AffordabilityData {
+  monthlyIncome: number;
+  incomeConfidence: IncomeConfidence;
+  incomeSource: IncomeSource;
+  committedCosts: number;
+  discretionarySpend: number;
+  emergencyBuffer: number;
+  safeSurplus: number;
+  suggestedDebtPayment: number;
+  calculatedAt: string;
 }

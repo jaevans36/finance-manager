@@ -23,8 +23,9 @@ import { BillForm } from '../../components/finance/BillForm';
 import { RecurringDetected } from '../../components/finance/RecurringDetected';
 import { SavingsGoalsDashboard } from '../../components/finance/SavingsGoalsDashboard';
 import { SavingsGoalForm } from '../../components/finance/SavingsGoalForm';
+import { DebtBurndownDashboard } from '../../components/finance/DebtBurndownDashboard';
 
-type Tab = 'accounts' | 'transactions' | 'budgets' | 'pots' | 'bills' | 'goals' | 'trends';
+type Tab = 'accounts' | 'transactions' | 'budgets' | 'pots' | 'bills' | 'goals' | 'trends' | 'debt';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'accounts',     label: 'Accounts' },
@@ -34,6 +35,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'bills',        label: 'Bills' },
   { id: 'goals',        label: 'Savings Goals' },
   { id: 'trends',       label: 'Trends' },
+  { id: 'debt',         label: 'Debt' },
 ];
 
 export default function FinancePage() {
@@ -350,6 +352,11 @@ export default function FinancePage() {
       {/* ── Trends tab ────────────────────────────────────────────────────── */}
       {activeTab === 'trends' && (
         <section><BudgetTrends /></section>
+      )}
+
+      {/* ── Debt tab ──────────────────────────────────────────────────────── */}
+      {activeTab === 'debt' && (
+        <section><DebtBurndownDashboard /></section>
       )}
 
       {/* Transaction detail panel */}
