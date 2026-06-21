@@ -1,6 +1,6 @@
 # Current State
 
-> **Last Updated**: 2026-05-20 | **Version**: 1.0.0 | **Branch**: `develop`
+> **Last Updated**: 2026-06-21 | **Version**: 1.0.0 | **Branch**: `develop`
 
 ---
 
@@ -34,6 +34,20 @@ The Life Manager productivity application is MVP-complete and ready for v1.0.0 r
 - **Production setup** — `.env.example`, backup/restore scripts, `PRODUCTION-SETUP.md`
 - **Dev password reset bypass** — `/dev/reset-password` page and `POST /api/v1/dev/reset-password` endpoint, double-gated by environment + config flag; see `docs/guides/DEV-PASSWORD-RESET.md`
 
+### Finance Manager (Complete — Phases 41–47)
+
+- **Accounts** — full CRUD; 12 account types (current, savings, credit, ISA, SIPP, mortgage, loan, etc.); interest rates, credit limits, promotional deals, mortgage start/term/interest-only, minimum/current monthly payments, loan end date
+- **Transactions** — view, add, edit, delete; category assignment; free-text search; pagination
+- **CSV import** — Barclays, HSBC, Lloyds, Monzo, Starling, NatWest, Generic; duplicate detection; automatic bill-matching on import
+- **Budgets** — monthly spending limits per category; progress bars with green/amber/red thresholds
+- **Spending Pots** — envelope-style monthly budgets with colour coding
+- **Bills** — recurring bill tracking (weekly/monthly/quarterly/annual); due-date reminders; bill-to-account linking; automatic paid-marking via transaction matching; recurring pattern detection from imports
+- **Savings Goals** — target amount, monthly contribution, on-track/behind projection
+- **Budget Trends** — spending-over-time charts
+- **Affordability Engine** — 90-day income detection with confidence level (High/Medium/Low), manual income override, committed costs + discretionary breakdown, safe monthly surplus, suggested debt payment
+- **Debt Burndown** — severity-scored debt overview (0–100, Critical/High/Medium/Low); Avalanche/Snowball/Custom paydown projection; freedom date; total interest; payoff order; stacked area waterfall chart
+- **User guide** — `docs/guides/FINANCE_MANAGER.md`
+
 ### Technical Foundation (Complete)
 
 - **Frontend**: React 18 + TypeScript 5.7 + Vite; Tailwind CSS + shadcn/ui; TanStack Query; React Hook Form + Zod
@@ -48,13 +62,11 @@ The Life Manager productivity application is MVP-complete and ready for v1.0.0 r
 
 ## What Is Currently Being Built
 
-**Finance Manager Application** (Phases 41–49, T1155–T1289) — tasks.md updated, ready to begin implementation.
+**Finance Manager — Phase 48 onwards** (AI Insights & Agent Features, T1249+)
 
-Architecture decision: **standalone microservice** at `apps/finance-api/` (.NET 8), separate `finance` PostgreSQL schema, JWT token validation shared with `life-api`.
+Phases 41–47 are complete. The Finance Manager is live as a standalone microservice at `apps/finance-api/` and surfaced in the app under **Finance Manager**. See "Phase History" below for what has been built.
 
-Next immediate step: begin Phase 41 — create `apps/finance-api/` project (T1155), configure auth + Docker, define entities.
-
-> **Note**: Stocks & Shares Application (Phases 60–63) is deferred — Finance was pulled forward as HIGH PRIORITY.
+Next: Phase 48 — AI Insights (Subscription Auditor, Spending Velocity, Anomaly Detection); or multi-currency support (T1352–T1356, ECB exchange rate feed, deferred from Phase 47).
 
 See `specs/applications/finance/spec.md` and `specs/applications/finance/tasks.md` for full specification and task breakdown.
 
@@ -93,7 +105,7 @@ See `specs/applications/finance/spec.md` and `specs/applications/finance/tasks.m
 
 | Item | Detail | Plan |
 | ---- | ------ | ---- |
-| Finance models | `Features/Finance/` contains placeholder models only | Phase 41+ |
+| Multi-currency | T1352–T1356 deferred — no ECB exchange rate service or currency toggle yet | Phase 47 remainder |
 | Package naming | `@life-manager/*` packages still reference old naming in some places | WS3 |
 | Auth service extraction | Auth is currently embedded in monolith | Phase 22–24 |
 | Microservices | Single .NET monolith | Phase 25–27 |
@@ -132,3 +144,10 @@ See `specs/applications/finance/spec.md` and `specs/applications/finance/tasks.m
 | P2b | Browser notifications via Service Worker | — |
 | P2c | Task labels (coloured, user-defined) | — |
 | v1.0.0 | MVP launch | 1.0.0 |
+| 41 | Finance API microservice — accounts, transactions, CSV import, categories, net worth | — |
+| 42 | Budgets + Spending Pots | — |
+| 43 | Bills + recurring detection | — |
+| 43 additions | Bill-to-account linking, transaction auto-matching on import | — |
+| 43b | Financial Affordability Engine (income detection, safe surplus) | — |
+| 44–46 | Savings Goals, Budget Trends | — |
+| 47 (expanded) | Debt Burndown Dashboard — severity scoring, Avalanche/Snowball/Custom projection, waterfall chart | — |
