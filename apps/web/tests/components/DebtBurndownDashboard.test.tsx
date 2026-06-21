@@ -36,6 +36,7 @@ const makeOverview = (overrides: Partial<DebtOverviewResponse> = {}): DebtOvervi
       balance: -1200,
       creditLimit: 2000,
       interestRate: 24.9,
+      promotionalBalance: null,
       minimumMonthlyPayment: 25,
       currentMonthlyPayment: 100,
       promotionalRate: null,

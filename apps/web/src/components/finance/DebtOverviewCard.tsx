@@ -174,6 +174,14 @@ export function DebtOverviewCard({
                 {debt.monthlyInterestCost != null && (
                   <span className="text-red-600 dark:text-red-400">
                     {fmt(debt.monthlyInterestCost)}/mo in interest
+                    {debt.promotionalBalance != null && debt.promotionalBalance > 0 && debt.interestRate != null && (
+                      <span className="text-gray-400 dark:text-gray-500 ml-1">
+                        ({fmt(Math.abs(debt.balance) - debt.promotionalBalance)} at {debt.interestRate}%
+                        {debt.promotionalRate != null
+                          ? ` · ${fmt(debt.promotionalBalance)} at ${debt.promotionalRate}%`
+                          : ''})
+                      </span>
+                    )}
                   </span>
                 )}
                 {debt.payoffDateAtCurrentPayment != null ? (

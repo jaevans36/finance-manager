@@ -21,23 +21,38 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
                 var (score, label, reason) = severity.Score(a, today);
                 var balance = Math.Abs(a.Balance);
 
-                decimal? monthlyInterestCost = a.InterestRate is > 0
-                    ? Math.Round(balance * a.InterestRate.Value / 100m / 12m, 2)
-                    : null;
+                // Split interest: part of the balance may be at a promotional rate (e.g. 0% BT)
+                var promoBalance = Math.Min(a.PromotionalBalance ?? 0m, balance);
+                var standardBalance = balance - promoBalance;
+                var promoRate = a.PromotionalRate ?? 0m;
+
+                decimal? monthlyInterestCost = null;
+                if (a.InterestRate is > 0 || promoRate > 0)
+                {
+                    decimal interest = standardBalance * (a.InterestRate ?? 0m) / 100m / 12m
+                                     + promoBalance * promoRate / 100m / 12m;
+                    if (interest > 0m)
+                        monthlyInterestCost = Math.Round(interest, 2);
+                }
+
+                // Weighted effective rate for payoff estimate (reflects current blended cost)
+                decimal? effectiveRateForPayoff = balance > 0 && a.InterestRate.HasValue
+                    ? (standardBalance * a.InterestRate.Value + promoBalance * promoRate) / balance
+                    : a.InterestRate;
 
                 int? monthsToPayoff = null;
                 string? payoffDate = null;
                 if (!a.IsInterestOnly)
                 {
                     var payment = a.CurrentMonthlyPayment ?? a.MinimumMonthlyPayment;
-                    monthsToPayoff = CalculateMonthsToPayoff(balance, a.InterestRate, payment);
+                    monthsToPayoff = CalculateMonthsToPayoff(balance, effectiveRateForPayoff, payment);
                     if (monthsToPayoff.HasValue)
                         payoffDate = today.AddMonths(monthsToPayoff.Value).ToString("yyyy-MM");
                 }
 
                 return new DebtAccountSummary(
                     a.Id, a.Name, a.Type.ToString(), a.Balance, a.CreditLimit,
-                    a.InterestRate, a.MinimumMonthlyPayment, a.CurrentMonthlyPayment,
+                    a.InterestRate, a.PromotionalBalance, a.MinimumMonthlyPayment, a.CurrentMonthlyPayment,
                     a.PromotionalRate, a.PromotionalExpiry, a.LoanEndDate,
                     score, label, reason,
                     monthlyInterestCost, monthsToPayoff, payoffDate);
@@ -231,9 +246,17 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
         public decimal MonthlyPayment { get; } = monthlyPayment;
         public bool IsPaidOff { get; set; }
 
-        public decimal EffectiveRate => Account.PromotionalRate.HasValue
-            && Account.PromotionalBalance is > 0
-            ? Account.PromotionalRevertRate ?? Account.InterestRate ?? 0m
-            : Account.InterestRate ?? 0m;
+        public decimal EffectiveRate
+        {
+            get
+            {
+                var totalBalance = Math.Abs(Account.Balance);
+                if (totalBalance <= 0) return Account.InterestRate ?? 0m;
+                var promoBalance = Math.Min(Account.PromotionalBalance ?? 0m, totalBalance);
+                var standardBalance = totalBalance - promoBalance;
+                var promoRate = Account.PromotionalRate ?? 0m;
+                return (standardBalance * (Account.InterestRate ?? 0m) + promoBalance * promoRate) / totalBalance;
+            }
+        }
     }
 }

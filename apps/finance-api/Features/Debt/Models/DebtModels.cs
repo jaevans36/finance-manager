@@ -9,6 +9,7 @@ public record DebtAccountSummary(
     decimal Balance,
     decimal? CreditLimit,
     decimal? InterestRate,
+    decimal? PromotionalBalance,
     decimal? MinimumMonthlyPayment,
     decimal? CurrentMonthlyPayment,
     decimal? PromotionalRate,

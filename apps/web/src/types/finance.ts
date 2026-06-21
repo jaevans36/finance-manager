@@ -386,6 +386,7 @@ export interface DebtAccountSummary {
   balance: number;
   creditLimit: number | null;
   interestRate: number | null;
+  promotionalBalance: number | null;
   minimumMonthlyPayment: number | null;
   currentMonthlyPayment: number | null;
   promotionalRate: number | null;

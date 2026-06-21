@@ -117,6 +117,26 @@ public class DebtProjectionServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetOverviewAsync_ComputesInterestOnlyOnStandardBalanceWhenPromotionalBalanceExists()
+    {
+        // £1,500 BT at 0%, £300 spend at 24.9% — interest should be on £300 only
+        _db.Accounts.Add(new Account
+        {
+            Id = Guid.NewGuid(), UserId = _userId, Type = AccountType.Credit,
+            Name = "Virgin Card", Currency = "GBP", Balance = -1800m,
+            InterestRate = 24.9m,
+            PromotionalBalance = 1500m, PromotionalRate = 0m,
+            IsActive = true,
+        });
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetOverviewAsync(_userId);
+
+        // 300 * 24.9% / 12 = £6.23 (not 1800 * 24.9% / 12 = £37.35)
+        result.Debts[0].MonthlyInterestCost.Should().BeApproximately(6.23m, 0.01m);
+    }
+
+    [Fact]
     public async Task GetOverviewAsync_ReturnsNullPayoffDate_WhenPaymentCoversInterestOnly()
     {
         // £10/mo on £1200 at 10% APR = £10 monthly interest — payment never reduces balance
