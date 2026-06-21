@@ -326,8 +326,10 @@ function FinanceSection() {
     <>
       <H2>Finance</H2>
       <P>
-        The Finance module helps you track your money across accounts, budgets, bills, and savings goals.
-        Access it via <strong>Finance</strong> in the top navigation. Everything is organised into seven tabs.
+        The Finance module helps you track your money across accounts, budgets, bills, savings goals,
+        and debt. Access it via <strong>Finance</strong> in the top navigation. Everything is organised
+        into eight tabs: Accounts, Transactions, Budgets, Spending Pots, Bills, Savings Goals, Trends,
+        and Debt.
       </P>
 
       <H3>Accounts</H3>
@@ -340,6 +342,10 @@ function FinanceSection() {
         'Each account displays its balance, type, and institution name.',
         'Click an account to jump to its transaction history.',
         'Add a new account with the + button — set a name, type, institution, currency, and opening balance.',
+        <>Credit cards: record your credit limit, APR, and any promotional (0%) deal including the expiry date and the rate the card reverts to afterwards.</>,
+        <>Mortgages: record the start date, term in years, and whether it is interest-only. The remaining term is calculated automatically.</>,
+        <>Credit cards and loans: set a <strong>minimum monthly payment</strong> and a <strong>current monthly payment</strong> — these are used by the Debt tab's paydown calculator.</>,
+        <>Accounts with linked bills display a <strong>Monthly commitments: £X/mo</strong> figure beneath their balance.</>,
       ]} />
 
       <H3>Transactions</H3>
@@ -351,7 +357,8 @@ function FinanceSection() {
         <>Transactions flagged as <Badge variant="info">Recurring</Badge> or <Badge variant="warning">Duplicate</Badge> are badged automatically.</>,
         'Click a transaction to open a detail panel where you can edit the category, add notes, or mark it as reviewed.',
         'Use the filter toolbar to narrow by date range, category, or amount.',
-        <>Import transactions in bulk via the <strong>Import CSV</strong> button — useful for uploading a bank export.</>,
+        <>Import transactions in bulk via the <strong>Import CSV</strong> button — useful for uploading a bank export. Supported banks: Barclays, HSBC, Lloyds, Monzo, Starling, NatWest, and Generic CSV.</>,
+        <>When importing, any transaction that matches a bill (same payee, amount within ±10%, date within ±5 days of the due day) is automatically linked and the bill is marked as <strong>Paid</strong> for that month.</>,
       ]} />
 
       <H3>Budgets</H3>
@@ -370,9 +377,9 @@ function FinanceSection() {
         Spending pots are named envelopes of money set aside for a specific purpose within a budget period.
       </P>
       <Ul items={[
-        'Each pot shows how much has been spent and how much remains.',
+        'Each pot shows how much has been spent this month and how much remains.',
         <>Enable <strong>Rollover</strong> on a pot to carry unspent amounts forward into the next month.</>,
-        'Pots with a <Badge variant="success">Left</Badge> balance have money remaining; pots showing <Badge variant="warning">Over</Badge> have exceeded their allocation.',
+        'Progress bar turns amber at 80% and red when a pot is exceeded.',
         'Useful for irregular expenses like clothing or travel where a single monthly budget category is too broad.',
       ]} />
 
@@ -381,11 +388,13 @@ function FinanceSection() {
         Bills tracks your regular outgoings — subscriptions, utilities, rent, and any other recurring payments.
       </P>
       <Ul items={[
-        'Each bill has a name, frequency (weekly, monthly, quarterly, or annual), amount, and due date.',
-        'The Bills tab shows upcoming payments due within the next 30 days, sorted by due date.',
-        'A monthly total is calculated automatically across all your bills.',
+        'Each bill has a name, frequency (weekly, monthly, quarterly, or annual), amount, and due day.',
+        'Bills are sorted by next due date — the soonest due appears first.',
+        'A monthly total across all active bills is shown at the top of the list.',
         'Due-date labels tell you exactly when each payment falls: "Due today", "Due tomorrow", or "Due in X days".',
-        'Mark a bill as paid once you have made the payment.',
+        <>Link a bill to an account using the <strong>Linked account</strong> dropdown when adding or editing a bill. Once linked, imported transactions from that account are matched automatically and the bill is marked <strong>Paid</strong> when a match is found. Bills without an account link show <strong>Not linked</strong>.</>,
+        'If Life Manager detects a regular payment pattern in your imported transactions that is not already a bill, it surfaces a "Recurring transaction detected" prompt at the bottom of the Bills tab so you can add it with one click.',
+        <>Deactivate a bill you no longer need with <strong>Mark inactive</strong>. It is removed from the monthly total and can be reactivated at any time.</>,
       ]} />
 
       <H3>Savings goals</H3>
@@ -401,12 +410,47 @@ function FinanceSection() {
 
       <H3>Trends</H3>
       <P>
-        The Trends tab shows a bar chart comparing your budgeted amounts against actual spending over the past 3 or 6 months.
+        The Trends tab shows how your budget spending has changed over time. Use it to spot categories
+        where spending is creeping up or to see which months you stayed within budget.
+      </P>
+
+      <H3>Debt</H3>
+      <P>
+        The Debt tab gives you a severity-scored view of all your debt accounts and a paydown
+        calculator to find the fastest or cheapest route to becoming debt-free. It picks up
+        any account with a negative balance that is of type Credit card, Loan, or Mortgage.
       </P>
       <Ul items={[
-        'Green bars represent your budgeted amount per category; red bars show actual spending.',
-        'Switch between 3-month and 6-month views using the toggle.',
-        'Use trends to spot categories where you consistently overspend and adjust your budgets accordingly.',
+        <>
+          <strong>Affordability panel</strong> — scans the last 90 days of transactions to detect
+          your monthly income. It then subtracts committed bills, estimated discretionary spend, and
+          a safety buffer to calculate your <strong>safe monthly surplus</strong> — the most you can
+          comfortably put towards extra debt payments. If income cannot be detected, you are prompted
+          to enter your monthly take-home pay manually.
+        </>,
+        <>
+          <strong>Debt overview</strong> — all debt accounts listed by severity score (0–100) with a badge:
+          {' '}<Badge variant="warning">Critical</Badge> (75–100), <Badge variant="warning">High</Badge> (50–74),
+          {' '}<Badge variant="info">Medium</Badge> (25–49), or <Badge variant="success">Low</Badge> (0–24).
+          Severity is driven by interest rate, proximity to a promotional expiry date, and credit utilisation.
+        </>,
+        <>
+          <strong>Paydown calculator</strong> — choose a strategy and click <strong>Calculate projection</strong>:
+          <ul className="mt-1 ml-4 space-y-0.5">
+            <li className="flex items-start gap-2 text-sm text-muted-foreground"><ChevronRight size={14} className="mt-0.5 shrink-0 text-primary" /><span><strong>Avalanche</strong> — directs extra payments to the highest-rate debt first, minimising total interest paid.</span></li>
+            <li className="flex items-start gap-2 text-sm text-muted-foreground"><ChevronRight size={14} className="mt-0.5 shrink-0 text-primary" /><span><strong>Snowball</strong> — directs extra payments to the smallest balance first, building momentum with early wins.</span></li>
+            <li className="flex items-start gap-2 text-sm text-muted-foreground"><ChevronRight size={14} className="mt-0.5 shrink-0 text-primary" /><span><strong>Custom</strong> — you specify an exact monthly payment for each debt.</span></li>
+          </ul>
+        </>,
+        <>
+          <strong>Projection results</strong> — shows your debt-freedom date, total months remaining,
+          total interest you will pay, and a numbered payoff order with the estimated date each debt
+          is cleared.
+        </>,
+        <>
+          <strong>Debt burndown chart</strong> — a stacked area chart showing every debt balance shrinking
+          month by month. Hover over any point to see the breakdown per debt at that moment in time.
+        </>,
       ]} />
     </>
   );
