@@ -384,6 +384,7 @@ export interface DebtAccountSummary {
   name: string;
   type: string;
   balance: number;
+  creditLimit: number | null;
   interestRate: number | null;
   minimumMonthlyPayment: number | null;
   currentMonthlyPayment: number | null;
@@ -393,6 +394,9 @@ export interface DebtAccountSummary {
   severityScore: number;
   severityLabel: DebtSeverityLabel;
   severityReason: string | null;
+  monthlyInterestCost: number | null;
+  monthsToPayoffAtCurrentPayment: number | null;
+  payoffDateAtCurrentPayment: string | null;
 }
 
 export interface DebtOverviewResponse {
@@ -411,6 +415,7 @@ export interface ProjectionRequest {
   strategy: DebtStrategy;
   extraMonthlyPayment: number | null;
   customAllocations: CustomAllocation[] | null;
+  excludedAccountIds: string[] | null;
 }
 
 export interface AccountBalance {

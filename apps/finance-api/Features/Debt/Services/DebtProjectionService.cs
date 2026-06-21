@@ -19,11 +19,28 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
             .Select(a =>
             {
                 var (score, label, reason) = severity.Score(a, today);
+                var balance = Math.Abs(a.Balance);
+
+                decimal? monthlyInterestCost = a.InterestRate is > 0
+                    ? Math.Round(balance * a.InterestRate.Value / 100m / 12m, 2)
+                    : null;
+
+                int? monthsToPayoff = null;
+                string? payoffDate = null;
+                if (!a.IsInterestOnly)
+                {
+                    var payment = a.CurrentMonthlyPayment ?? a.MinimumMonthlyPayment;
+                    monthsToPayoff = CalculateMonthsToPayoff(balance, a.InterestRate, payment);
+                    if (monthsToPayoff.HasValue)
+                        payoffDate = today.AddMonths(monthsToPayoff.Value).ToString("yyyy-MM");
+                }
+
                 return new DebtAccountSummary(
-                    a.Id, a.Name, a.Type.ToString(), a.Balance,
+                    a.Id, a.Name, a.Type.ToString(), a.Balance, a.CreditLimit,
                     a.InterestRate, a.MinimumMonthlyPayment, a.CurrentMonthlyPayment,
                     a.PromotionalRate, a.PromotionalExpiry, a.LoanEndDate,
-                    score, label, reason);
+                    score, label, reason,
+                    monthlyInterestCost, monthsToPayoff, payoffDate);
             })
             .OrderByDescending(s => s.SeverityScore)
             .ToList();
@@ -133,8 +150,6 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
             schedule.Add(new DebtProjectionMonth(month, label, balances,
                 balances.Sum(b => b.Balance)));
 
-            // 5. Trim schedule to monthly granularity (keep every month but cap output at 120 for payload size)
-            // Full schedule returned; UI can paginate or sample as needed.
         }
 
         var freedomDate = MonthLabel(today, month);
@@ -166,7 +181,10 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
 
     private static DebtState? GetPriorityDebt(Dictionary<Guid, DebtState> state, ProjectionRequest request)
     {
-        var remaining = state.Values.Where(s => s.Balance > 0 && !s.IsPaidOff).ToList();
+        var excluded = request.ExcludedAccountIds ?? [];
+        var remaining = state.Values
+            .Where(s => s.Balance > 0 && !s.IsPaidOff && !excluded.Contains(s.Account.Id))
+            .ToList();
         if (remaining.Count == 0) return null;
 
         return request.Strategy switch
@@ -179,6 +197,24 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
             DebtStrategy.Custom => remaining.OrderByDescending(s => s.MonthlyPayment).First(),
             _ => remaining.OrderByDescending(s => s.EffectiveRate).First(),
         };
+    }
+
+    // Standard amortisation: returns null when payment cannot cover interest or data is missing.
+    private static int? CalculateMonthsToPayoff(decimal balance, decimal? interestRate, decimal? payment)
+    {
+        if (payment is null or <= 0 || balance <= 0) return null;
+
+        if (interestRate is null or <= 0)
+            return (int)Math.Ceiling((double)balance / (double)payment);
+
+        double monthlyRate = (double)(interestRate.Value / 100m / 12m);
+        double monthlyInterest = (double)balance * monthlyRate;
+
+        if ((double)payment <= monthlyInterest) return null;
+
+        double n = -Math.Log(1.0 - (double)balance * monthlyRate / (double)payment)
+                   / Math.Log(1.0 + monthlyRate);
+        return (int)Math.Ceiling(n);
     }
 
     private static string MonthLabel(DateOnly today, int monthsAhead)

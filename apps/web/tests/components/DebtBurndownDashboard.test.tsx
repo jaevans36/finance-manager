@@ -34,6 +34,7 @@ const makeOverview = (overrides: Partial<DebtOverviewResponse> = {}): DebtOvervi
       name: 'Barclaycard',
       type: 'Credit',
       balance: -1200,
+      creditLimit: 2000,
       interestRate: 24.9,
       minimumMonthlyPayment: 25,
       currentMonthlyPayment: 100,
@@ -43,6 +44,9 @@ const makeOverview = (overrides: Partial<DebtOverviewResponse> = {}): DebtOvervi
       severityScore: 50,
       severityLabel: 'High',
       severityReason: null,
+      monthlyInterestCost: 24.9,
+      monthsToPayoffAtCurrentPayment: 13,
+      payoffDateAtCurrentPayment: '2027-07',
     },
   ],
   totalDebt: 1200,
@@ -155,7 +159,7 @@ describe('DebtBurndownDashboard', () => {
 
     await waitFor(() => {
       expect(debtService.getProjection).toHaveBeenCalledWith(
-        expect.objectContaining({ strategy: 'Avalanche', extraMonthlyPayment: 1260 })
+        expect.objectContaining({ strategy: 'Avalanche', extraMonthlyPayment: 1260, excludedAccountIds: null })
       );
     });
   });

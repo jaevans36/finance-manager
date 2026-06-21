@@ -25,7 +25,7 @@ public class DebtProjectionServiceTests : IDisposable
 
     public void Dispose() => _db.Dispose();
 
-    // â”€â”€ GetOverviewAsync â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â"€â"€ GetOverviewAsync â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     [Fact]
     public async Task GetOverviewAsync_WithNoDebtAccounts_ReturnsEmptyOverview()
@@ -91,7 +91,45 @@ public class DebtProjectionServiceTests : IDisposable
         result.TotalMinimumPayments.Should().Be(225m);
     }
 
-    // â”€â”€ ProjectAsync â€” no debt â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    [Fact]
+    public async Task GetOverviewAsync_ComputesMonthlyInterestCost()
+    {
+        _db.Accounts.Add(MakeCredit(_userId, balance: -1200m, interestRate: 24m));
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetOverviewAsync(_userId);
+
+        // 1200 * 24% / 12 = £24/month
+        result.Debts[0].MonthlyInterestCost.Should().BeApproximately(24m, 0.01m);
+    }
+
+    [Fact]
+    public async Task GetOverviewAsync_ComputesPayoffDateAtCurrentPayment()
+    {
+        _db.Accounts.Add(MakeCredit(_userId, balance: -600m, interestRate: 0m, currentMonthlyPayment: 200m));
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetOverviewAsync(_userId);
+
+        // 600 / 200 = 3 months (no interest)
+        result.Debts[0].MonthsToPayoffAtCurrentPayment.Should().Be(3);
+        result.Debts[0].PayoffDateAtCurrentPayment.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task GetOverviewAsync_ReturnsNullPayoffDate_WhenPaymentCoversInterestOnly()
+    {
+        // £10/mo on £1200 at 10% APR = £10 monthly interest — payment never reduces balance
+        _db.Accounts.Add(MakeCredit(_userId, balance: -1200m, interestRate: 10m, currentMonthlyPayment: 10m));
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetOverviewAsync(_userId);
+
+        result.Debts[0].MonthsToPayoffAtCurrentPayment.Should().BeNull();
+        result.Debts[0].PayoffDateAtCurrentPayment.Should().BeNull();
+    }
+
+    // â"€â"€ ProjectAsync â€" no debt â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     [Fact]
     public async Task ProjectAsync_WithNoDebts_ReturnsZeroMonths()
@@ -103,7 +141,7 @@ public class DebtProjectionServiceTests : IDisposable
         result.Schedule.Should().BeEmpty();
     }
 
-    // â”€â”€ ProjectAsync â€” Avalanche â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â"€â"€ ProjectAsync â€" Avalanche â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     [Fact]
     public async Task ProjectAsync_Avalanche_PaysHighestRateFirst()
@@ -123,7 +161,7 @@ public class DebtProjectionServiceTests : IDisposable
         result.PayoffOrder[0].Name.Should().Be("High Rate");
     }
 
-    // â”€â”€ ProjectAsync â€” Snowball â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â"€â"€ ProjectAsync â€" Snowball â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     [Fact]
     public async Task ProjectAsync_Snowball_PaysSmallestBalanceFirst()
@@ -141,7 +179,7 @@ public class DebtProjectionServiceTests : IDisposable
         result.PayoffOrder[0].Name.Should().Be("Small Debt");
     }
 
-    // â”€â”€ ProjectAsync â€” Custom â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â"€â"€ ProjectAsync â€" Custom â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     [Fact]
     public async Task ProjectAsync_Custom_UsesSpecifiedAllocations()
@@ -161,7 +199,7 @@ public class DebtProjectionServiceTests : IDisposable
         result.MonthsToFreedom.Should().BeGreaterThan(0).And.BeLessThan(6); // 500 / 300 â‰ˆ 2 months
     }
 
-    // â”€â”€ ProjectAsync â€” interest accrual â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â"€â"€ ProjectAsync â€" interest accrual â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     [Fact]
     public async Task ProjectAsync_AccruesTotalInterest()
@@ -178,7 +216,7 @@ public class DebtProjectionServiceTests : IDisposable
         result.MonthsToFreedom.Should().BeGreaterThan(12); // 2% monthly vs 2% minimum = very slow
     }
 
-    // â”€â”€ ProjectAsync â€” schedule â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â"€â"€ ProjectAsync â€" schedule â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     [Fact]
     public async Task ProjectAsync_ScheduleContainsDecreasingBalances()
@@ -206,9 +244,9 @@ public class DebtProjectionServiceTests : IDisposable
     {
         // With no extra payment: card A clears in month 5 (500/100).
         // That freed minimum (100) should cascade to card B.
-        var cardA = MakeCredit(_userId, "A â€” Small", balance: -500m,
+        var cardA = MakeCredit(_userId, "A - Small", balance: -500m,
             interestRate: 0m, currentMonthlyPayment: 100m);
-        var cardB = MakeCredit(_userId, "B â€” Large", balance: -2000m,
+        var cardB = MakeCredit(_userId, "B - Large", balance: -2000m,
             interestRate: 0m, currentMonthlyPayment: 100m);
         _db.Accounts.AddRange(cardA, cardB);
         await _db.SaveChangesAsync();
@@ -220,10 +258,37 @@ public class DebtProjectionServiceTests : IDisposable
         // With cascading: after A clears, B gets 200/mo instead of 100
         // Without cascading: B clears in 20 months; with cascading, faster
         result.MonthsToFreedom.Should().BeLessThan(25);
-        result.PayoffOrder[0].Name.Should().Be("A â€” Small");
+        result.PayoffOrder[0].Name.Should().Be("A - Small");
     }
 
-    // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    [Fact]
+    public async Task ProjectAsync_ExcludedAccount_OnlyReceivesMinimumPayment()
+    {
+        // Mortgage has lower rate than card, but in Avalanche the card should still be paid first.
+        // Exclusion ensures the mortgage never receives any extra payment regardless of strategy.
+        var mortgage = new Account
+        {
+            Id = Guid.NewGuid(), UserId = _userId, Type = AccountType.Mortgage,
+            Name = "Mortgage", Currency = "GBP", Balance = -50000m,
+            InterestRate = 30m, CurrentMonthlyPayment = 800m, IsActive = true,
+        };
+        var card = MakeCredit(_userId, "Card", balance: -1000m,
+            interestRate: 20m, currentMonthlyPayment: 50m);
+        _db.Accounts.AddRange(mortgage, card);
+        await _db.SaveChangesAsync();
+
+        // Avalanche with mortgage excluded: extra should target the card despite mortgage having higher rate
+        var result = await _sut.ProjectAsync(_userId, new ProjectionRequest(
+            DebtStrategy.Avalanche,
+            ExtraMonthlyPayment: 200m,
+            CustomAllocations: null,
+            ExcludedAccountIds: [mortgage.Id]));
+
+        result.PayoffOrder.Should().NotBeEmpty();
+        result.PayoffOrder[0].Name.Should().Be("Card");
+    }
+
+    // â"€â"€ Helpers â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
     private Account MakeCredit(
         Guid userId,

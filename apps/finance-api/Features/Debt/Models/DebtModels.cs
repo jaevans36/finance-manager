@@ -7,6 +7,7 @@ public record DebtAccountSummary(
     string Name,
     string Type,
     decimal Balance,
+    decimal? CreditLimit,
     decimal? InterestRate,
     decimal? MinimumMonthlyPayment,
     decimal? CurrentMonthlyPayment,
@@ -15,7 +16,10 @@ public record DebtAccountSummary(
     DateOnly? LoanEndDate,
     int SeverityScore,
     string SeverityLabel,
-    string? SeverityReason
+    string? SeverityReason,
+    decimal? MonthlyInterestCost,
+    int? MonthsToPayoffAtCurrentPayment,
+    string? PayoffDateAtCurrentPayment
 );
 
 public record DebtOverviewResponse(
@@ -28,7 +32,8 @@ public record DebtOverviewResponse(
 public record ProjectionRequest(
     DebtStrategy Strategy,
     decimal? ExtraMonthlyPayment,
-    IReadOnlyList<CustomAllocation>? CustomAllocations
+    IReadOnlyList<CustomAllocation>? CustomAllocations,
+    IReadOnlyList<Guid>? ExcludedAccountIds = null
 );
 
 public record CustomAllocation(Guid AccountId, decimal MonthlyPayment);

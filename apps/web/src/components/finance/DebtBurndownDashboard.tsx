@@ -182,6 +182,7 @@ export function DebtBurndownDashboard() {
   const [overviewLoading, setOverviewLoading] = useState(true);
   const [projectionLoading, setProjectionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastExcludedIds, setLastExcludedIds] = useState<string[]>([]);
 
   useEffect(() => {
     setOverviewLoading(true);
@@ -202,6 +203,7 @@ export function DebtBurndownDashboard() {
               strategy: 'Avalanche',
               extraMonthlyPayment: suggested > 0 ? suggested : null,
               customAllocations: null,
+              excludedAccountIds: null,
             })
             .then(setProjection)
             .finally(() => setProjectionLoading(false));
@@ -214,12 +216,19 @@ export function DebtBurndownDashboard() {
   const handleProjectionRequest = async (
     strategy: DebtStrategy,
     extraMonthlyPayment: number | null,
-    customAllocations: CustomAllocation[] | null
+    customAllocations: CustomAllocation[] | null,
+    excludedAccountIds: string[] = []
   ) => {
     if (!overview) return;
+    setLastExcludedIds(excludedAccountIds);
     setProjectionLoading(true);
     try {
-      const result = await debtService.getProjection({ strategy, extraMonthlyPayment, customAllocations });
+      const result = await debtService.getProjection({
+        strategy,
+        extraMonthlyPayment,
+        customAllocations,
+        excludedAccountIds: excludedAccountIds.length > 0 ? excludedAccountIds : null,
+      });
       setProjection(result);
     } catch {
       setError('Failed to calculate projection.');
@@ -232,7 +241,7 @@ export function DebtBurndownDashboard() {
     setAffordability(updated);
     if (overview && overview.debts.length > 0) {
       const suggested = updated.suggestedDebtPayment;
-      void handleProjectionRequest('Avalanche', suggested > 0 ? suggested : null, null);
+      void handleProjectionRequest('Avalanche', suggested > 0 ? suggested : null, null, lastExcludedIds);
     }
   };
 

@@ -25,7 +25,8 @@ interface DebtStrategySelectorProps {
   onSubmit: (
     strategy: DebtStrategy,
     extraMonthlyPayment: number | null,
-    customAllocations: CustomAllocation[] | null
+    customAllocations: CustomAllocation[] | null,
+    excludedAccountIds: string[]
   ) => void;
   isLoading?: boolean;
   initialExtraPayment?: number;
@@ -44,6 +45,19 @@ export function DebtStrategySelector({
     initialExtraPayment > 0 ? String(initialExtraPayment) : ''
   );
   const [customAllocations, setCustomAllocations] = useState<Record<string, string>>({});
+  const [excludedIds, setExcludedIds] = useState<Set<string>>(new Set());
+
+  const toggleExclude = (accountId: string) => {
+    setExcludedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(accountId)) {
+        next.delete(accountId);
+      } else {
+        next.add(accountId);
+      }
+      return next;
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +69,7 @@ export function DebtStrategySelector({
             monthlyPayment: parseFloat(customAllocations[d.accountId] ?? '0') || 0,
           }))
         : null;
-    onSubmit(strategy, extra, allocations);
+    onSubmit(strategy, extra, allocations, Array.from(excludedIds));
   };
 
   const fieldClass =
@@ -88,6 +102,47 @@ export function DebtStrategySelector({
           ))}
         </div>
       </div>
+
+      {/* Per-debt include/exclude — only when multiple debts and not Custom mode */}
+      {debts.length > 1 && strategy !== 'Custom' && (
+        <div>
+          <p className={labelClass}>Debts to target</p>
+          <p className="text-xs text-muted-foreground mb-2">
+            Excluded debts still receive their minimum payment but won't receive any extra payments.
+            Use this to skip debts you don't want to overpay (e.g. a mortgage on a fixed rate).
+          </p>
+          <div className="space-y-1">
+            {debts.map(debt => {
+              const isExcluded = excludedIds.has(debt.accountId);
+              return (
+                <label
+                  key={debt.accountId}
+                  className={cn(
+                    'flex items-center gap-3 rounded-lg border px-3 py-2 cursor-pointer transition-colors',
+                    isExcluded
+                      ? 'border-border bg-card opacity-60'
+                      : 'border-primary/30 bg-primary/5'
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    checked={!isExcluded}
+                    onChange={() => toggleExclude(debt.accountId)}
+                    className="h-4 w-4 rounded border-border accent-primary"
+                  />
+                  <span className="flex-1 text-sm text-gray-800 dark:text-gray-200 font-medium">
+                    {debt.name}
+                  </span>
+                  <span className="text-xs text-gray-400">{debt.type}</span>
+                  {debt.interestRate != null && (
+                    <span className="text-xs text-gray-400">{debt.interestRate}%</span>
+                  )}
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Extra monthly payment (not shown for Custom) */}
       {strategy !== 'Custom' && (
