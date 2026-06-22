@@ -1,5 +1,6 @@
 using FinanceApi.Data;
 using FinanceApi.Features.Accounts.Models;
+using FinanceApi.Features.Bills.Models;
 using FinanceApi.Features.Debt.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,6 +31,10 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
             .Select(g => new { AccountId = g.Key, Total = g.Sum(t => t.Amount) })
             .ToDictionaryAsync(x => x.AccountId, x => Math.Round(x.Total / 3m, 2), ct);
 
+        // Bills linked to a debt account provide the definitive monthly payment when no
+        // explicit CurrentMonthlyPayment is set on the account.
+        var linkedBillPayments = await LoadLinkedBillPaymentsAsync(accountIds, userId, ct);
+
         var summaries = accounts
             .Select(a =>
             {
@@ -55,11 +60,15 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
                     ? (standardBalance * a.InterestRate.Value + promoBalance * promoRate) / balance
                     : a.InterestRate;
 
+                // Effective payment: explicit setting → linked bill → minimum
+                linkedBillPayments.TryGetValue(a.Id, out var billPayment);
+                var effectivePayment = a.CurrentMonthlyPayment ?? (billPayment > 0 ? billPayment : null);
+
                 int? monthsToPayoff = null;
                 string? payoffDate = null;
                 if (!a.IsInterestOnly)
                 {
-                    var payment = a.CurrentMonthlyPayment ?? a.MinimumMonthlyPayment;
+                    var payment = effectivePayment ?? a.MinimumMonthlyPayment;
                     monthsToPayoff = CalculateMonthsToPayoff(balance, effectiveRateForPayoff, payment);
                     if (monthsToPayoff.HasValue)
                         payoffDate = today.AddMonths(monthsToPayoff.Value).ToString("yyyy-MM");
@@ -96,10 +105,13 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
                 0m, [], [], []);
         }
 
+        var linkedBillPayments = await LoadLinkedBillPaymentsAsync(
+            accounts.Select(a => a.Id), userId, ct);
+
         // Working state: mutable balances and monthly payments
         var state = accounts.ToDictionary(
             a => a.Id,
-            a => new DebtState(a, DetermineMonthlyPayment(a, request)));
+            a => new DebtState(a, DetermineMonthlyPayment(a, request, linkedBillPayments)));
 
         // Detect accounts where the monthly payment doesn't cover the interest —
         // these balances would grow forever if left unchecked. We flag them as warnings
@@ -216,6 +228,25 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
+    private async Task<Dictionary<Guid, decimal>> LoadLinkedBillPaymentsAsync(
+        IEnumerable<Guid> accountIds, Guid userId, CancellationToken ct)
+    {
+        var ids = accountIds.ToHashSet();
+        var bills = await db.Bills
+            .Where(b => b.UserId == userId && b.IsActive && b.AccountId.HasValue && ids.Contains(b.AccountId.Value))
+            .ToListAsync(ct);
+
+        return bills.ToDictionary(
+            b => b.AccountId!.Value,
+            b => b.Frequency switch
+            {
+                BillFrequency.Weekly => Math.Round(b.Amount * 52m / 12m, 2),
+                BillFrequency.Quarterly => Math.Round(b.Amount / 3m, 2),
+                BillFrequency.Annual => Math.Round(b.Amount / 12m, 2),
+                _ => b.Amount, // Monthly
+            });
+    }
+
     private async Task<List<Account>> LoadDebtAccountsAsync(Guid userId, CancellationToken ct)
     {
         return await db.Accounts
@@ -224,14 +255,17 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
             .ToListAsync(ct);
     }
 
-    private static decimal DetermineMonthlyPayment(Account account, ProjectionRequest request)
+    private static decimal DetermineMonthlyPayment(
+        Account account, ProjectionRequest request, Dictionary<Guid, decimal> linkedBillPayments)
     {
         if (request.Strategy == DebtStrategy.Custom && request.CustomAllocations is not null)
         {
             var custom = request.CustomAllocations.FirstOrDefault(c => c.AccountId == account.Id);
             if (custom is not null) return custom.MonthlyPayment;
         }
+        linkedBillPayments.TryGetValue(account.Id, out var billPayment);
         return account.CurrentMonthlyPayment
+            ?? (billPayment > 0 ? (decimal?)billPayment : null)
             ?? account.MinimumMonthlyPayment
             ?? Math.Abs(account.Balance) * 0.02m; // 2% fallback for credit cards
     }

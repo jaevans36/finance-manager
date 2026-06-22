@@ -33,10 +33,20 @@ interface DebtWaterfallChartProps {
 
 export function DebtWaterfallChart({ schedule, debts }: DebtWaterfallChartProps) {
   const [hiddenDebts, setHiddenDebts] = useState<Set<string>>(new Set());
+  const [viewYears, setViewYears] = useState<number | null>(null);
 
   if (schedule.length === 0) return null;
 
-  const sampled = sampleSchedule(schedule);
+  const totalYears = Math.ceil(schedule.length / 12);
+
+  // Build range options — shorter ranges only shown when they're a meaningful subset of total
+  const rangeOptions: { label: string; years: number | null }[] = [
+    ...[2, 5, 10, 20].filter(y => y < totalYears).map(y => ({ label: `${y} yr`, years: y })),
+    { label: 'All', years: null },
+  ];
+
+  const filtered = viewYears ? schedule.filter(m => m.month <= viewYears * 12) : schedule;
+  const sampled = sampleSchedule(filtered);
 
   // Build chart data: each row is a month with a column per debt
   const data = sampled.map(month => {
@@ -74,9 +84,32 @@ export function DebtWaterfallChart({ schedule, debts }: DebtWaterfallChartProps)
 
   return (
     <div className="rounded-xl border border-border bg-card p-4">
-      <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
-        Debt burndown
-      </h4>
+      <div className="flex items-center justify-between mb-3">
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+          Debt burndown
+        </h4>
+
+        {/* Year range selector — only shown when the projection spans more than 2 years */}
+        {rangeOptions.length > 1 && (
+          <div className="flex gap-1">
+            {rangeOptions.map(opt => (
+              <button
+                key={opt.label}
+                type="button"
+                onClick={() => setViewYears(opt.years)}
+                className={cn(
+                  'rounded px-2 py-0.5 text-xs font-medium transition-colors',
+                  viewYears === opt.years
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-gray-500 dark:text-gray-400 hover:bg-muted',
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Debt filter chips — only shown when there are multiple debts */}
       {debtEntries.length > 1 && (

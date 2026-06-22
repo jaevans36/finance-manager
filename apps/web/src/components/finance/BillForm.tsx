@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { billService } from '../../services/bill-service';
 import { accountsService } from '../../services/accounts-service';
-import type { AccountSummary, BillFrequency, CreateBillRequest } from '../../types/finance';
+import type { AccountSummary, AccountType, BillFrequency, CreateBillRequest } from '../../types/finance';
+
+const DEBT_TYPES: AccountType[] = ['Credit', 'Loan', 'Mortgage'];
 
 const FREQUENCIES: BillFrequency[] = ['Weekly', 'Monthly', 'Quarterly', 'Annual'];
 
@@ -171,18 +173,40 @@ export function BillForm({
       {accounts.length > 0 && (
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Debits from account <span className="font-normal text-gray-400">(optional)</span>
+            Linked account <span className="font-normal text-gray-400">(optional)</span>
           </label>
           <select
             value={accountId}
             onChange={e => setAccountId(e.target.value)}
             className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">Not linked to an account</option>
-            {accounts.map(a => (
-              <option key={a.id} value={a.id}>{a.name}</option>
-            ))}
+            <option value="">Not linked</option>
+            {(() => {
+              const debtAccounts = accounts.filter(a => DEBT_TYPES.includes(a.type));
+              const cashAccounts = accounts.filter(a => !DEBT_TYPES.includes(a.type));
+              return (
+                <>
+                  {debtAccounts.length > 0 && (
+                    <optgroup label="Pays debt account">
+                      {debtAccounts.map(a => (
+                        <option key={a.id} value={a.id}>{a.name} ({a.type})</option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {cashAccounts.length > 0 && (
+                    <optgroup label="Debits from">
+                      {cashAccounts.map(a => (
+                        <option key={a.id} value={a.id}>{a.name}</option>
+                      ))}
+                    </optgroup>
+                  )}
+                </>
+              );
+            })()}
           </select>
+          <p className="mt-1 text-xs text-gray-400">
+            Link to a credit card or loan and the debt projection will use this amount as the monthly payment.
+          </p>
         </div>
       )}
 

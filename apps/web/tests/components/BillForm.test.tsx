@@ -23,6 +23,7 @@ const { accountsService } = jest.requireMock('../../src/services/accounts-servic
 const mockAccounts = [
   { id: 'acc-1', name: 'Barclays Current', type: 'Checking', currency: 'GBP', balance: 0, institution: null, colour: null, icon: null, isActive: true, excludeFromNetWorth: false },
   { id: 'acc-2', name: 'Monzo', type: 'Checking', currency: 'GBP', balance: 0, institution: null, colour: null, icon: null, isActive: true, excludeFromNetWorth: false },
+  { id: 'acc-3', name: 'Barclaycard', type: 'Credit', currency: 'GBP', balance: -500, institution: null, colour: null, icon: null, isActive: true, excludeFromNetWorth: false },
 ];
 
 describe('BillForm', () => {
@@ -32,16 +33,17 @@ describe('BillForm', () => {
     accountsService.getAccounts.mockResolvedValue([]);
     renderWithProviders(<BillForm onSuccess={jest.fn()} />);
     await waitFor(() => expect(accountsService.getAccounts).toHaveBeenCalled());
-    expect(screen.queryByText(/debits from account/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/linked account/i)).not.toBeInTheDocument();
   });
 
   it('renders account selector with all accounts when accounts are available', async () => {
     accountsService.getAccounts.mockResolvedValue(mockAccounts);
     renderWithProviders(<BillForm onSuccess={jest.fn()} />);
-    await waitFor(() => expect(screen.getByText(/debits from account/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/linked account/i)).toBeInTheDocument());
     expect(screen.getByText('Barclays Current')).toBeInTheDocument();
     expect(screen.getByText('Monzo')).toBeInTheDocument();
-    expect(screen.getByText('Not linked to an account')).toBeInTheDocument();
+    expect(screen.getByText('Barclaycard (Credit)')).toBeInTheDocument();
+    expect(screen.getByText('Not linked')).toBeInTheDocument();
   });
 
   it('passes selected accountId in create request', async () => {
@@ -53,9 +55,8 @@ describe('BillForm', () => {
       <BillForm onSuccess={onSuccess} defaultName="Gym" defaultAmount={40} />
     );
 
-    await waitFor(() => screen.getByText(/debits from account/i));
-    // The account select is identified by its default "Not linked to an account" option
-    const accountSelect = screen.getByDisplayValue('Not linked to an account');
+    await waitFor(() => screen.getByText(/linked account/i));
+    const accountSelect = screen.getByDisplayValue('Not linked');
     await userEvent.selectOptions(accountSelect, 'acc-1');
 
     await userEvent.click(screen.getByRole('button', { name: /save bill/i }));
@@ -73,7 +74,7 @@ describe('BillForm', () => {
     renderWithProviders(
       <BillForm onSuccess={jest.fn()} billId="b1" defaultAccountId="acc-2" />
     );
-    await waitFor(() => screen.getByText(/debits from account/i));
+    await waitFor(() => screen.getByText(/linked account/i));
     const accountSelect = screen.getByDisplayValue('Monzo') as HTMLSelectElement;
     expect(accountSelect.value).toBe('acc-2');
   });
@@ -87,8 +88,7 @@ describe('BillForm', () => {
       <BillForm onSuccess={onSuccess} billId="b1" defaultName="Netflix" defaultAmount={9.99} />
     );
 
-    await waitFor(() => screen.getByText(/debits from account/i));
-    // Selector defaults to "Not linked to an account" — submit without selecting an account
+    await waitFor(() => screen.getByText(/linked account/i));
     await userEvent.click(screen.getByRole('button', { name: /save changes/i }));
 
     await waitFor(() => {
