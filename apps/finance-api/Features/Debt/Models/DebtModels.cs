@@ -20,7 +20,8 @@ public record DebtAccountSummary(
     string? SeverityReason,
     decimal? MonthlyInterestCost,
     int? MonthsToPayoffAtCurrentPayment,
-    string? PayoffDateAtCurrentPayment
+    string? PayoffDateAtCurrentPayment,
+    decimal? DetectedMonthlyPayment
 );
 
 public record DebtOverviewResponse(

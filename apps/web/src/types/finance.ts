@@ -398,6 +398,7 @@ export interface DebtAccountSummary {
   monthlyInterestCost: number | null;
   monthsToPayoffAtCurrentPayment: number | null;
   payoffDateAtCurrentPayment: string | null;
+  detectedMonthlyPayment: number | null;
 }
 
 export interface DebtOverviewResponse {

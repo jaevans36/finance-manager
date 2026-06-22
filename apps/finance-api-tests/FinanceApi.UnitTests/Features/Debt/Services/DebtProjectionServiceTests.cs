@@ -4,6 +4,7 @@ using FinanceApi.Data;
 using FinanceApi.Features.Accounts.Models;
 using FinanceApi.Features.Debt.Models;
 using FinanceApi.Features.Debt.Services;
+using FinanceApi.Features.Transactions.Models;
 
 namespace FinanceApi.UnitTests.Features.Debt.Services;
 
@@ -134,6 +135,32 @@ public class DebtProjectionServiceTests : IDisposable
 
         // 300 * 24.9% / 12 = £6.23 (not 1800 * 24.9% / 12 = £37.35)
         result.Debts[0].MonthlyInterestCost.Should().BeApproximately(6.23m, 0.01m);
+    }
+
+    [Fact]
+    public async Task GetOverviewAsync_DetectsMonthlyPaymentFromRecentTransactions()
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var card = MakeCredit(_userId, balance: -1200m, interestRate: 24m);
+        _db.Accounts.Add(card);
+
+        // Add £100 credit transactions in each of the 3 most recently completed months
+        var startOfCurrentMonth = new DateOnly(today.Year, today.Month, 1);
+        for (int i = 1; i <= 3; i++)
+        {
+            _db.Transactions.Add(new Transaction
+            {
+                Id = Guid.NewGuid(), UserId = _userId, AccountId = card.Id,
+                Type = TransactionType.Credit, Amount = 100m,
+                TransactionDate = startOfCurrentMonth.AddMonths(-i),
+                Currency = "GBP", Description = "Payment",
+            });
+        }
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetOverviewAsync(_userId);
+
+        result.Debts[0].DetectedMonthlyPayment.Should().BeApproximately(100m, 0.01m);
     }
 
     [Fact]

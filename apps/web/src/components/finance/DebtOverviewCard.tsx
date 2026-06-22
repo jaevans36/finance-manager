@@ -168,31 +168,64 @@ export function DebtOverviewCard({
               )}
             </div>
 
-            {/* Interest cost + payoff estimate */}
-            {(debt.monthlyInterestCost != null || debt.payoffDateAtCurrentPayment != null) && (
-              <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-0.5 text-xs">
+            {/* Interest, actual payments, and payoff estimate */}
+            {(debt.monthlyInterestCost != null || debt.detectedMonthlyPayment != null || debt.payoffDateAtCurrentPayment != null) && (
+              <div className="mt-1.5 space-y-0.5 text-xs">
+                {/* Interest cost line */}
                 {debt.monthlyInterestCost != null && (
-                  <span className="text-red-600 dark:text-red-400">
-                    {fmt(debt.monthlyInterestCost)}/mo in interest
-                    {debt.promotionalBalance != null && debt.promotionalBalance > 0 && debt.interestRate != null && (
-                      <span className="text-gray-400 dark:text-gray-500 ml-1">
-                        ({fmt(Math.abs(debt.balance) - debt.promotionalBalance)} at {debt.interestRate}%
-                        {debt.promotionalRate != null
-                          ? ` · ${fmt(debt.promotionalBalance)} at ${debt.promotionalRate}%`
-                          : ''})
-                      </span>
-                    )}
-                  </span>
+                  <div className="flex flex-wrap gap-x-4">
+                    <span className="text-red-600 dark:text-red-400">
+                      {fmt(debt.monthlyInterestCost)}/mo interest
+                      {debt.promotionalBalance != null && debt.promotionalBalance > 0 && debt.interestRate != null && (
+                        <span className="text-gray-400 dark:text-gray-500 ml-1">
+                          ({fmt(Math.abs(debt.balance) - debt.promotionalBalance)} at {debt.interestRate}%
+                          {debt.promotionalRate != null
+                            ? ` · ${fmt(debt.promotionalBalance)} at ${debt.promotionalRate}%`
+                            : ''})
+                        </span>
+                      )}
+                    </span>
+                  </div>
                 )}
+
+                {/* Actual payment from transactions */}
+                {debt.detectedMonthlyPayment != null && (() => {
+                  const toBalance = debt.monthlyInterestCost != null
+                    ? debt.detectedMonthlyPayment - debt.monthlyInterestCost
+                    : debt.detectedMonthlyPayment;
+                  return (
+                    <div className="flex flex-wrap gap-x-2 items-center text-gray-500 dark:text-gray-400">
+                      <span>{fmt(debt.detectedMonthlyPayment)}/mo actual payments</span>
+                      {debt.monthlyInterestCost != null && (
+                        <>
+                          <span className="text-gray-300 dark:text-gray-600">→</span>
+                          <span className={toBalance > 0
+                            ? 'text-green-700 dark:text-green-400'
+                            : 'text-amber-600 dark:text-amber-400'
+                          }>
+                            {toBalance > 0 ? fmt(toBalance) : `−${fmt(Math.abs(toBalance))}`} to balance
+                          </span>
+                        </>
+                      )}
+                      <span className="text-gray-400 dark:text-gray-500">(3 mo avg)</span>
+                    </div>
+                  );
+                })()}
+
+                {/* Payoff estimate */}
                 {debt.payoffDateAtCurrentPayment != null ? (
-                  <span className="text-green-700 dark:text-green-400">
-                    Pay off: {formatPayoffDate(debt.payoffDateAtCurrentPayment)} at current rate
-                  </span>
+                  <div>
+                    <span className="text-green-700 dark:text-green-400">
+                      Pay off: {formatPayoffDate(debt.payoffDateAtCurrentPayment)} at current rate
+                    </span>
+                  </div>
                 ) : (
                   debt.currentMonthlyPayment != null && debt.interestRate != null && (
-                    <span className="text-amber-600 dark:text-amber-400">
-                      Payment doesn't cover interest — balance is growing
-                    </span>
+                    <div>
+                      <span className="text-amber-600 dark:text-amber-400">
+                        Payment doesn't cover interest — balance is growing
+                      </span>
+                    </div>
                   )
                 )}
               </div>

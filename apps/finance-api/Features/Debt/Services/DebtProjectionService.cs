@@ -15,6 +15,21 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
         var accounts = await LoadDebtAccountsAsync(userId, ct);
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
+        // Detect actual monthly payments from the 3 most recently completed calendar months.
+        // Positive-amount transactions on a debt account represent money paid in (reducing balance).
+        var startOfCurrentMonth = new DateOnly(today.Year, today.Month, 1);
+        var threeMonthsAgo = startOfCurrentMonth.AddMonths(-3);
+        var accountIds = accounts.Select(a => a.Id).ToHashSet();
+
+        var detectedPayments = await db.Transactions
+            .Where(t => accountIds.Contains(t.AccountId)
+                     && t.Amount > 0
+                     && t.TransactionDate >= threeMonthsAgo
+                     && t.TransactionDate < startOfCurrentMonth)
+            .GroupBy(t => t.AccountId)
+            .Select(g => new { AccountId = g.Key, Total = g.Sum(t => t.Amount) })
+            .ToDictionaryAsync(x => x.AccountId, x => Math.Round(x.Total / 3m, 2), ct);
+
         var summaries = accounts
             .Select(a =>
             {
@@ -50,12 +65,15 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
                         payoffDate = today.AddMonths(monthsToPayoff.Value).ToString("yyyy-MM");
                 }
 
+                detectedPayments.TryGetValue(a.Id, out var detectedPayment);
+
                 return new DebtAccountSummary(
                     a.Id, a.Name, a.Type.ToString(), a.Balance, a.CreditLimit,
                     a.InterestRate, a.PromotionalBalance, a.MinimumMonthlyPayment, a.CurrentMonthlyPayment,
                     a.PromotionalRate, a.PromotionalExpiry, a.LoanEndDate,
                     score, label, reason,
-                    monthlyInterestCost, monthsToPayoff, payoffDate);
+                    monthlyInterestCost, monthsToPayoff, payoffDate,
+                    detectedPayment > 0 ? detectedPayment : null);
             })
             .OrderByDescending(s => s.SeverityScore)
             .ToList();

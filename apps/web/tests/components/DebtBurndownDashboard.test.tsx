@@ -48,6 +48,7 @@ const makeOverview = (overrides: Partial<DebtOverviewResponse> = {}): DebtOvervi
       monthlyInterestCost: 24.9,
       monthsToPayoffAtCurrentPayment: 13,
       payoffDateAtCurrentPayment: '2027-07',
+      detectedMonthlyPayment: 100,
     },
   ],
   totalDebt: 1200,
