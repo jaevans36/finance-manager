@@ -1,4 +1,4 @@
-import { Trophy, Calendar, TrendingDown } from 'lucide-react';
+import { Trophy, Calendar, TrendingDown, AlertTriangle } from 'lucide-react';
 import type { DebtProjectionResponse } from '../../types/finance';
 import { cn } from '../../lib/utils';
 
@@ -25,7 +25,7 @@ interface DebtProjectionPanelProps {
 }
 
 export function DebtProjectionPanel({ projection }: DebtProjectionPanelProps) {
-  const { monthsToFreedom, estimatedFreedomDate, totalInterestPaid, payoffOrder, strategy } = projection;
+  const { monthsToFreedom, estimatedFreedomDate, totalInterestPaid, payoffOrder, strategy, warnings } = projection;
 
   const years = Math.floor(monthsToFreedom / 12);
   const months = monthsToFreedom % 12;
@@ -41,6 +41,26 @@ export function DebtProjectionPanel({ projection }: DebtProjectionPanelProps) {
 
   return (
     <div className="space-y-4">
+      {/* Warnings — shown when a debt's minimum payment doesn't cover its interest */}
+      {warnings.length > 0 && (
+        <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20 p-4 space-y-2">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+              {warnings.length === 1 ? 'One debt' : `${warnings.length} debts`} need{warnings.length === 1 ? 's' : ''} attention
+            </p>
+          </div>
+          <ul className="space-y-1">
+            {warnings.map((w, i) => (
+              <li key={i} className="text-xs text-amber-700 dark:text-amber-400 pl-6">{w}</li>
+            ))}
+          </ul>
+          <p className="text-xs text-amber-600 dark:text-amber-500 pl-6">
+            The projection above excludes interest compounding on these debts. Add extra payment to make them payable.
+          </p>
+        </div>
+      )}
+
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-xl border border-border bg-card p-4 text-center">

@@ -73,6 +73,7 @@ const makeProjection = (): DebtProjectionResponse => ({
   payoffOrder: [
     { accountId: 'd1', name: 'Barclaycard', monthPaidOff: 14, paidOffDate: '2027-09' },
   ],
+  warnings: [],
 });
 
 const makeAffordability = (overrides: Partial<AffordabilityData> = {}): AffordabilityData => ({
@@ -123,7 +124,7 @@ describe('DebtBurndownDashboard', () => {
     await waitFor(() => {
       expect(screen.getByText('Recommended monthly payment')).toBeInTheDocument();
     });
-    expect(screen.getByText('£1,260')).toBeInTheDocument();
+    expect(screen.getAllByText('£1,260').length).toBeGreaterThan(0);
   });
 
   it('shows income-not-detected card when affordability has no income', async () => {

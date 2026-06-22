@@ -93,7 +93,7 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
         {
             return new DebtProjectionResponse(request.Strategy, 0,
                 DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM"),
-                0m, [], []);
+                0m, [], [], []);
         }
 
         // Working state: mutable balances and monthly payments
@@ -101,25 +101,49 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
             a => a.Id,
             a => new DebtState(a, DetermineMonthlyPayment(a, request)));
 
+        // Detect accounts where the monthly payment doesn't cover the interest —
+        // these balances would grow forever if left unchecked. We flag them as warnings
+        // and freeze their balance in the simulation (charge interest but don't compound it
+        // onto the balance), so the overall projection remains meaningful.
+        var warnings = new List<string>();
+        var frozenAccounts = new HashSet<Guid>();
+        foreach (var s in state.Values)
+        {
+            decimal monthlyInterest = Math.Round(s.Balance * s.EffectiveRate / 100m / 12m, 2);
+            if (monthlyInterest > 0 && s.MonthlyPayment <= monthlyInterest)
+            {
+                var shortfall = Math.Round(monthlyInterest - s.MonthlyPayment, 2);
+                warnings.Add(
+                    $"{s.Account.Name}: monthly payment ({s.MonthlyPayment:C0}) is less than " +
+                    $"the monthly interest ({monthlyInterest:C0}). " +
+                    $"You need at least {shortfall:C0}/mo extra to stop this balance growing.");
+                frozenAccounts.Add(s.Account.Id);
+            }
+        }
+
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var schedule = new List<DebtProjectionMonth>();
         var payoffOrder = new List<PayoffOrder>();
         decimal totalInterest = 0m;
         int month = 0;
-        const int MaxMonths = 600; // 50-year safety cap
+        const int MaxMonths = 600;
 
         while (state.Values.Any(s => s.Balance > 0) && month < MaxMonths)
         {
             month++;
             var label = MonthLabel(today, month);
 
-            // 1. Apply monthly interest to each remaining debt
+            // 1. Apply monthly interest to each remaining debt.
+            // For accounts flagged as insolvent (payment ≤ interest), we count the interest
+            // cost but do not add it to the running balance — this prevents exponential compounding
+            // that would produce meaningless totals. The user is warned about these accounts.
             foreach (var s in state.Values.Where(s => s.Balance > 0))
             {
                 decimal monthlyRate = (s.EffectiveRate / 100m) / 12m;
                 decimal interest = Math.Round(s.Balance * monthlyRate, 2);
-                s.Balance += interest;
                 totalInterest += interest;
+                if (!frozenAccounts.Contains(s.Account.Id))
+                    s.Balance += interest;
             }
 
             // 2. Pay minimums on all debts
@@ -187,7 +211,7 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
 
         var freedomDate = MonthLabel(today, month);
         return new DebtProjectionResponse(request.Strategy, month, freedomDate,
-            Math.Round(totalInterest, 2), schedule, payoffOrder);
+            Math.Round(totalInterest, 2), schedule, payoffOrder, warnings);
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────

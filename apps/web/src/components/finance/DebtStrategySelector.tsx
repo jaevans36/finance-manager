@@ -148,7 +148,7 @@ export function DebtStrategySelector({
       {strategy !== 'Custom' && (
         <div>
           <label htmlFor="extra-payment" className={labelClass}>
-            Extra monthly payment (£)
+            Monthly focus payment (£)
           </label>
           <input
             id="extra-payment"
@@ -162,7 +162,7 @@ export function DebtStrategySelector({
           />
           <div className="mt-1 flex items-center gap-2">
             <p className="text-xs text-muted-foreground flex-1">
-              Amount above your minimums to throw at the priority debt each month
+              Applied in full to the target debt, on top of all minimum payments
             </p>
             {suggestedPayment != null && suggestedPayment > 0 && parseFloat(extraPayment) !== suggestedPayment && (
               <button
@@ -174,6 +174,47 @@ export function DebtStrategySelector({
               </button>
             )}
           </div>
+
+          {/* Total monthly commitment breakdown */}
+          {(() => {
+            const fmtGbp = (v: number) => new Intl.NumberFormat('en-GB', {
+              style: 'currency', currency: 'GBP', minimumFractionDigits: 0, maximumFractionDigits: 0,
+            }).format(v);
+            const totalMins = debts
+              .filter(d => !excludedIds.has(d.accountId))
+              .reduce((sum, d) => sum + (d.currentMonthlyPayment ?? d.minimumMonthlyPayment ?? 0), 0);
+            const extra = parseFloat(extraPayment) || 0;
+            const targetDebt = strategy === 'Avalanche'
+              ? [...debts].filter(d => !excludedIds.has(d.accountId))
+                  .sort((a, b) => (b.interestRate ?? 0) - (a.interestRate ?? 0))[0]
+              : [...debts].filter(d => !excludedIds.has(d.accountId))
+                  .sort((a, b) => Math.abs(a.balance) - Math.abs(b.balance))[0];
+            return (
+              <div className="mt-2 rounded-lg bg-muted/50 px-3 py-2 text-xs space-y-1">
+                <div className="flex justify-between text-gray-500 dark:text-gray-400">
+                  <span>Minimums across all debts</span>
+                  <span className="font-medium tabular-nums">{fmtGbp(totalMins)}</span>
+                </div>
+                <div className="flex justify-between text-gray-500 dark:text-gray-400">
+                  <span>Focus payment</span>
+                  <span className="font-medium tabular-nums">{fmtGbp(extra)}</span>
+                </div>
+                <div className="flex justify-between font-semibold text-gray-800 dark:text-gray-200 border-t border-border pt-1">
+                  <span>Total monthly out</span>
+                  <span className="tabular-nums">{fmtGbp(totalMins + extra)}</span>
+                </div>
+                {targetDebt && extra > 0 && (
+                  <p className="text-gray-400 dark:text-gray-500 pt-0.5">
+                    Focus payment targets{' '}
+                    <span className="font-medium text-gray-600 dark:text-gray-300">{targetDebt.name}</span> first
+                    {strategy === 'Avalanche' && targetDebt.interestRate != null
+                      ? ` (${targetDebt.interestRate}% APR — highest rate)`
+                      : strategy === 'Snowball' ? ' (smallest balance)' : ''}
+                  </p>
+                )}
+              </div>
+            );
+          })()}
         </div>
       )}
 

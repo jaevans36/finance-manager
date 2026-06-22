@@ -55,7 +55,8 @@ public record DebtProjectionResponse(
     string EstimatedFreedomDate,
     decimal TotalInterestPaid,
     IReadOnlyList<DebtProjectionMonth> Schedule,
-    IReadOnlyList<PayoffOrder> PayoffOrder
+    IReadOnlyList<PayoffOrder> PayoffOrder,
+    IReadOnlyList<string> Warnings
 );
 
 public record PayoffOrder(Guid AccountId, string Name, int MonthPaidOff, string PaidOffDate);

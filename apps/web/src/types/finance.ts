@@ -447,6 +447,7 @@ export interface DebtProjectionResponse {
   totalInterestPaid: number;
   schedule: DebtProjectionMonth[];
   payoffOrder: PayoffOrder[];
+  warnings: string[];
 }
 
 // ── Affordability types ───────────────────────────────────────────────────────
