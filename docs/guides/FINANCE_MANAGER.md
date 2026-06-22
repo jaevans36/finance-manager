@@ -336,13 +336,23 @@ The Bills tab helps you track all your recurring payments — direct debits, sta
 
 ### Linking a bill to an account
 
-Setting a **Linked account** on a bill tells the system which of your accounts this bill is paid from. Once linked:
+Setting a **Linked account** on a bill connects the bill to one of your accounts. The dropdown groups accounts into two sections:
 
-- The bill card shows the account name in blue
+**Pays debt account** (Credit card, Loan, Mortgage)
+
+- Links this bill as the monthly payment for that debt
+- The Debt tab automatically uses this bill's amount as the monthly payment in its projections — you do not need to also set **Current monthly payment** on the account separately
+- The debt overview card will reflect the bill amount when calculating payoff timelines
+
+**Debits from** (Current account, Savings)
+
+- Records which account the money comes out of
 - The Accounts screen shows a **Monthly commitments** total for that account
 - When you import transactions from that account, matching debits are automatically matched to the bill and it is marked paid (see [Automatic bill matching](#automatic-bill-matching-on-import))
 
 If no account is linked, the bill shows **Not linked** on its card. You can add or change the link at any time by editing the bill.
+
+> **Tip:** If you add a recurring credit card payment as a bill and link it to the credit card account, the Debt projection will use that amount automatically. There is no need to enter the same figure under both Bills and the account's Current monthly payment field.
 
 ### Bill status
 
@@ -460,6 +470,15 @@ The score takes into account:
 - **Promotional expiry urgency** — up to 25 bonus points if a 0% or promotional deal is about to expire
 - **Credit utilisation** — up to 15 bonus points if you're using more than 75% of a card's credit limit
 
+#### Per-debt detail
+
+Each debt card shows:
+
+- **Monthly interest cost** — the interest accruing this month. For credit cards with a promotional balance transfer at a different rate, the cost is split: e.g. "£6/mo interest (£300 at 24.9% · £1,500 at 0%)". This means only the non-promotional portion is costing you interest.
+- **Payoff estimate** — how many months until paid off at your current payment, and the estimated payoff date. Uses a blended effective rate when part of the balance is at a promotional rate.
+- **Actual payments (3-month average)** — if transaction history is available, the system looks at the last three completed calendar months of payments into the account and shows the observed average, e.g. "£100/mo actual payments". Below this it shows **→ £76/mo to balance**, the amount by which the balance is actually reducing (payment minus interest). A green figure means the debt is shrinking; amber means it is not.
+- **Credit utilisation** — shown for credit cards as a percentage of the credit limit used.
+
 #### Overview totals
 
 At the top of the debt overview:
@@ -482,13 +501,29 @@ The **Paydown calculator** lets you choose a repayment strategy and see exactly 
 | **Snowball** | Directs extra payments to the smallest balance first | Motivation — clears individual debts faster |
 | **Custom** | You specify a monthly payment amount for each debt individually | Complex situations or specific priorities |
 
-#### Extra monthly payment (Avalanche and Snowball)
+#### Monthly focus payment (Avalanche and Snowball)
 
-Enter an amount to add on top of your existing payments each month. This is pre-filled from your safe surplus, but you can adjust it freely. If you increase this, the freedom date moves closer; if you set it to zero, the projection shows what happens if you only pay minimums.
+The **Monthly focus payment** is an amount applied in full to a single target debt each month, on top of all minimum payments already being made. It is pre-filled from your safe surplus but you can adjust it freely.
+
+- Setting it to zero shows what happens if you pay minimums only
+- Increasing it moves the freedom date closer
+- The target debt is shown beneath the field — Avalanche targets the highest interest rate; Snowball targets the smallest balance
+
+Below the field, a breakdown shows:
+
+| Line | Description |
+|------|-------------|
+| Minimums across all debts | Sum of current monthly payments on all included debts |
+| Focus payment | The extra amount you've entered |
+| **Total monthly out** | The combined total leaving your accounts each month for debt |
+
+#### Excluding individual debts
+
+When using Avalanche or Snowball, a checkbox list lets you exclude specific debts from receiving any extra payment. Excluded debts still receive their minimum payment — this is useful for a mortgage on a fixed rate where overpayment charges would apply.
 
 #### Custom allocation
 
-For the Custom strategy, a payment field appears for each debt. Enter the amount you intend to pay on each one per month. The total must be at least the sum of all minimum payments.
+For the Custom strategy, a payment field appears for each debt. Enter the amount you intend to pay on each one per month.
 
 #### Running a projection
 
@@ -498,9 +533,18 @@ Click **Calculate projection** to send your strategy to the server and compute t
 
 ### Projection results
 
-After calculating, three panels appear below the calculator:
+After calculating, the results appear below the calculator.
 
-**Summary cards**
+#### Attention warnings
+
+If any debt's current monthly payment is less than its monthly interest charge (meaning the balance would grow indefinitely at that payment level), an amber warning panel appears at the top. Each flagged debt is listed with:
+
+- The monthly payment and the monthly interest it needs to cover
+- The minimum extra payment needed to stop the balance growing
+
+The projection still runs for all other debts. The flagged debts have their interest counted toward the total but their balances are held flat — the projection shows the realistic picture for the debts that are making progress.
+
+#### Summary cards
 
 | Card | Description |
 |------|-------------|
@@ -516,19 +560,24 @@ After calculating, three panels appear below the calculator:
 
 The **Debt burndown** chart is a stacked area chart showing the balance of each debt over time. As the months progress, each band shrinks — when a debt reaches zero, that band disappears. This gives a visual picture of your paydown journey from now to debt-free.
 
-- Each debt has its own colour
+- Each debt has its own colour band; click a debt chip at the top to hide or show it
 - Hovering over any point shows the balance remaining per debt at that month
 - The chart is sampled to a maximum of 48 data points for performance on long projections
+
+#### Date range filter
+
+For long projections (more than two years), range buttons appear in the top-right corner of the chart: **2 yr**, **5 yr**, **10 yr**, **20 yr**, **All**. Selecting a shorter range zooms the chart into that window, making it easier to read near-term progress on projections that span decades.
 
 ---
 
 ## Tips
 
 - **Import regularly** — importing once a month keeps your data up to date without accumulating a backlog.
-- **Link bills to accounts** — once linked, bill-matching on import happens automatically and your monthly commitments are visible on each account card.
-- **Set minimum and current payments on debt accounts** — the Debt tab uses these to calculate severity scores and projections accurately.
+- **Link debt payments as bills** — add your credit card or loan payments as bills and link them to the debt account under "Pays debt account". The Debt projection will pick up the amount automatically; there is no need to also enter it as Current monthly payment on the account.
+- **Link non-debt bills to accounts too** — once linked, bill-matching on import happens automatically and your monthly commitments are visible on each account card.
 - **Enter your mortgage details** — start date, term, and rate allow the system to calculate remaining term and flag upcoming fixed-rate expiries.
 - **Use the Affordability panel to guide extra payments** — the safe surplus figure is a reliable ceiling for how much extra you can put towards debt without impacting day-to-day finances.
+- **If "No surplus available" appears** — this means your committed bills and estimated spending account for all of your detected income. Check that your income is being detected correctly (the system looks for regular large credits); if not, enter it manually. Also check whether any bills have been duplicated.
 - **Try Avalanche first** — it almost always produces the lowest total interest paid; switch to Snowball if you need the motivational boost of clearing a debt quickly.
 - **Archive old accounts** — accounts you no longer use can be archived rather than deleted to preserve transaction history.
 - **Mark transactions as reviewed** — once you've checked a transaction use the "reviewed" toggle so you know it's been verified.
