@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
-import { TrendingUp, AlertTriangle, CheckCircle, Info, Loader2 } from 'lucide-react';
+import { TrendingUp, AlertTriangle, CheckCircle, Info, Loader2, Settings2 } from 'lucide-react';
 import { affordabilityService } from '../../services/affordability-service';
-import type { AffordabilityData, IncomeConfidence } from '../../types/finance';
+import { accountsService } from '../../services/accounts-service';
+import type { AccountSummary, AffordabilityData, IncomeConfidence } from '../../types/finance';
 import { cn } from '../../lib/utils';
+
+const DEBT_TYPES = new Set(['Credit', 'Loan', 'Mortgage']);
 
 function fmt(n: number): string {
   return new Intl.NumberFormat('en-GB', {
@@ -52,6 +55,12 @@ export function AffordabilityPanel({ onSurplusChange }: AffordabilityPanelProps)
   const [incomeInput, setIncomeInput] = useState('');
   const [isSavingIncome, setIsSavingIncome] = useState(false);
 
+  // Income account scoping
+  const [editingAccounts, setEditingAccounts] = useState(false);
+  const [allAccounts, setAllAccounts] = useState<AccountSummary[]>([]);
+  const [selectedAccountIds, setSelectedAccountIds] = useState<Set<string>>(new Set());
+  const [isSavingAccounts, setIsSavingAccounts] = useState(false);
+
   const load = async () => {
     try {
       const result = await affordabilityService.getAffordability();
@@ -65,6 +74,41 @@ export function AffordabilityPanel({ onSurplusChange }: AffordabilityPanelProps)
   };
 
   useEffect(() => { load(); }, []);
+
+  const openAccountPicker = async () => {
+    if (allAccounts.length === 0) {
+      try {
+        const accounts = await accountsService.getAccounts();
+        setAllAccounts(accounts.filter(a => !DEBT_TYPES.has(a.type)));
+      } catch {
+        // best-effort
+      }
+    }
+    setSelectedAccountIds(new Set(data?.incomeAccountIds ?? []));
+    setEditingAccounts(true);
+  };
+
+  const toggleAccount = (id: string) => {
+    setSelectedAccountIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const handleSaveAccounts = async () => {
+    setIsSavingAccounts(true);
+    try {
+      await affordabilityService.updateIncomeAccounts(Array.from(selectedAccountIds));
+      setEditingAccounts(false);
+      setIsLoading(true);
+      await load();
+    } catch {
+      // ignore — user can retry
+    } finally {
+      setIsSavingAccounts(false);
+    }
+  };
 
   const handleSaveIncome = async () => {
     const parsed = parseFloat(incomeInput);
@@ -102,6 +146,11 @@ export function AffordabilityPanel({ onSurplusChange }: AffordabilityPanelProps)
   if (!data) return null;
 
   const needsManualIncome = data.incomeConfidence === 'Low' && data.incomeSource === 'Detected' && data.monthlyIncome === 0;
+  const scopedAccountNames = data.incomeAccountIds.length > 0
+    ? data.incomeAccountIds
+        .map(id => allAccounts.find(a => a.id === id)?.name ?? id)
+        .join(', ')
+    : null;
 
   return (
     <div className="space-y-4">
@@ -172,6 +221,76 @@ export function AffordabilityPanel({ onSurplusChange }: AffordabilityPanelProps)
                 Edit
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Income account scope — shown when there are multiple accounts to choose from */}
+        {!editingIncome && !needsManualIncome && (
+          <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700/50">
+            {editingAccounts ? (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                  Detect income from:
+                </p>
+                {allAccounts.length === 0 ? (
+                  <p className="text-xs text-gray-400">Loading accounts…</p>
+                ) : (
+                  <>
+                    <div className="space-y-1">
+                      {allAccounts.map(a => (
+                        <label key={a.id} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selectedAccountIds.has(a.id)}
+                            onChange={() => toggleAccount(a.id)}
+                            className="h-3.5 w-3.5 rounded border-gray-300 accent-blue-600"
+                          />
+                          <span className="text-xs text-gray-700 dark:text-gray-300">
+                            {a.name}
+                            <span className="ml-1 text-gray-400">({a.type})</span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                      Leave all unticked to scan all accounts. Tick only your personal income account to exclude joint account credits and transfers.
+                    </p>
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        onClick={handleSaveAccounts}
+                        disabled={isSavingAccounts}
+                        className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {isSavingAccounts ? 'Saving…' : 'Save'}
+                      </button>
+                      <button
+                        onClick={() => setEditingAccounts(false)}
+                        className="rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-1 text-xs font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
+                  <Settings2 className="h-3 w-3" />
+                  <span>
+                    {scopedAccountNames
+                      ? <>Detecting from: <span className="font-medium text-gray-600 dark:text-gray-300">{scopedAccountNames}</span></>
+                      : 'Detecting from: all accounts'}
+                  </span>
+                </div>
+                <button
+                  onClick={openAccountPicker}
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  Change
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

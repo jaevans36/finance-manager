@@ -86,6 +86,7 @@ const makeAffordability = (overrides: Partial<AffordabilityData> = {}): Affordab
   safeSurplus: 1400,
   suggestedDebtPayment: 1260,
   calculatedAt: '2026-06-21',
+  incomeAccountIds: [],
   ...overrides,
 });
 

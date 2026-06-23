@@ -20,10 +20,17 @@ public class AffordabilityService(FinanceDbContext db) : IAffordabilityService
         var emergencyBuffer = settings?.EmergencyBuffer ?? 200m;
 
         // ── Income detection ─────────────────────────────────────────────────
+        // When the user has scoped income detection to specific accounts, only
+        // consider credits from those accounts so that transfers and a partner's
+        // salary on a joint account aren't misclassified as the user's income.
+        var incomeAccountIds = settings?.IncomeAccountIds;
+        var hasScope = incomeAccountIds is { Count: > 0 };
+
         var creditTransactions = await db.Transactions
             .Where(t => t.UserId == userId
                      && t.Type == TransactionType.Credit
-                     && t.TransactionDate >= windowStart)
+                     && t.TransactionDate >= windowStart
+                     && (!hasScope || incomeAccountIds!.Contains(t.AccountId)))
             .ToListAsync(ct);
 
         var (monthlyIncome, incomeConfidence, incomeSource) =
@@ -83,7 +90,8 @@ public class AffordabilityService(FinanceDbContext db) : IAffordabilityService
             EmergencyBuffer: emergencyBuffer,
             SafeSurplus: Math.Round(safeSurplus, 2),
             SuggestedDebtPayment: suggestedDebtPayment,
-            CalculatedAt: today);
+            CalculatedAt: today,
+            IncomeAccountIds: (IReadOnlyList<Guid>?)incomeAccountIds?.AsReadOnly() ?? []);
     }
 
     public async Task UpdateManualIncomeAsync(Guid userId, decimal monthlyIncome, CancellationToken ct = default)
@@ -95,6 +103,18 @@ public class AffordabilityService(FinanceDbContext db) : IAffordabilityService
             db.UserFinanceSettings.Add(settings);
         }
         settings.ManualMonthlyIncome = monthlyIncome;
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task UpdateIncomeAccountsAsync(Guid userId, IReadOnlyList<Guid> accountIds, CancellationToken ct = default)
+    {
+        var settings = await db.UserFinanceSettings.FindAsync([userId], ct);
+        if (settings is null)
+        {
+            settings = new UserFinanceSettings { UserId = userId };
+            db.UserFinanceSettings.Add(settings);
+        }
+        settings.IncomeAccountIds = accountIds.Count > 0 ? accountIds.ToList() : null;
         await db.SaveChangesAsync(ct);
     }
 

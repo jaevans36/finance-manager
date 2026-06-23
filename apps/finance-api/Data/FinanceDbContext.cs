@@ -206,6 +206,16 @@ public class FinanceDbContext : DbContext
             entity.HasKey(s => s.UserId);
             entity.Property(s => s.ManualMonthlyIncome).HasPrecision(18, 4);
             entity.Property(s => s.EmergencyBuffer).HasPrecision(18, 4).HasDefaultValue(200m);
+
+            // Store as JSON for InMemory test compatibility (PostgreSQL uses text column)
+            entity.Property(s => s.IncomeAccountIds)
+                .HasConversion(
+                    v => v == null ? null : System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                    v => v == null ? null : System.Text.Json.JsonSerializer.Deserialize<List<Guid>>(v, (System.Text.Json.JsonSerializerOptions?)null))
+                .Metadata.SetValueComparer(new ValueComparer<List<Guid>?>(
+                    (c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
+                    c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                    c => c == null ? null : c.ToList()));
         });
 
         // ── Seed system categories ───────────────────────────────────────────

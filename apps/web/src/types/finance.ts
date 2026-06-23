@@ -465,4 +465,5 @@ export interface AffordabilityData {
   safeSurplus: number;
   suggestedDebtPayment: number;
   calculatedAt: string;
+  incomeAccountIds: string[];
 }

@@ -36,6 +36,18 @@ public class AffordabilityController(IAffordabilityService affordabilityService)
         return NoContent();
     }
 
+    [HttpPut("income-accounts")]
+    public async Task<IActionResult> UpdateIncomeAccounts(
+        [FromBody] UpdateIncomeAccountsRequest request,
+        CancellationToken ct)
+    {
+        var userId = GetUserId();
+        if (userId is null) return Unauthorized();
+
+        await affordabilityService.UpdateIncomeAccountsAsync(userId.Value, request.AccountIds, ct);
+        return NoContent();
+    }
+
     private Guid? GetUserId()
     {
         var sub = User.FindFirstValue(ClaimTypes.NameIdentifier);

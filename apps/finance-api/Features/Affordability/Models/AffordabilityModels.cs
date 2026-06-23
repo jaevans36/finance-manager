@@ -9,6 +9,9 @@ public record AffordabilityResponse(
     decimal EmergencyBuffer,
     decimal SafeSurplus,
     decimal SuggestedDebtPayment,
-    DateOnly CalculatedAt);
+    DateOnly CalculatedAt,
+    IReadOnlyList<Guid> IncomeAccountIds);
 
 public record UpdateManualIncomeRequest(decimal MonthlyIncome);
+
+public record UpdateIncomeAccountsRequest(IReadOnlyList<Guid> AccountIds);

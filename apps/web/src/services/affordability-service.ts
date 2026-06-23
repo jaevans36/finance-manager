@@ -13,4 +13,10 @@ export const affordabilityService = {
       .put('/api/v1/finance/affordability/income', { monthlyIncome })
       .then(() => undefined);
   },
+
+  updateIncomeAccounts(accountIds: string[]): Promise<void> {
+    return financeApiClient
+      .put('/api/v1/finance/affordability/income-accounts', { accountIds })
+      .then(() => undefined);
+  },
 };
