@@ -105,6 +105,17 @@ export function TransactionDetailPanel({
           </button>
         </div>
 
+        {/* Summary */}
+        <div className="space-y-0.5">
+          {transaction.payee && (
+            <p className="font-semibold text-foreground">{transaction.payee}</p>
+          )}
+          <p className="text-sm text-muted-foreground">£{transaction.amount.toFixed(2)}</p>
+          {transaction.payee && transaction.payee !== transaction.description && (
+            <p className="text-xs text-muted-foreground">{transaction.description}</p>
+          )}
+        </div>
+
         {/* Description */}
         <div>
           <label htmlFor="tx-description" className="block text-sm font-medium text-foreground mb-1">

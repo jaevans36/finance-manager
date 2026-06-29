@@ -44,12 +44,14 @@ jest.mock('react-calendar', () => {
   };
 });
 
-// Helper to get dates in the current month for testing
+// Helper to get dates in the current month for testing.
+// Use local date strings directly (not toISOString) to avoid UTC offset shifting the date in BST.
 const now = new Date();
 const currentYear = now.getFullYear();
 const currentMonth = now.getMonth();
-const midMonthDate = new Date(currentYear, currentMonth, 15).toISOString().slice(0, 10);
-const lateMonthDate = new Date(currentYear, currentMonth, 20).toISOString().slice(0, 10);
+const padMonth = String(currentMonth + 1).padStart(2, '0');
+const midMonthDate = `${currentYear}-${padMonth}-15`;
+const lateMonthDate = `${currentYear}-${padMonth}-20`;
 
 const mockTasks: Task[] = [
   {
