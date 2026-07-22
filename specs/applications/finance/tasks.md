@@ -372,23 +372,23 @@
 
 ### Backend
 
-- [ ] T1261 [US7] Implement `SpendingVelocityService` — daily average spend for current month, projected month-end total, projected overspend amount and category breakdown — 4h
-- [ ] T1262 [US7] Implement `AnomalyDetectionService` — flag: category spend spike (>2σ from 3-month average), new merchant above configurable threshold, potential duplicate charges (same amount/merchant within 2 days) — 5h
-- [ ] T1263 [US7] Implement `SubscriptionAuditorService` — scan 90 days of transactions for recurring digital charges; cross-reference against known subscription merchants list; flag as "possibly unused" if no other interactions with that merchant; never auto-cancel — 5h
-- [ ] T1264 [US7] Implement `NegotiationEngineService` — given a merchant/provider, query transaction history (tenure, total spent, payment consistency), generate personalised negotiation script referencing tenure and loyalty — 4h
-- [ ] T1265 [US7] Implement `InsightsController` — `GET /finance/insights`, `GET /finance/insights/velocity`, `GET /finance/insights/anomalies`, `GET /finance/insights/subscriptions`, `GET /finance/insights/negotiation-script` — 3h
-- [ ] T1266 [US7] Write unit tests for all insights services (16+ tests) — 3h
-- [ ] T1267 [US7] Write integration tests for insights endpoints (8+ tests) — 2h
+- [x] T1261 [US7] Implement `SpendingVelocityService` — daily average spend for current month, projected month-end total, projected overspend amount and category breakdown — 4h
+- [x] T1262 [US7] Implement `AnomalyDetectionService` — flag: category spend spike (>2σ from 3-month average), new merchant above configurable threshold, potential duplicate charges (same amount/merchant within 2 days) — 5h
+- [x] T1263 [US7] Implement `SubscriptionAuditorService` — scan 90 days of transactions for recurring digital charges; cross-reference against known subscription merchants list; flag as "possibly unused" if no other interactions with that merchant; never auto-cancel — 5h
+- [x] T1264 [US7] Implement `NegotiationEngineService` — given a merchant/provider, query transaction history (tenure, total spent, payment consistency), generate personalised negotiation script referencing tenure and loyalty — 4h
+- [x] T1265 [US7] Implement `InsightsController` — `GET /finance/insights`, `GET /finance/insights/velocity`, `GET /finance/insights/anomalies`, `GET /finance/insights/subscriptions`, `GET /finance/insights/negotiation-script` — 3h
+- [x] T1266 [US7] Write unit tests for all insights services (16+ tests) — 3h
+- [x] T1267 [US7] Write integration tests for insights endpoints (8+ tests) — 2h
 
 ### Frontend
 
-- [ ] T1268 [US7] Create `InsightsDashboard` component — insight cards grid (type, summary, severity chip, action button) — 5h
-- [ ] T1269 [US7] Create `SpendingVelocity` widget — "£X spent in Y days — projected to overspend by £Z at this rate"; progress bar showing burn pace vs budget — 3h
-- [ ] T1270 [US7] Create `SubscriptionAuditor` component — subscription list (merchant, monthly cost, annual total, possibly-unused badge); bulk review flow — 4h
-- [ ] T1271 [US7] Create `NegotiationHelper` component — provider selector, "Generate Script" button, read-only script output with copy-to-clipboard; disclaimer "This is a suggestion — always review before sending" — 3h
-- [ ] T1272 [US7] Create `AnomalyAlert` component — flagged transaction card with explanation, "Looks fine" / "Flag for review" actions — 3h
-- [ ] T1273 [US7] Write Jest tests for insights components (8+ tests) — 2h
-- [ ] T1274 [US7] Write E2E test for insights flow with seeded 90-day transaction data — 3h
+- [x] T1268 [US7] Create `InsightsDashboard` component — insight cards grid (type, summary, severity chip, action button) — 5h
+- [x] T1269 [US7] Create `SpendingVelocity` widget — "£X spent in Y days — projected to overspend by £Z at this rate"; progress bar showing burn pace vs budget — 3h
+- [x] T1270 [US7] Create `SubscriptionAuditor` component — subscription list (merchant, monthly cost, annual total, possibly-unused badge); bulk review flow — 4h
+- [x] T1271 [US7] Create `NegotiationHelper` component — provider selector, "Generate Script" button, read-only script output with copy-to-clipboard; disclaimer "This is a suggestion — always review before sending" — 3h
+- [x] T1272 [US7] Create `AnomalyAlert` component — flagged transaction card with explanation, "Looks fine" / "Flag for review" actions — 3h
+- [x] T1273 [US7] Write Jest tests for insights components (8+ tests) — 2h
+- [x] T1274 [US7] Write E2E test for insights flow with seeded 90-day transaction data — 3h (mocks Finance API responses via page.route(), matching finance-debt-flow.spec.ts convention; not yet run locally — requires `.\start-dev.ps1`)
 
 **Checkpoint**: Subscription Auditor, Spending Velocity, Anomaly Detection, and Negotiation Engine all functional
 

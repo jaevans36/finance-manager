@@ -13,6 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Finance — AI Insights (Phase 48)** — Spending Velocity (daily burn pace, projected month-end overspend vs budget), Anomaly Detection (category spend spikes, new high-value merchants, potential duplicate charges), Subscription Auditor (recurring-subscription cost roundup with "possibly unused" flagging, reuses the existing recurring-payment detector), Negotiation Helper (generates a personalised negotiation script from a merchant's transaction history with copy-to-clipboard). New "AI Insights" tab on the Finance page; backend `GET /api/v1/finance/insights[/velocity|/anomalies|/subscriptions|/negotiation-script]` endpoints. Rule-based/statistical — no external AI API calls. Anomaly and subscription review actions are client-side only (no new database schema).
+
+---
+
 ## [1.0.0] - 2026-03-20 "MVP Launch — Life Manager"
 
 ### Added

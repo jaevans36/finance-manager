@@ -8,6 +8,7 @@ using FinanceApi.Features.Bills.Services;
 using FinanceApi.Features.Budgets.Services;
 using FinanceApi.Features.Categories.Services;
 using FinanceApi.Features.CategoryRules.Services;
+using FinanceApi.Features.Insights.Services;
 using FinanceApi.Features.SavingsGoals.Services;
 using FinanceApi.Features.Transactions.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -171,6 +172,10 @@ try
     builder.Services.AddScoped<IAffordabilityService, AffordabilityService>();
     builder.Services.AddScoped<IDebtSeverityService, DebtSeverityService>();
     builder.Services.AddScoped<IDebtProjectionService, DebtProjectionService>();
+    builder.Services.AddScoped<ISpendingVelocityService, SpendingVelocityService>();
+    builder.Services.AddScoped<IAnomalyDetectionService, AnomalyDetectionService>();
+    builder.Services.AddScoped<ISubscriptionAuditorService, SubscriptionAuditorService>();
+    builder.Services.AddScoped<INegotiationEngineService, NegotiationEngineService>();
 
     // ── Build + Middleware Pipeline ───────────────────────────────────────────
     var app = builder.Build();

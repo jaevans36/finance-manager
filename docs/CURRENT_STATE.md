@@ -46,6 +46,7 @@ The Life Manager productivity application is MVP-complete and ready for v1.0.0 r
 - **Budget Trends** — spending-over-time charts
 - **Affordability Engine** — 90-day income detection with confidence level (High/Medium/Low), manual income override, committed costs + discretionary breakdown, safe monthly surplus, suggested debt payment
 - **Debt Burndown** — severity-scored debt overview (0–100, Critical/High/Medium/Low); Avalanche/Snowball/Custom paydown projection; freedom date; total interest; payoff order; stacked area waterfall chart
+- **AI Insights** (Phase 48) — Spending Velocity (daily burn pace vs budget, projected month-end overspend), Anomaly Detection (category spend spikes, new high-value merchants, potential duplicate charges), Subscription Auditor (recurring-subscription cost roundup with "possibly unused" flagging), Negotiation Helper (personalised negotiation script generated from a merchant's transaction history, copy-to-clipboard). Rule-based/statistical — no external AI API. `apps/finance-api/Features/Insights/`; "AI Insights" tab on the Finance page.
 - **User guide** — `docs/guides/FINANCE_MANAGER.md`
 
 ### Technical Foundation (Complete)
@@ -62,11 +63,11 @@ The Life Manager productivity application is MVP-complete and ready for v1.0.0 r
 
 ## What Is Currently Being Built
 
-**Finance Manager — Phase 48 onwards** (AI Insights & Agent Features, T1249+)
+**Finance Manager — Phase 49 onwards** (MCP Server Integration, T1275+)
 
-Phases 41–47 are complete. The Finance Manager is live as a standalone microservice at `apps/finance-api/` and surfaced in the app under **Finance Manager**. See "Phase History" below for what has been built.
+Phases 41–48 are complete. The Finance Manager is live as a standalone microservice at `apps/finance-api/` and surfaced in the app under **Finance Manager**. See "Phase History" below for what has been built.
 
-Next: Phase 48 — AI Insights (Subscription Auditor, Spending Velocity, Anomaly Detection); or multi-currency support (T1352–T1356, ECB exchange rate feed, deferred from Phase 47).
+Next: Phase 49 — MCP Server Integration; or multi-currency support (T1352–T1356, ECB exchange rate feed, deferred from Phase 47) — the only item left unbuilt from the original Phase 47 debt-burndown plan.
 
 See `specs/applications/finance/spec.md` and `specs/applications/finance/tasks.md` for full specification and task breakdown.
 
@@ -151,3 +152,4 @@ See `specs/applications/finance/spec.md` and `specs/applications/finance/tasks.m
 | 43b | Financial Affordability Engine (income detection, safe surplus) | — |
 | 44–46 | Savings Goals, Budget Trends | — |
 | 47 (expanded) | Debt Burndown Dashboard — severity scoring, Avalanche/Snowball/Custom projection, waterfall chart | — |
+| 48 | AI Insights — Spending Velocity, Anomaly Detection, Subscription Auditor, Negotiation Helper | — |

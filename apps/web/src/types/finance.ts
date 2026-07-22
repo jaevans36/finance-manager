@@ -467,3 +467,82 @@ export interface AffordabilityData {
   calculatedAt: string;
   incomeAccountIds: string[];
 }
+
+// ── AI Insights types ────────────────────────────────────────────────────────
+
+export type InsightType = 'SpendingVelocity' | 'Anomaly' | 'Subscription' | 'PriceIncrease';
+export type InsightSeverity = 'Info' | 'Warning' | 'Critical';
+export type AnomalyType = 'CategorySpike' | 'NewMerchant' | 'PotentialDuplicate';
+
+export interface CategoryVelocity {
+  categoryId: string;
+  categoryName: string;
+  spentSoFar: number;
+  dailyAverage: number;
+  projectedTotal: number;
+  budgetLimit: number | null;
+  projectedOverspend: number | null;
+}
+
+export interface SpendingVelocityResponse {
+  daysElapsed: number;
+  daysInMonth: number;
+  totalSpentSoFar: number;
+  dailyAverage: number;
+  projectedMonthEndTotal: number;
+  budgetTotal: number | null;
+  projectedOverspend: number | null;
+  categories: CategoryVelocity[];
+}
+
+export interface AnomalyAlert {
+  id: string;
+  type: AnomalyType;
+  transactionId: string;
+  merchantName: string;
+  amount: number;
+  transactionDate: string;
+  description: string;
+  severity: InsightSeverity;
+}
+
+export interface SubscriptionAuditItem {
+  merchantName: string;
+  monthlyCost: number;
+  annualCost: number;
+  frequency: RecurringFrequency;
+  possiblyUnused: boolean;
+  lastOccurrence: string | null;
+  amountTrend: AmountTrend;
+}
+
+export interface SubscriptionAuditResponse {
+  subscriptions: SubscriptionAuditItem[];
+  totalMonthlyCost: number;
+  totalAnnualCost: number;
+  possiblyUnusedCount: number;
+}
+
+export interface NegotiationScriptResponse {
+  merchantName: string;
+  tenureMonths: number;
+  totalSpent: number;
+  averageMonthlyAmount: number;
+  paymentCount: number;
+  paymentConsistencyPct: number;
+  script: string;
+  disclaimer: string;
+}
+
+export interface InsightCard {
+  id: string;
+  type: InsightType;
+  severity: InsightSeverity;
+  title: string;
+  summary: string;
+  actionLabel: string | null;
+}
+
+export interface InsightsSummaryResponse {
+  cards: InsightCard[];
+}
