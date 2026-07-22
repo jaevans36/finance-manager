@@ -83,6 +83,11 @@ export function TransactionList({
                 </span>
               )}
             </div>
+            {tx.payee && tx.description && tx.description.toLowerCase() !== tx.payee.toLowerCase() && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                {tx.description}
+              </p>
+            )}
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-xs text-gray-500 dark:text-gray-400">{formatDate(tx.transactionDate)}</span>
               {tx.categoryName && (
