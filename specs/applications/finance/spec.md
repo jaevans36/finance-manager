@@ -210,6 +210,27 @@ Users can track debts (credit cards, loans, mortgages) and use payoff calculator
 
 ---
 
+### User Story 10 - Household / Partner Account Sharing (Priority: P3)
+
+Users can share individual accounts with another Life Manager user (e.g. a spouse or partner), so that shared income and spending can be included in affordability, debt payoff, and AI insight calculations — without merging logins or exposing every account by default.
+
+**Why this priority**: Affordability and debt payoff planning are meaningfully incomplete for couples who manage money jointly but track it across two separate logins — income landing in a shared account is visible today, but a partner's own spending/bills on their own accounts is invisible, which understates committed costs and overstates safe surplus. This closes that gap. It builds on Phases 43b, 47, and 48 rather than blocking them, so it's appropriately deferred behind them. Resolves the "Multi-user scope" open question below.
+
+**Independent Test**: Two test users, each with their own accounts; user A shares one account with user B at View permission; user B accepts; user B enables "Include household accounts" on the Debt tab and confirms user A's shared account balance and transactions are included in the payoff projection; user A revokes the share and confirms it disappears from user B's view immediately.
+
+**Acceptance Scenarios**:
+
+1. **Given** an account the user owns, **When** they choose "Share" and enter a partner's username or email, **Then** a pending share invitation is created and the partner is notified (reusing the existing notification system used for task assignment and event sharing)
+2. **Given** a pending share invitation, **When** the recipient accepts it, **Then** the account appears in their Finance app under "Shared with you", read-only, with the owner's name shown
+3. **Given** a shared account, **When** the recipient views the Affordability, Debt, or AI Insights tab, **Then** an "Include household accounts" toggle lets them opt the shared account's transactions into income detection, committed costs, debt overview, and spending insights
+4. **Given** a shared account, **When** the recipient tries to edit, delete, or re-share it, **Then** the action is blocked — View permission is read-only in the initial release; Edit permission (allowing the recipient to add/categorise transactions on a shared account) is a future enhancement
+5. **Given** an active share, **When** the owner revokes it, **Then** the account and its transactions immediately disappear from the recipient's view and any household-scoped calculations recalculate without it
+6. **Given** a declined or revoked share, **When** either party looks at their sharing management screen, **Then** they see an accurate, up-to-date list of what's shared, with whom, and its status
+
+**Explicitly deferred (future enhancement, not this phase)**: Edit permission on shared accounts; merging Bills/Budgets (which are user-scoped, not account-scoped) across two logins into a single household budget; more than two linked users.
+
+---
+
 ## Data Model
 
 ### Core Entities
@@ -225,6 +246,18 @@ interface Account {
   institution: string | null;  // Bank name
   lastImportAt: string | null;
   isArchived: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Household sharing (Phase 50, User Story 10) — mirrors EventShare (Todo/Events)
+interface AccountShare {
+  id: string;
+  accountId: string;
+  sharedByUserId: string;
+  sharedWithUserId: string;
+  permission: 'view';          // 'edit' deferred to a future phase
+  status: 'pending' | 'accepted' | 'declined';
   createdAt: string;
   updatedAt: string;
 }
@@ -930,6 +963,7 @@ The Finance Manager exposes the following tools on the Life Manager MCP Server:
 | Phase 47 (P3) — Debt | Debt tracker, avalanche / snowball payoff planner, multi-currency, split transactions | P3 |
 | Phase 48 (P3) — AI Insights | Subscription Auditor, Negotiation Engine, Spending Velocity, Anomaly Detection, financial health score | P3 |
 | Phase 49 (P3) — MCP | Local MCP server, `finance_*` tools, AI Chat Interface ("How much did I spend on food last month?"), remote access via Tailscale | P3 |
+| Phase 50 (P3) — Household Sharing | Cross-login account sharing (view-only, `AccountShare` — mirrors `EventShare`), "Include household accounts" toggle on Affordability/Debt/AI Insights | P3 |
 
 ---
 
@@ -940,6 +974,6 @@ The Finance Manager exposes the following tools on the Life Manager MCP Server:
 - [ ] **Encryption at rest** — Which fields get AES-256? (Account numbers, balances, transaction descriptions?)
 - [ ] **Phase ordering** — Finance was originally planned after Stocks (Phase 60+). Is it being pulled forward?
 - [ ] **AI provider** — Spec references OpenAI for categorisation. Worth switching to Claude API given existing tooling?
-- [ ] **Multi-user scope** — Can a partner view / edit finance data, or strictly single-user for MVP?
+- [x] **Multi-user scope** — Strictly single-user (UserId-scoped) through Phase 49. Resolved for the future by Phase 50 — Household Sharing (User Story 10): opt-in, per-account, view-only sharing between two logins, not a merged household account.
 - [ ] **ISA / pension account types** — Add to Phase 41 data model or defer to Phase 45?
 - [ ] **MCP server scope** — Combined Life Manager MCP server from day one, or finance MCP built standalone first?

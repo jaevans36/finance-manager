@@ -425,6 +425,51 @@
 
 ---
 
+## Phase 50: Household Account Sharing (Priority: P3)
+
+**Purpose**: Let a user share individual accounts with another Life Manager user (e.g. a spouse) at view-only permission, and opt shared accounts into the Affordability, Debt, and AI Insights engines — resolving the "Multi-user scope" open question in `spec.md`, User Story 10  
+**Estimated Effort**: 1.5 weeks (24 tasks)  
+**Dependencies**: Phases 43b, 47, 48 complete (Affordability, Debt, AI Insights engines all need a household-scoped variant). Reuses the existing notification system (Todo task assignment / event sharing) and mirrors the existing `EventShare` model (`apps/life-api/Features/Events/Models/EventShare.cs`) rather than introducing a new sharing pattern.
+
+**Scope note**: View-only for this phase. Edit permission on shared accounts, and merging Bills/Budgets (which are user-scoped, not account-scoped, so "joint budgeting" is a materially bigger feature) across two logins are explicitly deferred — see "Explicitly deferred" in `spec.md` User Story 10.
+
+### Backend
+
+- [ ] T1750 [P] [US10] Create `AccountShare` entity (`AccountId`, `SharedByUserId`, `SharedWithUserId`, `Permission` enum `{View}`, `Status` enum `{Pending, Accepted, Declined}`) mirroring `EventShare`; configure `FinanceDbContext`; migration `AddAccountShares` — 2h
+- [ ] T1751 [US10] Implement `AccountSharingService` — `ShareAccountAsync` (look up recipient by username/email via the shared Users table, reject self-share and duplicate pending shares), `GetSharedWithMeAsync`, `GetSharedByMeAsync`, `AcceptShareAsync`, `DeclineShareAsync`, `RevokeShareAsync` — 5h
+- [ ] T1752 [US10] Implement `GetVisibleAccountIdsAsync(userId)` — owned account IDs + accepted shared account IDs; shared helper consumed by every read path below instead of each service re-deriving visibility — 3h
+- [ ] T1753 [US10] Update `AccountService.GetAccountsAsync` to include shared accounts with `IsShared`, `SharedByName`, `Permission` fields on `AccountSummary`; enforce `View`-only (no update/delete) on shared accounts at the service layer — 3h
+- [ ] T1754 [US10] Update `TransactionService` read paths to allow querying transactions on a shared account the caller has `View` access to; explicit permission check on every write action (reject if not owner) — 3h
+- [ ] T1755 [US10] Add `includeHousehold` param to `AffordabilityService` — when set, income detection and committed/discretionary spend scan the visible account set instead of only owned accounts — 4h
+- [ ] T1756 [US10] Add `includeHousehold` param to `DebtSeverityService`/`DebtProjectionService` — includes shared debt accounts in overview and payoff projection when opted in — 4h
+- [ ] T1757 [US10] Add `includeHousehold` param to `SpendingVelocityService`, `AnomalyDetectionService`, `SubscriptionAuditorService` — 3h
+- [ ] T1758 [US10] Implement `AccountSharingController` — `POST /finance/accounts/{id}/share`, `GET /finance/accounts/shared-with-me`, `GET /finance/accounts/shared-by-me`, `POST /finance/accounts/share/{shareId}/accept`, `POST /finance/accounts/share/{shareId}/decline`, `DELETE /finance/accounts/share/{shareId}` — 4h
+- [ ] T1759 [US10] Wire share invitations into the existing notification system used for task assignment and event sharing (no new notification infrastructure) — 3h
+- [ ] T1760 [US10] Write unit tests for `AccountSharingService` (15+ tests — share, duplicate share, self-share rejection, accept, decline, revoke, permission enforcement) — 4h
+- [ ] T1761 [US10] Write unit tests for household-scoped `AffordabilityService`/`DebtProjectionService`/Insights changes (12+ tests) — 4h
+- [ ] T1762 [US10] Write integration tests for `AccountSharingController` (10+ tests) — 3h
+
+### Frontend
+
+- [ ] T1763 [P] [US10] Add `AccountShare`, `ShareStatus`, `SharePermission`, `CreateAccountShareRequest` TypeScript types to `finance.ts` — 1h
+- [ ] T1764 [US10] Create `account-sharing-service.ts` (`shareAccount`, `getSharedWithMe`, `getSharedByMe`, `acceptShare`, `declineShare`, `revokeShare`) — 2h
+- [ ] T1765 [US10] Create `ShareAccountModal` component — recipient username/email input, confirm — 3h
+- [ ] T1766 [US10] Create `ManageAccountSharing` component — lists accounts shared by me and shared with me, with accept/decline/revoke actions — 4h
+- [ ] T1767 [US10] Add a "Share" action to `AccountsDashboard` account rows; show a "Shared by {name}" badge on accounts shared with you, read-only (no edit/delete affordances) — 3h
+- [ ] T1768 [US10] Add a share-invitation card to the existing `NotificationDropdown` with inline accept/decline — 3h
+- [ ] T1769 [US10] Add an "Include household accounts" toggle to `AffordabilityPanel`, `DebtBurndownDashboard`, and `InsightsDashboard` — 3h
+- [ ] T1770 [US10] Write Jest tests for sharing components (10+ tests) — 3h
+- [ ] T1771 [US10] Write E2E test for the full share → accept → household-view flow (mocked API, two simulated users) — 3h
+
+### Documentation
+
+- [ ] T1772 [US10] Add a "Household Sharing" section to `docs/guides/FINANCE_MANAGER.md` — 1h
+- [ ] T1773 [US10] Update `docs/testing/TEST-INVENTORY.md` with Phase 50 test counts and `CHANGELOG.md` — 0.5h
+
+**Checkpoint**: A user can share an account with another Life Manager user; the recipient accepts and sees it read-only under "Shared with you"; enabling "Include household accounts" on Affordability/Debt/AI Insights recalculates using both users' visible accounts; revoking a share immediately removes access.
+
+---
+
 ## Summary
 
 | Phase | Name | Priority | Tasks | Est. Effort |
@@ -440,7 +485,8 @@
 | 47 | Debt Burndown & Payoff Planning | P3 | T1336–T1357 (22) | 2.5 weeks |
 | 48 | AI Insights & Agent Features | P3 | T1261–T1274 (14) | 2 weeks |
 | 49 | MCP Server Integration | P3 | T1275–T1289 (15) | 2 weeks |
-| **Total** | | | **~169 tasks** | **~19.5 weeks** |
+| 50 | Household Account Sharing | P3 | T1750–T1773 (24) | 1.5 weeks |
+| **Total** | | | **~193 tasks** | **~21 weeks** |
 
 ### MVP Completion (Phases 41–44)
 

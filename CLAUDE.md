@@ -139,7 +139,7 @@ Provide a structured summary: what changed, current build/test status, what's ne
 4. Relevant spec file in `specs/applications/` or `specs/platform/`
 
 ### Task management
-- Task IDs: T001–T924 (Todo + Fitness), T925–T1154 (Platform), T1155–T1289 (Finance — Phases 41–49), T1290–T1388 (unallocated — reserved for Finance expansions), T1389–T1503 (Todo productivity), T1504–T1518 (Fitness habits), T1519–T1595 (Stocks), T1596–T1667 (MCP Server — Phases 64–66), T1668–T1683 (Stocks MCP tools — Phase 67), T1684+ (Fitness/Weather MCP tools — Phases 68–70, to be allocated)
+- Task IDs: T001–T924 (Todo + Fitness), T925–T1154 (Platform), T1155–T1289 (Finance — Phases 41–49), T1290–T1357 (Finance — Phase 43 additions/43b/47, allocated out of numeric order — see `specs/applications/finance/tasks.md`), T1257–T1388 (Platform frontend modernisation, Phases 51–54 — numerically overlaps the Finance range above; the two were allocated independently and don't collide in practice since each lives in its own spec file), T1389–T1503 (Todo productivity), T1504–T1518 (Fitness habits), T1519–T1595 (Stocks), T1596–T1667 (MCP Server — Phases 64–66), T1668–T1683 (Stocks MCP tools — Phase 67), T1684–T1749 (reserved but unreconciled — `specs/platform/mcp-server-tasks.md` calls this Phase 68 "Finance MCP Tools"; this table previously called it "Fitness/Weather MCP tools"; confirm which before allocating from it), T1750–T1773 (Finance — Phase 50, Household Account Sharing)
 - Mark tasks `[x]` complete immediately after implementation
 - Reference task IDs in commits and PRs
 

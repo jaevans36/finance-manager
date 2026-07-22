@@ -67,7 +67,7 @@ The Life Manager productivity application is MVP-complete and ready for v1.0.0 r
 
 Phases 41–48 are complete. The Finance Manager is live as a standalone microservice at `apps/finance-api/` and surfaced in the app under **Finance Manager**. See "Phase History" below for what has been built.
 
-Next: Phase 49 — MCP Server Integration; or multi-currency support (T1352–T1356, ECB exchange rate feed, deferred from Phase 47) — the only item left unbuilt from the original Phase 47 debt-burndown plan.
+Next: Phase 49 — MCP Server Integration; or multi-currency support (T1352–T1356, ECB exchange rate feed, deferred from Phase 47) — the only item left unbuilt from the original Phase 47 debt-burndown plan. Phase 50 — Household Account Sharing (T1750–T1773, cross-login view-only account sharing feeding Affordability/Debt/AI Insights) is now roadmapped after Phase 49, resolving the "Multi-user scope" open question in the Finance spec.
 
 See `specs/applications/finance/spec.md` and `specs/applications/finance/tasks.md` for full specification and task breakdown.
 
@@ -94,7 +94,7 @@ See `specs/applications/finance/spec.md` and `specs/applications/finance/tasks.m
 
 | App | Spec | Priority | Notes |
 |---|---|---|---|
-| Finance Manager | `specs/applications/finance/spec.md` | HIGH | CSV import, spending pots, bills, AI insights, MCP tools. UK-specific (ISA/SIPP, tax year). Phases 41–49. |
+| Finance Manager | `specs/applications/finance/spec.md` | HIGH | CSV import, spending pots, bills, AI insights, MCP tools, household account sharing. UK-specific (ISA/SIPP, tax year). Phases 41–50. |
 | Fitness Application | `specs/applications/fitness/spec.md` | P2 | Workout tracking, Fasting Tracker module, Nutrition & Macro Tracker with barcode scanning, habit tracking |
 | Recipe Collection | `specs/applications/recipes/spec.md` | P2 | Standalone module. Personal cookbook + data layer for Nutrition, Pantry, Finance. MCP `recipes_*` tools. |
 | Pantry & Ingredient Tracker | `specs/applications/pantry/spec.md` | P3 | Shared infrastructure. Inventory, expiry tracking, recipe matching, cost-per-meal, smart shopping lists. |
