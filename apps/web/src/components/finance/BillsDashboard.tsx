@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ChevronDown, ChevronRight, Pencil, Trash2, X } from 'lucide-react';
 import { billService } from '../../services/bill-service';
 import { BillForm } from './BillForm';
-import type { Bill, UpcomingBill } from '../../types/finance';
+import type { Bill, Category, UpcomingBill } from '../../types/finance';
 import { cn } from '../../lib/utils';
 
 const FREQUENCY_LABEL: Record<string, string> = {
@@ -13,10 +13,11 @@ const FREQUENCY_LABEL: Record<string, string> = {
 };
 
 interface BillsDashboardProps {
+  categories?: Category[];
   onAddBill?: () => void;
 }
 
-export function BillsDashboard({ onAddBill }: BillsDashboardProps) {
+export function BillsDashboard({ categories = [], onAddBill }: BillsDashboardProps) {
   const [upcoming, setUpcoming] = useState<UpcomingBill[]>([]);
   const [allBills, setAllBills] = useState<Bill[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,7 +51,7 @@ export function BillsDashboard({ onAddBill }: BillsDashboardProps) {
   const handleToggleActive = async (bill: Bill) => {
     setTogglingId(bill.id);
     try {
-      await billService.setActive(bill.id, !bill.isActive);
+      await billService.setActive(bill.id, !bill.isActive, bill.accountId, bill.categoryId);
       load();
     } catch {
       // silently retry on next load
@@ -107,6 +108,7 @@ export function BillsDashboard({ onAddBill }: BillsDashboardProps) {
           </div>
           <BillForm
             billId={bill.id}
+            categories={categories}
             defaultName={bill.name}
             defaultDescription={bill.description ?? ''}
             defaultAmount={bill.amount}
@@ -114,6 +116,7 @@ export function BillsDashboard({ onAddBill }: BillsDashboardProps) {
             defaultDueDay={bill.dueDay}
             defaultReminderDays={bill.reminderDaysBefore}
             defaultAccountId={bill.accountId ?? undefined}
+            defaultCategoryId={bill.categoryId ?? undefined}
             onSuccess={() => { setEditingBillId(null); load(); }}
             onCancel={() => setEditingBillId(null)}
           />
@@ -228,6 +231,9 @@ function BillRow({
             {FREQUENCY_LABEL[bill.frequency]}
             {dueLabel && <span> · {dueLabel}</span>}
             {bill.isPaid && <span className="ml-1 text-green-600 dark:text-green-400">· Paid</span>}
+            {bill.categoryName && (
+              <span className="ml-1 text-purple-600 dark:text-purple-400">· {bill.categoryName}</span>
+            )}
             {bill.accountName
               ? <span className="ml-1 text-blue-600 dark:text-blue-400">· {bill.accountName}</span>
               : <span className="ml-1 text-gray-400 dark:text-gray-500">· Not linked</span>

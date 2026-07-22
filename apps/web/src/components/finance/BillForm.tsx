@@ -1,16 +1,27 @@
 import { useEffect, useState } from 'react';
 import { billService } from '../../services/bill-service';
 import { accountsService } from '../../services/accounts-service';
-import type { AccountSummary, AccountType, BillFrequency, CreateBillRequest } from '../../types/finance';
+import type { AccountSummary, AccountType, BillFrequency, Category, CreateBillRequest } from '../../types/finance';
 
 const DEBT_TYPES: AccountType[] = ['Credit', 'Loan', 'Mortgage'];
 
 const FREQUENCIES: BillFrequency[] = ['Weekly', 'Monthly', 'Quarterly', 'Annual'];
 
+const WEEKDAYS: { value: number; label: string }[] = [
+  { value: 1, label: 'Monday' },
+  { value: 2, label: 'Tuesday' },
+  { value: 3, label: 'Wednesday' },
+  { value: 4, label: 'Thursday' },
+  { value: 5, label: 'Friday' },
+  { value: 6, label: 'Saturday' },
+  { value: 7, label: 'Sunday' },
+];
+
 interface BillFormProps {
   onSuccess: () => void;
   onCancel?: () => void;
   billId?: string;
+  categories?: Category[];
   defaultName?: string;
   defaultDescription?: string;
   defaultAmount?: number;
@@ -18,13 +29,14 @@ interface BillFormProps {
   defaultDueDay?: number;
   defaultReminderDays?: number;
   defaultAccountId?: string;
+  defaultCategoryId?: string;
 }
 
 export function BillForm({
-  onSuccess, onCancel, billId,
+  onSuccess, onCancel, billId, categories = [],
   defaultName = '', defaultDescription = '', defaultAmount,
   defaultFrequency = 'Monthly', defaultDueDay, defaultReminderDays,
-  defaultAccountId,
+  defaultAccountId, defaultCategoryId,
 }: BillFormProps) {
   const [name, setName] = useState(defaultName);
   const [description, setDescription] = useState(defaultDescription);
@@ -33,9 +45,20 @@ export function BillForm({
   const [dueDay, setDueDay] = useState(defaultDueDay?.toString() ?? '1');
   const [reminderDays, setReminderDays] = useState(defaultReminderDays?.toString() ?? '3');
   const [accountId, setAccountId] = useState<string>(defaultAccountId ?? '');
+  const [categoryId, setCategoryId] = useState<string>(defaultCategoryId ?? '');
   const [accounts, setAccounts] = useState<AccountSummary[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Due day is a day-of-month (1-31) for Monthly/Quarterly/Annual bills, but an ISO
+  // weekday (1=Monday..7=Sunday) for Weekly bills — reset to a sensible default
+  // whenever frequency crosses that boundary so a leftover value isn't invalid.
+  const handleFrequencyChange = (next: BillFrequency) => {
+    const wasWeekly = frequency === 'Weekly';
+    const isWeekly = next === 'Weekly';
+    if (wasWeekly !== isWeekly) setDueDay('1');
+    setFrequency(next);
+  };
 
   useEffect(() => {
     accountsService.getAccounts()
@@ -61,6 +84,7 @@ export function BillForm({
           dueDay: parseInt(dueDay, 10),
           reminderDaysBefore: parseInt(reminderDays, 10),
           accountId: accountId || null,
+          categoryId: categoryId || null,
         });
       } else {
         const request: CreateBillRequest = {
@@ -71,6 +95,7 @@ export function BillForm({
           dueDay: parseInt(dueDay, 10),
           reminderDaysBefore: parseInt(reminderDays, 10),
           accountId: accountId || undefined,
+          categoryId: categoryId || undefined,
         };
         await billService.createBill(request);
       }
@@ -131,7 +156,7 @@ export function BillForm({
           </label>
           <select
             value={frequency}
-            onChange={e => setFrequency(e.target.value as BillFrequency)}
+            onChange={e => handleFrequencyChange(e.target.value as BillFrequency)}
             className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {FREQUENCIES.map(f => (
@@ -144,16 +169,28 @@ export function BillForm({
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Due day (1–31)
+            {frequency === 'Weekly' ? 'Due day' : 'Due day (1–31)'}
           </label>
-          <input
-            type="number"
-            min="1"
-            max="31"
-            value={dueDay}
-            onChange={e => setDueDay(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          {frequency === 'Weekly' ? (
+            <select
+              value={dueDay}
+              onChange={e => setDueDay(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {WEEKDAYS.map(w => (
+                <option key={w.value} value={w.value}>{w.label}</option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type="number"
+              min="1"
+              max="31"
+              value={dueDay}
+              onChange={e => setDueDay(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -169,6 +206,24 @@ export function BillForm({
           />
         </div>
       </div>
+
+      {categories.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Category <span className="font-normal text-gray-400">(optional)</span>
+          </label>
+          <select
+            value={categoryId}
+            onChange={e => setCategoryId(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">No category</option>
+            {categories.map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {accounts.length > 0 && (
         <div>

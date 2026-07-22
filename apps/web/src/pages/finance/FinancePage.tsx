@@ -315,15 +315,15 @@ export default function FinancePage() {
                     <h3 className="text-base font-semibold text-foreground">New bill</h3>
                     <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
                   </div>
-                  <BillForm onSuccess={handleSaved} onCancel={() => setShowForm(false)} />
+                  <BillForm categories={categories} onSuccess={handleSaved} onCancel={() => setShowForm(false)} />
                 </div>
               )}
             </div>
           )}
 
-          <BillsDashboard key={refreshKey} onAddBill={() => setShowForm(true)} />
+          <BillsDashboard key={refreshKey} categories={categories} onAddBill={() => setShowForm(true)} />
 
-          <RecurringDetected onBillSaved={handleSaved} />
+          <RecurringDetected categories={categories} onBillSaved={handleSaved} />
         </section>
       )}
 

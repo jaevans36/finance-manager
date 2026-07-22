@@ -16,7 +16,7 @@ const { billService } = jest.requireMock('../../src/services/bill-service');
 const makeBill = (overrides: Partial<Bill> = {}): Bill => ({
   id: 'b1', userId: 'u1', name: 'Netflix', description: null,
   amount: 9.99, frequency: 'Monthly', dueDay: 1, reminderDaysBefore: 3,
-  isPaid: false, lastPaidDate: null, categoryId: null,
+  isPaid: false, lastPaidDate: null, categoryId: null, categoryName: null,
   isActive: true, createdAt: '', updatedAt: '',
   accountId: null, accountName: null,
   ...overrides,
@@ -100,5 +100,23 @@ describe('BillsDashboard', () => {
     renderWithProviders(<BillsDashboard />);
     await waitFor(() => expect(screen.getByText('Netflix')).toBeInTheDocument());
     expect(screen.getByText(/Not linked/)).toBeInTheDocument();
+  });
+
+  it('shows category name when bill has a category', async () => {
+    const bill = makeBill({ categoryId: 'cat-1', categoryName: 'Streaming & Media' });
+    billService.getAllBills.mockResolvedValue([bill]);
+    billService.getUpcoming.mockResolvedValue([makeUpcoming(bill)]);
+    renderWithProviders(<BillsDashboard />);
+    await waitFor(() => expect(screen.getByText('Netflix')).toBeInTheDocument());
+    expect(screen.getByText(/Streaming & Media/)).toBeInTheDocument();
+  });
+
+  it('does not show a category badge when bill has no category', async () => {
+    const bill = makeBill({ categoryId: null, categoryName: null });
+    billService.getAllBills.mockResolvedValue([bill]);
+    billService.getUpcoming.mockResolvedValue([makeUpcoming(bill)]);
+    renderWithProviders(<BillsDashboard />);
+    await waitFor(() => expect(screen.getByText('Netflix')).toBeInTheDocument());
+    expect(document.querySelector('.text-purple-600')).not.toBeInTheDocument();
   });
 });

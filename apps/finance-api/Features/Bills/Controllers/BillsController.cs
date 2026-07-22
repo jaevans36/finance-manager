@@ -47,7 +47,8 @@ public class BillsController : ControllerBase
     {
         if (request.Amount <= 0) return BadRequest("Amount must be greater than zero.");
         if (string.IsNullOrWhiteSpace(request.Name)) return BadRequest("Name is required.");
-        if (request.DueDay is < 1 or > 31) return BadRequest("DueDay must be between 1 and 31.");
+        var dueDayError = ValidateDueDay(request.DueDay, request.Frequency);
+        if (dueDayError is not null) return BadRequest(dueDayError);
 
         var bill = await _bills.CreateBillAsync(UserId, request, ct);
         return CreatedAtAction(nameof(GetBills), new { id = bill.Id }, bill);
@@ -57,6 +58,12 @@ public class BillsController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateBill(Guid id, [FromBody] UpdateBillRequest request, CancellationToken ct)
     {
+        if (request.DueDay.HasValue && request.Frequency.HasValue)
+        {
+            var dueDayError = ValidateDueDay(request.DueDay.Value, request.Frequency.Value);
+            if (dueDayError is not null) return BadRequest(dueDayError);
+        }
+
         var updated = await _bills.UpdateBillAsync(UserId, id, request, ct);
         return updated is null ? NotFound() : Ok(updated);
     }
@@ -81,4 +88,15 @@ public class BillsController : ControllerBase
     [HttpPost("detect-recurring")]
     public async Task<IActionResult> DetectRecurring([FromQuery] int days = 365, CancellationToken ct = default)
         => Ok(await _detector.DetectAsync(UserId, days, ct));
+
+    /// <summary>
+    /// Weekly bills store DueDay as an ISO day of week (1 = Monday .. 7 = Sunday);
+    /// all other frequencies store DueDay as a day of the month (1–31).
+    /// </summary>
+    private static string? ValidateDueDay(int dueDay, BillFrequency frequency) => frequency switch
+    {
+        BillFrequency.Weekly when dueDay is < 1 or > 7 => "DueDay must be between 1 (Monday) and 7 (Sunday) for weekly bills.",
+        not BillFrequency.Weekly when dueDay is < 1 or > 31 => "DueDay must be between 1 and 31.",
+        _ => null,
+    };
 }

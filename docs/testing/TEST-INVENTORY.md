@@ -2,8 +2,8 @@
 
 This document tracks all automated tests in the Life Manager project. It serves as a reference for what's tested, coverage gaps, and maintenance responsibilities.
 
-**Last Updated**: 2026-06-08  
-**Total Tests**: 633 (428 frontend + 149 finance backend unit + 56 finance integration + 26 life-api unit + 5 labels integration — as of Phase 41 completion)
+**Last Updated**: 2026-07-22  
+**Total Tests**: 853 (507 frontend + 245 finance backend unit + 70 finance integration + 26 life-api unit + 5 labels integration — as of Phase 48 + bill categories/weekday due-day work)
 
 > ⚠️ **Note**: The feature coverage matrix below reflects Phase 13. The suite has grown significantly since then (Phases 48–58, keyboard shortcuts, labels, service worker notifications). A full reconciliation of the coverage matrix is backlogged.
 
@@ -13,13 +13,13 @@ This document tracks all automated tests in the Life Manager project. It serves 
 
 | Type | Count | Run On | Duration | Location |
 |------|-------|--------|----------|----------|
-| Frontend Unit + Integration | 428 | Every PR | ~4min | `apps/web/tests/` |
+| Frontend Unit + Integration | 507 | Every PR | ~4min | `apps/web/tests/` |
 | Life API Backend Unit | 26 | Every PR | ~45s | `apps/life-api-tests/LifeApi.UnitTests/` |
 | Life API Integration | 5 (labels) | Every PR | ~30s | `apps/life-api-tests/LifeApi.IntegrationTests/` |
-| Finance API Backend Unit | 149 | Every PR | ~1min | `apps/finance-api-tests/FinanceApi.UnitTests/` |
-| Finance API Integration | 56 | Every PR | ~3s | `apps/finance-api-tests/FinanceApi.IntegrationTests/` |
-| E2E (Playwright) | ~37 (est.) | Every PR | ~6min | `apps/web/e2e/` |
-| **Total** | **701+** | | **~12min** | |
+| Finance API Backend Unit | 245 | Every PR | ~1min | `apps/finance-api-tests/FinanceApi.UnitTests/` |
+| Finance API Integration | 70 | Every PR | ~3s | `apps/finance-api-tests/FinanceApi.IntegrationTests/` |
+| E2E (Playwright) | ~38 (est.) | Every PR | ~6min | `apps/web/e2e/` |
+| **Total** | **853+** | | **~12min** | |
 
 ---
 

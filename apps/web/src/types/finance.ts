@@ -284,6 +284,7 @@ export interface Bill {
   isPaid: boolean;
   lastPaidDate: string | null;
   categoryId: string | null;
+  categoryName: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -329,7 +330,7 @@ export interface UpdateBillRequest {
   frequency?: BillFrequency;
   dueDay?: number;
   reminderDaysBefore?: number;
-  categoryId?: string;
+  categoryId?: string | null;
   isActive?: boolean;
   description?: string;
   accountId?: string | null;

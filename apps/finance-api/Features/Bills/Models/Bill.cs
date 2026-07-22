@@ -16,7 +16,10 @@ public class Bill
     public decimal Amount { get; set; }
     public BillFrequency Frequency { get; set; }
 
-    /// <summary>Day of the month the bill is due (1–31).</summary>
+    /// <summary>
+    /// Day the bill is due. For Monthly/Quarterly/Annual this is a day of the month (1–31).
+    /// For Weekly this is an ISO day of week (1 = Monday .. 7 = Sunday).
+    /// </summary>
     public int DueDay { get; set; }
 
     public int ReminderDaysBefore { get; set; }
@@ -70,6 +73,7 @@ public record BillResponse(
     bool IsPaid,
     DateTime? LastPaidDate,
     Guid? CategoryId,
+    string? CategoryName,
     bool IsActive,
     DateTime CreatedAt,
     DateTime UpdatedAt,

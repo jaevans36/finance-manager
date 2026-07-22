@@ -38,8 +38,13 @@ export const billService = {
     return financeApiClient.get<Bill[]>('/api/v1/finance/bills/all').then(r => r.data);
   },
 
-  setActive(id: string, isActive: boolean): Promise<Bill> {
-    return financeApiClient.put<Bill>(`/api/v1/finance/bills/${id}`, { isActive }).then(r => r.data);
+  setActive(id: string, isActive: boolean, accountId?: string | null, categoryId?: string | null): Promise<Bill> {
+    // accountId/categoryId are included even though only isActive is changing — the
+    // backend treats an absent nullable field on PUT as "explicitly clear", so a
+    // sparse { isActive } payload would silently unlink the bill's account/category.
+    return financeApiClient
+      .put<Bill>(`/api/v1/finance/bills/${id}`, { isActive, accountId: accountId ?? null, categoryId: categoryId ?? null })
+      .then(r => r.data);
   },
 
   detectRecurring(days = 365): Promise<RecurringPattern[]> {
