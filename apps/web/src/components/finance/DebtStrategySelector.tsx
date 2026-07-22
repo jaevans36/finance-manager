@@ -137,6 +137,11 @@ export function DebtStrategySelector({
                   {debt.interestRate != null && (
                     <span className="text-xs text-gray-400">{debt.interestRate}%</span>
                   )}
+                  {debt.promotionalExpiry && (
+                    <span className="text-xs text-amber-600 dark:text-amber-400">
+                      Promo ends {debt.promotionalExpiry}
+                    </span>
+                  )}
                 </label>
               );
             })}
