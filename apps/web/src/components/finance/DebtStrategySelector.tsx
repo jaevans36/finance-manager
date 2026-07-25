@@ -187,7 +187,10 @@ export function DebtStrategySelector({
             }).format(v);
             const totalMins = debts
               .filter(d => !excludedIds.has(d.accountId))
-              .reduce((sum, d) => sum + (d.currentMonthlyPayment ?? d.minimumMonthlyPayment ?? 0), 0);
+              .reduce((sum, d) => {
+                const current = d.currentMonthlyPayment ?? 0;
+                return sum + (current > 0 ? current : (d.minimumMonthlyPayment ?? 0));
+              }, 0);
             const extra = parseFloat(extraPayment) || 0;
             const targetDebt = strategy === 'Avalanche'
               ? [...debts].filter(d => !excludedIds.has(d.accountId))

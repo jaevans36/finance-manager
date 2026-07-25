@@ -5,13 +5,13 @@ public record AffordabilityResponse(
     string IncomeConfidence,
     string IncomeSource,
     decimal CommittedCosts,
+    decimal ExistingDebtPayments,
     decimal DiscretionarySpend,
+    decimal PlannedSavings,
     decimal EmergencyBuffer,
     decimal SafeSurplus,
     decimal SuggestedDebtPayment,
     DateOnly CalculatedAt,
     IReadOnlyList<Guid> IncomeAccountIds);
-
-public record UpdateManualIncomeRequest(decimal MonthlyIncome);
 
 public record UpdateIncomeAccountsRequest(IReadOnlyList<Guid> AccountIds);
