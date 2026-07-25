@@ -18,6 +18,7 @@ import { BudgetDashboard } from '../../components/finance/BudgetDashboard';
 import { BudgetForm } from '../../components/finance/BudgetForm';
 import { BudgetTrends } from '../../components/finance/BudgetTrends';
 import { SpendingPots } from '../../components/finance/SpendingPots';
+import { PotForm } from '../../components/finance/PotForm';
 import { BillsDashboard } from '../../components/finance/BillsDashboard';
 import { BillForm } from '../../components/finance/BillForm';
 import { RecurringDetected } from '../../components/finance/RecurringDetected';
@@ -25,8 +26,9 @@ import { SavingsGoalsDashboard } from '../../components/finance/SavingsGoalsDash
 import { SavingsGoalForm } from '../../components/finance/SavingsGoalForm';
 import { DebtBurndownDashboard } from '../../components/finance/DebtBurndownDashboard';
 import { InsightsDashboard } from '../../components/finance/InsightsDashboard';
+import { CashFlowSummary } from '../../components/finance/CashFlowSummary';
 
-type Tab = 'accounts' | 'transactions' | 'budgets' | 'pots' | 'bills' | 'goals' | 'trends' | 'debt' | 'insights';
+type Tab = 'accounts' | 'transactions' | 'budgets' | 'pots' | 'bills' | 'goals' | 'trends' | 'cashflow' | 'debt' | 'insights';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'accounts',     label: 'Accounts' },
@@ -36,6 +38,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'bills',        label: 'Bills' },
   { id: 'goals',        label: 'Savings Goals' },
   { id: 'trends',       label: 'Trends' },
+  { id: 'cashflow',     label: 'Cash Flow' },
   { id: 'debt',         label: 'Debt' },
   { id: 'insights',     label: 'AI Insights' },
 ];
@@ -110,7 +113,7 @@ export default function FinancePage() {
     setEditingAccount(null);
   };
 
-  const canAddOnTab = !['trends', 'transactions'].includes(activeTab);
+  const canAddOnTab = !['trends', 'transactions', 'cashflow'].includes(activeTab);
 
   return (
     <PageLayout
@@ -295,7 +298,18 @@ export default function FinancePage() {
 
       {/* ── Spending Pots tab ─────────────────────────────────────────────── */}
       {activeTab === 'pots' && (
-        <section>
+        <section className="space-y-6">
+          {canAddOnTab && showForm && (
+            <div className="mb-2">
+              <div className="rounded-xl border border-border bg-card p-6 max-w-md">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-base font-semibold text-foreground">New pot</h3>
+                  <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
+                </div>
+                <PotForm categories={categories} onSuccess={handleSaved} onCancel={() => setShowForm(false)} />
+              </div>
+            </div>
+          )}
           <SpendingPots key={refreshKey} onAddPot={() => setShowForm(true)} />
         </section>
       )}
@@ -354,6 +368,11 @@ export default function FinancePage() {
       {/* ── Trends tab ────────────────────────────────────────────────────── */}
       {activeTab === 'trends' && (
         <section><BudgetTrends /></section>
+      )}
+
+      {/* ── Cash Flow tab ─────────────────────────────────────────────────── */}
+      {activeTab === 'cashflow' && (
+        <section><CashFlowSummary /></section>
       )}
 
       {/* ── Debt tab ──────────────────────────────────────────────────────── */}
