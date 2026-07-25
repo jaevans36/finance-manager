@@ -3,6 +3,7 @@ import type {
   Budget,
   BudgetTrendPoint,
   CreateBudgetRequest,
+  SuggestedBudgetResponse,
   UpdateBudgetRequest,
 } from '../types/finance';
 
@@ -38,6 +39,12 @@ export const budgetService = {
   copyFromPrevious(month: number, year: number): Promise<Budget[]> {
     return financeApiClient
       .post<Budget[]>('/api/v1/finance/budgets/copy-from-previous', null, { params: { month, year } })
+      .then(r => r.data);
+  },
+
+  getSuggested(categoryId: string): Promise<SuggestedBudgetResponse> {
+    return financeApiClient
+      .get<SuggestedBudgetResponse>('/api/v1/finance/budgets/suggested', { params: { categoryId } })
       .then(r => r.data);
   },
 };

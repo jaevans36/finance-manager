@@ -88,4 +88,14 @@ public class BudgetsController : ControllerBase
         var now = DateTime.UtcNow;
         return Ok(await _budgets.CopyFromPreviousMonthAsync(GetUserId(), month ?? now.Month, year ?? now.Year, ct));
     }
+
+    /// <summary>Suggest a starting budget for a category, based on the last 3 months of actual spend.</summary>
+    [HttpGet("suggested")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetSuggestedBudget([FromQuery] Guid categoryId, CancellationToken ct)
+    {
+        if (categoryId == Guid.Empty) return BadRequest("categoryId is required");
+        return Ok(await _budgets.GetSuggestedBudgetAsync(GetUserId(), categoryId, ct));
+    }
 }

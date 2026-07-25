@@ -21,21 +21,6 @@ public class AffordabilityController(IAffordabilityService affordabilityService)
         return Ok(result);
     }
 
-    [HttpPut("income")]
-    public async Task<IActionResult> UpdateManualIncome(
-        [FromBody] UpdateManualIncomeRequest request,
-        CancellationToken ct)
-    {
-        var userId = GetUserId();
-        if (userId is null) return Unauthorized();
-
-        if (request.MonthlyIncome < 0)
-            return BadRequest("Monthly income cannot be negative.");
-
-        await affordabilityService.UpdateManualIncomeAsync(userId.Value, request.MonthlyIncome, ct);
-        return NoContent();
-    }
-
     [HttpPut("income-accounts")]
     public async Task<IActionResult> UpdateIncomeAccounts(
         [FromBody] UpdateIncomeAccountsRequest request,

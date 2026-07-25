@@ -6,7 +6,7 @@ import { BudgetForm } from '../../src/components/finance/BudgetForm';
 import type { Category } from '../../src/types/finance';
 
 jest.mock('../../src/services/budget-service', () => ({
-  budgetService: { createBudget: jest.fn() },
+  budgetService: { createBudget: jest.fn(), getSuggested: jest.fn() },
 }));
 
 const { budgetService } = jest.requireMock('../../src/services/budget-service');
@@ -17,7 +17,10 @@ const mockCategories: Category[] = [
 ];
 
 describe('BudgetForm', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    budgetService.getSuggested.mockResolvedValue({ suggestedAmount: null, transactionCount: 0 });
+  });
 
   it('renders category selector and amount input', () => {
     renderWithProviders(<BudgetForm categories={mockCategories} onSuccess={jest.fn()} />);
@@ -55,5 +58,24 @@ describe('BudgetForm', () => {
     await userEvent.click(screen.getByRole('button', { name: /save/i }));
 
     await waitFor(() => expect(screen.getByText(/failed/i)).toBeInTheDocument());
+  });
+
+  it('shows a suggested amount based on the last 3 months and fills the field on use', async () => {
+    budgetService.getSuggested.mockResolvedValue({ suggestedAmount: 275.5, transactionCount: 6 });
+    renderWithProviders(<BudgetForm categories={mockCategories} onSuccess={jest.fn()} />);
+
+    await waitFor(() => expect(screen.getByText(/suggested: £275\.50/i)).toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole('button', { name: /use this/i }));
+
+    expect(screen.getByPlaceholderText(/amount/i)).toHaveValue(275.5);
+  });
+
+  it('does not show a suggestion when there is no spend history for the category', async () => {
+    budgetService.getSuggested.mockResolvedValue({ suggestedAmount: null, transactionCount: 0 });
+    renderWithProviders(<BudgetForm categories={mockCategories} onSuccess={jest.fn()} />);
+
+    await waitFor(() => expect(budgetService.getSuggested).toHaveBeenCalledWith('c1'));
+    expect(screen.queryByText(/suggested:/i)).not.toBeInTheDocument();
   });
 });

@@ -3,6 +3,7 @@ using System;
 using FinanceApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FinanceApi.Migrations
 {
     [DbContext(typeof(FinanceDbContext))]
-    partial class FinanceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260723175405_ConsolidateUtilityCategories")]
+    partial class ConsolidateUtilityCategories
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -243,14 +246,6 @@ namespace FinanceApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("AccumulatedAmount")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
-                    b.Property<decimal?>("AnnualAmount")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
                     b.Property<decimal>("BudgetAmount")
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)");
@@ -274,9 +269,6 @@ namespace FinanceApi.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
-
-                    b.Property<DateOnly?>("NextPaymentDate")
-                        .HasColumnType("date");
 
                     b.Property<bool>("RolloverEnabled")
                         .HasColumnType("boolean");
@@ -801,42 +793,6 @@ namespace FinanceApi.Migrations
                     b.ToTable("CategoryRules", "finance");
                 });
 
-            modelBuilder.Entity("FinanceApi.Features.IncomeStreams.Models.IncomeStream", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("AccountId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("MonthlyAmount")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccountId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("IncomeStreams", "finance");
-                });
-
             modelBuilder.Entity("FinanceApi.Features.SavingsGoals.Models.SavingsGoal", b =>
                 {
                     b.Property<Guid>("Id")
@@ -898,6 +854,10 @@ namespace FinanceApi.Migrations
 
                     b.Property<string>("IncomeAccountIds")
                         .HasColumnType("text");
+
+                    b.Property<decimal?>("ManualMonthlyIncome")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
 
                     b.HasKey("UserId");
 
@@ -1053,16 +1013,6 @@ namespace FinanceApi.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("FinanceApi.Features.IncomeStreams.Models.IncomeStream", b =>
-                {
-                    b.HasOne("FinanceApi.Features.Accounts.Models.Account", "Account")
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("FinanceApi.Features.Transactions.Models.Transaction", b =>

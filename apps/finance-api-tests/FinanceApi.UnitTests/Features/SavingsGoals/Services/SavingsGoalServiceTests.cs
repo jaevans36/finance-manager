@@ -63,6 +63,36 @@ public class SavingsGoalServiceTests : IDisposable
         _db.SavingsGoals.Should().HaveCount(1);
     }
 
+    // ── UpdateGoalAsync ──────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task UpdateGoalAsync_WhenGoalExists_UpdatesFields()
+    {
+        var goal = MakeGoal(_userId, "Old Name", targetAmount: 1000m);
+        _db.SavingsGoals.Add(goal);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.UpdateGoalAsync(_userId, goal.Id,
+            new UpdateSavingsGoalRequest(Name: "New Name", TargetAmount: 1500m, MonthlyContribution: 200m));
+
+        result.Should().NotBeNull();
+        result!.Goal.Name.Should().Be("New Name");
+        result.Goal.TargetAmount.Should().Be(1500m);
+        result.Goal.MonthlyContribution.Should().Be(200m);
+    }
+
+    [Fact]
+    public async Task UpdateGoalAsync_WhenGoalBelongsToOtherUser_ReturnsNull()
+    {
+        var goal = MakeGoal(Guid.NewGuid(), "Other");
+        _db.SavingsGoals.Add(goal);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.UpdateGoalAsync(_userId, goal.Id, new UpdateSavingsGoalRequest(Name: "Hijacked"));
+
+        result.Should().BeNull();
+    }
+
     // ── ContributeAsync ──────────────────────────────────────────────────────
 
     [Fact]

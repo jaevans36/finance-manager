@@ -15,7 +15,13 @@ public record SpendingPotWithProgress(
     IReadOnlyList<Guid> CategoryIds,
     decimal PercentageUsed,
     bool IsWarning,
-    bool IsExceeded
+    bool IsExceeded,
+    decimal? AnnualAmount = null,
+    DateOnly? NextPaymentDate = null,
+    decimal AccumulatedAmount = 0,
+    decimal? MonthlyAllocation = null,
+    int? MonthsRemaining = null,
+    bool IsReady = false
 );
 
 public record CreateSpendingPotRequest(
@@ -25,7 +31,9 @@ public record CreateSpendingPotRequest(
     bool RolloverEnabled,
     string? Icon,
     string? Colour,
-    IEnumerable<Guid> CategoryIds
+    IEnumerable<Guid> CategoryIds,
+    decimal? AnnualAmount = null,
+    DateOnly? NextPaymentDate = null
 );
 
 public record UpdateSpendingPotRequest(
@@ -34,7 +42,9 @@ public record UpdateSpendingPotRequest(
     bool? RolloverEnabled,
     string? Icon,
     string? Colour,
-    IEnumerable<Guid>? CategoryIds
+    IEnumerable<Guid>? CategoryIds,
+    decimal? AnnualAmount = null,
+    DateOnly? NextPaymentDate = null
 );
 
 public interface ISpendingPotService
@@ -44,4 +54,5 @@ public interface ISpendingPotService
     Task<SpendingPotWithProgress?> UpdatePotAsync(Guid userId, Guid potId, UpdateSpendingPotRequest request, CancellationToken ct = default);
     Task<bool> DeletePotAsync(Guid userId, Guid potId, CancellationToken ct = default);
     Task<bool> AssignTransactionAsync(Guid userId, Guid potId, Guid transactionId, CancellationToken ct = default);
+    Task<SpendingPotWithProgress?> ContributeToSinkingFundAsync(Guid userId, Guid potId, CancellationToken ct = default);
 }

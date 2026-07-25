@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { budgetService } from '../../services/budget-service';
 import type { Category } from '../../types/finance';
 import { cn } from '../../lib/utils';
@@ -20,6 +20,18 @@ export function BudgetForm({ categories, onSuccess, onCancel }: BudgetFormProps)
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [suggested, setSuggested] = useState<{ amount: number; count: number } | null>(null);
+
+  useEffect(() => {
+    if (!categoryId) { setSuggested(null); return; }
+    let cancelled = false;
+    budgetService.getSuggested(categoryId)
+      .then(res => {
+        if (!cancelled) setSuggested(res.suggestedAmount != null ? { amount: res.suggestedAmount, count: res.transactionCount } : null);
+      })
+      .catch(() => { if (!cancelled) setSuggested(null); });
+    return () => { cancelled = true; };
+  }, [categoryId]);
 
   const validate = (): boolean => {
     const next: FormErrors = {};
@@ -81,7 +93,7 @@ export function BudgetForm({ categories, onSuccess, onCancel }: BudgetFormProps)
           value={amount}
           onChange={e => setAmount(e.target.value)}
           className={cn(
-            'w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+            'w-full rounded-md border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500',
             errors.amount
               ? 'border-red-400 dark:border-red-500'
               : 'border-gray-300 dark:border-gray-600'
@@ -89,6 +101,19 @@ export function BudgetForm({ categories, onSuccess, onCancel }: BudgetFormProps)
         />
         {errors.amount && (
           <p className="mt-1 text-xs text-red-600 dark:text-red-400">{errors.amount}</p>
+        )}
+        {!errors.amount && suggested && (
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Suggested: £{suggested.amount.toFixed(2)} based on the last 3 months ({suggested.count} transaction{suggested.count === 1 ? '' : 's'})
+            {' · '}
+            <button
+              type="button"
+              onClick={() => setAmount(suggested.amount.toFixed(2))}
+              className="text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              Use this
+            </button>
+          </p>
         )}
       </div>
 

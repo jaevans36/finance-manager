@@ -3,6 +3,7 @@ using FinanceApi.Features.Bills.Models;
 using FinanceApi.Features.Budgets.Models;
 using FinanceApi.Features.Categories.Models;
 using FinanceApi.Features.CategoryRules.Models;
+using FinanceApi.Features.IncomeStreams.Models;
 using FinanceApi.Features.SavingsGoals.Models;
 using FinanceApi.Features.Settings.Models;
 using FinanceApi.Features.Transactions.Models;
@@ -28,6 +29,7 @@ public class FinanceDbContext : DbContext
     public DbSet<SavingsGoal> SavingsGoals => Set<SavingsGoal>();
     public DbSet<CategoryRule> CategoryRules => Set<CategoryRule>();
     public DbSet<UserFinanceSettings> UserFinanceSettings => Set<UserFinanceSettings>();
+    public DbSet<IncomeStream> IncomeStreams => Set<IncomeStream>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -137,6 +139,8 @@ public class FinanceDbContext : DbContext
             entity.HasKey(p => p.Id);
             entity.Property(p => p.Name).HasMaxLength(200).IsRequired();
             entity.Property(p => p.BudgetAmount).HasPrecision(18, 4);
+            entity.Property(p => p.AnnualAmount).HasPrecision(18, 4);
+            entity.Property(p => p.AccumulatedAmount).HasPrecision(18, 4);
             entity.Property(p => p.Type)
                   .HasConversion<string>()
                   .HasMaxLength(50);
@@ -175,6 +179,20 @@ public class FinanceDbContext : DbContext
                   .OnDelete(DeleteBehavior.SetNull);
         });
 
+        // ── IncomeStream ─────────────────────────────────────────────────────
+        modelBuilder.Entity<IncomeStream>(entity =>
+        {
+            entity.HasKey(s => s.Id);
+            entity.Property(s => s.Name).HasMaxLength(200).IsRequired();
+            entity.Property(s => s.MonthlyAmount).HasPrecision(18, 4);
+            entity.HasIndex(s => s.UserId);
+
+            entity.HasOne(s => s.Account)
+                  .WithMany()
+                  .HasForeignKey(s => s.AccountId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
         // ── SavingsGoal ───────────────────────────────────────────────────────
         modelBuilder.Entity<SavingsGoal>(entity =>
         {
@@ -204,7 +222,6 @@ public class FinanceDbContext : DbContext
         modelBuilder.Entity<UserFinanceSettings>(entity =>
         {
             entity.HasKey(s => s.UserId);
-            entity.Property(s => s.ManualMonthlyIncome).HasPrecision(18, 4);
             entity.Property(s => s.EmergencyBuffer).HasPrecision(18, 4).HasDefaultValue(200m);
 
             // Store as JSON for InMemory test compatibility (PostgreSQL uses text column)
@@ -252,12 +269,10 @@ public class FinanceDbContext : DbContext
             new Category { Id = Guid.Parse("10000000-0000-0000-0000-000000000203"), Name = "Parking",    Icon = "square-parking", Colour = "#3B82F6", IsSystem = true, ParentId = Guid.Parse("10000000-0000-0000-0000-000000000002"), CreatedAt = now, UpdatedAt = now },
             new Category { Id = Guid.Parse("10000000-0000-0000-0000-000000000204"), Name = "Taxi / Ride Share", Icon = "car-taxi-front", Colour = "#60A5FA", IsSystem = true, ParentId = Guid.Parse("10000000-0000-0000-0000-000000000002"), CreatedAt = now, UpdatedAt = now },
             // Sub-categories — Bills & Utilities
-            new Category { Id = Guid.Parse("10000000-0000-0000-0000-000000000701"), Name = "Electricity",   Icon = "zap",         Colour = "#D97706", IsSystem = true, ParentId = Guid.Parse("10000000-0000-0000-0000-000000000007"), CreatedAt = now, UpdatedAt = now },
-            new Category { Id = Guid.Parse("10000000-0000-0000-0000-000000000702"), Name = "Gas",           Icon = "flame",       Colour = "#B45309", IsSystem = true, ParentId = Guid.Parse("10000000-0000-0000-0000-000000000007"), CreatedAt = now, UpdatedAt = now },
+            new Category { Id = Guid.Parse("10000000-0000-0000-0000-000000000701"), Name = "Utilities",     Icon = "zap",         Colour = "#D97706", IsSystem = true, ParentId = Guid.Parse("10000000-0000-0000-0000-000000000007"), CreatedAt = now, UpdatedAt = now },
             new Category { Id = Guid.Parse("10000000-0000-0000-0000-000000000703"), Name = "Broadband",     Icon = "wifi",        Colour = "#F59E0B", IsSystem = true, ParentId = Guid.Parse("10000000-0000-0000-0000-000000000007"), CreatedAt = now, UpdatedAt = now },
             new Category { Id = Guid.Parse("10000000-0000-0000-0000-000000000704"), Name = "Mobile Phone",  Icon = "smartphone",  Colour = "#FBBF24", IsSystem = true, ParentId = Guid.Parse("10000000-0000-0000-0000-000000000007"), CreatedAt = now, UpdatedAt = now },
             new Category { Id = Guid.Parse("10000000-0000-0000-0000-000000000705"), Name = "Subscriptions", Icon = "repeat",      Colour = "#FCD34D", IsSystem = true, ParentId = Guid.Parse("10000000-0000-0000-0000-000000000007"), CreatedAt = now, UpdatedAt = now },
-            new Category { Id = Guid.Parse("10000000-0000-0000-0000-000000000706"), Name = "Water",         Icon = "droplet",     Colour = "#0891B2", IsSystem = true, ParentId = Guid.Parse("10000000-0000-0000-0000-000000000007"), CreatedAt = now, UpdatedAt = now },
             new Category { Id = Guid.Parse("10000000-0000-0000-0000-000000000707"), Name = "Council Tax",   Icon = "landmark",    Colour = "#CA8A04", IsSystem = true, ParentId = Guid.Parse("10000000-0000-0000-0000-000000000007"), CreatedAt = now, UpdatedAt = now },
             new Category { Id = Guid.Parse("10000000-0000-0000-0000-000000000708"), Name = "TV Licence",    Icon = "tv",          Colour = "#EA580C", IsSystem = true, ParentId = Guid.Parse("10000000-0000-0000-0000-000000000007"), CreatedAt = now, UpdatedAt = now },
             new Category { Id = Guid.Parse("10000000-0000-0000-0000-000000000709"), Name = "Insurance",     Icon = "shield",      Colour = "#4F46E5", IsSystem = true, ParentId = Guid.Parse("10000000-0000-0000-0000-000000000007"), CreatedAt = now, UpdatedAt = now },

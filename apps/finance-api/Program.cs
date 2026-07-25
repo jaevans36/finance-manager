@@ -3,6 +3,7 @@ using System.Text;
 using FinanceApi.Data;
 using FinanceApi.Features.Accounts.Services;
 using FinanceApi.Features.Affordability.Services;
+using FinanceApi.Features.IncomeStreams.Services;
 using FinanceApi.Features.Debt.Services;
 using FinanceApi.Features.Bills.Services;
 using FinanceApi.Features.Budgets.Services;
@@ -170,6 +171,7 @@ try
     builder.Services.AddScoped<ISavingsGoalService, SavingsGoalService>();
     builder.Services.AddScoped<ICategoryRulesService, CategoryRulesService>();
     builder.Services.AddScoped<IAffordabilityService, AffordabilityService>();
+    builder.Services.AddScoped<IIncomeStreamService, IncomeStreamService>();
     builder.Services.AddScoped<IDebtSeverityService, DebtSeverityService>();
     builder.Services.AddScoped<IDebtProjectionService, DebtProjectionService>();
     builder.Services.AddScoped<ISpendingVelocityService, SpendingVelocityService>();

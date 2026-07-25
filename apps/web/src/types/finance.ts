@@ -185,7 +185,7 @@ export interface NetWorthResponse {
 export type PotType =
   | 'Groceries' | 'Fuel' | 'EatingOut' | 'Kids' | 'Clothing'
   | 'Entertainment' | 'Bills' | 'Subscriptions' | 'Savings'
-  | 'EmergencyFund' | 'Holiday' | 'Custom';
+  | 'EmergencyFund' | 'Holiday' | 'Custom' | 'SinkingFund';
 
 export interface Budget {
   id: string;
@@ -228,6 +228,11 @@ export interface BudgetTrendPoint {
   categories: CategoryBudgetSpend[];
 }
 
+export interface SuggestedBudgetResponse {
+  suggestedAmount: number | null;
+  transactionCount: number;
+}
+
 // ── Spending pot types ────────────────────────────────────────────────────────
 
 export interface SpendingPotWithProgress {
@@ -244,6 +249,13 @@ export interface SpendingPotWithProgress {
   percentageUsed: number;
   isWarning: boolean;
   isExceeded: boolean;
+  // Sinking fund fields (Type === 'SinkingFund' only)
+  annualAmount: number | null;
+  nextPaymentDate: string | null;
+  accumulatedAmount: number;
+  monthlyAllocation: number | null;
+  monthsRemaining: number | null;
+  isReady: boolean;
 }
 
 export interface CreateSpendingPotRequest {
@@ -254,6 +266,8 @@ export interface CreateSpendingPotRequest {
   icon?: string;
   colour?: string;
   categoryIds: string[];
+  annualAmount?: number;
+  nextPaymentDate?: string;
 }
 
 export interface UpdateSpendingPotRequest {
@@ -263,6 +277,8 @@ export interface UpdateSpendingPotRequest {
   icon?: string;
   colour?: string;
   categoryIds?: string[];
+  annualAmount?: number;
+  nextPaymentDate?: string;
 }
 
 // ── Bill types ────────────────────────────────────────────────────────────────
@@ -290,6 +306,8 @@ export interface Bill {
   updatedAt: string;
   accountId: string | null;
   accountName: string | null;
+  linkedAccountPayment: number | null;
+  hasPaymentMismatch: boolean;
 }
 
 export interface UpcomingBill {
@@ -400,6 +418,7 @@ export interface DebtAccountSummary {
   monthsToPayoffAtCurrentPayment: number | null;
   payoffDateAtCurrentPayment: string | null;
   detectedMonthlyPayment: number | null;
+  effectiveMonthlyPayment: number | null;
 }
 
 export interface DebtOverviewResponse {
@@ -432,6 +451,17 @@ export interface DebtProjectionMonth {
   label: string;
   balances: AccountBalance[];
   totalRemaining: number;
+  payments: AccountPayment[];
+  totalPaidThisMonth: number;
+  paidOffThisMonth: string[];
+}
+
+export interface AccountPayment {
+  accountId: string;
+  name: string;
+  minimumPaid: number;
+  extraPaid: number;
+  totalPaid: number;
 }
 
 export interface PayoffOrder {
@@ -461,12 +491,52 @@ export interface AffordabilityData {
   incomeConfidence: IncomeConfidence;
   incomeSource: IncomeSource;
   committedCosts: number;
+  existingDebtPayments: number;
   discretionarySpend: number;
+  plannedSavings: number;
   emergencyBuffer: number;
   safeSurplus: number;
   suggestedDebtPayment: number;
   calculatedAt: string;
   incomeAccountIds: string[];
+}
+
+// ── Income streams ───────────────────────────────────────────────────────────
+
+export interface IncomeStream {
+  id: string;
+  userId: string;
+  name: string;
+  monthlyAmount: number;
+  accountId: string | null;
+  accountName: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateIncomeStreamRequest {
+  name: string;
+  monthlyAmount: number;
+  accountId?: string | null;
+}
+
+export interface UpdateIncomeStreamRequest {
+  name?: string;
+  monthlyAmount?: number;
+  accountId?: string | null;
+}
+
+export interface DetectedIncomeTransaction {
+  date: string;
+  payee: string | null;
+  description: string | null;
+  amount: number;
+}
+
+export interface DetectedIncomeResponse {
+  detectedMonthlyAmount: number | null;
+  transactionCount: number;
+  matchedTransactions: DetectedIncomeTransaction[];
 }
 
 // ── AI Insights types ────────────────────────────────────────────────────────

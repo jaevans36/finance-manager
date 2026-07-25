@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
+import { Check } from 'lucide-react';
 import { potService } from '../../services/pot-service';
 import type { SpendingPotWithProgress } from '../../types/finance';
 import { cn } from '../../lib/utils';
+
+const fmtGbp = (v: number) =>
+  new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(v);
 
 interface SpendingPotsProps {
   onAddPot?: () => void;
@@ -12,13 +16,26 @@ export function SpendingPots({ onAddPot }: SpendingPotsProps) {
   const [pots, setPots] = useState<SpendingPotWithProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [contributingId, setContributingId] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = () => {
     potService.getPots(now.getMonth() + 1, now.getFullYear())
       .then(setPots)
       .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Failed to load pots'))
       .finally(() => setIsLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const handleContribute = async (potId: string) => {
+    setContributingId(potId);
+    try {
+      await potService.contributeSinkingFund(potId);
+      load();
+    } finally {
+      setContributingId(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -57,8 +74,76 @@ export function SpendingPots({ onAddPot }: SpendingPotsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       {pots.map(pot => (
-        <PotCard key={pot.id} pot={pot} />
+        pot.type === 'SinkingFund'
+          ? (
+            <SinkingFundCard
+              key={pot.id}
+              pot={pot}
+              onContribute={() => handleContribute(pot.id)}
+              isContributing={contributingId === pot.id}
+            />
+          )
+          : <PotCard key={pot.id} pot={pot} />
       ))}
+    </div>
+  );
+}
+
+function SinkingFundCard({
+  pot,
+  onContribute,
+  isContributing,
+}: {
+  pot: SpendingPotWithProgress;
+  onContribute: () => void;
+  isContributing: boolean;
+}) {
+  const widthPct = Math.min(pot.percentageUsed, 100);
+
+  return (
+    <div
+      className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4"
+      style={pot.colour ? { borderLeftColor: pot.colour, borderLeftWidth: 4 } : undefined}
+    >
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+          {pot.name}
+        </span>
+        {pot.isReady ? (
+          <span className="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 flex-shrink-0 ml-2">
+            <Check size={11} /> Ready
+          </span>
+        ) : pot.monthsRemaining != null && (
+          <span className="text-xs px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 flex-shrink-0 ml-2">
+            Ready in {pot.monthsRemaining}m
+          </span>
+        )}
+      </div>
+
+      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+        {fmtGbp(pot.annualAmount ?? 0)}/yr · {fmtGbp(pot.monthlyAllocation ?? 0)}/mo
+        {pot.nextPaymentDate && <> · due {new Date(pot.nextPaymentDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</>}
+      </p>
+
+      <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-2">
+        <div
+          className={cn('h-1.5 rounded-full transition-all', pot.isReady ? 'bg-green-500' : 'bg-purple-500')}
+          style={{ width: `${widthPct}%` }}
+        />
+      </div>
+
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-gray-600 dark:text-gray-400">
+          {fmtGbp(pot.accumulatedAmount)} of {fmtGbp(pot.annualAmount ?? 0)} saved
+        </span>
+        <button
+          onClick={onContribute}
+          disabled={isContributing || pot.isReady}
+          className="text-xs font-medium px-2 py-1 rounded-lg border border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/20 disabled:opacity-50"
+        >
+          {isContributing ? '…' : pot.isReady ? 'Ready' : 'Set aside this month'}
+        </button>
+      </div>
     </div>
   );
 }

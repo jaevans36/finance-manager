@@ -178,4 +178,21 @@ public class BudgetService : IBudgetService
                      && t.Type == TransactionType.Debit
                      && !t.IsDuplicate)
             .SumAsync(t => t.Amount, ct);
+
+    public async Task<SuggestedBudgetResponse> GetSuggestedBudgetAsync(Guid userId, Guid categoryId, CancellationToken ct = default)
+    {
+        var windowStart = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-90);
+        var transactions = await _db.Transactions
+            .Where(t => t.UserId == userId
+                     && t.CategoryId == categoryId
+                     && t.TransactionDate >= windowStart
+                     && t.Type == TransactionType.Debit
+                     && !t.IsDuplicate)
+            .ToListAsync(ct);
+
+        if (transactions.Count == 0) return new SuggestedBudgetResponse(null, 0);
+
+        var total = transactions.Sum(t => Math.Abs(t.Amount));
+        return new SuggestedBudgetResponse(Math.Round(total / 3m, 2), transactions.Count);
+    }
 }

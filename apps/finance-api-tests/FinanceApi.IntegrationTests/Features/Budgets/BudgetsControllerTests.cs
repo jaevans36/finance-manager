@@ -132,4 +132,24 @@ public class BudgetsControllerTests
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    // ── Suggested budget ─────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetSuggestedBudget_WhenNoTransactions_ReturnsNullAmount()
+    {
+        var response = await _client.GetAsync($"/api/v1/finance/budgets/suggested?categoryId={GroceriesCategoryId}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<SuggestedBudgetResponse>();
+        result!.SuggestedAmount.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetSuggestedBudget_WhenCategoryIdIsEmpty_Returns400()
+    {
+        var response = await _client.GetAsync($"/api/v1/finance/budgets/suggested?categoryId={Guid.Empty}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }
