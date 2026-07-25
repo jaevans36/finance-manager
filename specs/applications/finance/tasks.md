@@ -127,10 +127,11 @@
 
 ### Sinking Funds (new — 2026-06-08, deferred to Phase 42 extension)
 
-- [ ] T1303 [P] [US2] Add `SinkingFund` to `PotType` enum; add nullable `AnnualAmount` (decimal?) and `NextPaymentDate` (DateOnly?) to `SpendingPot` entity; create migration — 2h
-- [ ] T1304 [US2] Update `SpendingPotService` — when `Type == SinkingFund`, derive `MonthlyAllocation = AnnualAmount / 12`; expose `MonthsRemaining` and `IsReady` in the progress DTO — 3h
-- [ ] T1305 [US2] Create `SinkingFundCard` frontend component — annual amount, monthly allocation, progress bar (accumulated/target), countdown, "Ready" badge — 3h
-- [ ] T1306 [US2] Write unit tests for sinking fund logic in `SpendingPotService` (4+ tests) and Jest tests for `SinkingFundCard` (3+ tests) — 2h
+- [x] T1303 [P] [US2] Add `SinkingFund` to `PotType` enum; add nullable `AnnualAmount` (decimal?) and `NextPaymentDate` (DateOnly?) to `SpendingPot` entity; create migration — 2h
+- [x] T1304 [US2] Update `SpendingPotService` — when `Type == SinkingFund`, derive `MonthlyAllocation = AnnualAmount / 12`; expose `MonthsRemaining` and `IsReady` in the progress DTO — 3h
+- [x] T1305 [US2] Create `SinkingFundCard` frontend component — annual amount, monthly allocation, progress bar (accumulated/target), countdown, "Ready" badge — 3h
+- [x] T1306 [US2] Write unit tests for sinking fund logic in `SpendingPotService` (4+ tests) and Jest tests for `SinkingFundCard` (3+ tests) — 2h
+  - Completed 2026-07-24 alongside Phase 51 below. Scope grew beyond the original estimate: `SpendingPots` had no create/edit form at all, so a net-new `PotForm.tsx` was built too (not separately tracked). `AccumulatedAmount` (decimal, contribution tracking) was added as a persisted column — the original task description didn't list it as a migration field, only `AnnualAmount`/`NextPaymentDate`, but it's required for "Set aside this month" to actually work.
 
 ### Payday-Aware Budgeting Period (new — 2026-06-08, deferred to Phase 45)
 
@@ -470,6 +471,28 @@
 
 ---
 
+## Phase 51: Financial Planning Gaps — Planned Savings, Sinking Funds, Budget Suggestions (Priority: P2)
+
+**Purpose**: A system review (2026-07-24) found that `SavingsGoal.MonthlyContribution` was completely disconnected from `AffordabilityService` — a user saving towards a known upcoming cost (e.g. a washing machine during a renovation) got no benefit from that fact, since the app would still suggest the same money go towards debt repayment. This phase wires planned savings into affordability, completes the never-built Sinking Funds feature (see T1303–T1306 above, completed alongside this phase), and adds lightweight suggestion hints to the Savings Goal and Budget forms.  
+**Estimated Effort**: 3 days  
+**Dependencies**: Phase 43b (Affordability Engine), Phase 42 (Spending Pots), Phase 43 (Savings Goals) complete.
+
+- [x] T1774 [P] Add `PlannedSavings` to `AffordabilityResponse`; `AffordabilityService.GetAffordabilityAsync` sums active `SavingsGoal.MonthlyContribution` + not-yet-`Ready` sinking-fund `SpendingPot.BudgetAmount`, deducted from safe surplus alongside committed costs — 3h
+- [x] T1775 Add `POST /finance/pots/{id}/contribute` ("set aside this month's allocation") and sinking-fund create/update branching (derive `BudgetAmount` from `AnnualAmount`, force empty `CategoryIds`, lazy-reset when `NextPaymentDate` passes) to `PotsController`/`SpendingPotService` — 3h
+- [x] T1776 Add `GET /finance/budgets/suggested?categoryId=` + `BudgetService.GetSuggestedBudgetAsync` (last-90-days average, mirrors the existing `AffordabilityService` fallback pattern) — 2h
+- [x] T1777 Add a suggested-monthly-contribution hint to `SavingsGoalForm` (target amount ÷ months to target date, client-side) — 1h
+- [x] T1778 Add a suggested-budget hint to `BudgetForm` — 1h
+- [x] T1779 Add a "Less planned savings & upcoming costs" row to `DebtBurndownDashboard`'s breakdown — 1h
+- [x] T1780 Add a "Planned savings" pie slice to `BillsIncomeSummary` ("Pay vs bills") — 1h
+- [x] T1781 Write unit tests for the `AffordabilityService` planned-savings branch (6 tests: goal only, sinking fund only, both combined, Achieved goal excluded, Ready fund excluded, surplus delta) — 1h
+- [x] T1782 Write integration tests for `PotsController` sinking-fund create/contribute and `BudgetsController.GetSuggestedBudget` — 1h
+- [x] T1783 Write Jest tests for `PotForm` (new), `SinkingFundCard`, `SavingsGoalForm` (new test file — no prior coverage existed), `BudgetForm` suggestion hint, and the `DebtBurndownDashboard`/`BillsIncomeSummary` planned-savings additions — 3h
+- [x] T1784 Update `docs/testing/TEST-INVENTORY.md`, `CHANGELOG.md`, `docs/CURRENT_STATE.md`, `CLAUDE.md` task table — 0.5h
+
+**Checkpoint**: Adding a Savings Goal or Sinking Fund immediately reduces the Debt tab's safe surplus and recommended debt payment by that goal's monthly contribution; the Bills tab's "Pay vs bills" pie shows planned savings as its own slice; Spending Pots can be created via a UI for the first time; the Savings Goal and Budget forms suggest sensible starting numbers instead of requiring manual calculation.
+
+---
+
 ## Summary
 
 | Phase | Name | Priority | Tasks | Est. Effort |
@@ -486,7 +509,8 @@
 | 48 | AI Insights & Agent Features | P3 | T1261–T1274 (14) | 2 weeks |
 | 49 | MCP Server Integration | P3 | T1275–T1289 (15) | 2 weeks |
 | 50 | Household Account Sharing | P3 | T1750–T1773 (24) | 1.5 weeks |
-| **Total** | | | **~193 tasks** | **~21 weeks** |
+| 51 | Financial Planning Gaps (Planned Savings, Sinking Funds, Budget Suggestions) | P2 | T1774–T1784 (11) | 3 days |
+| **Total** | | | **~204 tasks** | **~21.5 weeks** |
 
 ### MVP Completion (Phases 41–44)
 
