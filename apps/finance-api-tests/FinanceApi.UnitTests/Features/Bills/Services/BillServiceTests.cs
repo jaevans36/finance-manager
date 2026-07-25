@@ -89,6 +89,94 @@ public class BillServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetBillsAsync_LinkedAccountCurrentPaymentMatchesBillAmount_NoMismatch()
+    {
+        var account = MakeAccount("Barclaycard", currentMonthlyPayment: 100m);
+        _db.Accounts.Add(account);
+        _db.Bills.Add(MakeBill(_userId, "Barclaycard DD", amount: 100m, accountId: account.Id));
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetBillsAsync(_userId);
+
+        result.First().LinkedAccountPayment.Should().Be(100m);
+        result.First().HasPaymentMismatch.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetBillsAsync_LinkedAccountCurrentPaymentDiffersFromBillAmount_FlagsMismatch()
+    {
+        // Both the Bill and the Account are supposed to represent the same real-world
+        // payment — if they've drifted apart, the user needs a nudge to reconcile them.
+        var account = MakeAccount("Barclaycard", currentMonthlyPayment: 120m);
+        _db.Accounts.Add(account);
+        _db.Bills.Add(MakeBill(_userId, "Barclaycard DD", amount: 100m, accountId: account.Id));
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetBillsAsync(_userId);
+
+        result.First().LinkedAccountPayment.Should().Be(120m);
+        result.First().HasPaymentMismatch.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetBillsAsync_LinkedAccountHasNoCurrentPaymentSet_NoMismatch()
+    {
+        // Nothing to compare against — the bill itself is the only source of truth here.
+        var account = MakeAccount("Tandem Loan");
+        _db.Accounts.Add(account);
+        _db.Bills.Add(MakeBill(_userId, "Tandem DD", amount: 572.66m, accountId: account.Id));
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetBillsAsync(_userId);
+
+        result.First().LinkedAccountPayment.Should().BeNull();
+        result.First().HasPaymentMismatch.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetBillsAsync_NotLinkedToAccount_NoMismatchFieldsSet()
+    {
+        _db.Bills.Add(MakeBill(_userId, "Netflix"));
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetBillsAsync(_userId);
+
+        result.First().LinkedAccountPayment.Should().BeNull();
+        result.First().HasPaymentMismatch.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetBillsAsync_MinimumMonthlyPaymentDiffersFromBill_DoesNotFlagMismatch()
+    {
+        // A lender minimum legitimately differing from what's actually paid is normal
+        // (e.g. paying more than the minimum) — only CurrentMonthlyPayment counts.
+        var account = MakeAccount("Barclaycard");
+        account.MinimumMonthlyPayment = 30m;
+        _db.Accounts.Add(account);
+        _db.Bills.Add(MakeBill(_userId, "Barclaycard DD", amount: 100m, accountId: account.Id));
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetBillsAsync(_userId);
+
+        result.First().HasPaymentMismatch.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetBillsAsync_WeeklyBillMonthlyEquivalentMatchesAccountPayment_NoMismatch()
+    {
+        // £23.08/week ≈ £100.01/mo (52/12) — must compare against the monthly
+        // equivalent, not the raw weekly amount, and tolerate sub-penny rounding.
+        var account = MakeAccount("Barclaycard", currentMonthlyPayment: 100.01m);
+        _db.Accounts.Add(account);
+        _db.Bills.Add(MakeBill(_userId, "Barclaycard DD", amount: 23.08m, frequency: BillFrequency.Weekly, accountId: account.Id));
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetBillsAsync(_userId);
+
+        result.First().HasPaymentMismatch.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task GetBillsAsync_WhenLinkedToCategory_IncludesCategoryName()
     {
         var category = MakeCategory("Streaming & Media");
@@ -467,7 +555,7 @@ public class BillServiceTests : IDisposable
         CategoryId = categoryId,
     };
 
-    private Account MakeAccount(string name) => new()
+    private Account MakeAccount(string name, decimal? currentMonthlyPayment = null) => new()
     {
         Id = Guid.NewGuid(),
         UserId = _userId,
@@ -475,6 +563,7 @@ public class BillServiceTests : IDisposable
         Type = AccountType.Checking,
         Currency = "GBP",
         Balance = 0m,
+        CurrentMonthlyPayment = currentMonthlyPayment,
     };
 
     private static Category MakeCategory(string name) => new()

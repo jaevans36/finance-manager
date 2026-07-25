@@ -153,11 +153,22 @@ public class BillService : IBillService
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    internal static BillResponse ToResponse(Bill b) => new(
-        b.Id, b.UserId, b.Name, b.Description, b.Amount, b.Frequency,
-        b.DueDay, b.ReminderDaysBefore, b.IsPaid, b.LastPaidDate,
-        b.CategoryId, b.Category?.Name, b.IsActive, b.CreatedAt, b.UpdatedAt,
-        b.AccountId, b.Account?.Name);
+    internal static BillResponse ToResponse(Bill b)
+    {
+        // Only an explicit "what I'm actually paying" figure on the linked account counts
+        // as a source of truth to compare against — a lender minimum can legitimately
+        // differ from what's actually paid, so it's not treated as a mismatch.
+        var linkedAccountPayment = b.Account?.CurrentMonthlyPayment is > 0 ? b.Account.CurrentMonthlyPayment : null;
+        var hasPaymentMismatch = linkedAccountPayment.HasValue
+            && Math.Abs(linkedAccountPayment.Value - b.MonthlyEquivalent()) > 0.01m;
+
+        return new(
+            b.Id, b.UserId, b.Name, b.Description, b.Amount, b.Frequency,
+            b.DueDay, b.ReminderDaysBefore, b.IsPaid, b.LastPaidDate,
+            b.CategoryId, b.Category?.Name, b.IsActive, b.CreatedAt, b.UpdatedAt,
+            b.AccountId, b.Account?.Name,
+            linkedAccountPayment, hasPaymentMismatch);
+    }
 
     private static DateTime GetNextDueDate(Bill bill, DateTime today)
     {

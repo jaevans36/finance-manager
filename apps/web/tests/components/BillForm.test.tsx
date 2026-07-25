@@ -24,6 +24,7 @@ const mockAccounts = [
   { id: 'acc-1', name: 'Barclays Current', type: 'Checking', currency: 'GBP', balance: 0, institution: null, colour: null, icon: null, isActive: true, excludeFromNetWorth: false },
   { id: 'acc-2', name: 'Monzo', type: 'Checking', currency: 'GBP', balance: 0, institution: null, colour: null, icon: null, isActive: true, excludeFromNetWorth: false },
   { id: 'acc-3', name: 'Barclaycard', type: 'Credit', currency: 'GBP', balance: -500, institution: null, colour: null, icon: null, isActive: true, excludeFromNetWorth: false },
+  { id: 'acc-4', name: 'Natwest - Credit Card', type: 'Credit', currency: 'GBP', balance: -1000, institution: null, colour: null, icon: null, isActive: true, excludeFromNetWorth: false, currentMonthlyPayment: 120 },
 ];
 
 const mockCategories = [
@@ -82,6 +83,29 @@ describe('BillForm', () => {
     await waitFor(() => screen.getByText(/linked account/i));
     const accountSelect = screen.getByDisplayValue('Monzo') as HTMLSelectElement;
     expect(accountSelect.value).toBe('acc-2');
+  });
+
+  it('warns when the entered amount disagrees with the linked account’s current payment', async () => {
+    accountsService.getAccounts.mockResolvedValue(mockAccounts);
+    renderWithProviders(
+      <BillForm onSuccess={jest.fn()} billId="b1" defaultName="Natwest DD" defaultAmount={100} defaultAccountId="acc-4" />
+    );
+
+    await waitFor(() => expect(screen.getByDisplayValue('Natwest - Credit Card (Credit)')).toBeInTheDocument());
+
+    expect(screen.getByText(/already shows £120\.00\/mo/i)).toBeInTheDocument();
+    expect(screen.getByText(/works out to £100\.00\/mo/i)).toBeInTheDocument();
+  });
+
+  it('does not warn when the entered amount matches the linked account’s current payment', async () => {
+    accountsService.getAccounts.mockResolvedValue(mockAccounts);
+    renderWithProviders(
+      <BillForm onSuccess={jest.fn()} billId="b1" defaultName="Natwest DD" defaultAmount={120} defaultAccountId="acc-4" />
+    );
+
+    await waitFor(() => expect(screen.getByDisplayValue('Natwest - Credit Card (Credit)')).toBeInTheDocument());
+
+    expect(screen.queryByText(/already shows/i)).not.toBeInTheDocument();
   });
 
   it('submits null accountId when no account is selected during update', async () => {

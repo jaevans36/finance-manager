@@ -1,15 +1,25 @@
 import { useEffect, useState } from 'react';
-import { ChevronDown, ChevronRight, Pencil, Trash2, X } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronRight, Pencil, Search, Trash2, X } from 'lucide-react';
 import { billService } from '../../services/bill-service';
 import { BillForm } from './BillForm';
+import { BillsIncomeSummary } from './BillsIncomeSummary';
 import type { Bill, Category, UpcomingBill } from '../../types/finance';
 import { cn } from '../../lib/utils';
+import { monthlyEquivalent } from '../../lib/finance-format';
 
 const FREQUENCY_LABEL: Record<string, string> = {
   Weekly: 'Weekly',
   Monthly: 'Monthly',
   Quarterly: 'Quarterly',
   Annual: 'Annual',
+};
+
+type SortOrder = 'dueDate' | 'name' | 'amount';
+
+const SORT_LABEL: Record<SortOrder, string> = {
+  dueDate: 'Due date',
+  name: 'Name (A–Z)',
+  amount: 'Monthly cost (highest first)',
 };
 
 interface BillsDashboardProps {
@@ -26,6 +36,8 @@ export function BillsDashboard({ categories = [], onAddBill }: BillsDashboardPro
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [editingBillId, setEditingBillId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<SortOrder>('dueDate');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const load = () => {
     setIsLoading(true);
@@ -78,23 +90,27 @@ export function BillsDashboard({ categories = [], onAddBill }: BillsDashboardPro
     );
   }
 
-  const active = allBills.filter(b => b.isActive);
-  const inactive = allBills.filter(b => !b.isActive);
+  const term = searchTerm.trim().toLowerCase();
+  const matchesSearch = (b: Bill) =>
+    term === '' ||
+    b.name.toLowerCase().includes(term) ||
+    (b.description ?? '').toLowerCase().includes(term) ||
+    (b.categoryName ?? '').toLowerCase().includes(term);
+
+  const allActive = allBills.filter(b => b.isActive);
+  const active = allActive.filter(matchesSearch);
+  const inactive = allBills.filter(b => !b.isActive && matchesSearch(b));
   const upcomingMap = new Map(upcoming.map(u => [u.bill.id, u]));
 
   const activeSorted = [...active].sort((a, b) => {
+    if (sortOrder === 'name') return a.name.localeCompare(b.name);
+    if (sortOrder === 'amount') return monthlyEquivalent(b) - monthlyEquivalent(a);
     const daysA = upcomingMap.get(a.id)?.daysUntilDue ?? 9999;
     const daysB = upcomingMap.get(b.id)?.daysUntilDue ?? 9999;
     return daysA - daysB;
   });
 
-  const monthlyTotal = active.reduce((sum, b) => {
-    if (b.frequency === 'Monthly') return sum + b.amount;
-    if (b.frequency === 'Weekly') return sum + b.amount * 4.33;
-    if (b.frequency === 'Quarterly') return sum + b.amount / 3;
-    if (b.frequency === 'Annual') return sum + b.amount / 12;
-    return sum;
-  }, 0);
+  const monthlyTotal = allActive.reduce((sum, b) => sum + monthlyEquivalent(b), 0);
 
   const renderRow = (bill: Bill) => {
     if (editingBillId === bill.id) {
@@ -141,6 +157,8 @@ export function BillsDashboard({ categories = [], onAddBill }: BillsDashboardPro
 
   return (
     <div className="space-y-6">
+      <BillsIncomeSummary bills={allBills} />
+
       {/* Single active bills list with due dates */}
       <div className="space-y-2">
         <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -148,10 +166,32 @@ export function BillsDashboard({ categories = [], onAddBill }: BillsDashboardPro
           <span className="font-semibold text-gray-900 dark:text-gray-100">£{monthlyTotal.toFixed(2)}</span>
         </p>
 
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              placeholder="Search bills by name, description, or category…"
+              className="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 py-1.5 pl-8 pr-3 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <select
+            value={sortOrder}
+            onChange={e => setSortOrder(e.target.value as SortOrder)}
+            className="rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 py-1.5 px-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {(Object.keys(SORT_LABEL) as SortOrder[]).map(order => (
+              <option key={order} value={order}>Sort: {SORT_LABEL[order]}</option>
+            ))}
+          </select>
+        </div>
+
         {activeSorted.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-gray-500 dark:text-gray-400">
-            <p className="text-sm">No active bills.</p>
-            {onAddBill && (
+            <p className="text-sm">{term ? 'No bills match your search.' : 'No active bills.'}</p>
+            {!term && onAddBill && (
               <button onClick={onAddBill} className="mt-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
                 Add a bill
               </button>
@@ -240,9 +280,23 @@ function BillRow({
             }
           </p>
         )}
+        {bill.hasPaymentMismatch && (
+          <p
+            className="mt-0.5 flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400"
+            title={`${bill.accountName} shows £${(bill.linkedAccountPayment ?? 0).toFixed(2)}/mo — check which is correct`}
+          >
+            <AlertTriangle className="h-3 w-3 shrink-0" />
+            Doesn&rsquo;t match {bill.accountName}&rsquo;s payment (£{(bill.linkedAccountPayment ?? 0).toFixed(2)}/mo)
+          </p>
+        )}
       </div>
       <div className="flex items-center gap-3 shrink-0">
-        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">£{bill.amount.toFixed(2)}</p>
+        <div className="text-right">
+          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">£{bill.amount.toFixed(2)}</p>
+          {bill.frequency !== 'Monthly' && (
+            <p className="text-xs text-gray-400 dark:text-gray-500">≈£{monthlyEquivalent(bill).toFixed(2)}/mo</p>
+          )}
+        </div>
         {confirmingDelete ? (
           <div className="flex items-center gap-1.5">
             <button

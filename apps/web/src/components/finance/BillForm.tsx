@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { billService } from '../../services/bill-service';
 import { accountsService } from '../../services/accounts-service';
 import type { AccountSummary, AccountType, BillFrequency, Category, CreateBillRequest } from '../../types/finance';
+import { monthlyEquivalentAmount } from '../../lib/finance-format';
 
 const DEBT_TYPES: AccountType[] = ['Credit', 'Loan', 'Mortgage'];
 
@@ -262,6 +264,25 @@ export function BillForm({
           <p className="mt-1 text-xs text-gray-400">
             Link to a credit card or loan and the debt projection will use this amount as the monthly payment.
           </p>
+          {(() => {
+            const selectedAccount = accounts.find(a => a.id === accountId);
+            const parsedAmount = parseFloat(amount);
+            if (!selectedAccount || !(selectedAccount.currentMonthlyPayment && selectedAccount.currentMonthlyPayment > 0) || isNaN(parsedAmount)) {
+              return null;
+            }
+            const billMonthly = monthlyEquivalentAmount(parsedAmount, frequency);
+            const mismatch = Math.abs(billMonthly - selectedAccount.currentMonthlyPayment) > 0.01;
+            if (!mismatch) return null;
+            return (
+              <p className="mt-1.5 flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                <span>
+                  {selectedAccount.name} already shows £{selectedAccount.currentMonthlyPayment.toFixed(2)}/mo — this bill
+                  works out to £{billMonthly.toFixed(2)}/mo. Check which is correct so they don&rsquo;t get double-counted.
+                </span>
+              </p>
+            );
+          })()}
         </div>
       )}
 
