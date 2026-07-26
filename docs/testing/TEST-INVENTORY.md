@@ -2,8 +2,8 @@
 
 This document tracks all automated tests in the Life Manager project. It serves as a reference for what's tested, coverage gaps, and maintenance responsibilities.
 
-**Last Updated**: 2026-07-24  
-**Total Tests**: 1005 (577 frontend + 307 finance backend unit + 89 finance integration + 26 life-api unit + 5 labels integration — as of Phase 48 + bill categories/weekday due-day work + pay-vs-bills summary + multiple income streams + planned savings/sinking funds/budget suggestions + monthly debt burndown table + debt payment fallback fix + per-debt balance in monthly breakdown + debt snowball momentum fix + Cash Flow tab + Spending Pots in affordability + existing debt repayments in affordability + discretionary-spend floor fix + linked-bill debt payment resolution + bill/debt payment mismatch warning)
+**Last Updated**: 2026-07-25  
+**Total Tests**: 1021 (596 frontend + 313 finance backend unit + 91 finance integration + 26 life-api unit + 5 labels integration — as of Phase 48 + bill categories/weekday due-day work + pay-vs-bills summary + multiple income streams + planned savings/sinking funds/budget suggestions + monthly debt burndown table + debt payment fallback fix + per-debt balance in monthly breakdown + debt snowball momentum fix + Cash Flow tab + Spending Pots in affordability + existing debt repayments in affordability + discretionary-spend floor fix + linked-bill debt payment resolution + bill/debt payment mismatch warning + per-account recurring payment detection + income-account scoping UI + manual-income-priority fix + budget titles/notes + budget edit/delete UI)
 
 > ⚠️ **Note**: The feature coverage matrix below reflects Phase 13. The suite has grown significantly since then (Phases 48–58, keyboard shortcuts, labels, service worker notifications). A full reconciliation of the coverage matrix is backlogged.
 
@@ -13,13 +13,13 @@ This document tracks all automated tests in the Life Manager project. It serves 
 
 | Type | Count | Run On | Duration | Location |
 |------|-------|--------|----------|----------|
-| Frontend Unit + Integration | 577 | Every PR | ~4min | `apps/web/tests/` |
+| Frontend Unit + Integration | 596 | Every PR | ~4min | `apps/web/tests/` |
 | Life API Backend Unit | 26 | Every PR | ~45s | `apps/life-api-tests/LifeApi.UnitTests/` |
 | Life API Integration | 5 (labels) | Every PR | ~30s | `apps/life-api-tests/LifeApi.IntegrationTests/` |
-| Finance API Backend Unit | 307 | Every PR | ~1min | `apps/finance-api-tests/FinanceApi.UnitTests/` |
-| Finance API Integration | 89 | Every PR | ~3s | `apps/finance-api-tests/FinanceApi.IntegrationTests/` |
+| Finance API Backend Unit | 313 | Every PR | ~1min | `apps/finance-api-tests/FinanceApi.UnitTests/` |
+| Finance API Integration | 91 | Every PR | ~3s | `apps/finance-api-tests/FinanceApi.IntegrationTests/` |
 | E2E (Playwright) | ~38 (est.) | Every PR | ~6min | `apps/web/e2e/` |
-| **Total** | **1005+** | | **~12min** | |
+| **Total** | **1021+** | | **~12min** | |
 
 ---
 

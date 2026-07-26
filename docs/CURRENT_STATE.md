@@ -39,7 +39,7 @@ The Life Manager productivity application is MVP-complete and ready for v1.0.0 r
 - **Accounts** — full CRUD; 12 account types (current, savings, credit, ISA, SIPP, mortgage, loan, etc.); interest rates, credit limits, promotional deals, mortgage start/term/interest-only, minimum/current monthly payments, loan end date
 - **Transactions** — view, add, edit, delete; category assignment; free-text search; pagination
 - **CSV import** — Barclays, HSBC, Lloyds, Monzo, Starling, NatWest, Generic; duplicate detection; automatic bill-matching on import
-- **Budgets** — monthly spending limits per category; progress bars with green/amber/red thresholds; suggested starting amount based on the last 3 months of actual spend
+- **Budgets** — monthly spending limits per category, with an optional title and free-text note; full edit/delete UI; "copy last month's budgets" when a new month starts empty; progress bars with green/amber/red thresholds; suggested starting amount based on the last 3 months of actual spend
 - **Spending Pots** — envelope-style monthly budgets with colour coding; create/edit via `PotForm`; **Sinking Funds** pot type (T1303–T1306, Phase 51) for smoothing recurring annual costs (car insurance, MOT, boiler service) into a monthly set-aside amount, with accumulated-progress tracking, months-remaining countdown, and auto-reset each cycle
 - **Bills** — recurring bill tracking (weekly/monthly/quarterly/annual); due-date reminders; bill-to-account linking; automatic paid-marking via transaction matching; recurring pattern detection from imports
 - **Savings Goals** — target amount, monthly contribution (with a suggested-contribution hint from target amount ÷ months to target date), on-track/behind projection
@@ -57,7 +57,7 @@ The Life Manager productivity application is MVP-complete and ready for v1.0.0 r
 - **Design system**: `@life-manager/ui` package with Tailwind design tokens
 - **Shared schema**: `@life-manager/schema` with Zod validation schemas
 - **Service Worker**: `apps/web/public/sw.js` — IndexedDB reminder storage, 60s polling, push notifications
-- **Tests**: 1005 total passing — see `docs/testing/TEST-INVENTORY.md` for the current breakdown (frontend Jest + React Testing Library, finance/life API xUnit unit + integration)
+- **Tests**: 1021 total passing — see `docs/testing/TEST-INVENTORY.md` for the current breakdown (frontend Jest + React Testing Library, finance/life API xUnit unit + integration)
 - **CI**: GitHub Actions (PR checks, nightly extended suite, release-please)
 
 ---
