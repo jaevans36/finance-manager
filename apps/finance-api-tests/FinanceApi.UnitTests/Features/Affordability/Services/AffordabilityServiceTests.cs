@@ -109,6 +109,31 @@ public class AffordabilityServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetAffordabilityAsync_WithManualStreamsAndDetectedCredits_PrefersManual()
+    {
+        // Manual income streams are user-asserted (often set up specifically to
+        // correct an over-eager detection, e.g. a partner's salary landing on a
+        // joint account) — they must win even when detection has 3 months of data.
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var account = MakeAccount();
+        _db.Accounts.Add(account);
+        _db.Transactions.AddRange(
+            MakeCredit(account.Id, 4000m, today.AddMonths(-2), "SALARY ACME LTD"),
+            MakeCredit(account.Id, 4000m, today.AddMonths(-1), "SALARY ACME LTD"),
+            MakeCredit(account.Id, 4000m, today, "SALARY ACME LTD")
+        );
+        _db.IncomeStreams.AddRange(
+            new IncomeStream { UserId = _userId, Name = "Jay income", MonthlyAmount = 2800m },
+            new IncomeStream { UserId = _userId, Name = "Jade Income", MonthlyAmount = 2200m });
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetAffordabilityAsync(_userId);
+
+        result.MonthlyIncome.Should().Be(5000m);
+        result.IncomeSource.Should().Be("Manual");
+    }
+
+    [Fact]
     public async Task GetAffordabilityAsync_WithLargeCredits_DetectsThemAsIncome()
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);

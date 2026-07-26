@@ -177,12 +177,15 @@ public class AffordabilityService(FinanceDbContext db) : IAffordabilityService
         List<Transactions.Models.Transaction> credits,
         decimal? manualIncome)
     {
+        // Manual income streams are an explicit, user-asserted figure — once set up
+        // (often specifically to correct a detection quirk, e.g. a partner's salary
+        // landing on a joint account), they take priority over automatic detection
+        // rather than only being used as a fallback when detection finds nothing.
+        if (manualIncome.HasValue)
+            return (manualIncome.Value, "Low", "Manual");
+
         if (credits.Count == 0)
-        {
-            return manualIncome.HasValue
-                ? (manualIncome.Value, "Low", "Manual")
-                : (0m, "Low", "Detected");
-        }
+            return (0m, "Low", "Detected");
 
         // Group by calendar month to check cadence across the 3-month window
         var byMonth = IncomeDetectionHeuristics.ClassifyByMonth(credits);
@@ -198,10 +201,6 @@ public class AffordabilityService(FinanceDbContext db) : IAffordabilityService
             var monthlyIncome = (decimal)byMonth.Average(g => (double)g.Sum(t => t.Amount));
             return (Math.Round(monthlyIncome, 2), "Medium", "Detected");
         }
-
-        // Only 1 month or no income detected
-        if (manualIncome.HasValue)
-            return (manualIncome.Value, "Low", "Manual");
 
         if (byMonth.Count == 1)
         {

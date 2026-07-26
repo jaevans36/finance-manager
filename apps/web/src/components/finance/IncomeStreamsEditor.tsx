@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Loader2, Pencil, Sparkles, Trash2 } from 'lucide-react';
+import { AlertTriangle, Loader2, Pencil, Sparkles, Trash2 } from 'lucide-react';
 import { incomeStreamService } from '../../services/income-stream-service';
 import { accountsService } from '../../services/accounts-service';
+import { affordabilityService } from '../../services/affordability-service';
 import type { AccountSummary, DetectedIncomeResponse, IncomeStream } from '../../types/finance';
 import { cn } from '../../lib/utils';
 
@@ -163,23 +164,44 @@ interface IncomeStreamsEditorProps {
 export function IncomeStreamsEditor({ onChange }: IncomeStreamsEditorProps) {
   const [streams, setStreams] = useState<IncomeStream[]>([]);
   const [accounts, setAccounts] = useState<AccountSummary[]>([]);
+  const [incomeAccountIds, setIncomeAccountIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [addingNew, setAddingNew] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+  const [savingScope, setSavingScope] = useState(false);
 
   const load = async () => {
     setIsLoading(true);
     try {
-      const [s, a] = await Promise.all([incomeStreamService.getStreams(), accountsService.getAccounts()]);
+      const [s, a, affordability] = await Promise.all([
+        incomeStreamService.getStreams(),
+        accountsService.getAccounts(),
+        affordabilityService.getAffordability(),
+      ]);
       setStreams(s);
       setAccounts(a.filter(acc => !DEBT_TYPES.has(acc.type)));
+      setIncomeAccountIds(affordability.incomeAccountIds);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => { load(); }, []);
+
+  const toggleIncomeAccount = async (accountId: string) => {
+    const next = incomeAccountIds.includes(accountId)
+      ? incomeAccountIds.filter(id => id !== accountId)
+      : [...incomeAccountIds, accountId];
+    setIncomeAccountIds(next);
+    setSavingScope(true);
+    try {
+      await affordabilityService.updateIncomeAccounts(next);
+      onChange?.();
+    } finally {
+      setSavingScope(false);
+    }
+  };
 
   const handleCreate = async (name: string, amount: number, accountId: string | null) => {
     await incomeStreamService.createStream({ name, monthlyAmount: amount, accountId });
@@ -303,6 +325,41 @@ export function IncomeStreamsEditor({ onChange }: IncomeStreamsEditorProps) {
         <div className="flex items-center justify-between pt-1 text-xs text-gray-500 dark:text-gray-400">
           <span>Total</span>
           <span className="font-semibold tabular-nums text-gray-700 dark:text-gray-300">{fmtGbp(total)}/mo</span>
+        </div>
+      )}
+
+      {accounts.length > 0 && (
+        <div className="mt-3 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+          <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
+            Accounts to scan for detected income
+          </p>
+          {incomeAccountIds.length === 0 ? (
+            <p className="mt-1 flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+              <span>
+                Currently scanning <strong>all</strong> accounts — a partner&rsquo;s or shared account&rsquo;s deposits
+                will be counted as your income too. Select specific accounts below to limit detection.
+              </span>
+            </p>
+          ) : (
+            <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+              Only credits on the selected accounts count toward detected income.
+            </p>
+          )}
+          <div className="mt-2 space-y-1">
+            {accounts.map(a => (
+              <label key={a.id} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={incomeAccountIds.includes(a.id)}
+                  onChange={() => toggleIncomeAccount(a.id)}
+                  disabled={savingScope}
+                  className="rounded"
+                />
+                {a.name}
+              </label>
+            ))}
+          </div>
         </div>
       )}
     </div>
