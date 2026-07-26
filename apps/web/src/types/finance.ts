@@ -328,6 +328,8 @@ export interface RecurringPattern {
   amountTrend: AmountTrend;
   occurrencesInPeriod: number;
   lastOccurrence: string | null;
+  accountId: string;
+  accountName: string;
   isLikelyInactive: boolean;
 }
 

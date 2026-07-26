@@ -53,10 +53,14 @@ export function RecurringDetected({ categories = [], onBillSaved }: RecurringDet
       .finally(() => setIsLoading(false));
   };
 
-  const dismiss = (merchantName: string) =>
-    setDismissed(prev => new Set([...prev, merchantName]));
+  // Same merchant can now appear once per account it was detected on, so the
+  // merchant name alone is no longer a unique identifier for a pattern.
+  const patternKey = (p: RecurringPattern) => `${p.merchantName}::${p.accountId}`;
 
-  const visible = patterns.filter(p => !dismissed.has(p.merchantName));
+  const dismiss = (key: string) =>
+    setDismissed(prev => new Set([...prev, key]));
+
+  const visible = patterns.filter(p => !dismissed.has(patternKey(p)));
   const active = visible.filter(p => !p.isLikelyInactive);
   const likelyInactive = visible.filter(p => p.isLikelyInactive);
 
@@ -89,10 +93,10 @@ export function RecurringDetected({ categories = [], onBillSaved }: RecurringDet
         <div className="space-y-2">
           {active.map(p => (
             <PatternCard
-              key={p.merchantName}
+              key={patternKey(p)}
               pattern={p}
               categories={categories}
-              onDismiss={() => dismiss(p.merchantName)}
+              onDismiss={() => dismiss(patternKey(p))}
               onBillSaved={onBillSaved}
             />
           ))}
@@ -106,10 +110,10 @@ export function RecurringDetected({ categories = [], onBillSaved }: RecurringDet
           </p>
           {likelyInactive.map(p => (
             <PatternCard
-              key={p.merchantName}
+              key={patternKey(p)}
               pattern={p}
               categories={categories}
-              onDismiss={() => dismiss(p.merchantName)}
+              onDismiss={() => dismiss(patternKey(p))}
               onBillSaved={onBillSaved}
               inactive
             />
@@ -175,6 +179,7 @@ function PatternCard({
           defaultAmount={p.latestAmount}
           defaultFrequency={defaultFrequency}
           defaultDueDay={defaultDueDay}
+          defaultAccountId={p.accountId}
           onSuccess={() => { setConfirming(false); onDismiss(); onBillSaved?.(); }}
           onCancel={() => setConfirming(false)}
         />
@@ -195,7 +200,8 @@ function PatternCard({
             {p.merchantName}
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            {PATTERN_LABEL[p.patternType]} · {FREQ_LABEL[p.detectedFrequency]}
+            {PATTERN_LABEL[p.patternType]} · {FREQ_LABEL[p.detectedFrequency]} ·{' '}
+            <span className="text-blue-600 dark:text-blue-400">{p.accountName}</span>
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
             Latest: <span className="font-medium text-gray-700 dark:text-gray-300">£{p.latestAmount.toFixed(2)}</span>

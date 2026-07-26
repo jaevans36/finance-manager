@@ -18,6 +18,7 @@ public partial class RecurringPaymentDetector : IRecurringPaymentDetector
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
         var transactions = await _db.Transactions
+            .Include(t => t.Account)
             .Where(t => t.UserId == userId
                      && t.Type == TransactionType.Debit
                      && t.TransactionDate >= cutoff
@@ -25,8 +26,12 @@ public partial class RecurringPaymentDetector : IRecurringPaymentDetector
             .OrderBy(t => t.TransactionDate)
             .ToListAsync(ct);
 
+        // Group by merchant *and* account — the same merchant appearing on two
+        // different accounts (e.g. a subscription moved between cards) is two
+        // separate real-world patterns, not one, and each must resolve to
+        // exactly one account so it can be displayed and linked unambiguously.
         var groups = transactions
-            .GroupBy(t => NormalizeMerchant(t.Payee, t.Description))
+            .GroupBy(t => (Merchant: NormalizeMerchant(t.Payee, t.Description), t.AccountId))
             .Where(g => g.Count() >= 2)
             .ToList();
 
@@ -55,7 +60,7 @@ public partial class RecurringPaymentDetector : IRecurringPaymentDetector
             var isLikelyInactive = daysSinceLast > expectedIntervalDays * 1.5;
 
             patterns.Add(new RecurringPattern(
-                group.Key,
+                group.Key.Merchant,
                 Math.Round(avg, 2),
                 items.Last().Amount,
                 amounts.Min(),
@@ -65,6 +70,8 @@ public partial class RecurringPaymentDetector : IRecurringPaymentDetector
                 trend,
                 items.Count,
                 items.Last().TransactionDate,
+                group.Key.AccountId,
+                items[0].Account?.Name ?? "Unknown account",
                 isLikelyInactive));
         }
 

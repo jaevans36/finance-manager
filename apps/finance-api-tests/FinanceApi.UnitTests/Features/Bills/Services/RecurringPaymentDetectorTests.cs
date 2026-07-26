@@ -68,6 +68,37 @@ public class RecurringPaymentDetectorTests : IDisposable
         result.Should().HaveCount(1);
         result[0].DetectedFrequency.Should().Be(RecurringFrequency.Monthly);
         result[0].MerchantName.Should().Be("NETFLIX");
+        result[0].AccountId.Should().Be(_accountId);
+        result[0].AccountName.Should().Be("Current");
+    }
+
+    [Fact]
+    public async Task DetectAsync_SameMerchantOnTwoAccounts_ReturnsSeparatePatternsPerAccount()
+    {
+        // A subscription moved from one card to another (or coincidentally shares a
+        // name across accounts) is two distinct real-world patterns, not one — each
+        // must resolve to exactly one account so it can be shown and linked correctly.
+        var secondAccountId = Guid.NewGuid();
+        _db.Accounts.Add(new Account
+        {
+            Id = secondAccountId, UserId = _userId, Name = "Savings",
+            Type = AccountType.Checking, Currency = "GBP", Balance = 0
+        });
+        var now = DateTime.UtcNow;
+        _db.Transactions.AddRange(
+            MakeTx("NETFLIX", 9.99m, now.AddDays(-60)),
+            MakeTx("NETFLIX", 9.99m, now.AddDays(-30)),
+            MakeTx("NETFLIX", 9.99m, now.AddDays(-1)),
+            MakeTx("NETFLIX", 9.99m, now.AddDays(-60), accountId: secondAccountId),
+            MakeTx("NETFLIX", 9.99m, now.AddDays(-30), accountId: secondAccountId),
+            MakeTx("NETFLIX", 9.99m, now.AddDays(-1), accountId: secondAccountId));
+        await _db.SaveChangesAsync();
+
+        var result = (await _sut.DetectAsync(_userId)).ToList();
+
+        result.Should().HaveCount(2);
+        result.Should().Contain(p => p.AccountId == _accountId && p.AccountName == "Current");
+        result.Should().Contain(p => p.AccountId == secondAccountId && p.AccountName == "Savings");
     }
 
     [Fact]
@@ -272,11 +303,12 @@ public class RecurringPaymentDetectorTests : IDisposable
         DateTime date,
         string? description = null,
         TransactionType type = TransactionType.Debit,
-        bool isDuplicate = false) => new()
+        bool isDuplicate = false,
+        Guid? accountId = null) => new()
     {
         Id = Guid.NewGuid(),
         UserId = _userId,
-        AccountId = _accountId,
+        AccountId = accountId ?? _accountId,
         Payee = payee,
         Description = description ?? payee ?? string.Empty,
         Amount = amount,
