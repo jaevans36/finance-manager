@@ -158,7 +158,7 @@ export function DebtStrategySelector({
           <input
             id="extra-payment"
             type="number"
-            step="1"
+            step="0.01"
             min="0"
             value={extraPayment}
             onChange={e => setExtraPayment(e.target.value)}
@@ -242,7 +242,7 @@ export function DebtStrategySelector({
               </span>
               <input
                 type="number"
-                step="1"
+                step="0.01"
                 min="0"
                 value={customAllocations[debt.accountId] ?? ''}
                 onChange={e =>
