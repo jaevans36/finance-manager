@@ -87,6 +87,35 @@ public class BudgetsControllerTests
     }
 
     [Fact]
+    public async Task CreateBudget_WithTitleAndNote_Returns201WithBothFields()
+    {
+        var request = new CreateBudgetRequest(GroceriesCategoryId, 7, 2025, 200m, Title: "Big shop", Note: "Fortnightly");
+
+        var response = await _client.PostAsJsonAsync("/api/v1/finance/budgets", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var budget = await response.Content.ReadFromJsonAsync<BudgetWithProgress>();
+        budget!.Title.Should().Be("Big shop");
+        budget.Note.Should().Be("Fortnightly");
+    }
+
+    [Fact]
+    public async Task UpdateBudget_WithTitleAndNote_ReturnsUpdatedFields()
+    {
+        var createResp = await _client.PostAsJsonAsync("/api/v1/finance/budgets",
+            new CreateBudgetRequest(GroceriesCategoryId, 8, 2025, 100m));
+        var created = await createResp.Content.ReadFromJsonAsync<BudgetWithProgress>();
+
+        var updateResp = await _client.PutAsJsonAsync(
+            $"/api/v1/finance/budgets/{created!.Id}", new UpdateBudgetRequest(null, Title: "Renamed", Note: "A note"));
+
+        updateResp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var updated = await updateResp.Content.ReadFromJsonAsync<BudgetWithProgress>();
+        updated!.Title.Should().Be("Renamed");
+        updated.Note.Should().Be("A note");
+    }
+
+    [Fact]
     public async Task UpdateBudget_WhenNotFound_Returns404()
     {
         var response = await _client.PutAsJsonAsync(

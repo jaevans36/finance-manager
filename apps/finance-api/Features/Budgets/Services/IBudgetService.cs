@@ -13,12 +13,14 @@ public record BudgetWithProgress(
     decimal RolloverFromPrevious,
     decimal PercentageUsed,
     bool IsWarning,
-    bool IsExceeded
+    bool IsExceeded,
+    string? Title,
+    string? Note
 );
 
-public record CreateBudgetRequest(Guid CategoryId, int Month, int Year, decimal Amount);
+public record CreateBudgetRequest(Guid CategoryId, int Month, int Year, decimal Amount, string? Title = null, string? Note = null);
 
-public record UpdateBudgetRequest(decimal? Amount);
+public record UpdateBudgetRequest(decimal? Amount, string? Title = null, string? Note = null);
 
 public record CategoryBudgetSpend(string CategoryName, string? CategoryColour, decimal Budgeted, decimal Spent);
 

@@ -5,7 +5,7 @@ import { cn } from '../../lib/utils';
 import { financeCategoryService } from '../../services/finance-category-service';
 import { transactionsService } from '../../services/transactions-service';
 import type { TransactionFilters as TxFilters } from '../../services/transactions-service';
-import type { AccountSummary, Category, PagedResult, Transaction } from '../../types/finance';
+import type { AccountSummary, Budget, Category, PagedResult, Transaction } from '../../types/finance';
 
 import { AccountsDashboard } from '../../components/finance/AccountsDashboard';
 import { AccountForm } from '../../components/finance/AccountForm';
@@ -53,6 +53,7 @@ export default function FinancePage() {
   // Accounts + Transactions state
   const [selectedAccount, setSelectedAccount] = useState<AccountSummary | null>(null);
   const [editingAccount, setEditingAccount] = useState<AccountSummary | null>(null);
+  const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
   const [txFilters, setTxFilters] = useState<Partial<TxFilters>>({});
   const [txPage, setTxPage] = useState(1);
   const [txData, setTxData] = useState<PagedResult<Transaction> | null>(null);
@@ -101,6 +102,7 @@ export default function FinancePage() {
   const handleSaved = () => {
     setShowForm(false);
     setEditingAccount(null);
+    setEditingBudget(null);
     setRefreshKey(k => k + 1);
     if (activeTab === 'accounts') loadTransactions();
   };
@@ -111,6 +113,7 @@ export default function FinancePage() {
     setShowImport(false);
     setShowAddTx(false);
     setEditingAccount(null);
+    setEditingBudget(null);
   };
 
   const canAddOnTab = !['trends', 'transactions', 'cashflow'].includes(activeTab);
@@ -274,11 +277,21 @@ export default function FinancePage() {
         <section className="space-y-6">
           {canAddOnTab && (
             <div className="mb-2">
-              {!showForm ? (
-                <button onClick={() => setShowForm(true)} className="flex items-center gap-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
-                  <Plus size={16} /> Add budget
-                </button>
-              ) : (
+              {editingBudget ? (
+                <div className="rounded-xl border border-border bg-card p-6 max-w-md">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-base font-semibold text-foreground">Edit budget</h3>
+                    <button onClick={() => setEditingBudget(null)} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
+                  </div>
+                  <BudgetForm
+                    categories={categories}
+                    budgetId={editingBudget.id}
+                    initialData={editingBudget}
+                    onSuccess={handleSaved}
+                    onCancel={() => setEditingBudget(null)}
+                  />
+                </div>
+              ) : showForm ? (
                 <div className="rounded-xl border border-border bg-card p-6 max-w-md">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-base font-semibold text-foreground">New budget</h3>
@@ -286,12 +299,20 @@ export default function FinancePage() {
                   </div>
                   <BudgetForm categories={categories} onSuccess={handleSaved} onCancel={() => setShowForm(false)} />
                 </div>
+              ) : (
+                <button onClick={() => setShowForm(true)} className="flex items-center gap-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
+                  <Plus size={16} /> Add budget
+                </button>
               )}
             </div>
           )}
           <div>
             <h2 className="text-base font-semibold text-foreground mb-3">This month</h2>
-            <BudgetDashboard key={refreshKey} />
+            <BudgetDashboard
+              key={refreshKey}
+              onAddBudget={() => { setEditingBudget(null); setShowForm(true); }}
+              onEdit={budget => { setShowForm(false); setEditingBudget(budget); }}
+            />
           </div>
         </section>
       )}

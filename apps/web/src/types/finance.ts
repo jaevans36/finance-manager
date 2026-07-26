@@ -201,6 +201,8 @@ export interface Budget {
   percentageUsed: number;
   isWarning: boolean;
   isExceeded: boolean;
+  title: string | null;
+  note: string | null;
 }
 
 export interface CreateBudgetRequest {
@@ -208,10 +210,14 @@ export interface CreateBudgetRequest {
   month: number;
   year: number;
   amount: number;
+  title?: string | null;
+  note?: string | null;
 }
 
 export interface UpdateBudgetRequest {
   amount?: number;
+  title?: string | null;
+  note?: string | null;
 }
 
 export interface CategoryBudgetSpend {

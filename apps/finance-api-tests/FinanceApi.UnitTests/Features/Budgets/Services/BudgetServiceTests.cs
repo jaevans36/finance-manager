@@ -165,6 +165,64 @@ public class BudgetServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task CreateBudgetAsync_WithTitleAndNote_StoresBothFields()
+    {
+        var request = new CreateBudgetRequest(_categoryId, 6, 2025, 250m, Title: "Big shop", Note: "Includes Christmas presents");
+
+        var result = await _sut.CreateBudgetAsync(_userId, request);
+
+        result.Title.Should().Be("Big shop");
+        result.Note.Should().Be("Includes Christmas presents");
+    }
+
+    [Fact]
+    public async Task UpdateBudgetAsync_WithTitleAndNote_UpdatesBothFields()
+    {
+        var now = DateTime.UtcNow;
+        var budget = MakeBudget(now.Month, now.Year, 100m);
+        _db.Budgets.Add(budget);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.UpdateBudgetAsync(_userId, budget.Id, new UpdateBudgetRequest(null, Title: "Renamed", Note: "Updated note"));
+
+        result.Should().NotBeNull();
+        result!.Title.Should().Be("Renamed");
+        result.Note.Should().Be("Updated note");
+    }
+
+    [Fact]
+    public async Task UpdateBudgetAsync_WhenTitleNotProvided_LeavesExistingTitleUnchanged()
+    {
+        var now = DateTime.UtcNow;
+        var budget = MakeBudget(now.Month, now.Year, 100m);
+        budget.Title = "Original title";
+        _db.Budgets.Add(budget);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.UpdateBudgetAsync(_userId, budget.Id, new UpdateBudgetRequest(200m));
+
+        result!.Title.Should().Be("Original title");
+    }
+
+    [Fact]
+    public async Task CopyFromPreviousMonthAsync_CarriesTitleAndNoteForward()
+    {
+        var prev = DateTime.UtcNow.AddMonths(-1);
+        var budget = MakeBudget(prev.Month, prev.Year, 150m);
+        budget.Title = "Groceries pot";
+        budget.Note = "Weekly big shop";
+        _db.Budgets.Add(budget);
+        await _db.SaveChangesAsync();
+
+        var now = DateTime.UtcNow;
+        var result = (await _sut.CopyFromPreviousMonthAsync(_userId, now.Month, now.Year)).ToList();
+
+        result.Should().HaveCount(1);
+        result[0].Title.Should().Be("Groceries pot");
+        result[0].Note.Should().Be("Weekly big shop");
+    }
+
+    [Fact]
     public async Task UpdateBudgetAsync_WhenBudgetNotFound_ReturnsNull()
     {
         var result = await _sut.UpdateBudgetAsync(_userId, Guid.NewGuid(), new UpdateBudgetRequest(100m));

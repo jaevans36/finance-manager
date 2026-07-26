@@ -75,6 +75,7 @@ const makeBudget = (overrides: Partial<Budget> = {}): Budget => ({
   id: 'bud1', categoryId: 'c1', categoryName: 'Groceries', categoryColour: '#22C55E',
   categoryIcon: 'shopping-cart', month: 6, year: 2025, amount: 400, spent: 0,
   rolloverFromPrevious: 0, percentageUsed: 0, isWarning: false, isExceeded: false,
+  title: null, note: null,
   ...overrides,
 });
 
