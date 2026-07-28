@@ -1,59 +1,87 @@
-# Life Manager - Database Backup Script
-# Creates a date-stamped pg_dump backup of the PostgreSQL database
-# Usage: .\backup-db.ps1 [-Database "finance_manager_dev"] [-OutputDir ".\backups"]
+# Backs up the Life Manager PostgreSQL database using pg_dump inside Docker.
+# Saves a compressed (.zip) backup to %USERPROFILE%\life-manager-backups\ and
+# prunes backups older than RetainDays.
+#
+# Usage:
+#   .\scripts\backup-db.ps1
+#   .\scripts\backup-db.ps1 -RetainDays 14
+#   .\scripts\backup-db.ps1 -BackupDir "D:\my-backups"
 
 param(
-    [string]$Database = "finance_manager_dev",
-    [string]$Host = "localhost",
-    [string]$Port = "5432",
-    [string]$Username = "postgres",
-    [string]$OutputDir = ".\backups"
+    [string]$BackupDir = "$env:USERPROFILE\life-manager-backups",
+    [int]$RetainDays   = 7
 )
 
-Set-Location "C:\Projects\Finance Manager"
+$ErrorActionPreference = 'Stop'
 
-$timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
-$backupFile = Join-Path $OutputDir "life-manager-$timestamp.sql"
-
-Write-Host "Life Manager - Database Backup" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "Database : $Database" -ForegroundColor Yellow
-Write-Host "Host     : $Host`:$Port" -ForegroundColor Yellow
-Write-Host "Output   : $backupFile" -ForegroundColor Yellow
-Write-Host ""
-
-# Create output directory if it doesn't exist
-if (-not (Test-Path $OutputDir)) {
-    New-Item -ItemType Directory -Path $OutputDir | Out-Null
-    Write-Host "[OK] Created backup directory: $OutputDir" -ForegroundColor Green
-}
-
-# Check that pg_dump is available
-$pgDump = Get-Command pg_dump -ErrorAction SilentlyContinue
-if (-not $pgDump) {
-    Write-Host "[X] pg_dump not found. Install PostgreSQL client tools or add them to PATH." -ForegroundColor Red
-    Write-Host "    Alternatively, run backup inside the Docker container:" -ForegroundColor Yellow
-    Write-Host "    docker exec life-manager-db pg_dump -U postgres $Database > $backupFile" -ForegroundColor Gray
+# ── Container check ───────────────────────────────────────────────────────────
+$running = docker ps --filter "name=life-manager-db" --filter "status=running" --format "{{.Names}}" 2>$null
+if ($running -ne "life-manager-db") {
+    Write-Host "[X] life-manager-db is not running. Start Docker then: docker-compose up -d" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "Running pg_dump..." -ForegroundColor Yellow
+# ── Ensure backup directory ───────────────────────────────────────────────────
+if (-not (Test-Path $BackupDir)) {
+    New-Item -ItemType Directory -Path $BackupDir -Force | Out-Null
+    Write-Host "Created backup directory: $BackupDir" -ForegroundColor Gray
+}
 
-$env:PGPASSWORD = Read-Host "PostgreSQL password (leave blank for default 'password')" -MaskInput
-if ([string]::IsNullOrEmpty($env:PGPASSWORD)) { $env:PGPASSWORD = "password" }
+# ── Generate filenames ────────────────────────────────────────────────────────
+$timestamp = Get-Date -Format "yyyy-MM-dd-HHmm"
+$sqlFile   = Join-Path $BackupDir "life-manager-$timestamp.sql"
+$zipFile   = Join-Path $BackupDir "life-manager-$timestamp.zip"
+$logFile   = Join-Path $BackupDir "backup.log"
 
-pg_dump -h $Host -p $Port -U $Username -d $Database -F p -f $backupFile
+# ── pg_dump via docker exec ───────────────────────────────────────────────────
+Write-Host "Backing up life_manager_dev..." -ForegroundColor Yellow
 
-if ($LASTEXITCODE -eq 0) {
-    $size = (Get-Item $backupFile).Length / 1KB
-    Write-Host ""
-    Write-Host "[OK] Backup complete: $backupFile ($([math]::Round($size, 1)) KB)" -ForegroundColor Green
-    Write-Host ""
-    Write-Host "To restore this backup, run:" -ForegroundColor Cyan
-    Write-Host "  .\restore-db.ps1 -BackupFile `"$backupFile`"" -ForegroundColor Gray
-} else {
-    Write-Host "[X] Backup failed. Check the error above." -ForegroundColor Red
+$dumpLines = docker exec `
+    -e PGPASSWORD=password `
+    life-manager-db `
+    pg_dump -U postgres -d life_manager_dev --clean --if-exists --encoding=UTF8
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "[X] pg_dump failed (exit $LASTEXITCODE). Is the container healthy?" -ForegroundColor Red
     exit 1
 }
 
-$env:PGPASSWORD = ""
+if ($null -eq $dumpLines -or $dumpLines.Count -eq 0) {
+    Write-Host "[X] pg_dump returned no output — backup aborted." -ForegroundColor Red
+    exit 1
+}
+
+# Write SQL file (UTF-8, no BOM)
+[System.IO.File]::WriteAllLines($sqlFile, $dumpLines, [System.Text.UTF8Encoding]::new($false))
+
+$rawKB = [math]::Round((Get-Item $sqlFile).Length / 1KB, 1)
+
+# ── Compress ──────────────────────────────────────────────────────────────────
+Compress-Archive -Path $sqlFile -DestinationPath $zipFile -CompressionLevel Optimal -Force
+Remove-Item $sqlFile
+
+$zipKB = [math]::Round((Get-Item $zipFile).Length / 1KB, 1)
+Write-Host "[OK] $([System.IO.Path]::GetFileName($zipFile))  ($zipKB KB, was $rawKB KB uncompressed)" -ForegroundColor Green
+
+# ── Prune old backups ─────────────────────────────────────────────────────────
+$cutoff = (Get-Date).AddDays(-$RetainDays)
+$old = Get-ChildItem $BackupDir -Filter "life-manager-*.zip" | Where-Object { $_.LastWriteTime -lt $cutoff }
+if ($old.Count -gt 0) {
+    $old | Remove-Item
+    Write-Host "Pruned $($old.Count) backup(s) older than $RetainDays days." -ForegroundColor Gray
+}
+
+# ── List kept backups ─────────────────────────────────────────────────────────
+$kept = Get-ChildItem $BackupDir -Filter "life-manager-*.zip" | Sort-Object LastWriteTime
+Write-Host ""
+Write-Host "Stored backups ($($kept.Count) of $RetainDays max):" -ForegroundColor Cyan
+$kept | ForEach-Object {
+    $kb = [math]::Round($_.Length / 1KB, 1)
+    Write-Host "  $($_.Name)  $kb KB  $($_.LastWriteTime.ToString('yyyy-MM-dd HH:mm'))" -ForegroundColor Gray
+}
+Write-Host ""
+Write-Host "To restore: .\scripts\restore-db.ps1 -Latest" -ForegroundColor DarkGray
+
+# ── Append to log ─────────────────────────────────────────────────────────────
+$logEntry = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')  OK   $([System.IO.Path]::GetFileName($zipFile))  $zipKB KB"
+Add-Content $logFile $logEntry

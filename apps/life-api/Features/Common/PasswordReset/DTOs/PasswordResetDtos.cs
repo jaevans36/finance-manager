@@ -1,7 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace LifeApi.Features.Common.PasswordReset.DTOs;
 
 public class RequestPasswordResetRequest
 {
+    [Required]
+    [EmailAddress]
     public string Email { get; set; } = string.Empty;
 }
 

@@ -55,6 +55,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    // Use full type names to avoid SchemaId conflicts between DTOs with the same class name in different namespaces
+    options.CustomSchemaIds(type => type.FullName);
+
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "Life Manager API",

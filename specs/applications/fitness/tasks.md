@@ -157,7 +157,25 @@
 - [ ] T873 [US8] Write E2E test for habit creation, completion, and grid visualisation - 3h
 - [ ] T874 [US8] Add Habits tab content to FitnessPage - 1h
 
-**Checkpoint**: Users can create colour-themed habits, complete them daily, view GitHub-style grids, track streaks
+### Phase 17 Extension: Habit Categories & Event Linking (Priority: P2)
+
+- [ ] T1504 [US8] Add `category` field to Habit entity (`health|fitness|productivity|learning|financial|social|custom`) + EF Core migration - 2h
+- [ ] T1505 [US8] Add `linkedEventPattern`, `linkedEventIds`, `autoCompleteSource` fields to Habit entity + migration update - 2h
+- [ ] T1506 [US8] Implement `HabitEventLinkService` — match incoming `EventCompleted` events against habit patterns/IDs and mark habit complete - 4h
+- [ ] T1507 [US8] Subscribe Fitness service to `events/event.completed` on the event bus; trigger bidirectional sync with `events/habit.completed` publish - 3h
+- [ ] T1508 [US8] Extend `HabitService.CompleteHabit` to publish `HabitCompleted` event (bidirectional: also marks linked task done) - 2h
+- [ ] T1509 [US8] Add `GET /api/v1/fitness/habits/categories` endpoint returning category values with completion counts - 2h
+- [ ] T1510 [US8] Add `POST /api/v1/fitness/habits/:id/link-event` and `DELETE /api/v1/fitness/habits/:id/link-event/:eventId` endpoints - 2h
+- [ ] T1511 [US8] Update habit DTOs to include `category`, `linkedEventPattern`, `linkedEventIds`, `autoCompleteSource` - 1h
+- [ ] T1512 [US8] Write unit tests for HabitEventLinkService and bidirectional sync logic (12+ tests) - 3h
+- [ ] T1513 [US8] Create `category` field in `Habit` TypeScript interface (`apps/web/src/types/fitness.ts`) - 1h
+- [ ] T1514 [US8] Add category selector (pill group / dropdown) to HabitForm component - 2h
+- [ ] T1515 [US8] Add category filter bar to HabitsDashboard with per-category aggregate stats - 3h
+- [ ] T1516 [US8] Add event-linking section to HabitForm (pattern input + explicit event picker) - 3h
+- [ ] T1517 [US8] Show event-link indicator on HabitCard (icon denoting "auto-completes from event/task") - 1h
+- [ ] T1518 [US8] Write Jest tests for category filter, event-linking UI (8+ tests) - 2h
+
+**Checkpoint**: Habits have categories, can be linked to calendar events/tasks, and auto-complete bidirectionally via the event bus
 
 ---
 

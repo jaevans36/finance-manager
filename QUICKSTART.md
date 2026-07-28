@@ -1,163 +1,185 @@
-# 🚀 Quick Start Guide - Life Manager
+# Quick Start Guide — Life Manager
 
-## Prerequisites Checklist
-- ✅ Node.js 20.x or higher
-- ✅ pnpm 8.x or higher  
-- ✅ Docker Desktop installed and running
+## Prerequisites
 
-## First Time Setup
+- .NET 8 SDK (`dotnet --version` → `8.x`)
+- Node.js 20+ and pnpm 8+ (`node --version`, `pnpm --version`)
+- Docker Desktop (running)
+- `dotnet-ef` global tool: `dotnet tool install --global dotnet-ef`
 
-### Option 1: Automated Setup (Recommended)
-Run the startup script which handles everything:
+---
 
-```powershell
-.\start-dev.ps1
-```
-
-This script will:
-1. ✅ Check if Docker is running (starts it if needed)
-2. ✅ Start PostgreSQL database container
-3. ✅ Wait for database to be healthy
-4. ✅ Run database migrations
-5. ✅ Generate Prisma Client
-6. ✅ Start both API and Web servers
-
-### Option 2: Manual Setup
-If you prefer to run commands individually:
+## First-Time Setup
 
 ```powershell
-# 1. Start Docker Desktop (if not running)
-# Open Docker Desktop application manually
-
-# 2. Start PostgreSQL database
-docker-compose up -d
-
-# 3. Run database migrations (C# .NET API)
-cd apps/finance-api
-dotnet ef database update
-
-# 4. Start development servers
-cd ../..
+# From the repo root — starts Docker, DB, both APIs, and the web app:
 .\scripts\start-dev.ps1
 ```
 
-## Daily Development Workflow
+The script will:
+1. Check Docker is running (starts Docker Desktop if needed)
+2. Start the PostgreSQL container and wait for it to be healthy
+3. Verify EF Core migrations are available for both APIs
+4. Start all three development servers (life-api, finance-api, web) in parallel
 
-### Starting Work
+On first run, both APIs apply pending migrations automatically on startup.
+
+---
+
+## Services
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| Life API | http://localhost:5000 | Core API — auth, todos, fitness |
+| Finance API | http://localhost:5002 | Finance microservice — accounts, transactions |
+| Web app | http://localhost:5173 | React/Vite frontend |
+| PostgreSQL | localhost:5432 | Database (Docker) |
+
+### Swagger / API Docs
+
+| API | Swagger UI |
+|-----|-----------|
+| Life API | http://localhost:5000/swagger |
+| Finance API | http://localhost:5002/swagger |
+
+---
+
+## Daily Workflow
+
 ```powershell
-# If database stopped, use full startup
-.\start-dev.ps1
+# Full startup (DB + all servers):
+.\scripts\start-dev.ps1
 
-# If database still running, quick restart servers only
-.\restart-dev.ps1
+# Quick restart (servers only, DB already running):
+.\scripts\restart-dev.ps1
+
+# Stop everything:
+.\scripts\stop-dev.ps1
 ```
 
-### While Developing
-- **API Server**: http://localhost:3000
-- **Web App**: http://localhost:5173
-- **Database**: localhost:5432
+All servers have hot-reload — changes reflect automatically without restarting.
 
-Both servers have hot-reload enabled - your changes will automatically refresh.
-
-### Stopping Work
-```powershell
-# Stop all services (database + servers)
-.\stop-dev.ps1
-```
+---
 
 ## VS Code Tasks
 
-You can also use built-in VS Code tasks:
-1. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
-2. Type "Tasks: Run Task"
-3. Choose from:
-   - **Start Development Environment** - Full startup
-   - **Restart Development Servers** - Quick restart
-   - **Stop Development Environment** - Stop all
-   - **Open Prisma Studio** - Database GUI
-   - **Run Database Migrations** - Apply schema changes
+Press `Ctrl+Shift+P` → **Tasks: Run Task**:
+
+| Task | Action |
+|------|--------|
+| Start Development Environment | Full startup |
+| Restart Development Servers | Quick restart |
+| Stop Development Environment | Stop all services |
+| Run Database Migrations | Apply pending EF Core migrations |
+| View Application Logs | Tail the log files |
+
+---
+
+## Manual Setup (without the script)
+
+```powershell
+# 1. Start database
+docker-compose up -d
+
+# 2. Start Life API
+cd apps/life-api
+dotnet watch run --launch-profile http
+
+# 3. Start Finance API (new terminal)
+cd apps/finance-api
+dotnet watch run --launch-profile http
+
+# 4. Start web app (new terminal)
+cd apps/web
+pnpm dev
+```
+
+---
+
+## Database
+
+### Migrations
+
+Both APIs auto-migrate on startup. To run manually:
+
+```powershell
+# Life API
+cd apps/life-api
+dotnet ef database update
+
+# Finance API
+cd apps/finance-api
+dotnet ef database update
+```
+
+### Reset (destroys all data)
+
+```powershell
+.\scripts\reset-db.ps1
+```
+
+### Shell access
+
+```powershell
+docker exec -it life-manager-db psql -U postgres -d life_manager_dev
+```
+
+---
+
+## Environment Variables
+
+The APIs use `appsettings.Development.json` for local dev — no `.env` file needed.
+
+Key values (already set in config files):
+
+| Variable | Default | Used by |
+|----------|---------|---------|
+| DB connection | `Host=localhost;Port=5432;Database=life_manager_dev` | Both APIs |
+| JWT Secret | `your-secret-key-change-in-production` | Both APIs (must match) |
+| `VITE_FINANCE_API_URL` | `http://localhost:5002` | Web app |
+
+---
 
 ## Troubleshooting
 
 ### "Can't reach database server"
-**Problem**: PostgreSQL container not running  
-**Solution**: 
+PostgreSQL container not running:
 ```powershell
 docker-compose up -d
-# Wait 10 seconds, then restart servers
-.\restart-dev.ps1
+.\scripts\restart-dev.ps1
 ```
 
-### "Docker daemon is not running"  
-**Problem**: Docker Desktop not started  
-**Solution**: 
-1. Open Docker Desktop application
-2. Wait for it to fully start (30-60 seconds)
-3. Run `.\start-dev.ps1` again
+### "Docker daemon is not running"
+1. Open Docker Desktop and wait for it to fully start (~30 s)
+2. Run `.\scripts\start-dev.ps1` again
 
-### "Port 3000 is already in use"
-**Problem**: Another process using the port  
-**Solution**:
+### "Port 5000 / 5002 is already in use"
 ```powershell
-# Find and kill the process
-Get-Process -Id (Get-NetTCPConnection -LocalPort 3000).OwningProcess | Stop-Process
-
-# Or change the port in apps/api/.env
-PORT=3001
+# Find and kill the process occupying the port (replace 5002 with the port):
+Stop-Process -Id (Get-NetTCPConnection -LocalPort 5002).OwningProcess -Force
 ```
 
-### "Prisma Client not generated"
-**Problem**: Prisma Client needs to be regenerated  
-**Solution**:
+### Migrations not found
 ```powershell
-cd apps/api
-pnpm db:generate
+# Install the EF Core CLI tool if not already installed:
+dotnet tool install --global dotnet-ef
+
+# Apply migrations manually:
+cd apps/finance-api
+dotnet ef database update
 ```
 
-## Database Management
+---
 
-### View/Edit Data
-```powershell
-cd apps/api
-pnpm db:studio
-# Opens Prisma Studio at http://localhost:5555
-```
+## Key Files
 
-### Create New Migration
-```powershell
-cd apps/api
-# 1. Edit prisma/schema.prisma
-# 2. Run migration
-pnpm db:migrate
-```
-
-### Reset Database (⚠️ Destroys all data)
-```powershell
-cd apps/api
-pnpm prisma migrate reset
-```
-
-### Database Shell Access
-```powershell
-docker exec -it life-manager-db psql -U postgres -d finance_manager_dev
-```
-
-## API Endpoints
-
-### Authentication
-- `POST /api/v1/auth/register` - Create new account
-- `POST /api/v1/auth/login` - Login
-- `POST /api/v1/auth/logout` - Logout
-- `POST /api/v1/auth/refresh` - Refresh access token
-- `GET /api/v1/auth/me` - Get current user
-
-### Tasks
-- `GET /api/v1/tasks` - List user's tasks (with pagination)
-- `GET /api/v1/tasks/:id` - Get single task
-- `POST /api/v1/tasks` - Create new task
-- `PUT /api/v1/tasks/:id` - Update task
-- `PATCH /api/v1/tasks/:id/complete` - Toggle completion
-- `DELETE /api/v1/tasks/:id` - Delete task
+| File | Purpose |
+|------|---------|
+| `apps/life-api/README.md` | Life API developer docs |
+| `apps/finance-api/README.md` | Finance API developer docs |
+| `docs/guides/FINANCE_MANAGER.md` | Finance Manager user guide |
+| `docs/CURRENT_STATE.md` | What's in progress |
+| `CLAUDE.md` | AI agent context |
 - `GET /api/v1/tasks/overdue` - Get overdue tasks
 
 ## Project Structure

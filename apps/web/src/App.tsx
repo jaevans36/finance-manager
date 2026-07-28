@@ -40,6 +40,10 @@ const AdminLogs = lazy(() => import('./pages/admin/AdminLogs'));
 const HelpPage = lazy(() => import('./pages/help/HelpPage'));
 const NotFoundPage = lazy(() => import('./pages/errors/NotFoundPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const FinancePage = lazy(() => import('./pages/finance/FinancePage'));
+const DevPasswordResetPage = import.meta.env.VITE_ENABLE_DEV_RESET === 'true'
+  ? lazy(() => import('./pages/dev/DevPasswordResetPage'))
+  : null;
 
 function ShortcutCheatSheetController() {
   const { cheatSheetOpen, setCheatSheetOpen } = useShortcutContext();
@@ -110,6 +114,9 @@ function App() {
                 <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
                 <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
                 <Route path="/resend-verification" element={<ResendVerificationPage />} />
+                {DevPasswordResetPage && (
+                  <Route path="/dev/reset-password" element={<DevPasswordResetPage />} />
+                )}
                 <Route
                   path="/dashboard"
                   element={
@@ -235,6 +242,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <NotificationsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/finance"
+                  element={
+                    <ProtectedRoute>
+                      <FinancePage />
                     </ProtectedRoute>
                   }
                 />

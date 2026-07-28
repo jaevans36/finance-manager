@@ -218,12 +218,61 @@ appsettings.json                  ← Base (shared) settings
 |---|---|---|---|
 | **Database** | `finance_manager_dev` | `finance_manager_uat` | `finance_manager_prod` |
 | **JWT Secret** | Placeholder (dev convenience) | Strong generated secret | Vault-managed secret |
+| **JWT Expiry** | Never (`-1`) | 60 minutes | 60 minutes |
 | **Rate Limiting** | Disabled | Enabled (60/min) | Enabled (60/min) + WAF |
 | **Swagger** | Enabled | Disabled | Disabled |
 | **CORS Origins** | `http://localhost:5173` | `http://finance.local` | `https://finance.yourdomain.com` |
 | **Log Level** | Information + EF queries | Information | Warning |
 | **HTTPS Required** | No | No (LAN) | Yes |
 | **ASPNETCORE_ENVIRONMENT** | `Development` | `Uat` | `Production` |
+
+### Session Timeout / JWT Expiry
+
+JWT tokens control how long a user stays logged in. When a token expires the next API call returns `401`, which the frontend intercepts and redirects to the login page.
+
+**Configuration key**: `Jwt:ExpiresInMinutes` in `appsettings.json` / per-environment overrides.
+
+| Value | Behaviour |
+|---|---|
+| Any positive integer | Token expires after that many minutes |
+| `-1` | Token never expires (10-year TTL) — **dev only** |
+
+**Current values by environment:**
+
+```
+appsettings.json              → ExpiresInMinutes: 60   (production/UAT default)
+appsettings.Development.json  → ExpiresInMinutes: -1   (never expires in dev)
+```
+
+**To test auto-logout behaviour in development** without changing any source files, temporarily override the value in `appsettings.Development.json`:
+
+```json
+"Jwt": {
+  "ExpiresInMinutes": 2
+}
+```
+
+`dotnet watch` will hot-reload the config automatically — no restart needed. Newly issued tokens (i.e. after the next login) will use the updated expiry. Restore to `-1` when done.
+
+**For UAT / production**, set the expiry in the environment-specific appsettings or via an environment variable:
+
+```json
+// appsettings.Uat.json
+"Jwt": {
+  "Secret": "<strong-secret>",
+  "ExpiresInMinutes": 60
+}
+```
+
+Or as an environment variable (highest priority, overrides all files):
+
+```powershell
+$env:Jwt__ExpiresInMinutes = "60"
+```
+
+> **Important**: Changing `ExpiresInMinutes` only affects tokens issued *after* the config change. Existing tokens keep their original expiry. Users must log out and back in to pick up a new expiry.
+
+---
 
 ### UAT Configuration
 
@@ -235,7 +284,8 @@ Create `apps/finance-api/appsettings.Uat.json` (add to `.gitignore`):
     "DefaultConnection": "Host=localhost;Port=5432;Database=finance_manager_uat;Username=financemanager_uat;Password=<strong-password>"
   },
   "Jwt": {
-    "Secret": "<generated-64-byte-base64-secret>"
+    "Secret": "<generated-64-byte-base64-secret>",
+    "ExpiresInMinutes": 60
   },
   "RateLimit": {
     "Enabled": true,
@@ -828,3 +878,4 @@ volumes:
 | Date | Change | Author |
 |---|---|---|
 | 2026-03-01 | Initial version — consolidated from LAN guide and production spec | AI / Developer |
+| 2026-06-18 | Added session timeout / JWT expiry section; `Jwt:ExpiresInMinutes` is now configurable (`-1` = never in dev, `60` in production) | Jay |

@@ -1,3 +1,7 @@
+# AI tooling — local config, not project code
+.superpowers/
+.claude/settings.local.json
+
 # Dependencies
 node_modules/
 .pnp
@@ -45,6 +49,7 @@ lerna-debug.log*
 *.ntvs*
 *.njsproj
 *.sln
+!Finance Manager.sln
 *.sw?
 
 # Database

@@ -18,11 +18,18 @@ public class PasswordResetController : ControllerBase
     [HttpPost("request")]
     public async System.Threading.Tasks.Task<IActionResult> RequestPasswordReset([FromBody] RequestPasswordResetRequest request)
     {
-        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-        var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
-        
-        await _passwordResetService.RequestPasswordResetAsync(request.Email, ipAddress, userAgent);
-        return Ok(new { message = "If an account exists with this email, a password reset link has been sent." });
+        try
+        {
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+            var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
+
+            await _passwordResetService.RequestPasswordResetAsync(request.Email, ipAddress, userAgent);
+            return Ok(new { message = "If an account exists with this email, a password reset link has been sent." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = new { message = ex.Message } });
+        }
     }
 
     [HttpGet("verify/{token}")]

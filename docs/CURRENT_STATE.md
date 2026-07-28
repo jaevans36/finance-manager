@@ -1,6 +1,6 @@
 # Current State
 
-> **Last Updated**: 2026-03-20 | **Version**: 1.0.0 | **Branch**: `develop`
+> **Last Updated**: 2026-06-21 | **Version**: 1.0.0 | **Branch**: `develop`
 
 ---
 
@@ -32,6 +32,21 @@ The Life Manager productivity application is MVP-complete and ready for v1.0.0 r
 - **Health check** — `GET /api/health` with DB connectivity
 - **Data export** — `GET /api/v1/auth/export-data` downloads all user data as JSON
 - **Production setup** — `.env.example`, backup/restore scripts, `PRODUCTION-SETUP.md`
+- **Dev password reset bypass** — `/dev/reset-password` page and `POST /api/v1/dev/reset-password` endpoint, double-gated by environment + config flag; see `docs/guides/DEV-PASSWORD-RESET.md`
+
+### Finance Manager (Complete — Phases 41–47)
+
+- **Accounts** — full CRUD; 12 account types (current, savings, credit, ISA, SIPP, mortgage, loan, etc.); interest rates, credit limits, promotional deals, mortgage start/term/interest-only, minimum/current monthly payments, loan end date
+- **Transactions** — view, add, edit, delete; category assignment; free-text search; pagination
+- **CSV import** — Barclays, HSBC, Lloyds, Monzo, Starling, NatWest, Generic; duplicate detection; automatic bill-matching on import
+- **Budgets** — monthly spending limits per category; progress bars with green/amber/red thresholds
+- **Spending Pots** — envelope-style monthly budgets with colour coding
+- **Bills** — recurring bill tracking (weekly/monthly/quarterly/annual); due-date reminders; bill-to-account linking; automatic paid-marking via transaction matching; recurring pattern detection from imports
+- **Savings Goals** — target amount, monthly contribution, on-track/behind projection
+- **Budget Trends** — spending-over-time charts
+- **Affordability Engine** — 90-day income detection with confidence level (High/Medium/Low), manual income override, committed costs + discretionary breakdown, safe monthly surplus, suggested debt payment
+- **Debt Burndown** — severity-scored debt overview (0–100, Critical/High/Medium/Low); Avalanche/Snowball/Custom paydown projection; freedom date; total interest; payoff order; stacked area waterfall chart
+- **User guide** — `docs/guides/FINANCE_MANAGER.md`
 
 ### Technical Foundation (Complete)
 
@@ -47,24 +62,42 @@ The Life Manager productivity application is MVP-complete and ready for v1.0.0 r
 
 ## What Is Currently Being Built
 
-**v1.0.0 Release** (`develop` → `main`)
+**Finance Manager — Phase 48 onwards** (AI Insights & Agent Features, T1249+)
 
-All P1 and P2 features complete. Pending:
+Phases 41–47 are complete. The Finance Manager is live as a standalone microservice at `apps/finance-api/` and surfaced in the app under **Finance Manager**. See "Phase History" below for what has been built.
 
-- Merge `develop` → `main` via PR
-- Create `v1.0.0` annotated tag
+Next: Phase 48 — AI Insights (Subscription Auditor, Spending Velocity, Anomaly Detection); or multi-currency support (T1352–T1356, ECB exchange rate feed, deferred from Phase 47).
+
+See `specs/applications/finance/spec.md` and `specs/applications/finance/tasks.md` for full specification and task breakdown.
 
 ---
 
 ## What Comes Next
 
-### Post-launch (v1.1+)
+### Stocks & Shares Application (v1.1)
 
+- Phase 60: Market Discovery & Watchlist (T1519-T1548)
+- Phase 61: Portfolio Tracking (T1549-T1565)
+- Phase 62: Stock Detail & Analysis (T1566-T1583)
+- Phase 63: Dashboard Widget (T1584-T1595)
+
+### Platform (Parallel / Post-Stocks)
+
+- Phase 64–66: Life Manager MCP Server (`apps/life-mcp/`) — wraps the API for Claude CLI / Obsidian second-brain workflows (T1596–T1667)
 - Work Stream 3: Rename remaining `finance-manager` references → `life-manager` in package names and repo
 - Work Stream 4: LAN deployment hardening (Docker Compose production profile, nginx reverse proxy)
 - Phase 22–24: Auth service extraction (currently embedded in monolith)
 - Phase 25–27: Microservices migration
-- Future apps: Finance, Fitness, Weather (specified but not built)
+
+### Future Applications (specified but not yet built)
+
+| App | Spec | Priority | Notes |
+|---|---|---|---|
+| Finance Manager | `specs/applications/finance/spec.md` | HIGH | CSV import, spending pots, bills, AI insights, MCP tools. UK-specific (ISA/SIPP, tax year). Phases 41–49. |
+| Fitness Application | `specs/applications/fitness/spec.md` | P2 | Workout tracking, Fasting Tracker module, Nutrition & Macro Tracker with barcode scanning, habit tracking |
+| Recipe Collection | `specs/applications/recipes/spec.md` | P2 | Standalone module. Personal cookbook + data layer for Nutrition, Pantry, Finance. MCP `recipes_*` tools. |
+| Pantry & Ingredient Tracker | `specs/applications/pantry/spec.md` | P3 | Shared infrastructure. Inventory, expiry tracking, recipe matching, cost-per-meal, smart shopping lists. |
+| Weather | `specs/applications/weather/` | P4 | Basic weather app — spec pending |
 
 ---
 
@@ -72,7 +105,7 @@ All P1 and P2 features complete. Pending:
 
 | Item | Detail | Plan |
 | ---- | ------ | ---- |
-| Finance models | `Features/Finance/` contains placeholder models only | Phase 41+ |
+| Multi-currency | T1352–T1356 deferred — no ECB exchange rate service or currency toggle yet | Phase 47 remainder |
 | Package naming | `@life-manager/*` packages still reference old naming in some places | WS3 |
 | Auth service extraction | Auth is currently embedded in monolith | Phase 22–24 |
 | Microservices | Single .NET monolith | Phase 25–27 |
@@ -101,9 +134,9 @@ All P1 and P2 features complete. Pending:
 | 13 | Events foundation | 0.13.0 |
 | v2 security | Multi-device sessions, account lockout, security headers, rate limiting | — |
 | 48–51 | Frontend modernisation (Tailwind + shadcn/ui, TanStack Query, React Hook Form + Zod) | — |
-| 55 | Task status workflow + WIP limits | — |
-| 56 | Eisenhower Matrix | — |
-| 57 | Energy tagging + smart suggestions | — |
+| 55 | Task status workflow + WIP limits (kanban board) | — |
+| 56 | Eisenhower Matrix (urgency/importance quadrants) | — |
+| 57 | Energy tagging + smart suggestions ("What Can I Do Now?") | — |
 | 58 | Task assignment + event sharing + notifications frontend | 0.15.0 |
 | WS1 | AI docs consolidation (CLAUDE.md) | — |
 | WS2 | MVP P1 gaps (health, export, 404, onboarding, env files, backup scripts) | — |
@@ -111,3 +144,10 @@ All P1 and P2 features complete. Pending:
 | P2b | Browser notifications via Service Worker | — |
 | P2c | Task labels (coloured, user-defined) | — |
 | v1.0.0 | MVP launch | 1.0.0 |
+| 41 | Finance API microservice — accounts, transactions, CSV import, categories, net worth | — |
+| 42 | Budgets + Spending Pots | — |
+| 43 | Bills + recurring detection | — |
+| 43 additions | Bill-to-account linking, transaction auto-matching on import | — |
+| 43b | Financial Affordability Engine (income detection, safe surplus) | — |
+| 44–46 | Savings Goals, Budget Trends | — |
+| 47 (expanded) | Debt Burndown Dashboard — severity scoring, Avalanche/Snowball/Custom projection, waterfall chart | — |

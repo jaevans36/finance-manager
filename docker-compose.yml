@@ -7,8 +7,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: life_manager_dev
+      # TODO: revert to scram-sha-256 (PG15 default) once the Npgsql auth failure
+      # root cause is understood. md5 is weaker but unblocks local dev for now.
+      POSTGRES_HOST_AUTH_METHOD: md5
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -16,6 +19,22 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  finance-api:
+    build:
+      context: ./apps/finance-api
+      dockerfile: Dockerfile
+    container_name: finance-api
+    restart: unless-stopped
+    ports:
+      - "5002:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=life_manager_dev;Username=postgres;Password=password"
+      Jwt__Secret: "${JWT_SECRET:-your-secret-key-change-in-production}"
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres_data:

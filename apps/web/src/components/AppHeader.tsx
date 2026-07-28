@@ -30,6 +30,7 @@ import {
   Shield,
   Sparkles,
   HelpCircle,
+  PiggyBank,
 } from 'lucide-react';
 import CalculatorModal from './CalculatorModal';
 import { NotificationBell } from './layout/NotificationBell';
@@ -69,6 +70,7 @@ export const AppHeader = () => {
     { path: '/events', icon: CalendarClock, label: 'Events' },
     { path: '/calendar', icon: Calendar, label: 'Calendar' },
     { path: '/weekly-progress', icon: BarChart3, label: 'Progress' },
+    { path: '/finance', icon: PiggyBank, label: 'Finance' },
   ];
 
   if (!user) return null;
