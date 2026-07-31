@@ -14,7 +14,6 @@
     "figma@claude-plugins-official": true,
     "csharp-lsp@claude-plugins-official": true,
     "gitlab@claude-plugins-official": true,
-    "qodo-skills@claude-plugins-official": true,
     "deep-project@piercelamb-plugins": true,
     "deep-plan@piercelamb-plugins": true,
     "deep-implement@piercelamb-plugins": true,
@@ -26,6 +25,7 @@
     "terraform-provider-development@hashicorp": true,
     "packer-builders@hashicorp": true,
     "packer-hcp@hashicorp": true,
-    "obsidian@obsidian-skills": true
+    "obsidian@obsidian-skills": true,
+    "qodo@claude-plugins-official": true
   }
 }
