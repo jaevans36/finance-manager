@@ -223,7 +223,7 @@ export function DebtOverviewCard({
                   debt.currentMonthlyPayment != null && debt.interestRate != null && (
                     <div>
                       <span className="text-amber-600 dark:text-amber-400">
-                        Payment doesn't cover interest — balance is growing
+                        Payment doesn&apos;t cover interest — balance is growing
                       </span>
                     </div>
                   )

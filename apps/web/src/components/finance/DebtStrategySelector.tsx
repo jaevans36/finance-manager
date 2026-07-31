@@ -108,8 +108,8 @@ export function DebtStrategySelector({
         <div>
           <p className={labelClass}>Debts to target</p>
           <p className="text-xs text-muted-foreground mb-2">
-            Excluded debts still receive their minimum payment but won't receive any extra payments.
-            Use this to skip debts you don't want to overpay (e.g. a mortgage on a fixed rate).
+            Excluded debts still receive their minimum payment but won&apos;t receive any extra payments.
+            Use this to skip debts you don&apos;t want to overpay (e.g. a mortgage on a fixed rate).
           </p>
           <div className="space-y-1">
             {debts.map(debt => {

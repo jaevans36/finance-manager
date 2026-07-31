@@ -344,7 +344,7 @@ function FinanceSection() {
         'Add a new account with the + button — set a name, type, institution, currency, and opening balance.',
         <>Credit cards: record your credit limit, APR, and any promotional (0%) deal including the expiry date and the rate the card reverts to afterwards.</>,
         <>Mortgages: record the start date, term in years, and whether it is interest-only. The remaining term is calculated automatically.</>,
-        <>Credit cards and loans: set a <strong>minimum monthly payment</strong> and a <strong>current monthly payment</strong> — these are used by the Debt tab's paydown calculator.</>,
+        <>Credit cards and loans: set a <strong>minimum monthly payment</strong> and a <strong>current monthly payment</strong> — these are used by the Debt tab&apos;s paydown calculator.</>,
         <>Accounts with linked bills display a <strong>Monthly commitments: £X/mo</strong> figure beneath their balance.</>,
       ]} />
 

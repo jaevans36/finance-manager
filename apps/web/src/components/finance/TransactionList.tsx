@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight, CheckCircle2, Tag } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Tag } from 'lucide-react';
 import type { Transaction, PagedResult } from '../../types/finance';
 import { cn } from '../../lib/utils';
 
