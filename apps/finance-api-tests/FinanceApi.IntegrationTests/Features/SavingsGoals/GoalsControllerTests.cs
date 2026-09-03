@@ -68,6 +68,30 @@ public class GoalsControllerTests
     }
 
     [Fact]
+    public async Task UpdateGoal_WhenValidRequest_Returns200WithUpdatedData()
+    {
+        var created = await _client.PostAsJsonAsync("/api/v1/finance/goals",
+            new CreateSavingsGoalRequest("Washing machine", 400m, null, 0m));
+        var goal = await created.Content.ReadFromJsonAsync<SavingsGoalWithProjection>();
+
+        var response = await _client.PutAsJsonAsync($"/api/v1/finance/goals/{goal!.Goal.Id}",
+            new UpdateSavingsGoalRequest(MonthlyContribution: 133.33m));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var updated = await response.Content.ReadFromJsonAsync<SavingsGoalWithProjection>();
+        updated!.Goal.MonthlyContribution.Should().Be(133.33m);
+    }
+
+    [Fact]
+    public async Task UpdateGoal_WhenGoalDoesNotExist_Returns404()
+    {
+        var response = await _client.PutAsJsonAsync($"/api/v1/finance/goals/{Guid.NewGuid()}",
+            new UpdateSavingsGoalRequest(Name: "Ghost"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
     public async Task Contribute_WhenGoalExists_Returns200WithUpdatedAmount()
     {
         var created = await _client.PostAsJsonAsync("/api/v1/finance/goals",

@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using FinanceApi.Features.Budgets.Models;
 using FinanceApi.Features.Budgets.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -39,7 +40,14 @@ public class PotsController : ControllerBase
     public async Task<IActionResult> CreatePot([FromBody] CreateSpendingPotRequest request, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(request.Name)) return BadRequest("Pot name is required");
-        if (request.BudgetAmount <= 0) return BadRequest("Budget amount must be greater than zero");
+        if (request.Type == PotType.SinkingFund)
+        {
+            if (request.AnnualAmount is null or <= 0) return BadRequest("Annual amount must be greater than zero for a sinking fund");
+        }
+        else if (request.BudgetAmount <= 0)
+        {
+            return BadRequest("Budget amount must be greater than zero");
+        }
         var pot = await _pots.CreatePotAsync(GetUserId(), request, ct);
         return Created($"/api/v1/finance/pots/{pot.Id}", pot);
     }
@@ -74,5 +82,15 @@ public class PotsController : ControllerBase
         if (transactionId == Guid.Empty) return BadRequest("transactionId is required");
         var result = await _pots.AssignTransactionAsync(GetUserId(), id, transactionId, ct);
         return result ? Ok() : NotFound();
+    }
+
+    /// <summary>Set aside this sinking fund's monthly allocation towards its annual target.</summary>
+    [HttpPost("{id:guid}/contribute")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Contribute(Guid id, CancellationToken ct)
+    {
+        var pot = await _pots.ContributeToSinkingFundAsync(GetUserId(), id, ct);
+        return pot is null ? NotFound() : Ok(pot);
     }
 }

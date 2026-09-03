@@ -16,7 +16,10 @@ public class Bill
     public decimal Amount { get; set; }
     public BillFrequency Frequency { get; set; }
 
-    /// <summary>Day of the month the bill is due (1–31).</summary>
+    /// <summary>
+    /// Day the bill is due. For Monthly/Quarterly/Annual this is a day of the month (1–31).
+    /// For Weekly this is an ISO day of week (1 = Monday .. 7 = Sunday).
+    /// </summary>
     public int DueDay { get; set; }
 
     public int ReminderDaysBefore { get; set; }
@@ -32,6 +35,18 @@ public class Bill
 
     public Category? Category { get; set; }
     public Account? Account { get; set; }
+}
+
+public static class BillExtensions
+{
+    /// <summary>Converts this bill's amount to a monthly-equivalent figure, regardless of frequency.</summary>
+    public static decimal MonthlyEquivalent(this Bill bill) => bill.Frequency switch
+    {
+        BillFrequency.Weekly => Math.Round(bill.Amount * 52m / 12m, 2),
+        BillFrequency.Quarterly => Math.Round(bill.Amount / 3m, 2),
+        BillFrequency.Annual => Math.Round(bill.Amount / 12m, 2),
+        _ => bill.Amount, // Monthly
+    };
 }
 
 // ── DTOs ──────────────────────────────────────────────────────────────────────
@@ -70,11 +85,14 @@ public record BillResponse(
     bool IsPaid,
     DateTime? LastPaidDate,
     Guid? CategoryId,
+    string? CategoryName,
     bool IsActive,
     DateTime CreatedAt,
     DateTime UpdatedAt,
     Guid? AccountId,
-    string? AccountName);
+    string? AccountName,
+    decimal? LinkedAccountPayment,
+    bool HasPaymentMismatch);
 
 public record UpcomingBillResponse(
     BillResponse Bill,

@@ -276,6 +276,163 @@ public class SpendingPotServiceTests : IDisposable
         result.Should().BeFalse();
     }
 
+    // ── Sinking funds ────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task CreatePotAsync_WithSinkingFundType_DerivesMonthlyAllocationFromAnnualAmount()
+    {
+        var request = new CreateSpendingPotRequest(
+            "Car insurance", PotType.SinkingFund, 0m, false, null, null,
+            Array.Empty<Guid>(), AnnualAmount: 600m, NextPaymentDate: new DateOnly(2027, 3, 1));
+
+        var result = await _sut.CreatePotAsync(_userId, request);
+
+        result.AnnualAmount.Should().Be(600m);
+        result.MonthlyAllocation.Should().Be(50m);
+        result.BudgetAmount.Should().Be(50m);
+    }
+
+    [Fact]
+    public async Task CreatePotAsync_WithSinkingFundType_ForcesEmptyCategoryIds()
+    {
+        var request = new CreateSpendingPotRequest(
+            "Car insurance", PotType.SinkingFund, 0m, false, null, null,
+            new[] { _groceriesCategoryId }, AnnualAmount: 600m);
+
+        var result = await _sut.CreatePotAsync(_userId, request);
+
+        result.CategoryIds.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task UpdatePotAsync_WhenSinkingFund_RecomputesMonthlyAllocationWhenAnnualAmountChanges()
+    {
+        var pot = new SpendingPot
+        {
+            UserId = _userId, Name = "Car insurance", Type = PotType.SinkingFund,
+            AnnualAmount = 600m, BudgetAmount = 50m,
+        };
+        _db.SpendingPots.Add(pot);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.UpdatePotAsync(_userId, pot.Id,
+            new UpdateSpendingPotRequest(null, null, null, null, null, null, AnnualAmount: 1200m));
+
+        result!.AnnualAmount.Should().Be(1200m);
+        result.MonthlyAllocation.Should().Be(100m);
+    }
+
+    [Fact]
+    public async Task ContributeToSinkingFundAsync_AddsMonthlyAllocationToAccumulated()
+    {
+        var pot = new SpendingPot
+        {
+            UserId = _userId, Name = "Car insurance", Type = PotType.SinkingFund,
+            AnnualAmount = 600m, BudgetAmount = 50m, AccumulatedAmount = 100m,
+        };
+        _db.SpendingPots.Add(pot);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.ContributeToSinkingFundAsync(_userId, pot.Id);
+
+        result!.AccumulatedAmount.Should().Be(150m);
+    }
+
+    [Fact]
+    public async Task ContributeToSinkingFundAsync_ClampsAtAnnualAmount()
+    {
+        var pot = new SpendingPot
+        {
+            UserId = _userId, Name = "Car insurance", Type = PotType.SinkingFund,
+            AnnualAmount = 600m, BudgetAmount = 50m, AccumulatedAmount = 580m,
+        };
+        _db.SpendingPots.Add(pot);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.ContributeToSinkingFundAsync(_userId, pot.Id);
+
+        result!.AccumulatedAmount.Should().Be(600m);
+        result.IsReady.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ContributeToSinkingFundAsync_WhenPotIsNotSinkingFund_ReturnsNull()
+    {
+        var pot = new SpendingPot
+        {
+            UserId = _userId, Name = "Groceries", Type = PotType.Groceries,
+            BudgetAmount = 200m, CategoryIds = new List<Guid>(),
+        };
+        _db.SpendingPots.Add(pot);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.ContributeToSinkingFundAsync(_userId, pot.Id);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ContributeToSinkingFundAsync_WhenPotNotFound_ReturnsNull()
+    {
+        var result = await _sut.ContributeToSinkingFundAsync(_userId, Guid.NewGuid());
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetPotsWithProgressAsync_SinkingFund_ComputesPercentageAgainstAnnualAmount()
+    {
+        var now = DateTime.UtcNow;
+        _db.SpendingPots.Add(new SpendingPot
+        {
+            UserId = _userId, Name = "Car insurance", Type = PotType.SinkingFund,
+            AnnualAmount = 600m, BudgetAmount = 50m, AccumulatedAmount = 300m,
+        });
+        await _db.SaveChangesAsync();
+
+        var result = (await _sut.GetPotsWithProgressAsync(_userId, now.Month, now.Year)).ToList();
+
+        result[0].PercentageUsed.Should().Be(50m);
+        result[0].Remaining.Should().Be(300m);
+        result[0].IsReady.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetPotsWithProgressAsync_SinkingFund_ComputesMonthsRemaining()
+    {
+        var now = DateTime.UtcNow;
+        var today = DateOnly.FromDateTime(now);
+        _db.SpendingPots.Add(new SpendingPot
+        {
+            UserId = _userId, Name = "Car insurance", Type = PotType.SinkingFund,
+            AnnualAmount = 600m, BudgetAmount = 50m, NextPaymentDate = today.AddMonths(6),
+        });
+        await _db.SaveChangesAsync();
+
+        var result = (await _sut.GetPotsWithProgressAsync(_userId, now.Month, now.Year)).ToList();
+
+        result[0].MonthsRemaining.Should().Be(6);
+    }
+
+    [Fact]
+    public async Task GetPotsWithProgressAsync_SinkingFund_ResetsWhenNextPaymentDatePassed()
+    {
+        var now = DateTime.UtcNow;
+        var today = DateOnly.FromDateTime(now);
+        _db.SpendingPots.Add(new SpendingPot
+        {
+            UserId = _userId, Name = "Car insurance", Type = PotType.SinkingFund,
+            AnnualAmount = 600m, BudgetAmount = 50m, AccumulatedAmount = 600m,
+            NextPaymentDate = today.AddDays(-1),
+        });
+        await _db.SaveChangesAsync();
+
+        var result = (await _sut.GetPotsWithProgressAsync(_userId, now.Month, now.Year)).ToList();
+
+        result[0].AccumulatedAmount.Should().Be(0m);
+        result[0].NextPaymentDate.Should().Be(today.AddDays(-1).AddYears(1));
+        result[0].IsReady.Should().BeFalse();
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private Transaction MakeTx(decimal amount, Guid categoryId, DateOnly date) =>

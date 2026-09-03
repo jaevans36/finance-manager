@@ -68,6 +68,41 @@ public class BillsControllerTests
     }
 
     [Fact]
+    public async Task CreateBill_WeeklyWithDueDayOutOfWeekdayRange_Returns400()
+    {
+        var request = new CreateBillRequest("Cleaner", 25m, BillFrequency.Weekly, 8, 3, null);
+
+        var response = await _client.PostAsJsonAsync("/api/v1/finance/bills", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateBill_WeeklyWithValidWeekday_Returns201()
+    {
+        var request = new CreateBillRequest("Cleaner", 25m, BillFrequency.Weekly, 5, 3, null);
+
+        var response = await _client.PostAsJsonAsync("/api/v1/finance/bills", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var bill = await response.Content.ReadFromJsonAsync<BillResponse>();
+        bill!.DueDay.Should().Be(5);
+    }
+
+    [Fact]
+    public async Task UpdateBill_WeeklyWithDueDayOutOfWeekdayRange_Returns400()
+    {
+        var created = await _client.PostAsJsonAsync("/api/v1/finance/bills",
+            new CreateBillRequest("Cleaner", 25m, BillFrequency.Monthly, 1, 3, null));
+        var bill = await created.Content.ReadFromJsonAsync<BillResponse>();
+
+        var response = await _client.PutAsJsonAsync($"/api/v1/finance/bills/{bill!.Id}",
+            new UpdateBillRequest(Frequency: BillFrequency.Weekly, DueDay: 15));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task GetUpcomingBills_WhenNoBillsExist_ReturnsEmptyList()
     {
         var response = await _client.GetAsync("/api/v1/finance/bills/upcoming");
@@ -118,6 +153,21 @@ public class BillsControllerTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var bills = await response.Content.ReadFromJsonAsync<List<BillResponse>>();
         bills.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task CreateBill_WithCategoryId_ReturnsCategoryOnResponse()
+    {
+        // "Subscriptions" system category, seeded via AddBillCategories/original seed
+        var subscriptionsCategoryId = Guid.Parse("10000000-0000-0000-0000-000000000705");
+        var request = new CreateBillRequest("Spotify", 11.99m, BillFrequency.Monthly, 1, 3, subscriptionsCategoryId);
+
+        var response = await _client.PostAsJsonAsync("/api/v1/finance/bills", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var bill = await response.Content.ReadFromJsonAsync<BillResponse>();
+        bill!.CategoryId.Should().Be(subscriptionsCategoryId);
+        bill.CategoryName.Should().Be("Subscriptions");
     }
 
     [Fact]

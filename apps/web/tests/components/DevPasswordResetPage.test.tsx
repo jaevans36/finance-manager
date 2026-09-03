@@ -23,6 +23,30 @@ describe('DevPasswordResetPage', () => {
     expect(screen.getByPlaceholderText('Confirm new password')).toBeInTheDocument();
   });
 
+  it('shows the password requirements checklist', () => {
+    render(<DevPasswordResetPage />);
+    expect(screen.getByText('At least 8 characters')).toBeInTheDocument();
+    expect(screen.getByText('One uppercase letter')).toBeInTheDocument();
+    expect(screen.getByText('One digit')).toBeInTheDocument();
+  });
+
+  it('marks requirements met in green as the password is typed', () => {
+    render(<DevPasswordResetPage />);
+    const requirementRow = (label: string) => screen.getByText(label).closest('div')!;
+
+    expect(requirementRow('At least 8 characters')).toHaveClass('text-destructive');
+    expect(requirementRow('One uppercase letter')).toHaveClass('text-destructive');
+    expect(requirementRow('One digit')).toHaveClass('text-destructive');
+
+    fireEvent.change(screen.getByPlaceholderText('New password'), {
+      target: { value: 'Password1' },
+    });
+
+    expect(requirementRow('At least 8 characters')).toHaveClass('text-success');
+    expect(requirementRow('One uppercase letter')).toHaveClass('text-success');
+    expect(requirementRow('One digit')).toHaveClass('text-success');
+  });
+
   it('shows error when passwords do not match', async () => {
     render(<DevPasswordResetPage />);
     fireEvent.change(screen.getByPlaceholderText('Email address'), {

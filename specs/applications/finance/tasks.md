@@ -127,10 +127,11 @@
 
 ### Sinking Funds (new — 2026-06-08, deferred to Phase 42 extension)
 
-- [ ] T1303 [P] [US2] Add `SinkingFund` to `PotType` enum; add nullable `AnnualAmount` (decimal?) and `NextPaymentDate` (DateOnly?) to `SpendingPot` entity; create migration — 2h
-- [ ] T1304 [US2] Update `SpendingPotService` — when `Type == SinkingFund`, derive `MonthlyAllocation = AnnualAmount / 12`; expose `MonthsRemaining` and `IsReady` in the progress DTO — 3h
-- [ ] T1305 [US2] Create `SinkingFundCard` frontend component — annual amount, monthly allocation, progress bar (accumulated/target), countdown, "Ready" badge — 3h
-- [ ] T1306 [US2] Write unit tests for sinking fund logic in `SpendingPotService` (4+ tests) and Jest tests for `SinkingFundCard` (3+ tests) — 2h
+- [x] T1303 [P] [US2] Add `SinkingFund` to `PotType` enum; add nullable `AnnualAmount` (decimal?) and `NextPaymentDate` (DateOnly?) to `SpendingPot` entity; create migration — 2h
+- [x] T1304 [US2] Update `SpendingPotService` — when `Type == SinkingFund`, derive `MonthlyAllocation = AnnualAmount / 12`; expose `MonthsRemaining` and `IsReady` in the progress DTO — 3h
+- [x] T1305 [US2] Create `SinkingFundCard` frontend component — annual amount, monthly allocation, progress bar (accumulated/target), countdown, "Ready" badge — 3h
+- [x] T1306 [US2] Write unit tests for sinking fund logic in `SpendingPotService` (4+ tests) and Jest tests for `SinkingFundCard` (3+ tests) — 2h
+  - Completed 2026-07-24 alongside Phase 51 below. Scope grew beyond the original estimate: `SpendingPots` had no create/edit form at all, so a net-new `PotForm.tsx` was built too (not separately tracked). `AccumulatedAmount` (decimal, contribution tracking) was added as a persisted column — the original task description didn't list it as a migration field, only `AnnualAmount`/`NextPaymentDate`, but it's required for "Set aside this month" to actually work.
 
 ### Payday-Aware Budgeting Period (new — 2026-06-08, deferred to Phase 45)
 
@@ -372,23 +373,23 @@
 
 ### Backend
 
-- [ ] T1261 [US7] Implement `SpendingVelocityService` — daily average spend for current month, projected month-end total, projected overspend amount and category breakdown — 4h
-- [ ] T1262 [US7] Implement `AnomalyDetectionService` — flag: category spend spike (>2σ from 3-month average), new merchant above configurable threshold, potential duplicate charges (same amount/merchant within 2 days) — 5h
-- [ ] T1263 [US7] Implement `SubscriptionAuditorService` — scan 90 days of transactions for recurring digital charges; cross-reference against known subscription merchants list; flag as "possibly unused" if no other interactions with that merchant; never auto-cancel — 5h
-- [ ] T1264 [US7] Implement `NegotiationEngineService` — given a merchant/provider, query transaction history (tenure, total spent, payment consistency), generate personalised negotiation script referencing tenure and loyalty — 4h
-- [ ] T1265 [US7] Implement `InsightsController` — `GET /finance/insights`, `GET /finance/insights/velocity`, `GET /finance/insights/anomalies`, `GET /finance/insights/subscriptions`, `GET /finance/insights/negotiation-script` — 3h
-- [ ] T1266 [US7] Write unit tests for all insights services (16+ tests) — 3h
-- [ ] T1267 [US7] Write integration tests for insights endpoints (8+ tests) — 2h
+- [x] T1261 [US7] Implement `SpendingVelocityService` — daily average spend for current month, projected month-end total, projected overspend amount and category breakdown — 4h
+- [x] T1262 [US7] Implement `AnomalyDetectionService` — flag: category spend spike (>2σ from 3-month average), new merchant above configurable threshold, potential duplicate charges (same amount/merchant within 2 days) — 5h
+- [x] T1263 [US7] Implement `SubscriptionAuditorService` — scan 90 days of transactions for recurring digital charges; cross-reference against known subscription merchants list; flag as "possibly unused" if no other interactions with that merchant; never auto-cancel — 5h
+- [x] T1264 [US7] Implement `NegotiationEngineService` — given a merchant/provider, query transaction history (tenure, total spent, payment consistency), generate personalised negotiation script referencing tenure and loyalty — 4h
+- [x] T1265 [US7] Implement `InsightsController` — `GET /finance/insights`, `GET /finance/insights/velocity`, `GET /finance/insights/anomalies`, `GET /finance/insights/subscriptions`, `GET /finance/insights/negotiation-script` — 3h
+- [x] T1266 [US7] Write unit tests for all insights services (16+ tests) — 3h
+- [x] T1267 [US7] Write integration tests for insights endpoints (8+ tests) — 2h
 
 ### Frontend
 
-- [ ] T1268 [US7] Create `InsightsDashboard` component — insight cards grid (type, summary, severity chip, action button) — 5h
-- [ ] T1269 [US7] Create `SpendingVelocity` widget — "£X spent in Y days — projected to overspend by £Z at this rate"; progress bar showing burn pace vs budget — 3h
-- [ ] T1270 [US7] Create `SubscriptionAuditor` component — subscription list (merchant, monthly cost, annual total, possibly-unused badge); bulk review flow — 4h
-- [ ] T1271 [US7] Create `NegotiationHelper` component — provider selector, "Generate Script" button, read-only script output with copy-to-clipboard; disclaimer "This is a suggestion — always review before sending" — 3h
-- [ ] T1272 [US7] Create `AnomalyAlert` component — flagged transaction card with explanation, "Looks fine" / "Flag for review" actions — 3h
-- [ ] T1273 [US7] Write Jest tests for insights components (8+ tests) — 2h
-- [ ] T1274 [US7] Write E2E test for insights flow with seeded 90-day transaction data — 3h
+- [x] T1268 [US7] Create `InsightsDashboard` component — insight cards grid (type, summary, severity chip, action button) — 5h
+- [x] T1269 [US7] Create `SpendingVelocity` widget — "£X spent in Y days — projected to overspend by £Z at this rate"; progress bar showing burn pace vs budget — 3h
+- [x] T1270 [US7] Create `SubscriptionAuditor` component — subscription list (merchant, monthly cost, annual total, possibly-unused badge); bulk review flow — 4h
+- [x] T1271 [US7] Create `NegotiationHelper` component — provider selector, "Generate Script" button, read-only script output with copy-to-clipboard; disclaimer "This is a suggestion — always review before sending" — 3h
+- [x] T1272 [US7] Create `AnomalyAlert` component — flagged transaction card with explanation, "Looks fine" / "Flag for review" actions — 3h
+- [x] T1273 [US7] Write Jest tests for insights components (8+ tests) — 2h
+- [x] T1274 [US7] Write E2E test for insights flow with seeded 90-day transaction data — 3h (mocks Finance API responses via page.route(), matching finance-debt-flow.spec.ts convention; not yet run locally — requires `.\start-dev.ps1`)
 
 **Checkpoint**: Subscription Auditor, Spending Velocity, Anomaly Detection, and Negotiation Engine all functional
 
@@ -425,6 +426,73 @@
 
 ---
 
+## Phase 50: Household Account Sharing (Priority: P3)
+
+**Purpose**: Let a user share individual accounts with another Life Manager user (e.g. a spouse) at view-only permission, and opt shared accounts into the Affordability, Debt, and AI Insights engines — resolving the "Multi-user scope" open question in `spec.md`, User Story 10  
+**Estimated Effort**: 1.5 weeks (24 tasks)  
+**Dependencies**: Phases 43b, 47, 48 complete (Affordability, Debt, AI Insights engines all need a household-scoped variant). Reuses the existing notification system (Todo task assignment / event sharing) and mirrors the existing `EventShare` model (`apps/life-api/Features/Events/Models/EventShare.cs`) rather than introducing a new sharing pattern.
+
+**Scope note**: View-only for this phase. Edit permission on shared accounts, and merging Bills/Budgets (which are user-scoped, not account-scoped, so "joint budgeting" is a materially bigger feature) across two logins are explicitly deferred — see "Explicitly deferred" in `spec.md` User Story 10.
+
+### Backend
+
+- [ ] T1750 [P] [US10] Create `AccountShare` entity (`AccountId`, `SharedByUserId`, `SharedWithUserId`, `Permission` enum `{View}`, `Status` enum `{Pending, Accepted, Declined}`) mirroring `EventShare`; configure `FinanceDbContext`; migration `AddAccountShares` — 2h
+- [ ] T1751 [US10] Implement `AccountSharingService` — `ShareAccountAsync` (look up recipient by username/email via the shared Users table, reject self-share and duplicate pending shares), `GetSharedWithMeAsync`, `GetSharedByMeAsync`, `AcceptShareAsync`, `DeclineShareAsync`, `RevokeShareAsync` — 5h
+- [ ] T1752 [US10] Implement `GetVisibleAccountIdsAsync(userId)` — owned account IDs + accepted shared account IDs; shared helper consumed by every read path below instead of each service re-deriving visibility — 3h
+- [ ] T1753 [US10] Update `AccountService.GetAccountsAsync` to include shared accounts with `IsShared`, `SharedByName`, `Permission` fields on `AccountSummary`; enforce `View`-only (no update/delete) on shared accounts at the service layer — 3h
+- [ ] T1754 [US10] Update `TransactionService` read paths to allow querying transactions on a shared account the caller has `View` access to; explicit permission check on every write action (reject if not owner) — 3h
+- [ ] T1755 [US10] Add `includeHousehold` param to `AffordabilityService` — when set, income detection and committed/discretionary spend scan the visible account set instead of only owned accounts — 4h
+- [ ] T1756 [US10] Add `includeHousehold` param to `DebtSeverityService`/`DebtProjectionService` — includes shared debt accounts in overview and payoff projection when opted in — 4h
+- [ ] T1757 [US10] Add `includeHousehold` param to `SpendingVelocityService`, `AnomalyDetectionService`, `SubscriptionAuditorService` — 3h
+- [ ] T1758 [US10] Implement `AccountSharingController` — `POST /finance/accounts/{id}/share`, `GET /finance/accounts/shared-with-me`, `GET /finance/accounts/shared-by-me`, `POST /finance/accounts/share/{shareId}/accept`, `POST /finance/accounts/share/{shareId}/decline`, `DELETE /finance/accounts/share/{shareId}` — 4h
+- [ ] T1759 [US10] Wire share invitations into the existing notification system used for task assignment and event sharing (no new notification infrastructure) — 3h
+- [ ] T1760 [US10] Write unit tests for `AccountSharingService` (15+ tests — share, duplicate share, self-share rejection, accept, decline, revoke, permission enforcement) — 4h
+- [ ] T1761 [US10] Write unit tests for household-scoped `AffordabilityService`/`DebtProjectionService`/Insights changes (12+ tests) — 4h
+- [ ] T1762 [US10] Write integration tests for `AccountSharingController` (10+ tests) — 3h
+
+### Frontend
+
+- [ ] T1763 [P] [US10] Add `AccountShare`, `ShareStatus`, `SharePermission`, `CreateAccountShareRequest` TypeScript types to `finance.ts` — 1h
+- [ ] T1764 [US10] Create `account-sharing-service.ts` (`shareAccount`, `getSharedWithMe`, `getSharedByMe`, `acceptShare`, `declineShare`, `revokeShare`) — 2h
+- [ ] T1765 [US10] Create `ShareAccountModal` component — recipient username/email input, confirm — 3h
+- [ ] T1766 [US10] Create `ManageAccountSharing` component — lists accounts shared by me and shared with me, with accept/decline/revoke actions — 4h
+- [ ] T1767 [US10] Add a "Share" action to `AccountsDashboard` account rows; show a "Shared by {name}" badge on accounts shared with you, read-only (no edit/delete affordances) — 3h
+- [ ] T1768 [US10] Add a share-invitation card to the existing `NotificationDropdown` with inline accept/decline — 3h
+- [ ] T1769 [US10] Add an "Include household accounts" toggle to `AffordabilityPanel`, `DebtBurndownDashboard`, and `InsightsDashboard` — 3h
+- [ ] T1770 [US10] Write Jest tests for sharing components (10+ tests) — 3h
+- [ ] T1771 [US10] Write E2E test for the full share → accept → household-view flow (mocked API, two simulated users) — 3h
+
+### Documentation
+
+- [ ] T1772 [US10] Add a "Household Sharing" section to `docs/guides/FINANCE_MANAGER.md` — 1h
+- [ ] T1773 [US10] Update `docs/testing/TEST-INVENTORY.md` with Phase 50 test counts and `CHANGELOG.md` — 0.5h
+
+**Checkpoint**: A user can share an account with another Life Manager user; the recipient accepts and sees it read-only under "Shared with you"; enabling "Include household accounts" on Affordability/Debt/AI Insights recalculates using both users' visible accounts; revoking a share immediately removes access.
+
+---
+
+## Phase 51: Financial Planning Gaps — Planned Savings, Sinking Funds, Budget Suggestions (Priority: P2)
+
+**Purpose**: A system review (2026-07-24) found that `SavingsGoal.MonthlyContribution` was completely disconnected from `AffordabilityService` — a user saving towards a known upcoming cost (e.g. a washing machine during a renovation) got no benefit from that fact, since the app would still suggest the same money go towards debt repayment. This phase wires planned savings into affordability, completes the never-built Sinking Funds feature (see T1303–T1306 above, completed alongside this phase), and adds lightweight suggestion hints to the Savings Goal and Budget forms.  
+**Estimated Effort**: 3 days  
+**Dependencies**: Phase 43b (Affordability Engine), Phase 42 (Spending Pots), Phase 43 (Savings Goals) complete.
+
+- [x] T1774 [P] Add `PlannedSavings` to `AffordabilityResponse`; `AffordabilityService.GetAffordabilityAsync` sums active `SavingsGoal.MonthlyContribution` + not-yet-`Ready` sinking-fund `SpendingPot.BudgetAmount`, deducted from safe surplus alongside committed costs — 3h
+- [x] T1775 Add `POST /finance/pots/{id}/contribute` ("set aside this month's allocation") and sinking-fund create/update branching (derive `BudgetAmount` from `AnnualAmount`, force empty `CategoryIds`, lazy-reset when `NextPaymentDate` passes) to `PotsController`/`SpendingPotService` — 3h
+- [x] T1776 Add `GET /finance/budgets/suggested?categoryId=` + `BudgetService.GetSuggestedBudgetAsync` (last-90-days average, mirrors the existing `AffordabilityService` fallback pattern) — 2h
+- [x] T1777 Add a suggested-monthly-contribution hint to `SavingsGoalForm` (target amount ÷ months to target date, client-side) — 1h
+- [x] T1778 Add a suggested-budget hint to `BudgetForm` — 1h
+- [x] T1779 Add a "Less planned savings & upcoming costs" row to `DebtBurndownDashboard`'s breakdown — 1h
+- [x] T1780 Add a "Planned savings" pie slice to `BillsIncomeSummary` ("Pay vs bills") — 1h
+- [x] T1781 Write unit tests for the `AffordabilityService` planned-savings branch (6 tests: goal only, sinking fund only, both combined, Achieved goal excluded, Ready fund excluded, surplus delta) — 1h
+- [x] T1782 Write integration tests for `PotsController` sinking-fund create/contribute and `BudgetsController.GetSuggestedBudget` — 1h
+- [x] T1783 Write Jest tests for `PotForm` (new), `SinkingFundCard`, `SavingsGoalForm` (new test file — no prior coverage existed), `BudgetForm` suggestion hint, and the `DebtBurndownDashboard`/`BillsIncomeSummary` planned-savings additions — 3h
+- [x] T1784 Update `docs/testing/TEST-INVENTORY.md`, `CHANGELOG.md`, `docs/CURRENT_STATE.md`, `CLAUDE.md` task table — 0.5h
+
+**Checkpoint**: Adding a Savings Goal or Sinking Fund immediately reduces the Debt tab's safe surplus and recommended debt payment by that goal's monthly contribution; the Bills tab's "Pay vs bills" pie shows planned savings as its own slice; Spending Pots can be created via a UI for the first time; the Savings Goal and Budget forms suggest sensible starting numbers instead of requiring manual calculation.
+
+---
+
 ## Summary
 
 | Phase | Name | Priority | Tasks | Est. Effort |
@@ -440,7 +508,9 @@
 | 47 | Debt Burndown & Payoff Planning | P3 | T1336–T1357 (22) | 2.5 weeks |
 | 48 | AI Insights & Agent Features | P3 | T1261–T1274 (14) | 2 weeks |
 | 49 | MCP Server Integration | P3 | T1275–T1289 (15) | 2 weeks |
-| **Total** | | | **~169 tasks** | **~19.5 weeks** |
+| 50 | Household Account Sharing | P3 | T1750–T1773 (24) | 1.5 weeks |
+| 51 | Financial Planning Gaps (Planned Savings, Sinking Funds, Budget Suggestions) | P2 | T1774–T1784 (11) | 3 days |
+| **Total** | | | **~204 tasks** | **~21.5 weeks** |
 
 ### MVP Completion (Phases 41–44)
 

@@ -109,8 +109,9 @@ describe('WeeklyProgressPage - Week Navigation (T239)', () => {
       renderWeeklyProgress();
 
       await waitFor(() => {
-        // en-GB format: "15 Jun - 21 Jun 2025" pattern
-        expect(screen.getByText(/\d{1,2} [A-Z][a-z]{2} - \d{1,2} [A-Z][a-z]{2} \d{4}/)).toBeInTheDocument();
+        // en-GB format: "15 Jun - 21 Jun 2025" pattern.
+        // Month abbreviations may be 3 or 4 letters (CLDR renders September as "Sept").
+        expect(screen.getByText(/\d{1,2} [A-Z][a-z]{2,4} - \d{1,2} [A-Z][a-z]{2,4} \d{4}/)).toBeInTheDocument();
       });
     });
   });

@@ -6,6 +6,14 @@ interface SavingsGoalFormProps {
   onSuccess: () => void;
 }
 
+function monthsUntil(targetDate: Date): number {
+  const today = new Date();
+  const months = (targetDate.getFullYear() - today.getFullYear()) * 12
+    + (targetDate.getMonth() - today.getMonth())
+    - (targetDate.getDate() < today.getDate() ? 1 : 0);
+  return Math.max(1, months);
+}
+
 export function SavingsGoalForm({ onSuccess }: SavingsGoalFormProps) {
   const [name, setName] = useState('');
   const [targetAmount, setTargetAmount] = useState('');
@@ -13,6 +21,11 @@ export function SavingsGoalForm({ onSuccess }: SavingsGoalFormProps) {
   const [monthlyContribution, setMonthlyContribution] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const parsedTargetForHint = parseFloat(targetAmount);
+  const suggestedContribution = targetDate && !isNaN(parsedTargetForHint) && parsedTargetForHint > 0
+    ? Math.ceil((parsedTargetForHint / monthsUntil(new Date(targetDate))) * 100) / 100
+    : null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,6 +109,20 @@ export function SavingsGoalForm({ onSuccess }: SavingsGoalFormProps) {
           onChange={e => setTargetDate(e.target.value)}
           className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+        {suggestedContribution != null && (
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Suggested: £{suggestedContribution.toFixed(2)}/month to reach this by{' '}
+            {new Date(targetDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+            {' · '}
+            <button
+              type="button"
+              onClick={() => setMonthlyContribution(suggestedContribution.toFixed(2))}
+              className="text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              Use this
+            </button>
+          </p>
+        )}
       </div>
 
       {error && (

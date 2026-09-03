@@ -27,6 +27,12 @@ public class Budget
     /// <summary>Amount rolled over from the previous month's unused budget.</summary>
     public decimal RolloverFromPrevious { get; set; }
 
+    /// <summary>Optional short title, e.g. "Big shop" — falls back to the category name when not set.</summary>
+    public string? Title { get; set; }
+
+    /// <summary>Optional free-text note.</summary>
+    public string? Note { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

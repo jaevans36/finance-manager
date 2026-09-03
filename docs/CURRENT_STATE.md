@@ -39,13 +39,15 @@ The Life Manager productivity application is MVP-complete and ready for v1.0.0 r
 - **Accounts** — full CRUD; 12 account types (current, savings, credit, ISA, SIPP, mortgage, loan, etc.); interest rates, credit limits, promotional deals, mortgage start/term/interest-only, minimum/current monthly payments, loan end date
 - **Transactions** — view, add, edit, delete; category assignment; free-text search; pagination
 - **CSV import** — Barclays, HSBC, Lloyds, Monzo, Starling, NatWest, Generic; duplicate detection; automatic bill-matching on import
-- **Budgets** — monthly spending limits per category; progress bars with green/amber/red thresholds
-- **Spending Pots** — envelope-style monthly budgets with colour coding
+- **Budgets** — monthly spending limits per category, with an optional title and free-text note; full edit/delete UI; "copy last month's budgets" when a new month starts empty; progress bars with green/amber/red thresholds; suggested starting amount based on the last 3 months of actual spend
+- **Spending Pots** — envelope-style monthly budgets with colour coding; create/edit via `PotForm`; **Sinking Funds** pot type (T1303–T1306, Phase 51) for smoothing recurring annual costs (car insurance, MOT, boiler service) into a monthly set-aside amount, with accumulated-progress tracking, months-remaining countdown, and auto-reset each cycle
 - **Bills** — recurring bill tracking (weekly/monthly/quarterly/annual); due-date reminders; bill-to-account linking; automatic paid-marking via transaction matching; recurring pattern detection from imports
-- **Savings Goals** — target amount, monthly contribution, on-track/behind projection
+- **Savings Goals** — target amount, monthly contribution (with a suggested-contribution hint from target amount ÷ months to target date), on-track/behind projection
 - **Budget Trends** — spending-over-time charts
-- **Affordability Engine** — 90-day income detection with confidence level (High/Medium/Low), manual income override, committed costs + discretionary breakdown, safe monthly surplus, suggested debt payment
-- **Debt Burndown** — severity-scored debt overview (0–100, Critical/High/Medium/Low); Avalanche/Snowball/Custom paydown projection; freedom date; total interest; payoff order; stacked area waterfall chart
+- **Affordability Engine** — 90-day income detection with confidence level (High/Medium/Low), multiple named manual income streams (each optionally linked to an account for a "detected" suggestion from its transactions), committed costs + discretionary breakdown (Budgets and regular Spending Pots) + planned savings (active Savings Goals' monthly contributions and Sinking Funds' monthly allocations — Phase 51), safe monthly surplus, suggested debt payment
+- **Cash Flow tab** — consolidated month-at-a-glance view built on the Affordability Engine: a "what's left this month" figure, an income → bills → budgets/pots → savings → safety buffer waterfall, a donut chart, and itemized breakdowns of committed bills, budgeted categories, spending pots, and active savings goals
+- **Debt Burndown** — severity-scored debt overview (0–100, Critical/High/Medium/Low); Avalanche/Snowball/Custom paydown projection with persistent snowball momentum (a paid-off debt's freed minimum permanently joins the extra pool for every subsequent month, cascading through multiple same-month payoffs); freedom date; total interest; payoff order; stacked area waterfall chart; scrollable month-by-month table (paid this month, remaining, milestone markers, optional per-debt payment breakdown showing the minimum/extra split and each debt's own remaining balance, current "focus" payment callout, year-range filter)
+- **AI Insights** (Phase 48) — Spending Velocity (daily burn pace vs budget, projected month-end overspend), Anomaly Detection (category spend spikes, new high-value merchants, potential duplicate charges), Subscription Auditor (recurring-subscription cost roundup with "possibly unused" flagging), Negotiation Helper (personalised negotiation script generated from a merchant's transaction history, copy-to-clipboard). Rule-based/statistical — no external AI API. `apps/finance-api/Features/Insights/`; "AI Insights" tab on the Finance page.
 - **User guide** — `docs/guides/FINANCE_MANAGER.md`
 
 ### Technical Foundation (Complete)
@@ -55,18 +57,18 @@ The Life Manager productivity application is MVP-complete and ready for v1.0.0 r
 - **Design system**: `@life-manager/ui` package with Tailwind design tokens
 - **Shared schema**: `@life-manager/schema` with Zod validation schemas
 - **Service Worker**: `apps/web/public/sw.js` — IndexedDB reminder storage, 60s polling, push notifications
-- **Tests**: 356 frontend tests passing (Jest + React Testing Library); 26 backend unit tests passing; 5 labels integration tests passing
+- **Tests**: 1021 total passing — see `docs/testing/TEST-INVENTORY.md` for the current breakdown (frontend Jest + React Testing Library, finance/life API xUnit unit + integration)
 - **CI**: GitHub Actions (PR checks, nightly extended suite, release-please)
 
 ---
 
 ## What Is Currently Being Built
 
-**Finance Manager — Phase 48 onwards** (AI Insights & Agent Features, T1249+)
+**Finance Manager — Phase 49 onwards** (MCP Server Integration, T1275+)
 
-Phases 41–47 are complete. The Finance Manager is live as a standalone microservice at `apps/finance-api/` and surfaced in the app under **Finance Manager**. See "Phase History" below for what has been built.
+Phases 41–48 are complete. The Finance Manager is live as a standalone microservice at `apps/finance-api/` and surfaced in the app under **Finance Manager**. See "Phase History" below for what has been built.
 
-Next: Phase 48 — AI Insights (Subscription Auditor, Spending Velocity, Anomaly Detection); or multi-currency support (T1352–T1356, ECB exchange rate feed, deferred from Phase 47).
+Next: Phase 49 — MCP Server Integration; or multi-currency support (T1352–T1356, ECB exchange rate feed, deferred from Phase 47) — the only item left unbuilt from the original Phase 47 debt-burndown plan. Phase 50 — Household Account Sharing (T1750–T1773, cross-login view-only account sharing feeding Affordability/Debt/AI Insights) is now roadmapped after Phase 49, resolving the "Multi-user scope" open question in the Finance spec.
 
 See `specs/applications/finance/spec.md` and `specs/applications/finance/tasks.md` for full specification and task breakdown.
 
@@ -93,7 +95,7 @@ See `specs/applications/finance/spec.md` and `specs/applications/finance/tasks.m
 
 | App | Spec | Priority | Notes |
 |---|---|---|---|
-| Finance Manager | `specs/applications/finance/spec.md` | HIGH | CSV import, spending pots, bills, AI insights, MCP tools. UK-specific (ISA/SIPP, tax year). Phases 41–49. |
+| Finance Manager | `specs/applications/finance/spec.md` | HIGH | CSV import, spending pots, bills, AI insights, MCP tools, household account sharing. UK-specific (ISA/SIPP, tax year). Phases 41–50. |
 | Fitness Application | `specs/applications/fitness/spec.md` | P2 | Workout tracking, Fasting Tracker module, Nutrition & Macro Tracker with barcode scanning, habit tracking |
 | Recipe Collection | `specs/applications/recipes/spec.md` | P2 | Standalone module. Personal cookbook + data layer for Nutrition, Pantry, Finance. MCP `recipes_*` tools. |
 | Pantry & Ingredient Tracker | `specs/applications/pantry/spec.md` | P3 | Shared infrastructure. Inventory, expiry tracking, recipe matching, cost-per-meal, smart shopping lists. |
@@ -151,3 +153,4 @@ See `specs/applications/finance/spec.md` and `specs/applications/finance/tasks.m
 | 43b | Financial Affordability Engine (income detection, safe surplus) | — |
 | 44–46 | Savings Goals, Budget Trends | — |
 | 47 (expanded) | Debt Burndown Dashboard — severity scoring, Avalanche/Snowball/Custom projection, waterfall chart | — |
+| 48 | AI Insights — Spending Velocity, Anomaly Detection, Subscription Auditor, Negotiation Helper | — |

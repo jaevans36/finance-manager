@@ -240,7 +240,7 @@ Categories help you understand your spending. Life Manager comes with a set of b
 |----------|----------------|
 | Food & Drink | Groceries, Restaurants, Coffee, Takeaway |
 | Transport | Fuel, Public Transport, Parking, Car Insurance, Road Tax |
-| Bills & Utilities | Electricity, Gas, Water, Internet, Mobile, Council Tax, Rent, Mortgage |
+| Bills & Utilities | Utilities, Broadband, Mobile Phone, Council Tax, TV Licence, Insurance, Streaming & Media, Subscriptions |
 | Shopping | Clothing, Electronics, Home & Garden |
 | Health | Pharmacy, GP/Dentist, Gym |
 | Entertainment | Streaming, Cinema, Hobbies, Games |
@@ -270,7 +270,7 @@ Budgets let you set a monthly spending limit per category and track how much you
 
 1. Go to **Finance → Budgets**
 2. Click **Add budget**
-3. Choose a category and enter a monthly limit
+3. Choose a category and enter a monthly limit — if you've imported transactions for that category before, a **Suggested** amount appears based on your last 3 months of actual spend; click **Use this** to fill it in
 4. Click **Save**
 
 ### Reading the budget dashboard
@@ -311,6 +311,19 @@ Each pot shows:
 - Percentage used
 
 Pots reset at the start of each month based on your imported transactions in the matching category.
+
+### Sinking funds
+
+A sinking fund is a special pot type for a large, irregular cost you know is coming — car insurance renewal, an MOT and service, a boiler service, or (during a renovation) a new appliance. Instead of a monthly spending limit, you set the **full annual amount** and Life Manager works out the monthly amount to set aside.
+
+1. Go to **Finance → Spending Pots → Add pot**
+2. Choose **Sinking fund** as the type
+3. Enter the annual amount (e.g. £600 for car insurance) and optionally the next payment date
+4. Click **Save** — the monthly allocation (annual amount ÷ 12) is shown immediately
+
+Each cycle, click **Set aside this month** on the pot card to add that month's allocation to the accumulated total. The card shows progress towards the annual target, a **Ready in N months** countdown based on the next payment date, and switches to a **Ready** badge once you've saved the full amount. After the payment date passes, the fund automatically resets for the next cycle.
+
+Sinking funds behave like Savings Goals for affordability purposes — see [Planned savings & upcoming costs](#planned-savings--upcoming-costs) below.
 
 ---
 
@@ -354,6 +367,8 @@ If no account is linked, the bill shows **Not linked** on its card. You can add 
 
 > **Tip:** If you add a recurring credit card payment as a bill and link it to the credit card account, the Debt projection will use that amount automatically. There is no need to enter the same figure under both Bills and the account's Current monthly payment field.
 
+**Payment mismatch warning** — if a bill is linked to an account that *also* has its own **Current monthly payment** set, and the two figures disagree, you'll see an amber warning both while editing the bill and on the Bills tab list. This is a soft warning only — nothing is auto-corrected — since deciding which figure is actually correct is a judgement call the app can't make for you. Fix it by updating whichever one is out of date, or by clearing the account's Current monthly payment field so the linked bill becomes the single source of truth.
+
 ### Bill status
 
 | Status | Description |
@@ -383,7 +398,7 @@ Savings Goals let you set a financial target (e.g. emergency fund, house deposit
 
 1. Go to **Finance → Savings Goals**
 2. Click **Add goal**
-3. Enter a name, target amount, current amount saved, and optionally a monthly contribution and target date
+3. Enter a name and target amount. If you set a target date, a **Suggested** monthly contribution appears (target amount ÷ months remaining) — click **Use this** to fill it in, or enter your own
 4. Click **Save**
 
 ### Reading goal cards
@@ -424,13 +439,16 @@ The system scans the last 90 days of transactions for large, regular credits tha
 
 If income cannot be detected (e.g. you haven't imported enough transactions yet), the confidence shows as **Low** and you'll be prompted to enter your monthly take-home pay manually.
 
-#### Editing your income manually
+#### Entering income manually — multiple income streams
 
-You can override the detected figure at any time:
+You can add one or more named income sources at any time — useful for tracking your own salary and a partner's separately, or any other regular income:
 
-1. Click **Edit** next to the income figure (or **Enter monthly income** if no income was detected)
-2. Type your monthly take-home pay
-3. Click **Save**
+1. Click **Manage income sources** next to the income figure (or the prompt shown if no income was detected)
+2. Click **+ Add income stream**, give it a name (e.g. "My salary", "Wife's salary") and a monthly amount
+3. Optionally link it to an account — if recent credits on that account look like income, a **Detected ~£X/mo** hint appears with the matching transactions listed, so you can check it's picking up the right ones; click **Use this amount** to accept it
+4. Click **Save**
+
+The figures shown throughout the Debt tab use the combined total of all your income streams whenever detected income confidence is Low.
 
 #### Monthly breakdown
 
@@ -440,12 +458,33 @@ Once income is known, the panel shows:
 |------|-------------|
 | Income | Detected or manually entered monthly income |
 | Committed costs (bills) | Total of your active bills |
-| Discretionary spend | Estimated from your budget totals (or transaction history if no budgets are set) |
+| Existing debt repayments | Total minimum (or current) monthly payment across your Credit/Loan/Mortgage accounts — only shown when non-zero |
+| Discretionary spend | Your Budget totals plus regular Spending Pot allocations (Groceries, Fuel, etc. — not Sinking Funds, which are counted under Planned savings below), or an estimate from transaction history if neither is set up |
+| Planned savings & upcoming costs | Active Savings Goals' monthly contributions + Sinking Funds' monthly allocations — only shown when non-zero |
 | Emergency buffer | A safety buffer held back from the surplus |
 
-**Safe monthly surplus** = Income − Committed costs − Discretionary spend − Emergency buffer
+**Safe monthly surplus** = Income − Committed costs − Existing debt repayments − Discretionary spend − Planned savings − Emergency buffer
+
+Existing debt repayments live on your debt Accounts (Credit/Loan/Mortgage), not on Bills, so they need their own line — without it they'd either be invisible to the calculation, or get miscounted as everyday discretionary spend when no Budgets or Spending Pots are set up (their transactions don't have a matching Bill record).
 
 A green surplus means you have money available to accelerate debt repayment. An amber or zero surplus means your commitments are consuming most of your income — the Bills and Budgets tabs can help you identify what to cut.
+
+#### Planned savings & upcoming costs
+
+If you're saving towards a known upcoming cost — a new appliance during a renovation, a car service, anything you've set up as a [Savings Goal](#savings-goals) or [Sinking Fund](#sinking-funds) — that money is no longer counted as available for debt repayment. Adding a £50/month Savings Goal immediately reduces your safe surplus and recommended debt payment by £50, so the two don't compete for the same money. The Bills tab's **Pay vs bills** chart shows the same figure as its own pie slice, so you can see it alongside your bills and remaining income at a glance.
+
+---
+
+### Cash Flow tab
+
+The **Cash Flow** tab pulls the affordability numbers above out of the Debt tab and presents them as their own standalone month-at-a-glance view, with the detail behind each figure itemized rather than just totalled:
+
+- **What's left this month** — the same safe monthly surplus figure as the Debt tab's affordability panel, so the two never disagree.
+- **Breakdown** — the income → bills → existing debt repayments → budgets/pots → savings → safety buffer waterfall.
+- **Where it goes** — a donut chart of the same buckets.
+- **Itemized sections** — every active bill, every debt account's minimum (or current) payment, every budgeted category, every spending pot (envelope pots and sinking funds shown separately), and every active savings goal, each with its own monthly amount, so you can see exactly what makes up "committed costs" or "discretionary spend" rather than just the total. When no Budgets or Spending Pots are set up, the discretionary line is labelled as an estimate from your transaction history rather than implying you've budgeted for it.
+
+Because Budgets and Spending Pots are two independent ways of tracking category spend, the tab shows both without trying to de-duplicate them — if you've set up the same category in both, you'll see it counted twice and should tidy up whichever one you don't use.
 
 ---
 

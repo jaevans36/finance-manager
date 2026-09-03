@@ -108,8 +108,8 @@ export function DebtStrategySelector({
         <div>
           <p className={labelClass}>Debts to target</p>
           <p className="text-xs text-muted-foreground mb-2">
-            Excluded debts still receive their minimum payment but won't receive any extra payments.
-            Use this to skip debts you don't want to overpay (e.g. a mortgage on a fixed rate).
+            Excluded debts still receive their minimum payment but won&apos;t receive any extra payments.
+            Use this to skip debts you don&apos;t want to overpay (e.g. a mortgage on a fixed rate).
           </p>
           <div className="space-y-1">
             {debts.map(debt => {
@@ -137,6 +137,11 @@ export function DebtStrategySelector({
                   {debt.interestRate != null && (
                     <span className="text-xs text-gray-400">{debt.interestRate}%</span>
                   )}
+                  {debt.promotionalExpiry && (
+                    <span className="text-xs text-amber-600 dark:text-amber-400">
+                      Promo ends {debt.promotionalExpiry}
+                    </span>
+                  )}
                 </label>
               );
             })}
@@ -153,7 +158,7 @@ export function DebtStrategySelector({
           <input
             id="extra-payment"
             type="number"
-            step="1"
+            step="0.01"
             min="0"
             value={extraPayment}
             onChange={e => setExtraPayment(e.target.value)}
@@ -182,7 +187,10 @@ export function DebtStrategySelector({
             }).format(v);
             const totalMins = debts
               .filter(d => !excludedIds.has(d.accountId))
-              .reduce((sum, d) => sum + (d.currentMonthlyPayment ?? d.minimumMonthlyPayment ?? 0), 0);
+              .reduce((sum, d) => {
+                const current = d.currentMonthlyPayment ?? 0;
+                return sum + (current > 0 ? current : (d.minimumMonthlyPayment ?? 0));
+              }, 0);
             const extra = parseFloat(extraPayment) || 0;
             const targetDebt = strategy === 'Avalanche'
               ? [...debts].filter(d => !excludedIds.has(d.accountId))
@@ -234,7 +242,7 @@ export function DebtStrategySelector({
               </span>
               <input
                 type="number"
-                step="1"
+                step="0.01"
                 min="0"
                 value={customAllocations[debt.accountId] ?? ''}
                 onChange={e =>

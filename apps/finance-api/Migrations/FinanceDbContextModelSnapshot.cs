@@ -215,9 +215,15 @@ namespace FinanceApi.Migrations
                     b.Property<int>("Month")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
                     b.Property<decimal>("RolloverFromPrevious")
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -243,6 +249,14 @@ namespace FinanceApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<decimal>("AccumulatedAmount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal?>("AnnualAmount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
                     b.Property<decimal>("BudgetAmount")
                         .HasPrecision(18, 4)
                         .HasColumnType("numeric(18,4)");
@@ -266,6 +280,9 @@ namespace FinanceApi.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<DateOnly?>("NextPaymentDate")
+                        .HasColumnType("date");
 
                     b.Property<bool>("RolloverEnabled")
                         .HasColumnType("boolean");
@@ -457,6 +474,17 @@ namespace FinanceApi.Migrations
                         },
                         new
                         {
+                            Id = new Guid("10000000-0000-0000-0000-000000000012"),
+                            Colour = "#B91C1C",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "credit-card",
+                            IsActive = true,
+                            IsSystem = true,
+                            Name = "Debt Repayment",
+                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
                             Id = new Guid("10000000-0000-0000-0000-000000000101"),
                             Colour = "#16A34A",
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -559,19 +587,7 @@ namespace FinanceApi.Migrations
                             Icon = "zap",
                             IsActive = true,
                             IsSystem = true,
-                            Name = "Electricity",
-                            ParentId = new Guid("10000000-0000-0000-0000-000000000007"),
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("10000000-0000-0000-0000-000000000702"),
-                            Colour = "#B45309",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Icon = "flame",
-                            IsActive = true,
-                            IsSystem = true,
-                            Name = "Gas",
+                            Name = "Utilities",
                             ParentId = new Guid("10000000-0000-0000-0000-000000000007"),
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
@@ -609,6 +625,90 @@ namespace FinanceApi.Migrations
                             IsSystem = true,
                             Name = "Subscriptions",
                             ParentId = new Guid("10000000-0000-0000-0000-000000000007"),
+                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-0000-0000-000000000707"),
+                            Colour = "#CA8A04",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "landmark",
+                            IsActive = true,
+                            IsSystem = true,
+                            Name = "Council Tax",
+                            ParentId = new Guid("10000000-0000-0000-0000-000000000007"),
+                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-0000-0000-000000000708"),
+                            Colour = "#EA580C",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "tv",
+                            IsActive = true,
+                            IsSystem = true,
+                            Name = "TV Licence",
+                            ParentId = new Guid("10000000-0000-0000-0000-000000000007"),
+                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-0000-0000-000000000709"),
+                            Colour = "#4F46E5",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "shield",
+                            IsActive = true,
+                            IsSystem = true,
+                            Name = "Insurance",
+                            ParentId = new Guid("10000000-0000-0000-0000-000000000007"),
+                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-0000-0000-000000000710"),
+                            Colour = "#DB2777",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "clapperboard",
+                            IsActive = true,
+                            IsSystem = true,
+                            Name = "Streaming & Media",
+                            ParentId = new Guid("10000000-0000-0000-0000-000000000007"),
+                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-0000-0000-000000001201"),
+                            Colour = "#DC2626",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "credit-card",
+                            IsActive = true,
+                            IsSystem = true,
+                            Name = "Credit Card Payment",
+                            ParentId = new Guid("10000000-0000-0000-0000-000000000012"),
+                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-0000-0000-000000001202"),
+                            Colour = "#EA580C",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "hand-coins",
+                            IsActive = true,
+                            IsSystem = true,
+                            Name = "Loan Repayment",
+                            ParentId = new Guid("10000000-0000-0000-0000-000000000012"),
+                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-0000-0000-000000001203"),
+                            Colour = "#C2410C",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Icon = "home",
+                            IsActive = true,
+                            IsSystem = true,
+                            Name = "Mortgage Payment",
+                            ParentId = new Guid("10000000-0000-0000-0000-000000000012"),
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
@@ -707,6 +807,42 @@ namespace FinanceApi.Migrations
                     b.ToTable("CategoryRules", "finance");
                 });
 
+            modelBuilder.Entity("FinanceApi.Features.IncomeStreams.Models.IncomeStream", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("MonthlyAmount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("IncomeStreams", "finance");
+                });
+
             modelBuilder.Entity("FinanceApi.Features.SavingsGoals.Models.SavingsGoal", b =>
                 {
                     b.Property<Guid>("Id")
@@ -768,10 +904,6 @@ namespace FinanceApi.Migrations
 
                     b.Property<string>("IncomeAccountIds")
                         .HasColumnType("text");
-
-                    b.Property<decimal?>("ManualMonthlyIncome")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("numeric(18,4)");
 
                     b.HasKey("UserId");
 
@@ -927,6 +1059,16 @@ namespace FinanceApi.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("FinanceApi.Features.IncomeStreams.Models.IncomeStream", b =>
+                {
+                    b.HasOne("FinanceApi.Features.Accounts.Models.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("FinanceApi.Features.Transactions.Models.Transaction", b =>

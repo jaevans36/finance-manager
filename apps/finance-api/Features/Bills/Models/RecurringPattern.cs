@@ -22,4 +22,6 @@ public record RecurringPattern(
     AmountTrend AmountTrend,
     int OccurrencesInPeriod,
     DateOnly? LastOccurrence,
+    Guid AccountId,
+    string AccountName,
     bool IsLikelyInactive = false);

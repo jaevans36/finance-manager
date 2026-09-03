@@ -21,7 +21,8 @@ public record DebtAccountSummary(
     decimal? MonthlyInterestCost,
     int? MonthsToPayoffAtCurrentPayment,
     string? PayoffDateAtCurrentPayment,
-    decimal? DetectedMonthlyPayment
+    decimal? DetectedMonthlyPayment,
+    decimal? EffectiveMonthlyPayment
 );
 
 public record DebtOverviewResponse(
@@ -44,10 +45,15 @@ public record DebtProjectionMonth(
     int Month,
     string Label,
     IReadOnlyList<AccountBalance> Balances,
-    decimal TotalRemaining
+    decimal TotalRemaining,
+    IReadOnlyList<AccountPayment> Payments,
+    decimal TotalPaidThisMonth,
+    IReadOnlyList<string> PaidOffThisMonth
 );
 
 public record AccountBalance(Guid AccountId, string Name, decimal Balance);
+
+public record AccountPayment(Guid AccountId, string Name, decimal MinimumPaid, decimal ExtraPaid, decimal TotalPaid);
 
 public record DebtProjectionResponse(
     DebtStrategy Strategy,

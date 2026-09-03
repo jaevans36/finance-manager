@@ -1,11 +1,12 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '../utils/test-utils';
 import { SpendingPots } from '../../src/components/finance/SpendingPots';
 import type { SpendingPotWithProgress } from '../../src/types/finance';
 
 jest.mock('../../src/services/pot-service', () => ({
-  potService: { getPots: jest.fn() },
+  potService: { getPots: jest.fn(), contributeSinkingFund: jest.fn() },
 }));
 
 const { potService } = jest.requireMock('../../src/services/pot-service');
@@ -24,6 +25,30 @@ const makePot = (overrides: Partial<SpendingPotWithProgress> = {}): SpendingPotW
   percentageUsed: 0,
   isWarning: false,
   isExceeded: false,
+  annualAmount: null,
+  nextPaymentDate: null,
+  accumulatedAmount: 0,
+  monthlyAllocation: null,
+  monthsRemaining: null,
+  isReady: false,
+  ...overrides,
+});
+
+const makeSinkingFund = (overrides: Partial<SpendingPotWithProgress> = {}): SpendingPotWithProgress => makePot({
+  id: 'sf1',
+  name: 'Car insurance',
+  type: 'SinkingFund',
+  budgetAmount: 50,
+  spent: 300,
+  remaining: 300,
+  categoryIds: [],
+  percentageUsed: 50,
+  annualAmount: 600,
+  nextPaymentDate: '2027-03-01',
+  accumulatedAmount: 300,
+  monthlyAllocation: 50,
+  monthsRemaining: 6,
+  isReady: false,
   ...overrides,
 });
 
@@ -67,5 +92,40 @@ describe('SpendingPots', () => {
     potService.getPots.mockRejectedValue(new Error('Server error'));
     renderWithProviders(<SpendingPots />);
     await waitFor(() => expect(screen.getByText(/failed/i)).toBeInTheDocument());
+  });
+
+  // ── Sinking funds ────────────────────────────────────────────────────────
+
+  it('renders a sinking fund pot with annual amount and monthly allocation', async () => {
+    potService.getPots.mockResolvedValue([makeSinkingFund()]);
+    renderWithProviders(<SpendingPots />);
+    await waitFor(() => expect(screen.getByText('Car insurance')).toBeInTheDocument());
+    expect(screen.getByText(/£600\/yr/)).toBeInTheDocument();
+    expect(screen.getByText(/£50\/mo/)).toBeInTheDocument();
+  });
+
+  it('shows months remaining until the next payment for a sinking fund', async () => {
+    potService.getPots.mockResolvedValue([makeSinkingFund({ monthsRemaining: 6 })]);
+    renderWithProviders(<SpendingPots />);
+    await waitFor(() => expect(screen.getByText(/ready in 6m/i)).toBeInTheDocument());
+  });
+
+  it('shows a Ready badge when a sinking fund has reached its annual target', async () => {
+    potService.getPots.mockResolvedValue([makeSinkingFund({ isReady: true, accumulatedAmount: 600 })]);
+    renderWithProviders(<SpendingPots />);
+    await waitFor(() => expect(screen.getByText('Car insurance')).toBeInTheDocument());
+    expect(screen.getAllByText(/ready/i).length).toBeGreaterThan(0);
+  });
+
+  it('sets aside this month\'s allocation when the contribute button is clicked', async () => {
+    const user = userEvent.setup();
+    potService.getPots.mockResolvedValue([makeSinkingFund()]);
+    potService.contributeSinkingFund.mockResolvedValue(makeSinkingFund({ accumulatedAmount: 350 }));
+    renderWithProviders(<SpendingPots />);
+    await waitFor(() => expect(screen.getByText('Car insurance')).toBeInTheDocument());
+
+    await user.click(screen.getByRole('button', { name: /set aside this month/i }));
+
+    await waitFor(() => expect(potService.contributeSinkingFund).toHaveBeenCalledWith('sf1'));
   });
 });

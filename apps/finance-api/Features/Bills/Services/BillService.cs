@@ -13,6 +13,7 @@ public class BillService : IBillService
     public async Task<IEnumerable<BillResponse>> GetBillsAsync(Guid userId, CancellationToken ct = default)
         => await _db.Bills
             .Include(b => b.Account)
+            .Include(b => b.Category)
             .Where(b => b.UserId == userId && b.IsActive)
             .OrderBy(b => b.DueDay)
             .Select(b => ToResponse(b))
@@ -21,6 +22,7 @@ public class BillService : IBillService
     public async Task<IEnumerable<BillResponse>> GetAllBillsAsync(Guid userId, CancellationToken ct = default)
         => await _db.Bills
             .Include(b => b.Account)
+            .Include(b => b.Category)
             .Where(b => b.UserId == userId)
             .OrderBy(b => b.IsActive ? 0 : 1)
             .ThenBy(b => b.Name)
@@ -30,6 +32,7 @@ public class BillService : IBillService
     public async Task<IEnumerable<BillResponse>> GetByAccountIdAsync(Guid userId, Guid accountId, CancellationToken ct = default)
         => await _db.Bills
             .Include(b => b.Account)
+            .Include(b => b.Category)
             .Where(b => b.UserId == userId && b.AccountId == accountId && b.IsActive)
             .OrderBy(b => b.DueDay)
             .Select(b => ToResponse(b))
@@ -41,6 +44,7 @@ public class BillService : IBillService
         var reference = (today ?? DateTime.UtcNow).Date;
         var bills = await _db.Bills
             .Include(b => b.Account)
+            .Include(b => b.Category)
             .Where(b => b.UserId == userId && b.IsActive)
             .OrderBy(b => b.DueDay)
             .ToListAsync(ct);
@@ -76,6 +80,8 @@ public class BillService : IBillService
 
         if (bill.AccountId.HasValue)
             await _db.Entry(bill).Reference(b => b.Account).LoadAsync(ct);
+        if (bill.CategoryId.HasValue)
+            await _db.Entry(bill).Reference(b => b.Category).LoadAsync(ct);
 
         return ToResponse(bill);
     }
@@ -84,6 +90,7 @@ public class BillService : IBillService
     {
         var bill = await _db.Bills
             .Include(b => b.Account)
+            .Include(b => b.Category)
             .FirstOrDefaultAsync(b => b.Id == billId && b.UserId == userId, ct);
 
         if (bill is null) return null;
@@ -94,8 +101,16 @@ public class BillService : IBillService
         if (request.Frequency.HasValue) bill.Frequency = request.Frequency.Value;
         if (request.DueDay.HasValue) bill.DueDay = request.DueDay.Value;
         if (request.ReminderDaysBefore.HasValue) bill.ReminderDaysBefore = request.ReminderDaysBefore.Value;
-        if (request.CategoryId.HasValue) bill.CategoryId = request.CategoryId.Value;
         if (request.IsActive.HasValue) bill.IsActive = request.IsActive.Value;
+        // CategoryId can be explicitly set to null to unlink
+        if (request.CategoryId != bill.CategoryId)
+        {
+            bill.CategoryId = request.CategoryId;
+            if (bill.CategoryId.HasValue)
+                await _db.Entry(bill).Reference(b => b.Category).LoadAsync(ct);
+            else
+                bill.Category = null;
+        }
         // AccountId can be explicitly set to null to unlink
         if (request.AccountId != bill.AccountId)
         {
@@ -138,11 +153,22 @@ public class BillService : IBillService
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    internal static BillResponse ToResponse(Bill b) => new(
-        b.Id, b.UserId, b.Name, b.Description, b.Amount, b.Frequency,
-        b.DueDay, b.ReminderDaysBefore, b.IsPaid, b.LastPaidDate,
-        b.CategoryId, b.IsActive, b.CreatedAt, b.UpdatedAt,
-        b.AccountId, b.Account?.Name);
+    internal static BillResponse ToResponse(Bill b)
+    {
+        // Only an explicit "what I'm actually paying" figure on the linked account counts
+        // as a source of truth to compare against — a lender minimum can legitimately
+        // differ from what's actually paid, so it's not treated as a mismatch.
+        var linkedAccountPayment = b.Account?.CurrentMonthlyPayment is > 0 ? b.Account.CurrentMonthlyPayment : null;
+        var hasPaymentMismatch = linkedAccountPayment.HasValue
+            && Math.Abs(linkedAccountPayment.Value - b.MonthlyEquivalent()) > 0.01m;
+
+        return new(
+            b.Id, b.UserId, b.Name, b.Description, b.Amount, b.Frequency,
+            b.DueDay, b.ReminderDaysBefore, b.IsPaid, b.LastPaidDate,
+            b.CategoryId, b.Category?.Name, b.IsActive, b.CreatedAt, b.UpdatedAt,
+            b.AccountId, b.Account?.Name,
+            linkedAccountPayment, hasPaymentMismatch);
+    }
 
     private static DateTime GetNextDueDate(Bill bill, DateTime today)
     {
@@ -157,9 +183,12 @@ public class BillService : IBillService
 
         if (bill.Frequency == BillFrequency.Weekly)
         {
-            var anchor = bill.LastPaidDate?.Date ?? bill.CreatedAt.Date;
-            var candidate = anchor;
-            while (candidate < today) candidate = candidate.AddDays(7);
+            // DueDay is an ISO day of week (1 = Monday .. 7 = Sunday) for Weekly bills.
+            var targetDayOfWeek = (DayOfWeek)(bill.DueDay % 7);
+            var candidate = NextOrSameWeekday(today, targetDayOfWeek);
+            // Don't show a due date already covered by the last payment.
+            if (bill.LastPaidDate.HasValue && candidate <= bill.LastPaidDate.Value.Date)
+                candidate = candidate.AddDays(7);
             return candidate;
         }
 
@@ -178,5 +207,12 @@ public class BillService : IBillService
             while (candidate < today) candidate = candidate.AddYears(1);
             return candidate;
         }
+    }
+
+    /// <summary>Returns the next date on or after <paramref name="from"/> that falls on <paramref name="target"/>.</summary>
+    private static DateTime NextOrSameWeekday(DateTime from, DayOfWeek target)
+    {
+        var diff = ((int)target - (int)from.DayOfWeek + 7) % 7;
+        return from.AddDays(diff);
     }
 }

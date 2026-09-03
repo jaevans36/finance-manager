@@ -15,7 +15,22 @@ jest.mock('../../src/services/debt-service', () => ({
 jest.mock('../../src/services/affordability-service', () => ({
   affordabilityService: {
     getAffordability: jest.fn(),
-    updateManualIncome: jest.fn(),
+  },
+}));
+
+jest.mock('../../src/services/income-stream-service', () => ({
+  incomeStreamService: {
+    getStreams: jest.fn(),
+    createStream: jest.fn(),
+    updateStream: jest.fn(),
+    deleteStream: jest.fn(),
+    detectFromAccount: jest.fn(),
+  },
+}));
+
+jest.mock('../../src/services/accounts-service', () => ({
+  accountsService: {
+    getAccounts: jest.fn(),
   },
 }));
 
@@ -24,8 +39,14 @@ jest.mock('../../src/components/finance/DebtWaterfallChart', () => ({
   DebtWaterfallChart: () => <div data-testid="waterfall-chart" />,
 }));
 
+jest.mock('../../src/components/finance/DebtMonthlyTable', () => ({
+  DebtMonthlyTable: () => <div data-testid="monthly-table" />,
+}));
+
 const { debtService } = jest.requireMock('../../src/services/debt-service');
 const { affordabilityService } = jest.requireMock('../../src/services/affordability-service');
+const { incomeStreamService } = jest.requireMock('../../src/services/income-stream-service');
+const { accountsService } = jest.requireMock('../../src/services/accounts-service');
 
 const makeOverview = (overrides: Partial<DebtOverviewResponse> = {}): DebtOverviewResponse => ({
   debts: [
@@ -68,6 +89,9 @@ const makeProjection = (): DebtProjectionResponse => ({
       label: '2026-08',
       balances: [{ accountId: 'd1', name: 'Barclaycard', balance: 1102 }],
       totalRemaining: 1102,
+      payments: [{ accountId: 'd1', name: 'Barclaycard', minimumPaid: 100, extraPaid: 0, totalPaid: 100 }],
+      totalPaidThisMonth: 100,
+      paidOffThisMonth: [],
     },
   ],
   payoffOrder: [
@@ -81,7 +105,9 @@ const makeAffordability = (overrides: Partial<AffordabilityData> = {}): Affordab
   incomeConfidence: 'High',
   incomeSource: 'Detected',
   committedCosts: 800,
+  existingDebtPayments: 0,
   discretionarySpend: 600,
+  plannedSavings: 0,
   emergencyBuffer: 200,
   safeSurplus: 1400,
   suggestedDebtPayment: 1260,
@@ -95,6 +121,8 @@ describe('DebtBurndownDashboard', () => {
     jest.clearAllMocks();
     debtService.getProjection.mockResolvedValue(makeProjection());
     affordabilityService.getAffordability.mockResolvedValue(makeAffordability());
+    incomeStreamService.getStreams.mockResolvedValue([]);
+    accountsService.getAccounts.mockResolvedValue([]);
   });
 
   it('shows loading state initially', () => {
@@ -126,6 +154,44 @@ describe('DebtBurndownDashboard', () => {
       expect(screen.getByText('Recommended monthly payment')).toBeInTheDocument();
     });
     expect(screen.getAllByText('£1,260').length).toBeGreaterThan(0);
+  });
+
+  it('shows a planned savings deduction row when the user has savings goals or sinking funds', async () => {
+    affordabilityService.getAffordability.mockResolvedValue(makeAffordability({ plannedSavings: 50 }));
+    debtService.getOverview.mockResolvedValue(makeOverview());
+
+    renderWithProviders(<DebtBurndownDashboard />);
+
+    await waitFor(() => expect(screen.getByText(/planned savings & upcoming costs/i)).toBeInTheDocument());
+    expect(screen.getByText('− £50')).toBeInTheDocument();
+  });
+
+  it('hides the planned savings row when there is none', async () => {
+    debtService.getOverview.mockResolvedValue(makeOverview());
+
+    renderWithProviders(<DebtBurndownDashboard />);
+
+    await waitFor(() => expect(screen.getByText('Recommended monthly payment')).toBeInTheDocument());
+    expect(screen.queryByText(/planned savings & upcoming costs/i)).not.toBeInTheDocument();
+  });
+
+  it('shows an existing debt repayments deduction row when debts have minimum payments', async () => {
+    affordabilityService.getAffordability.mockResolvedValue(makeAffordability({ existingDebtPayments: 450 }));
+    debtService.getOverview.mockResolvedValue(makeOverview());
+
+    renderWithProviders(<DebtBurndownDashboard />);
+
+    await waitFor(() => expect(screen.getByText(/^existing debt repayments$/i)).toBeInTheDocument());
+    expect(screen.getByText('− £450')).toBeInTheDocument();
+  });
+
+  it('hides the existing debt repayments row when there are none', async () => {
+    debtService.getOverview.mockResolvedValue(makeOverview());
+
+    renderWithProviders(<DebtBurndownDashboard />);
+
+    await waitFor(() => expect(screen.getByText('Recommended monthly payment')).toBeInTheDocument());
+    expect(screen.queryByText(/^existing debt repayments$/i)).not.toBeInTheDocument();
   });
 
   it('shows income-not-detected card when affordability has no income', async () => {
@@ -178,6 +244,7 @@ describe('DebtBurndownDashboard', () => {
       expect(screen.getByText('1 yr 2 mo')).toBeInTheDocument();
     });
     expect(screen.getByTestId('waterfall-chart')).toBeInTheDocument();
+    expect(screen.getByTestId('monthly-table')).toBeInTheDocument();
   });
 
   it('runs new projection when strategy selector is submitted', async () => {

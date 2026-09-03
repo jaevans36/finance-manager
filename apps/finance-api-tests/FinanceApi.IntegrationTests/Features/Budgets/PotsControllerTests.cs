@@ -112,4 +112,66 @@ public class PotsControllerTests
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    // ── Sinking funds ────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task CreatePot_SinkingFundWithAnnualAmount_Returns201WithDerivedMonthlyAllocation()
+    {
+        var request = new CreateSpendingPotRequest(
+            "Car insurance", PotType.SinkingFund, 0m, false, null, null,
+            Array.Empty<Guid>(), AnnualAmount: 600m, NextPaymentDate: new DateOnly(2027, 3, 1));
+
+        var response = await _client.PostAsJsonAsync("/api/v1/finance/pots", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var pot = await response.Content.ReadFromJsonAsync<SpendingPotWithProgress>();
+        pot!.MonthlyAllocation.Should().Be(50m);
+        pot.AnnualAmount.Should().Be(600m);
+    }
+
+    [Fact]
+    public async Task CreatePot_SinkingFundWithoutAnnualAmount_Returns400()
+    {
+        var request = new CreateSpendingPotRequest(
+            "Car insurance", PotType.SinkingFund, 0m, false, null, null, Array.Empty<Guid>());
+
+        var response = await _client.PostAsJsonAsync("/api/v1/finance/pots", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Contribute_WhenSinkingFundExists_IncrementsAccumulatedAmount()
+    {
+        var createResp = await _client.PostAsJsonAsync("/api/v1/finance/pots",
+            new CreateSpendingPotRequest("Car insurance", PotType.SinkingFund, 0m, false, null, null,
+                Array.Empty<Guid>(), AnnualAmount: 600m));
+        var pot = await createResp.Content.ReadFromJsonAsync<SpendingPotWithProgress>();
+
+        var response = await _client.PostAsync($"/api/v1/finance/pots/{pot!.Id}/contribute", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var updated = await response.Content.ReadFromJsonAsync<SpendingPotWithProgress>();
+        updated!.AccumulatedAmount.Should().Be(50m);
+    }
+
+    [Fact]
+    public async Task Contribute_WhenPotIsNotSinkingFund_Returns404()
+    {
+        var createResp = await _client.PostAsJsonAsync("/api/v1/finance/pots",
+            new CreateSpendingPotRequest("Groceries", PotType.Groceries, 100m, false, null, null, Array.Empty<Guid>()));
+        var pot = await createResp.Content.ReadFromJsonAsync<SpendingPotWithProgress>();
+
+        var response = await _client.PostAsync($"/api/v1/finance/pots/{pot!.Id}/contribute", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Contribute_WhenPotDoesNotExist_Returns404()
+    {
+        var response = await _client.PostAsync($"/api/v1/finance/pots/{Guid.NewGuid()}/contribute", null);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
 }

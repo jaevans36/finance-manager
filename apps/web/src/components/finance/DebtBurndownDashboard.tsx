@@ -13,14 +13,9 @@ import { DebtOverviewCard } from './DebtOverviewCard';
 import { DebtStrategySelector } from './DebtStrategySelector';
 import { DebtProjectionPanel } from './DebtProjectionPanel';
 import { DebtWaterfallChart } from './DebtWaterfallChart';
-
-const fmtGbp = (v: number) =>
-  new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(v);
+import { DebtMonthlyTable } from './DebtMonthlyTable';
+import { IncomeStreamsEditor } from './IncomeStreamsEditor';
+import { fmtGbp } from '../../lib/finance-format';
 
 // ── Recommended payment card ──────────────────────────────────────────────────
 
@@ -30,29 +25,15 @@ interface RecommendedPaymentCardProps {
 }
 
 function RecommendedPaymentCard({ affordability, onAffordabilityUpdated }: RecommendedPaymentCardProps) {
-  const [editingIncome, setEditingIncome] = useState(false);
-  const [incomeInput, setIncomeInput] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
+  const [managingIncome, setManagingIncome] = useState(false);
 
   const needsIncome =
     affordability.incomeConfidence === 'Low' &&
     affordability.incomeSource === 'Detected' &&
     affordability.monthlyIncome === 0;
 
-  const handleSaveIncome = async () => {
-    const parsed = parseFloat(incomeInput);
-    if (isNaN(parsed) || parsed < 0) return;
-    setIsSaving(true);
-    try {
-      await affordabilityService.updateManualIncome(parsed);
-      const updated = await affordabilityService.getAffordability();
-      onAffordabilityUpdated(updated);
-      setEditingIncome(false);
-    } catch {
-      // user can retry
-    } finally {
-      setIsSaving(false);
-    }
+  const refreshAffordability = async () => {
+    onAffordabilityUpdated(await affordabilityService.getAffordability());
   };
 
   if (needsIncome) {
@@ -63,43 +44,11 @@ function RecommendedPaymentCard({ affordability, onAffordabilityUpdated }: Recom
           <div>
             <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Income not detected</p>
             <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-              Enter your monthly take-home pay so we can calculate an affordable debt payment recommendation.
+              Add your income sources below so we can calculate an affordable debt payment recommendation.
             </p>
           </div>
         </div>
-        {editingIncome ? (
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={incomeInput}
-              onChange={e => setIncomeInput(e.target.value)}
-              placeholder="Monthly income (£)"
-              min="0"
-              autoFocus
-              className="flex-1 rounded-lg border border-amber-300 dark:border-amber-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
-            />
-            <button
-              onClick={handleSaveIncome}
-              disabled={isSaving}
-              className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 disabled:opacity-50"
-            >
-              {isSaving ? 'Saving…' : 'Save'}
-            </button>
-            <button
-              onClick={() => setEditingIncome(false)}
-              className="rounded-lg border border-amber-300 dark:border-amber-700 px-3 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-950/30"
-            >
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => { setEditingIncome(true); setIncomeInput(''); }}
-            className="w-full rounded-lg border border-dashed border-amber-400 dark:border-amber-600 px-4 py-2 text-sm text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-950/30 transition-colors"
-          >
-            Enter monthly income
-          </button>
-        )}
+        <IncomeStreamsEditor onChange={refreshAffordability} />
       </div>
     );
   }
@@ -109,16 +58,27 @@ function RecommendedPaymentCard({ affordability, onAffordabilityUpdated }: Recom
       <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20 p-4">
         <div className="flex items-start gap-2">
           <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
-          <div>
+          <div className="flex-1">
             <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
               No surplus available for debt repayment
             </p>
             <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-              Your committed bills and regular spending appear to consume all of your income ({fmtGbp(affordability.monthlyIncome)}).
+              Your committed bills, regular spending{affordability.plannedSavings > 0 ? ', and planned savings' : ''} appear to consume all of your income ({fmtGbp(affordability.monthlyIncome)}).
               Review your Bills tab to identify any that could be reduced or cancelled.
             </p>
+            <button
+              onClick={() => setManagingIncome(v => !v)}
+              className="mt-2 text-xs font-medium text-amber-700 dark:text-amber-400 underline hover:no-underline"
+            >
+              {managingIncome ? 'Hide income sources' : 'Manage income sources'}
+            </button>
           </div>
         </div>
+        {managingIncome && (
+          <div className="mt-3 pt-3 border-t border-amber-200 dark:border-amber-700">
+            <IncomeStreamsEditor onChange={refreshAffordability} />
+          </div>
+        )}
       </div>
     );
   }
@@ -146,18 +106,38 @@ function RecommendedPaymentCard({ affordability, onAffordabilityUpdated }: Recom
             Monthly income{' '}
             <span className="opacity-60">({affordability.incomeConfidence.toLowerCase()} confidence)</span>
           </span>
-          <span className="font-medium tabular-nums">{fmtGbp(affordability.monthlyIncome)}</span>
+          <span className="flex items-center gap-2">
+            <span className="font-medium tabular-nums">{fmtGbp(affordability.monthlyIncome)}</span>
+            <button
+              onClick={() => setManagingIncome(v => !v)}
+              className="text-[11px] underline hover:no-underline opacity-80"
+            >
+              {managingIncome ? 'Hide' : 'Manage'}
+            </button>
+          </span>
         </div>
         <div className="flex justify-between text-xs text-green-700 dark:text-green-400">
-          <span>Less committed bills</span>
+          <span>Committed bills</span>
           <span className="font-medium tabular-nums">− {fmtGbp(affordability.committedCosts)}</span>
         </div>
+        {affordability.existingDebtPayments > 0 && (
+          <div className="flex justify-between text-xs text-green-700 dark:text-green-400">
+            <span>Existing debt repayments</span>
+            <span className="font-medium tabular-nums">− {fmtGbp(affordability.existingDebtPayments)}</span>
+          </div>
+        )}
         <div className="flex justify-between text-xs text-green-700 dark:text-green-400">
-          <span>Less regular spending</span>
+          <span>Regular spending</span>
           <span className="font-medium tabular-nums">− {fmtGbp(affordability.discretionarySpend)}</span>
         </div>
+        {affordability.plannedSavings > 0 && (
+          <div className="flex justify-between text-xs text-green-700 dark:text-green-400">
+            <span>Planned savings & upcoming costs</span>
+            <span className="font-medium tabular-nums">− {fmtGbp(affordability.plannedSavings)}</span>
+          </div>
+        )}
         <div className="flex justify-between text-xs text-green-700 dark:text-green-400">
-          <span>Less safety buffer</span>
+          <span>Safety buffer</span>
           <span className="font-medium tabular-nums">− {fmtGbp(affordability.emergencyBuffer)}</span>
         </div>
         <div className="flex justify-between text-xs text-green-800 dark:text-green-300 font-semibold border-t border-green-200 dark:border-green-700 pt-1 mt-1">
@@ -165,6 +145,12 @@ function RecommendedPaymentCard({ affordability, onAffordabilityUpdated }: Recom
           <span className="tabular-nums">{fmtGbp(affordability.safeSurplus)}</span>
         </div>
       </div>
+
+      {managingIncome && (
+        <div className="mt-3 pt-3 border-t border-green-200 dark:border-green-700">
+          <IncomeStreamsEditor onChange={refreshAffordability} />
+        </div>
+      )}
 
       <p className="mt-2 text-xs text-green-600 dark:text-green-500">
         We suggest 90% of your safe surplus, keeping 10% as breathing room.
@@ -301,6 +287,10 @@ export function DebtBurndownDashboard() {
             <>
               <DebtProjectionPanel projection={projection} />
               <DebtWaterfallChart
+                schedule={projection.schedule}
+                debts={overview.debts}
+              />
+              <DebtMonthlyTable
                 schedule={projection.schedule}
                 debts={overview.debts}
               />

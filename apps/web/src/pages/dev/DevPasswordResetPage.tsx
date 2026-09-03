@@ -1,11 +1,25 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { CheckIcon, XCircleIcon } from 'lucide-react';
 import { devService } from '../../services/devService';
 import { getErrorMessage } from '../../utils/errorHelpers';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { cn } from '../../lib/utils';
+
+interface PasswordRequirementProps {
+  met: boolean;
+  label: string;
+}
+
+const PasswordRequirement = ({ met, label }: PasswordRequirementProps) => (
+  <div className={cn('flex items-center gap-1.5 text-xs', met ? 'text-success' : 'text-destructive')}>
+    {met ? <CheckIcon size={14} /> : <XCircleIcon size={14} />}
+    <span>{label}</span>
+  </div>
+);
 
 const DevPasswordResetPage = () => {
   const [email, setEmail] = useState('');
@@ -87,14 +101,21 @@ const DevPasswordResetPage = () => {
               required
               disabled={isSubmitting}
             />
-            <Input
-              type="password"
-              placeholder="New password"
-              value={newPassword}
-              onChange={e => setNewPassword(e.target.value)}
-              required
-              disabled={isSubmitting}
-            />
+            <div className="space-y-1.5">
+              <Input
+                type="password"
+                placeholder="New password"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                required
+                disabled={isSubmitting}
+              />
+              <div className="space-y-0.5">
+                <PasswordRequirement met={newPassword.length >= 8} label="At least 8 characters" />
+                <PasswordRequirement met={/[A-Z]/.test(newPassword)} label="One uppercase letter" />
+                <PasswordRequirement met={/\d/.test(newPassword)} label="One digit" />
+              </div>
+            </div>
             <Input
               type="password"
               placeholder="Confirm new password"

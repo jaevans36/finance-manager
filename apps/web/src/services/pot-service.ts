@@ -25,4 +25,10 @@ export const potService = {
   deletePot(id: string): Promise<void> {
     return financeApiClient.delete(`/api/v1/finance/pots/${id}`).then(() => undefined);
   },
+
+  contributeSinkingFund(id: string): Promise<SpendingPotWithProgress> {
+    return financeApiClient
+      .post<SpendingPotWithProgress>(`/api/v1/finance/pots/${id}/contribute`)
+      .then(r => r.data);
+  },
 };

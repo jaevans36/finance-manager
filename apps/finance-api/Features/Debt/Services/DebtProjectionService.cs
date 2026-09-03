@@ -60,16 +60,25 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
                     ? (standardBalance * a.InterestRate.Value + promoBalance * promoRate) / balance
                     : a.InterestRate;
 
-                // Effective payment: explicit setting → linked bill → minimum
+                // Effective payment: explicit setting → linked bill → minimum.
+                // A CurrentMonthlyPayment of exactly 0 is treated as "not set" rather than
+                // "paying nothing" — otherwise it silently overrides a real lender minimum.
                 linkedBillPayments.TryGetValue(a.Id, out var billPayment);
-                var effectivePayment = a.CurrentMonthlyPayment ?? (billPayment > 0 ? billPayment : null);
+                var effectivePayment = (a.CurrentMonthlyPayment is > 0 ? a.CurrentMonthlyPayment : null)
+                    ?? (billPayment > 0 ? billPayment : null);
+
+                // The canonical "what are you actually paying on this debt right now"
+                // figure: explicit setting → linked bill → lender minimum. Used for the
+                // payoff estimate below and exposed on the response so other features
+                // (Affordability) don't have to re-derive it and risk double-counting
+                // a debt that's tracked via both a Bill and its own payment field.
+                var effectiveMonthlyPayment = effectivePayment ?? a.MinimumMonthlyPayment;
 
                 int? monthsToPayoff = null;
                 string? payoffDate = null;
                 if (!a.IsInterestOnly)
                 {
-                    var payment = effectivePayment ?? a.MinimumMonthlyPayment;
-                    monthsToPayoff = CalculateMonthsToPayoff(balance, effectiveRateForPayoff, payment);
+                    monthsToPayoff = CalculateMonthsToPayoff(balance, effectiveRateForPayoff, effectiveMonthlyPayment);
                     if (monthsToPayoff.HasValue)
                         payoffDate = today.AddMonths(monthsToPayoff.Value).ToString("yyyy-MM");
                 }
@@ -82,7 +91,8 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
                     a.PromotionalRate, a.PromotionalExpiry, a.LoanEndDate,
                     score, label, reason,
                     monthlyInterestCost, monthsToPayoff, payoffDate,
-                    detectedPayment > 0 ? detectedPayment : null);
+                    detectedPayment > 0 ? detectedPayment : null,
+                    effectiveMonthlyPayment);
             })
             .OrderByDescending(s => s.SeverityScore)
             .ToList();
@@ -91,7 +101,7 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
             summaries,
             summaries.Sum(s => Math.Abs(s.Balance)),
             summaries.Sum(s => s.MinimumMonthlyPayment ?? 0m),
-            summaries.Sum(s => s.CurrentMonthlyPayment ?? s.MinimumMonthlyPayment ?? 0m));
+            summaries.Sum(s => s.EffectiveMonthlyPayment ?? 0m));
     }
 
     public async Task<DebtProjectionResponse> ProjectAsync(
@@ -140,6 +150,12 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
         int month = 0;
         const int MaxMonths = 600;
 
+        // The "snowball" effect: once a debt is paid off, its freed-up minimum payment
+        // permanently joins the extra pool for every subsequent month, not just the month
+        // it happened — otherwise total monthly debt-servicing spend quietly shrinks every
+        // time a debt clears instead of continuing to attack the next one.
+        decimal cumulativeFreedMinimums = 0m;
+
         while (state.Values.Any(s => s.Balance > 0) && month < MaxMonths)
         {
             month++;
@@ -159,15 +175,19 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
             }
 
             // 2. Pay minimums on all debts
+            var minimumPaid = new Dictionary<Guid, decimal>();
             foreach (var s in state.Values.Where(s => s.Balance > 0))
             {
                 decimal payment = Math.Min(s.MonthlyPayment, s.Balance);
                 s.Balance -= payment;
                 s.Balance = Math.Max(0m, s.Balance);
+                minimumPaid[s.Account.Id] = payment;
             }
 
             // 3. Apply extra payment cascade to the priority debt
-            decimal extraPool = request.ExtraMonthlyPayment ?? 0m;
+            var extraPaid = new Dictionary<Guid, decimal>();
+            var paidOffNamesThisMonth = new List<string>();
+            decimal extraPool = (request.ExtraMonthlyPayment ?? 0m) + cumulativeFreedMinimums;
 
             // Collect freed minimums from accounts paid off this month
             var justPaidOff = state.Values.Where(s => s.Balance == 0 && !s.IsPaidOff).ToList();
@@ -175,39 +195,34 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
             {
                 s.IsPaidOff = true;
                 extraPool += s.MonthlyPayment;
+                cumulativeFreedMinimums += s.MonthlyPayment;
                 payoffOrder.Add(new PayoffOrder(s.Account.Id, s.Account.Name, month,
                     MonthLabel(today, month)));
+                paidOffNamesThisMonth.Add(s.Account.Name);
             }
 
-            if (extraPool > 0)
+            // Apply the extra pool to the priority debt, dominoing through any further
+            // debts that clear within the same month — each payoff frees its minimum
+            // immediately, which can push straight through to the next-smallest debt in
+            // the same pass rather than waiting for next month.
+            while (extraPool > 0)
             {
                 var priority = GetPriorityDebt(state, request);
-                if (priority is not null)
-                {
-                    decimal extra = Math.Min(extraPool, priority.Balance);
-                    priority.Balance -= extra;
-                    priority.Balance = Math.Max(0m, priority.Balance);
+                if (priority is null) break;
 
-                    if (priority.Balance == 0 && !priority.IsPaidOff)
-                    {
-                        priority.IsPaidOff = true;
-                        extraPool -= extra;
-                        payoffOrder.Add(new PayoffOrder(priority.Account.Id, priority.Account.Name,
-                            month, MonthLabel(today, month)));
+                decimal extra = Math.Min(extraPool, priority.Balance);
+                priority.Balance -= extra;
+                priority.Balance = Math.Max(0m, priority.Balance);
+                extraPaid[priority.Account.Id] = extraPaid.GetValueOrDefault(priority.Account.Id) + extra;
+                extraPool -= extra;
 
-                        // Cascade remaining extra to next priority
-                        if (extraPool > 0)
-                        {
-                            var next = GetPriorityDebt(state, request);
-                            if (next is not null)
-                            {
-                                decimal cascade = Math.Min(extraPool, next.Balance);
-                                next.Balance -= cascade;
-                                next.Balance = Math.Max(0m, next.Balance);
-                            }
-                        }
-                    }
-                }
+                if (priority.Balance != 0 || priority.IsPaidOff) break;
+
+                priority.IsPaidOff = true;
+                cumulativeFreedMinimums += priority.MonthlyPayment;
+                payoffOrder.Add(new PayoffOrder(priority.Account.Id, priority.Account.Name,
+                    month, MonthLabel(today, month)));
+                paidOffNamesThisMonth.Add(priority.Account.Name);
             }
 
             // 4. Record month snapshot
@@ -216,8 +231,19 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
                     Math.Round(s.Balance, 2)))
                 .ToList();
 
+            var payments = state.Values
+                .Select(s =>
+                {
+                    var min = minimumPaid.GetValueOrDefault(s.Account.Id);
+                    var extra = extraPaid.GetValueOrDefault(s.Account.Id);
+                    return new AccountPayment(s.Account.Id, s.Account.Name,
+                        Math.Round(min, 2), Math.Round(extra, 2), Math.Round(min + extra, 2));
+                })
+                .ToList();
+
             schedule.Add(new DebtProjectionMonth(month, label, balances,
-                balances.Sum(b => b.Balance)));
+                balances.Sum(b => b.Balance), payments, payments.Sum(p => p.TotalPaid),
+                paidOffNamesThisMonth));
 
         }
 
@@ -236,15 +262,7 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
             .Where(b => b.UserId == userId && b.IsActive && b.AccountId.HasValue && ids.Contains(b.AccountId.Value))
             .ToListAsync(ct);
 
-        return bills.ToDictionary(
-            b => b.AccountId!.Value,
-            b => b.Frequency switch
-            {
-                BillFrequency.Weekly => Math.Round(b.Amount * 52m / 12m, 2),
-                BillFrequency.Quarterly => Math.Round(b.Amount / 3m, 2),
-                BillFrequency.Annual => Math.Round(b.Amount / 12m, 2),
-                _ => b.Amount, // Monthly
-            });
+        return bills.ToDictionary(b => b.AccountId!.Value, b => b.MonthlyEquivalent());
     }
 
     private async Task<List<Account>> LoadDebtAccountsAsync(Guid userId, CancellationToken ct)
@@ -264,7 +282,9 @@ public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService sev
             if (custom is not null) return custom.MonthlyPayment;
         }
         linkedBillPayments.TryGetValue(account.Id, out var billPayment);
-        return account.CurrentMonthlyPayment
+        // A CurrentMonthlyPayment of exactly 0 is treated as "not set" rather than "paying
+        // nothing" — otherwise it silently overrides a real lender minimum (see GetOverviewAsync).
+        return (account.CurrentMonthlyPayment is > 0 ? account.CurrentMonthlyPayment : null)
             ?? (billPayment > 0 ? (decimal?)billPayment : null)
             ?? account.MinimumMonthlyPayment
             ?? Math.Abs(account.Balance) * 0.02m; // 2% fallback for credit cards

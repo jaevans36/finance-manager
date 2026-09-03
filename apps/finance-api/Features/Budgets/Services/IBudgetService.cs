@@ -13,16 +13,20 @@ public record BudgetWithProgress(
     decimal RolloverFromPrevious,
     decimal PercentageUsed,
     bool IsWarning,
-    bool IsExceeded
+    bool IsExceeded,
+    string? Title,
+    string? Note
 );
 
-public record CreateBudgetRequest(Guid CategoryId, int Month, int Year, decimal Amount);
+public record CreateBudgetRequest(Guid CategoryId, int Month, int Year, decimal Amount, string? Title = null, string? Note = null);
 
-public record UpdateBudgetRequest(decimal? Amount);
+public record UpdateBudgetRequest(decimal? Amount, string? Title = null, string? Note = null);
 
 public record CategoryBudgetSpend(string CategoryName, string? CategoryColour, decimal Budgeted, decimal Spent);
 
 public record BudgetTrendPoint(int Month, int Year, string MonthLabel, IEnumerable<CategoryBudgetSpend> Categories);
+
+public record SuggestedBudgetResponse(decimal? SuggestedAmount, int TransactionCount);
 
 public interface IBudgetService
 {
@@ -33,4 +37,5 @@ public interface IBudgetService
     Task<BudgetWithProgress?> UpdateBudgetAsync(Guid userId, Guid budgetId, UpdateBudgetRequest request, CancellationToken ct = default);
     Task<bool> DeleteBudgetAsync(Guid userId, Guid budgetId, CancellationToken ct = default);
     Task<IEnumerable<BudgetWithProgress>> CopyFromPreviousMonthAsync(Guid userId, int month, int year, CancellationToken ct = default);
+    Task<SuggestedBudgetResponse> GetSuggestedBudgetAsync(Guid userId, Guid categoryId, CancellationToken ct = default);
 }

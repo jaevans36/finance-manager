@@ -185,7 +185,7 @@ export interface NetWorthResponse {
 export type PotType =
   | 'Groceries' | 'Fuel' | 'EatingOut' | 'Kids' | 'Clothing'
   | 'Entertainment' | 'Bills' | 'Subscriptions' | 'Savings'
-  | 'EmergencyFund' | 'Holiday' | 'Custom';
+  | 'EmergencyFund' | 'Holiday' | 'Custom' | 'SinkingFund';
 
 export interface Budget {
   id: string;
@@ -201,6 +201,8 @@ export interface Budget {
   percentageUsed: number;
   isWarning: boolean;
   isExceeded: boolean;
+  title: string | null;
+  note: string | null;
 }
 
 export interface CreateBudgetRequest {
@@ -208,10 +210,14 @@ export interface CreateBudgetRequest {
   month: number;
   year: number;
   amount: number;
+  title?: string | null;
+  note?: string | null;
 }
 
 export interface UpdateBudgetRequest {
   amount?: number;
+  title?: string | null;
+  note?: string | null;
 }
 
 export interface CategoryBudgetSpend {
@@ -226,6 +232,11 @@ export interface BudgetTrendPoint {
   year: number;
   monthLabel: string;
   categories: CategoryBudgetSpend[];
+}
+
+export interface SuggestedBudgetResponse {
+  suggestedAmount: number | null;
+  transactionCount: number;
 }
 
 // ── Spending pot types ────────────────────────────────────────────────────────
@@ -244,6 +255,13 @@ export interface SpendingPotWithProgress {
   percentageUsed: number;
   isWarning: boolean;
   isExceeded: boolean;
+  // Sinking fund fields (Type === 'SinkingFund' only)
+  annualAmount: number | null;
+  nextPaymentDate: string | null;
+  accumulatedAmount: number;
+  monthlyAllocation: number | null;
+  monthsRemaining: number | null;
+  isReady: boolean;
 }
 
 export interface CreateSpendingPotRequest {
@@ -254,6 +272,8 @@ export interface CreateSpendingPotRequest {
   icon?: string;
   colour?: string;
   categoryIds: string[];
+  annualAmount?: number;
+  nextPaymentDate?: string;
 }
 
 export interface UpdateSpendingPotRequest {
@@ -263,6 +283,8 @@ export interface UpdateSpendingPotRequest {
   icon?: string;
   colour?: string;
   categoryIds?: string[];
+  annualAmount?: number;
+  nextPaymentDate?: string;
 }
 
 // ── Bill types ────────────────────────────────────────────────────────────────
@@ -284,11 +306,14 @@ export interface Bill {
   isPaid: boolean;
   lastPaidDate: string | null;
   categoryId: string | null;
+  categoryName: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
   accountId: string | null;
   accountName: string | null;
+  linkedAccountPayment: number | null;
+  hasPaymentMismatch: boolean;
 }
 
 export interface UpcomingBill {
@@ -309,6 +334,8 @@ export interface RecurringPattern {
   amountTrend: AmountTrend;
   occurrencesInPeriod: number;
   lastOccurrence: string | null;
+  accountId: string;
+  accountName: string;
   isLikelyInactive: boolean;
 }
 
@@ -329,7 +356,7 @@ export interface UpdateBillRequest {
   frequency?: BillFrequency;
   dueDay?: number;
   reminderDaysBefore?: number;
-  categoryId?: string;
+  categoryId?: string | null;
   isActive?: boolean;
   description?: string;
   accountId?: string | null;
@@ -399,6 +426,7 @@ export interface DebtAccountSummary {
   monthsToPayoffAtCurrentPayment: number | null;
   payoffDateAtCurrentPayment: string | null;
   detectedMonthlyPayment: number | null;
+  effectiveMonthlyPayment: number | null;
 }
 
 export interface DebtOverviewResponse {
@@ -431,6 +459,17 @@ export interface DebtProjectionMonth {
   label: string;
   balances: AccountBalance[];
   totalRemaining: number;
+  payments: AccountPayment[];
+  totalPaidThisMonth: number;
+  paidOffThisMonth: string[];
+}
+
+export interface AccountPayment {
+  accountId: string;
+  name: string;
+  minimumPaid: number;
+  extraPaid: number;
+  totalPaid: number;
 }
 
 export interface PayoffOrder {
@@ -460,10 +499,129 @@ export interface AffordabilityData {
   incomeConfidence: IncomeConfidence;
   incomeSource: IncomeSource;
   committedCosts: number;
+  existingDebtPayments: number;
   discretionarySpend: number;
+  plannedSavings: number;
   emergencyBuffer: number;
   safeSurplus: number;
   suggestedDebtPayment: number;
   calculatedAt: string;
   incomeAccountIds: string[];
+}
+
+// ── Income streams ───────────────────────────────────────────────────────────
+
+export interface IncomeStream {
+  id: string;
+  userId: string;
+  name: string;
+  monthlyAmount: number;
+  accountId: string | null;
+  accountName: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateIncomeStreamRequest {
+  name: string;
+  monthlyAmount: number;
+  accountId?: string | null;
+}
+
+export interface UpdateIncomeStreamRequest {
+  name?: string;
+  monthlyAmount?: number;
+  accountId?: string | null;
+}
+
+export interface DetectedIncomeTransaction {
+  date: string;
+  payee: string | null;
+  description: string | null;
+  amount: number;
+}
+
+export interface DetectedIncomeResponse {
+  detectedMonthlyAmount: number | null;
+  transactionCount: number;
+  matchedTransactions: DetectedIncomeTransaction[];
+}
+
+// ── AI Insights types ────────────────────────────────────────────────────────
+
+export type InsightType = 'SpendingVelocity' | 'Anomaly' | 'Subscription' | 'PriceIncrease';
+export type InsightSeverity = 'Info' | 'Warning' | 'Critical';
+export type AnomalyType = 'CategorySpike' | 'NewMerchant' | 'PotentialDuplicate';
+
+export interface CategoryVelocity {
+  categoryId: string;
+  categoryName: string;
+  spentSoFar: number;
+  dailyAverage: number;
+  projectedTotal: number;
+  budgetLimit: number | null;
+  projectedOverspend: number | null;
+}
+
+export interface SpendingVelocityResponse {
+  daysElapsed: number;
+  daysInMonth: number;
+  totalSpentSoFar: number;
+  dailyAverage: number;
+  projectedMonthEndTotal: number;
+  budgetTotal: number | null;
+  projectedOverspend: number | null;
+  categories: CategoryVelocity[];
+}
+
+export interface AnomalyAlert {
+  id: string;
+  type: AnomalyType;
+  transactionId: string;
+  merchantName: string;
+  amount: number;
+  transactionDate: string;
+  description: string;
+  severity: InsightSeverity;
+}
+
+export interface SubscriptionAuditItem {
+  merchantName: string;
+  monthlyCost: number;
+  annualCost: number;
+  frequency: RecurringFrequency;
+  possiblyUnused: boolean;
+  lastOccurrence: string | null;
+  amountTrend: AmountTrend;
+}
+
+export interface SubscriptionAuditResponse {
+  subscriptions: SubscriptionAuditItem[];
+  totalMonthlyCost: number;
+  totalAnnualCost: number;
+  possiblyUnusedCount: number;
+}
+
+export interface NegotiationScriptResponse {
+  merchantName: string;
+  tenureMonths: number;
+  totalSpent: number;
+  averageMonthlyAmount: number;
+  paymentCount: number;
+  paymentConsistencyPct: number;
+  script: string;
+  disclaimer: string;
+}
+
+export interface InsightCard {
+  id: string;
+  type: InsightType;
+  severity: InsightSeverity;
+  title: string;
+  summary: string;
+  actionLabel: string | null;
+}
+
+export interface InsightsSummaryResponse {
+  cards: InsightCard[];
 }

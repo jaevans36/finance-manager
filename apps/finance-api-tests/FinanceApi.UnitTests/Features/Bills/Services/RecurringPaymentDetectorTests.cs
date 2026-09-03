@@ -68,6 +68,37 @@ public class RecurringPaymentDetectorTests : IDisposable
         result.Should().HaveCount(1);
         result[0].DetectedFrequency.Should().Be(RecurringFrequency.Monthly);
         result[0].MerchantName.Should().Be("NETFLIX");
+        result[0].AccountId.Should().Be(_accountId);
+        result[0].AccountName.Should().Be("Current");
+    }
+
+    [Fact]
+    public async Task DetectAsync_SameMerchantOnTwoAccounts_ReturnsSeparatePatternsPerAccount()
+    {
+        // A subscription moved from one card to another (or coincidentally shares a
+        // name across accounts) is two distinct real-world patterns, not one — each
+        // must resolve to exactly one account so it can be shown and linked correctly.
+        var secondAccountId = Guid.NewGuid();
+        _db.Accounts.Add(new Account
+        {
+            Id = secondAccountId, UserId = _userId, Name = "Savings",
+            Type = AccountType.Checking, Currency = "GBP", Balance = 0
+        });
+        var now = DateTime.UtcNow;
+        _db.Transactions.AddRange(
+            MakeTx("NETFLIX", 9.99m, now.AddDays(-60)),
+            MakeTx("NETFLIX", 9.99m, now.AddDays(-30)),
+            MakeTx("NETFLIX", 9.99m, now.AddDays(-1)),
+            MakeTx("NETFLIX", 9.99m, now.AddDays(-60), accountId: secondAccountId),
+            MakeTx("NETFLIX", 9.99m, now.AddDays(-30), accountId: secondAccountId),
+            MakeTx("NETFLIX", 9.99m, now.AddDays(-1), accountId: secondAccountId));
+        await _db.SaveChangesAsync();
+
+        var result = (await _sut.DetectAsync(_userId)).ToList();
+
+        result.Should().HaveCount(2);
+        result.Should().Contain(p => p.AccountId == _accountId && p.AccountName == "Current");
+        result.Should().Contain(p => p.AccountId == secondAccountId && p.AccountName == "Savings");
     }
 
     [Fact]
@@ -166,8 +197,8 @@ public class RecurringPaymentDetectorTests : IDisposable
     {
         var now = DateTime.UtcNow;
         _db.Transactions.AddRange(
-            MakeTx("SALARY", 2000m, now.AddDays(-60), TransactionType.Credit),
-            MakeTx("SALARY", 2000m, now.AddDays(-30), TransactionType.Credit));
+            MakeTx("SALARY", 2000m, now.AddDays(-60), type: TransactionType.Credit),
+            MakeTx("SALARY", 2000m, now.AddDays(-30), type: TransactionType.Credit));
         await _db.SaveChangesAsync();
 
         var result = await _sut.DetectAsync(_userId);
@@ -189,20 +220,97 @@ public class RecurringPaymentDetectorTests : IDisposable
         result.Should().BeEmpty();
     }
 
+    // ── Generic payment-processor payees (e.g. PayPal) ──────────────────────────
+
+    [Fact]
+    public async Task DetectAsync_WhenPayeeIsGenericPayPal_UsesDescriptionToDistinguishMerchants()
+    {
+        var now = DateTime.UtcNow;
+        _db.Transactions.AddRange(
+            MakeTx("PayPal", 12.99m, now.AddDays(-60), "PAYPAL *SPOTIFY*P4 35314369001 VIS"),
+            MakeTx("PayPal", 12.99m, now.AddDays(-30), "PAYPAL *SPOTIFY*P4 35314369001 VIS"),
+            MakeTx("PayPal", 12.99m, now.AddDays(-1), "PAYPAL *SPOTIFY*P4 35314369001 VIS"),
+            MakeTx("PayPal", 5.99m, now.AddDays(-58), "PAYPAL *WARHAMMER 35314369001 VIS"),
+            MakeTx("PayPal", 5.99m, now.AddDays(-28), "PAYPAL *WARHAMMER 35314369001 VIS"));
+        await _db.SaveChangesAsync();
+
+        var result = (await _sut.DetectAsync(_userId)).ToList();
+
+        result.Should().HaveCount(2);
+        result.Should().Contain(p => p.MerchantName == "SPOTIFY*P4" && p.OccurrencesInPeriod == 3);
+        result.Should().Contain(p => p.MerchantName == "WARHAMMER" && p.OccurrencesInPeriod == 2);
+    }
+
+    [Fact]
+    public async Task DetectAsync_WhenPayeeIsGenericPayPal_DoesNotGroupUnrelatedMerchantsTogether()
+    {
+        var now = DateTime.UtcNow;
+        _db.Transactions.AddRange(
+            MakeTx("PayPal", 12.99m, now.AddDays(-60), "PAYPAL *SPOTIFY*P4 35314369001 VIS"),
+            MakeTx("PayPal", 12.99m, now.AddDays(-30), "PAYPAL *SPOTIFY*P4 35314369001 VIS"),
+            MakeTx("PayPal", 29.99m, now.AddDays(-45), "PAYPAL *EBAY UK 795653703 VIS"));
+        await _db.SaveChangesAsync();
+
+        var result = (await _sut.DetectAsync(_userId)).ToList();
+
+        // eBay only occurs once — must not be folded into a catch-all "PayPal" group with Spotify
+        result.Should().HaveCount(1);
+        result[0].MerchantName.Should().Be("SPOTIFY*P4");
+    }
+
+    [Fact]
+    public async Task DetectAsync_WhenPayPalDescriptionHasVaryingReferenceNumbers_StillGroupsAsSameMerchant()
+    {
+        // Reference-numbered PayPal payments (e.g. Humble Bundle) carry a different
+        // "INT'L <ref>" prefix on every occurrence — the merchant name after it is
+        // what should be grouped on.
+        var now = DateTime.UtcNow;
+        _db.Transactions.AddRange(
+            MakeTx(null, 22.12m, now.AddDays(-90), "INT'L 0004564105 PP*HUMBLEBUNDL HUM 4029357733 VIS"),
+            MakeTx(null, 18.50m, now.AddDays(-60), "INT'L 0010638152 PP*HUMBLEBUNDL HUM 4029357733 VIS"),
+            MakeTx(null, 11.85m, now.AddDays(-30), "INT'L 0057128380 PP*HUMBLEBUNDL HUM 4029357733 VIS"));
+        await _db.SaveChangesAsync();
+
+        var result = (await _sut.DetectAsync(_userId)).ToList();
+
+        result.Should().HaveCount(1);
+        result[0].MerchantName.Should().Be("HUMBLEBUNDL HUM");
+        result[0].OccurrencesInPeriod.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task DetectAsync_WhenPayeeIsGenuineMerchantNamedPayPalLike_StillUsesItDirectly()
+    {
+        // Sanity check: a normal merchant whose name merely contains similar text
+        // shouldn't be treated as a processor passthrough — only an exact "PayPal" payee is.
+        var now = DateTime.UtcNow;
+        _db.Transactions.AddRange(
+            MakeTx("Netflix", 9.99m, now.AddDays(-60), "NETFLIX.COM"),
+            MakeTx("Netflix", 9.99m, now.AddDays(-30), "NETFLIX.COM"));
+        await _db.SaveChangesAsync();
+
+        var result = (await _sut.DetectAsync(_userId)).ToList();
+
+        result.Should().HaveCount(1);
+        result[0].MerchantName.Should().Be("NETFLIX");
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private Transaction MakeTx(
-        string payee,
+        string? payee,
         decimal amount,
         DateTime date,
+        string? description = null,
         TransactionType type = TransactionType.Debit,
-        bool isDuplicate = false) => new()
+        bool isDuplicate = false,
+        Guid? accountId = null) => new()
     {
         Id = Guid.NewGuid(),
         UserId = _userId,
-        AccountId = _accountId,
+        AccountId = accountId ?? _accountId,
         Payee = payee,
-        Description = payee,
+        Description = description ?? payee ?? string.Empty,
         Amount = amount,
         Currency = "GBP",
         Type = type,

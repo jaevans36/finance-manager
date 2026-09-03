@@ -47,6 +47,45 @@ describe('TransactionList', () => {
     expect(screen.getByText(/-£25\.50/)).toBeInTheDocument();
   });
 
+  it('shows the description as a secondary line when it differs from the payee', () => {
+    render(
+      <TransactionList
+        data={makePage([makeTx({ payee: 'BP', description: 'David Jay Evans Monthly joint BP' })])}
+        isLoading={false}
+        page={1}
+        onPageChange={jest.fn()}
+      />
+    );
+    expect(screen.getByText('BP')).toBeInTheDocument();
+    expect(screen.getByText('David Jay Evans Monthly joint BP')).toBeInTheDocument();
+  });
+
+  it('does not repeat the description when it is just a case variant of the payee', () => {
+    render(
+      <TransactionList
+        data={makePage([makeTx({ payee: 'Tesco', description: 'TESCO' })])}
+        isLoading={false}
+        page={1}
+        onPageChange={jest.fn()}
+      />
+    );
+    expect(screen.getByText('Tesco')).toBeInTheDocument();
+    expect(screen.queryByText('TESCO')).not.toBeInTheDocument();
+  });
+
+  it('does not show a description line when there is no payee', () => {
+    render(
+      <TransactionList
+        data={makePage([makeTx({ payee: null, description: 'Some description' })])}
+        isLoading={false}
+        page={1}
+        onPageChange={jest.fn()}
+      />
+    );
+    // Falls back to description as the title — should not also duplicate it as a secondary line
+    expect(screen.getAllByText('Some description')).toHaveLength(1);
+  });
+
   it('shows credit transactions with + prefix and green colour class', () => {
     render(<TransactionList data={makePage([makeTx({ type: 'Credit', amount: 1500 })])} isLoading={false} page={1} onPageChange={jest.fn()} />);
     expect(screen.getByText(/\+£1,500\.00/)).toBeInTheDocument();

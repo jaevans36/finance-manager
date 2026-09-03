@@ -19,7 +19,8 @@ public enum PotType
     Savings,
     EmergencyFund,
     Holiday,
-    Custom
+    Custom,
+    SinkingFund
 }
 
 /// <summary>
@@ -52,6 +53,17 @@ public class SpendingPot
 
     /// <summary>IDs of categories whose transactions count toward this pot's spending.</summary>
     public List<Guid> CategoryIds { get; set; } = new();
+
+    // ── Sinking fund fields (Type == SinkingFund only) ──────────────────────
+
+    /// <summary>The full annual cost being spread — e.g. £600 for car insurance.</summary>
+    public decimal? AnnualAmount { get; set; }
+
+    /// <summary>When the lump sum will next be needed (e.g. insurance renewal date).</summary>
+    public DateOnly? NextPaymentDate { get; set; }
+
+    /// <summary>Total set aside so far this cycle. Resets to 0 when <see cref="NextPaymentDate"/> passes.</summary>
+    public decimal AccumulatedAmount { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

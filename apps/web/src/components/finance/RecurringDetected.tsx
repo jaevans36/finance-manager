@@ -2,8 +2,13 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { billService } from '../../services/bill-service';
 import { BillForm } from './BillForm';
-import type { BillFrequency, RecurringPattern } from '../../types/finance';
+import type { BillFrequency, Category, RecurringPattern } from '../../types/finance';
 import { cn } from '../../lib/utils';
+
+/** 1 = Monday .. 7 = Sunday (ISO 8601), converted from JS's 0 = Sunday .. 6 = Saturday. */
+function isoWeekday(date: Date): number {
+  return ((date.getDay() + 6) % 7) + 1;
+}
 
 const TREND_BADGE: Record<string, { label: string; className: string }> = {
   Stable: { label: 'Stable', className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
@@ -27,10 +32,11 @@ const FREQ_LABEL: Record<string, string> = {
 };
 
 interface RecurringDetectedProps {
+  categories?: Category[];
   onBillSaved?: () => void;
 }
 
-export function RecurringDetected({ onBillSaved }: RecurringDetectedProps) {
+export function RecurringDetected({ categories = [], onBillSaved }: RecurringDetectedProps) {
   const [patterns, setPatterns] = useState<RecurringPattern[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
@@ -47,10 +53,14 @@ export function RecurringDetected({ onBillSaved }: RecurringDetectedProps) {
       .finally(() => setIsLoading(false));
   };
 
-  const dismiss = (merchantName: string) =>
-    setDismissed(prev => new Set([...prev, merchantName]));
+  // Same merchant can now appear once per account it was detected on, so the
+  // merchant name alone is no longer a unique identifier for a pattern.
+  const patternKey = (p: RecurringPattern) => `${p.merchantName}::${p.accountId}`;
 
-  const visible = patterns.filter(p => !dismissed.has(p.merchantName));
+  const dismiss = (key: string) =>
+    setDismissed(prev => new Set([...prev, key]));
+
+  const visible = patterns.filter(p => !dismissed.has(patternKey(p)));
   const active = visible.filter(p => !p.isLikelyInactive);
   const likelyInactive = visible.filter(p => p.isLikelyInactive);
 
@@ -83,9 +93,10 @@ export function RecurringDetected({ onBillSaved }: RecurringDetectedProps) {
         <div className="space-y-2">
           {active.map(p => (
             <PatternCard
-              key={p.merchantName}
+              key={patternKey(p)}
               pattern={p}
-              onDismiss={() => dismiss(p.merchantName)}
+              categories={categories}
+              onDismiss={() => dismiss(patternKey(p))}
               onBillSaved={onBillSaved}
             />
           ))}
@@ -99,9 +110,10 @@ export function RecurringDetected({ onBillSaved }: RecurringDetectedProps) {
           </p>
           {likelyInactive.map(p => (
             <PatternCard
-              key={p.merchantName}
+              key={patternKey(p)}
               pattern={p}
-              onDismiss={() => dismiss(p.merchantName)}
+              categories={categories}
+              onDismiss={() => dismiss(patternKey(p))}
               onBillSaved={onBillSaved}
               inactive
             />
@@ -114,11 +126,13 @@ export function RecurringDetected({ onBillSaved }: RecurringDetectedProps) {
 
 function PatternCard({
   pattern: p,
+  categories = [],
   onDismiss,
   onBillSaved,
   inactive = false,
 }: {
   pattern: RecurringPattern;
+  categories?: Category[];
   onDismiss: () => void;
   onBillSaved?: () => void;
   inactive?: boolean;
@@ -129,11 +143,13 @@ function PatternCard({
     ? new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium' }).format(new Date(p.lastOccurrence))
     : null;
 
-  const defaultDueDay = p.lastOccurrence
-    ? parseInt(p.lastOccurrence.split('-')[2], 10)
-    : undefined;
   const defaultFrequency: BillFrequency =
     p.detectedFrequency !== 'Unknown' ? (p.detectedFrequency as BillFrequency) : 'Monthly';
+  const defaultDueDay = p.lastOccurrence
+    ? defaultFrequency === 'Weekly'
+      ? isoWeekday(new Date(p.lastOccurrence))
+      : parseInt(p.lastOccurrence.split('-')[2], 10)
+    : undefined;
 
   if (confirming) {
     return (
@@ -158,10 +174,12 @@ function PatternCard({
           Pre-filled from detected pattern — adjust as needed.
         </p>
         <BillForm
+          categories={categories}
           defaultName={p.merchantName}
           defaultAmount={p.latestAmount}
           defaultFrequency={defaultFrequency}
           defaultDueDay={defaultDueDay}
+          defaultAccountId={p.accountId}
           onSuccess={() => { setConfirming(false); onDismiss(); onBillSaved?.(); }}
           onCancel={() => setConfirming(false)}
         />
@@ -182,7 +200,8 @@ function PatternCard({
             {p.merchantName}
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            {PATTERN_LABEL[p.patternType]} · {FREQ_LABEL[p.detectedFrequency]}
+            {PATTERN_LABEL[p.patternType]} · {FREQ_LABEL[p.detectedFrequency]} ·{' '}
+            <span className="text-blue-600 dark:text-blue-400">{p.accountName}</span>
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
             Latest: <span className="font-medium text-gray-700 dark:text-gray-300">£{p.latestAmount.toFixed(2)}</span>

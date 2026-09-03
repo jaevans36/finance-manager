@@ -48,7 +48,7 @@ public class BudgetService : IBudgetService
                 budget.Id, budget.CategoryId,
                 budget.Category?.Name, budget.Category?.Colour, budget.Category?.Icon,
                 budget.Month, budget.Year, budget.Amount, spent, budget.RolloverFromPrevious,
-                pct, pct is >= 80 and < 100, pct >= 100));
+                pct, pct is >= 80 and < 100, pct >= 100, budget.Title, budget.Note));
         }
 
         return results;
@@ -94,7 +94,9 @@ public class BudgetService : IBudgetService
             CategoryId = request.CategoryId,
             Month = request.Month,
             Year = request.Year,
-            Amount = request.Amount
+            Amount = request.Amount,
+            Title = request.Title,
+            Note = request.Note
         };
         _db.Budgets.Add(budget);
         await _db.SaveChangesAsync(ct);
@@ -111,6 +113,8 @@ public class BudgetService : IBudgetService
         if (budget is null) return null;
 
         if (request.Amount.HasValue) budget.Amount = request.Amount.Value;
+        if (request.Title is not null) budget.Title = request.Title;
+        if (request.Note is not null) budget.Note = request.Note;
         budget.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
         return await BuildProgressAsync(budget, ct);
@@ -147,7 +151,9 @@ public class BudgetService : IBudgetService
                 CategoryId = p.CategoryId,
                 Month = month,
                 Year = year,
-                Amount = p.Amount
+                Amount = p.Amount,
+                Title = p.Title,
+                Note = p.Note
             })
             .ToList();
 
@@ -166,7 +172,7 @@ public class BudgetService : IBudgetService
             budget.Id, budget.CategoryId,
             budget.Category?.Name, budget.Category?.Colour, budget.Category?.Icon,
             budget.Month, budget.Year, budget.Amount, spent, budget.RolloverFromPrevious,
-            pct, pct is >= 80 and < 100, pct >= 100);
+            pct, pct is >= 80 and < 100, pct >= 100, budget.Title, budget.Note);
     }
 
     private Task<decimal> GetSpentAsync(Guid userId, Guid categoryId, int month, int year, CancellationToken ct)
@@ -178,4 +184,21 @@ public class BudgetService : IBudgetService
                      && t.Type == TransactionType.Debit
                      && !t.IsDuplicate)
             .SumAsync(t => t.Amount, ct);
+
+    public async Task<SuggestedBudgetResponse> GetSuggestedBudgetAsync(Guid userId, Guid categoryId, CancellationToken ct = default)
+    {
+        var windowStart = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-90);
+        var transactions = await _db.Transactions
+            .Where(t => t.UserId == userId
+                     && t.CategoryId == categoryId
+                     && t.TransactionDate >= windowStart
+                     && t.Type == TransactionType.Debit
+                     && !t.IsDuplicate)
+            .ToListAsync(ct);
+
+        if (transactions.Count == 0) return new SuggestedBudgetResponse(null, 0);
+
+        var total = transactions.Sum(t => Math.Abs(t.Amount));
+        return new SuggestedBudgetResponse(Math.Round(total / 3m, 2), transactions.Count);
+    }
 }
