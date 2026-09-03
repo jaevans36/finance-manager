@@ -21,6 +21,7 @@ using LifeApi.Features.Admin.Services;
 using LifeApi.Features.Settings.Services;
 using LifeApi.Features.Notifications.Services;
 using LifeApi.Features.Labels.Services;
+using LifeApi.Infrastructure.Logging;
 using LifeApi.Middleware;
 
 // Configure Serilog
@@ -37,6 +38,9 @@ Log.Logger = new LoggerConfiguration()
         rollingInterval: RollingInterval.Day,
         retainedFileCountLimit: 30,
         outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}")
+    .WriteTo.Sink(
+        new DiscordWebhookSink(Environment.GetEnvironmentVariable("DISCORD_ERROR_WEBHOOK")),
+        restrictedToMinimumLevel: LogEventLevel.Error)
     .CreateLogger();
 
 try
