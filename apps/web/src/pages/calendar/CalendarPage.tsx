@@ -256,6 +256,7 @@ const CalendarPage = () => {
       description?: string;
       priority?: 'Low' | 'Medium' | 'High' | 'Critical';
       dueDate?: string;
+      groupId?: string;
     }
   ) => {
     try {
@@ -521,6 +522,7 @@ const CalendarPage = () => {
       {showEditTask && selectedTask && (
         <TaskDetailModal
           task={selectedTask}
+          groups={groups}
           onSubmit={handleUpdateTask}
           onCancel={() => {
             setShowEditTask(false);
