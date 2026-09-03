@@ -498,6 +498,55 @@ describe('TaskDetailModal', () => {
   });
 
   // ════════════════════════════════════════════════════════════════════════
+  // Group selection
+  // ════════════════════════════════════════════════════════════════════════
+
+  describe('Group selection', () => {
+    const mockGroups = [
+      { id: 'g1', name: 'Work', colour: '#ff0000', isDefault: true, taskCount: 0, createdAt: '', updatedAt: '' },
+      { id: 'g2', name: 'Home', colour: '#00ff00', isDefault: false, taskCount: 0, createdAt: '', updatedAt: '' },
+    ];
+    const groupedTask = { ...mockTask, groupId: 'g1', groupName: 'Work', groupColour: '#ff0000' };
+
+    it('should not render the group selector when no groups are provided', () => {
+      renderModal({ task: groupedTask });
+      enterEditMode();
+      expect(screen.queryByLabelText(/task group/i)).not.toBeInTheDocument();
+    });
+
+    it('should render the group selector in edit mode preselected to the current group', () => {
+      renderModal({ task: groupedTask, groups: mockGroups });
+      enterEditMode();
+      const select = screen.getByLabelText(/task group/i) as HTMLSelectElement;
+      expect(select).toBeInTheDocument();
+      expect(select.value).toBe('g1');
+    });
+
+    it('should not render the group selector in view mode', () => {
+      renderModal({ task: groupedTask, groups: mockGroups });
+      expect(screen.queryByLabelText(/task group/i)).not.toBeInTheDocument();
+    });
+
+    it('should call onSubmit with the newly selected groupId', async () => {
+      mockOnSubmit.mockResolvedValue(undefined);
+      renderModal({ task: groupedTask, groups: mockGroups });
+      enterEditMode();
+
+      fireEvent.change(screen.getByLabelText(/task group/i), {
+        target: { value: 'g2' },
+      });
+      fireEvent.submit(screen.getByRole('form'));
+
+      await waitFor(() => {
+        expect(mockOnSubmit).toHaveBeenCalledWith(
+          'task-1',
+          expect.objectContaining({ groupId: 'g2' }),
+        );
+      });
+    });
+  });
+
+  // ════════════════════════════════════════════════════════════════════════
   // Actions
   // ════════════════════════════════════════════════════════════════════════
 

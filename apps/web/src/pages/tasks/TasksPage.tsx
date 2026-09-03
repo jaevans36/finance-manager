@@ -180,6 +180,7 @@ const TasksPage = () => {
       description?: string;
       priority?: 'Low' | 'Medium' | 'High' | 'Critical';
       dueDate?: string;
+      groupId?: string;
       labelIds?: string[];
     }
   ) => {
@@ -442,6 +443,7 @@ const TasksPage = () => {
       {editingTask && (
         <TaskDetailModal
           task={editingTask}
+          groups={groups}
           onSubmit={handleUpdateTask}
           onCancel={() => setEditingTask(null)}
           onDelete={handleDeleteTask}

@@ -346,7 +346,7 @@ const EisenhowerMatrixPage = () => {
 
   const handleTaskSubmit = useCallback(async (
     id: string,
-    data: { title: string; description?: string; priority?: 'Low' | 'Medium' | 'High' | 'Critical'; dueDate?: string },
+    data: { title: string; description?: string; priority?: 'Low' | 'Medium' | 'High' | 'Critical'; dueDate?: string; groupId?: string },
   ) => {
     try {
       const updated = await taskService.updateTask(id, data);

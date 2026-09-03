@@ -15,6 +15,7 @@ import {
   MessageSquare,
   CheckCircle2,
   LayoutGrid,
+  FolderOpen,
   Zap,
   Clock,
 } from 'lucide-react';
@@ -30,6 +31,7 @@ import type { UpdateTaskInput } from '@life-manager/schema';
 import { useSubtasks } from '../../hooks/useSubtasks';
 import { SubtaskList } from './SubtaskList';
 import type { Task, TaskStatus, UrgencyLevel, ImportanceLevel, EnergyLevel } from '../../services/taskService';
+import type { TaskGroup } from '../../types/taskGroup';
 import { StatusBadge } from './StatusBadge';
 import { StatusSelector } from './StatusSelector';
 import { QuadrantBadge } from './QuadrantBadge';
@@ -49,6 +51,8 @@ type Priority = 'Low' | 'Medium' | 'High' | 'Critical';
 
 interface TaskDetailModalProps {
   task: Task;
+  /** Groups the task can be moved between while editing. When empty, the group selector is hidden. */
+  groups?: TaskGroup[];
   onSubmit: (
     id: string,
     data: {
@@ -56,6 +60,7 @@ interface TaskDetailModalProps {
       description?: string;
       priority?: Priority;
       dueDate?: string;
+      groupId?: string;
       labelIds?: string[];
       reminderAt?: string;
     },
@@ -118,6 +123,7 @@ const metaSelectClasses = 'w-full rounded border border-input bg-background px-2
 
 export const TaskDetailModal = ({
   task,
+  groups = [],
   onSubmit,
   onCancel,
   onDelete,
@@ -150,6 +156,7 @@ export const TaskDetailModal = ({
     description: task.description || '',
     priority: task.priority,
     dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
+    groupId: task.groupId ?? '',
   });
   const [apiError, setApiError] = useState('');
   const watchedTitle = watch('title');
@@ -258,6 +265,7 @@ export const TaskDetailModal = ({
       description: task.description || '',
       priority: task.priority,
       dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
+      groupId: task.groupId ?? '',
     });
     setEditLabelIds((task.labels ?? []).map(l => l.id));
     setReminderAt(toDatetimeLocalValue(task.reminderAt));
@@ -282,6 +290,7 @@ export const TaskDetailModal = ({
         description: data.description?.trim() || undefined,
         priority: data.priority as Priority || undefined,
         dueDate: data.dueDate || undefined,
+        groupId: data.groupId || undefined,
         labelIds: editLabelIds,
         reminderAt: reminderAt ? new Date(reminderAt).toISOString() : undefined,
       });
@@ -610,6 +619,29 @@ export const TaskDetailModal = ({
               </span>
             )}
           </div>
+
+          {/* Group — only in edit mode; header shows badge in view mode */}
+          {isEditing && groups.length > 0 && (
+            <>
+              <span className="flex items-center justify-center text-muted-foreground">
+                <FolderOpen size={16} aria-hidden="true" />
+              </span>
+              <span className="text-sm font-medium text-muted-foreground" id="meta-group-label">Group</span>
+              <div className="min-w-0 text-sm text-foreground" aria-labelledby="meta-group-label">
+                <select
+                  id="task-group"
+                  {...register('groupId')}
+                  disabled={isSubmitting}
+                  aria-label="Task group"
+                  className={metaSelectClasses}
+                >
+                  {groups.map((g) => (
+                    <option key={g.id} value={g.id}>{g.name}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
 
           {/* Priority — only in edit mode; header shows badge in view mode */}
           {isEditing && (
