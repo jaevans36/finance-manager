@@ -66,7 +66,7 @@
 - Conventional commits: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `perf:`
 - Reference task IDs: `feat: add task search (T301)`
 - PRs ≤ 500 lines; split larger phases into sequential PRs
-- Branch pattern: `phase-XX/description` → squash-merge to `develop` → release to `main`
+- Trunk-based: branch from `main` (`phase-XX/description`, `feat/…`, `fix/…`) → PR → squash-merge to `main`. No `develop` branch. See `docs/BRANCHING-STRATEGY.md`.
 
 ---
 
@@ -145,7 +145,7 @@ Provide a structured summary: what changed, current build/test status, what's ne
 
 ### Testing rules
 - Update `docs/testing/TEST-INVENTORY.md` whenever tests are added/removed
-- All 300+ tests must pass before merging to `develop`
+- All tests must pass before merging to `main`
 - Backend: xUnit | Frontend: Jest + React Testing Library | E2E: Playwright
 
 ### Agent skills (Anvil)
