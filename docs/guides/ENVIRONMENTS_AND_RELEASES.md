@@ -1,11 +1,23 @@
 # Environments, Release & Deployment
 
 **Created**: 2026-03-01
-**Last Updated**: 2026-03-01
-**Status**: Active
+**Last Updated**: 2026-09-04
+**Status**: Partially superseded — see the notice below
 **Owner**: Life Manager Engineering
 
-> Single source of truth for environment management, database strategy, release process, and deployment procedures. All team members must follow these processes.
+> Single source of truth for environment management, database strategy, release process, and deployment procedures.
+
+> **⚠️ 2026-09-04 — branching and environment model changed.**
+> The project is now **trunk-based on `main`** (see [Branching Strategy](../BRANCHING-STRATEGY.md)) and
+> the always-on deployment is a **cloud VPS behind Tailscale**, not a LAN "UAT" box. There is no
+> `develop` branch and no `scripts/deploy-uat.ps1` / `deploy-uat.yml` flow.
+>
+> Still accurate below: database backup/restore, EF migration rules, per-environment config
+> (Section 3), quality gates (Section 6), security (Section 8), backup & DR (Section 10).
+> **Stale below** (kept for reference until this doc is rewritten): the three-environment /
+> `develop` → UAT machinery in Sections 1, 4 and 5, and the nightly "Dev ← UAT" refresh in Section 2.
+> Current deploy flow: branch from `main` → PR → squash-merge → the VPS pulls `main` and rebuilds
+> (interim `~/life-manager/deploy.sh`; GitHub Actions → GHCR pipeline planned).
 
 ---
 
@@ -79,13 +91,14 @@ Life Manager follows a three-environment model that mirrors professional softwar
                     └──────────────────────────────────────────┘
 ```
 
-### Branch-to-Environment Mapping
+### Branch-to-Environment Mapping (current — trunk-based)
 
 | Branch | Deploys To | Trigger | Method |
 |---|---|---|---|
-| `phase-XX/*` | Dev (automatic via `dotnet watch` / `pnpm dev`) | On save | Hot reload |
-| `develop` | UAT (manual deploy via script) | After PR merge | `scripts/deploy-uat.ps1` |
-| `main` | Production | After release merge + tag | CI/CD pipeline (future) |
+| `phase-XX/*` · `feat/*` · `fix/*` | Local dev | On save | `start-dev.ps1` (hot reload) |
+| `main` | The VPS (always-on, Tailscale) | Squash-merge to `main`, CI green | Box pulls `main` + rebuilds (`~/life-manager/deploy.sh`; GitHub Actions → GHCR pipeline planned) |
+
+Version tags (`vX.Y.Z`) are cut by merging the open release-please PR on `main` — decoupled from deploy.
 
 ### Environment Parity
 
