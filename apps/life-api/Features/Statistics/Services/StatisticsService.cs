@@ -19,11 +19,13 @@ public class StatisticsService : IStatisticsService
 {
     private readonly FinanceDbContext _context;
     private readonly ITaskService _taskService;
+    private readonly TimeProvider _timeProvider;
 
-    public StatisticsService(FinanceDbContext context, ITaskService taskService)
+    public StatisticsService(FinanceDbContext context, ITaskService taskService, TimeProvider? timeProvider = null)
     {
         _context = context;
         _taskService = taskService;
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     public async Task<WeeklyStatisticsDto> GetWeeklyStatisticsAsync(Guid userId, DateTime weekStart)
@@ -160,6 +162,7 @@ public class StatisticsService : IStatisticsService
     {
         var weekStartUtc = DateTime.SpecifyKind(weekStart.Date, DateTimeKind.Utc);
         var weekEndUtc = weekStartUtc.AddDays(7);
+        var todayUtc = _timeProvider.GetUtcNow().UtcDateTime.Date;
 
         var urgentTasks = await _context.Tasks
             .Where(t => t.UserId == userId &&
@@ -179,7 +182,7 @@ public class StatisticsService : IStatisticsService
                 Priority = t.Priority.ToString(),
                 DueDate = t.DueDate,
                 DaysUntilDue = t.DueDate != null
-                    ? (int)(t.DueDate.Value.Date - DateTime.UtcNow.Date).TotalDays
+                    ? (int)(t.DueDate.Value.Date - todayUtc).TotalDays
                     : null,
                 GroupId = t.GroupId
             })
@@ -191,7 +194,7 @@ public class StatisticsService : IStatisticsService
     public async Task<List<HistoricalStatisticsDto>> GetHistoricalStatisticsAsync(Guid userId, int weeks)
     {
         var historicalStats = new List<HistoricalStatisticsDto>();
-        var today = DateTime.UtcNow.Date;
+        var today = _timeProvider.GetUtcNow().UtcDateTime.Date;
         
         // Calculate the start of the current week (Monday)
         var currentWeekStart = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
