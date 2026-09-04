@@ -51,6 +51,8 @@ try
 
     // Use Serilog for logging
     builder.Host.UseSerilog();
+    // Clock abstraction — inject TimeProvider instead of calling DateTime.UtcNow directly
+    builder.Services.AddSingleton(TimeProvider.System);
     // Add memory caching
     builder.Services.AddMemoryCache();
     builder.Services.AddResponseCaching();

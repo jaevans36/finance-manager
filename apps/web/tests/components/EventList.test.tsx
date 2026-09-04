@@ -16,13 +16,19 @@ const renderWithProviders = (component: React.ReactElement) => {
 };
 
 describe('EventList', () => {
-  const mockEvents: Event[] = [
+  // Fixed "now" so Today / Tomorrow / Past grouping is deterministic regardless of when the
+  // suite runs (previously flaked when CI ran near midnight). Monday midday.
+  const FIXED_NOW = new Date('2026-06-15T12:00:00.000Z');
+  const DAY = 86_400_000;
+  const HOUR = 3_600_000;
+
+  const buildMockEvents = (): Event[] => [
     {
       id: '1',
       title: 'Today Event',
       description: 'Happening now',
       startDate: new Date().toISOString(),
-      endDate: new Date(Date.now() + 36000_00).toISOString(), // +1 hour
+      endDate: new Date(Date.now() + HOUR).toISOString(),
       isAllDay: false,
       location: null,
       reminderMinutes: null,
@@ -37,8 +43,8 @@ describe('EventList', () => {
       id: '2',
       title: 'Tomorrow Event',
       description: 'Coming soon',
-      startDate: new Date(Date.now() + 86400000).toISOString(), // +1 day
-      endDate: new Date(Date.now() + 86400000 + 3600000).toISOString(),
+      startDate: new Date(Date.now() + DAY).toISOString(),
+      endDate: new Date(Date.now() + DAY + HOUR).toISOString(),
       isAllDay: false,
       location: 'Office',
       reminderMinutes: 30,
@@ -53,8 +59,8 @@ describe('EventList', () => {
       id: '3',
       title: 'Past Event',
       description: 'Already happened',
-      startDate: new Date(Date.now() - 86400000).toISOString(), // -1 day
-      endDate: new Date(Date.now() - 86400000 + 3600000).toISOString(),
+      startDate: new Date(Date.now() - DAY).toISOString(),
+      endDate: new Date(Date.now() - DAY + HOUR).toISOString(),
       isAllDay: false,
       location: null,
       reminderMinutes: null,
@@ -67,14 +73,34 @@ describe('EventList', () => {
     },
   ];
 
+  let mockEvents: Event[];
+
   const mockHandlers = {
     onEdit: jest.fn(),
     onDelete: jest.fn(),
     isLoading: false,
   };
 
+  beforeAll(() => {
+    // Freeze Date only — leave timer/scheduling APIs real so React and RTL are unaffected.
+    jest.useFakeTimers({
+      doNotFake: [
+        'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval',
+        'setImmediate', 'clearImmediate', 'requestAnimationFrame',
+        'cancelAnimationFrame', 'requestIdleCallback', 'cancelIdleCallback',
+        'queueMicrotask', 'performance',
+      ],
+    });
+    jest.setSystemTime(FIXED_NOW);
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
+    mockEvents = buildMockEvents();
   });
 
   describe('Rendering', () => {

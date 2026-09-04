@@ -16,8 +16,8 @@ public class UrgentTaskIdentificationTests
     private readonly StatisticsService _service;
     private readonly Guid _testUserId = Guid.NewGuid();
 
-    // Use DateTime.UtcNow as the time anchor so tests remain valid regardless of when they run.
-    private static readonly DateTime Now = DateTime.UtcNow;
+    // Fixed time anchor so the service and the test agree on "now" — no midnight-boundary flakiness.
+    private static readonly DateTime Now = new(2026, 6, 15, 10, 0, 0, DateTimeKind.Utc);
     // weekStart = current week's Monday (ISO 8601: Monday is day 1)
     private static readonly DateTime WeekStart = Now.Date.AddDays(
         Now.DayOfWeek == DayOfWeek.Sunday ? -6 : -(int)Now.DayOfWeek + 1);
@@ -31,7 +31,12 @@ public class UrgentTaskIdentificationTests
 
         _context = new FinanceDbContext(options);
         var mockTaskService = new Mock<ITaskService>();
-        _service = new StatisticsService(_context, mockTaskService.Object);
+        _service = new StatisticsService(_context, mockTaskService.Object, new FixedTimeProvider(Now));
+    }
+
+    private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
     }
 
     [Fact]
