@@ -1,0 +1,79 @@
+name: Deploy to VPS
+
+# Runs after CI succeeds on main, on the self-hosted runner registered on the VPS
+# (life-manager.tail15a827.ts.net). See the VPS Setup Runbook / Daily Driver & Personal
+# Ops note in the second brain vault for how the runner is registered as a systemd service.
+#
+# Builds locally on the VPS (same as the manual ~/life-manager/deploy.sh) — no external
+# registry involved. Secrets (.env.production) and certs/ live persistently at
+# ~/life-manager and are symlinked into each run's checkout, which is why the compose
+# file pins `name: life-manager` — so the Compose project (containers/network/volume)
+# stays the same regardless of which directory the runner checks out into.
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types: [completed]
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: [self-hosted, linux, vps]
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code at the tested commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Link persistent secrets and certs
+        run: |
+          set -euo pipefail
+          if [ ! -f "$HOME/life-manager/.env.production" ]; then
+            echo "::error::$HOME/life-manager/.env.production not found — see the VPS Setup Runbook."
+            exit 1
+          fi
+          ln -sf "$HOME/life-manager/.env.production" .env.production
+          ln -sf "$HOME/life-manager/certs" certs
+
+      - name: Build and start containers
+        run: docker compose -f docker-compose.vps.yml --env-file .env.production up -d --build --remove-orphans
+
+      - name: Wait for containers to settle
+        run: sleep 10
+
+      - name: Health check
+        run: |
+          for i in $(seq 1 10); do
+            if curl -sk -f https://127.0.0.1:8443/api/health > /dev/null; then
+              echo "Healthy after $i attempt(s)"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Health check failed after 10 attempts"
+          exit 1
+
+      - name: Show running containers
+        if: always()
+        run: docker compose -f docker-compose.vps.yml ps
+
+      - name: Notify Discord — success
+        if: success()
+        run: |
+          SHA_SHORT="$(echo '${{ github.event.workflow_run.head_sha }}' | cut -c1-7)"
+          curl -s -X POST -H 'Content-Type: application/json' \
+            -d "{\"content\":\"✅ Deployed \`${SHA_SHORT}\` to the VPS — health check passed.\"}" \
+            "${{ secrets.DISCORD_DEPLOY_WEBHOOK }}" || true
+
+      - name: Notify Discord — failure
+        if: failure()
+        run: |
+          SHA_SHORT="$(echo '${{ github.event.workflow_run.head_sha }}' | cut -c1-7)"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          curl -s -X POST -H 'Content-Type: application/json' \
+            -d "{\"content\":\"❌ Deploy of \`${SHA_SHORT}\` to the VPS FAILED — ${RUN_URL}\"}" \
+            "${{ secrets.DISCORD_DEPLOY_WEBHOOK }}" || true
