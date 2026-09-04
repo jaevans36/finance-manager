@@ -1,0 +1,87 @@
+# Life Manager — VPS Docker Compose
+#
+# The always-on deployment: Postgres + life-api + web (nginx), behind Tailscale.
+# No public ports — web is bound to 127.0.0.1 only; `tailscale serve` fronts it with
+# a real cert. See docs/BRANCHING-STRATEGY.md and the VPS Setup Runbook (second brain
+# vault) for how this box was provisioned.
+#
+# `name:` pins the Compose project name so `docker compose` always resolves to the
+# same containers/network/volumes regardless of which directory it's invoked from
+# (the manual clone at ~/life-manager, or a CI runner's own checkout path).
+#
+# FIRST TIME SETUP (see the runbook):
+#   1. .env.production with DB_USER/DB_NAME/DB_PASSWORD/JWT_SECRET/JWT_ISSUER/
+#      JWT_AUDIENCE/VITE_API_URL/FRONTEND_ORIGIN (gitignored, never commit)
+#   2. certs/life-manager.pem + certs/life-manager-key.pem (self-signed; Tailscale
+#      terminates the real TLS in front)
+#   3. docker compose -f docker-compose.vps.yml --env-file .env.production up -d --build
+#
+# UPDATE:
+#   git pull && docker compose -f docker-compose.vps.yml --env-file .env.production up -d --build
+
+name: life-manager
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: life-manager-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-life_manager}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-life_manager_prod}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-life_manager}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [life-manager]
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/life-api/Dockerfile
+    container_name: life-manager-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${DB_NAME:-life_manager_prod};Username=${DB_USER:-life_manager};Password=${DB_PASSWORD}"
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      Cors__AllowedOrigins__0: ${FRONTEND_ORIGIN}
+      # Rate limiting adds no value on a private single-user Tailscale box; off to avoid surprise 429s
+      RateLimit__Enabled: "false"
+      DISCORD_ERROR_WEBHOOK: ${DISCORD_ERROR_WEBHOOK}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [life-manager]
+    # NOTE: no ./logs/api bind mount — API runs as non-root appuser and can't write a
+    # root-owned host dir; Serilog file sink would fail silently. Use `docker compose logs`.
+    # Add persistent file logs (named volume + perms) in the observability pass.
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    container_name: life-manager-web
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8443:443"
+    volumes:
+      - ./certs:/etc/nginx/certs:ro
+    depends_on: [api]
+    networks: [life-manager]
+
+networks:
+  life-manager:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
