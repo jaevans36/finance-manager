@@ -3,6 +3,7 @@
   "references": [
     { "path": "./apps/api" },
     { "path": "./apps/web" },
+    { "path": "./apps/life-mcp" },
     { "path": "./packages/schema" },
     { "path": "./packages/ui" }
   ]
