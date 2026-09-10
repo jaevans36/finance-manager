@@ -10,6 +10,15 @@ import { completeTaskTool } from './tasks/complete-task.js';
 import { deleteTaskTool } from './tasks/delete-task.js';
 import { addSubtaskTool } from './tasks/add-subtask.js';
 
+import { listEventsTool } from './events/list-events.js';
+import { getEventTool } from './events/get-event.js';
+import { createEventTool } from './events/create-event.js';
+import { updateEventTool } from './events/update-event.js';
+import { deleteEventTool } from './events/delete-event.js';
+
+import { listLabelsTool } from './labels/list-labels.js';
+import { createLabelTool } from './labels/create-label.js';
+
 const taskTools: AnyToolDef[] = [
   listTasksTool,
   getTaskTool,
@@ -20,8 +29,18 @@ const taskTools: AnyToolDef[] = [
   addSubtaskTool,
 ];
 
-/** Every tool the server exposes. Add event/label/finance arrays here as they land. */
-export const allTools: AnyToolDef[] = [...taskTools];
+const eventTools: AnyToolDef[] = [
+  listEventsTool,
+  getEventTool,
+  createEventTool,
+  updateEventTool,
+  deleteEventTool,
+];
+
+const labelTools: AnyToolDef[] = [listLabelsTool, createLabelTool];
+
+/** Every tool the server exposes. Add finance/fitness arrays here as they land. */
+export const allTools: AnyToolDef[] = [...taskTools, ...eventTools, ...labelTools];
 
 export function registerTools(server: McpServer, backends: BackendRegistry): void {
   for (const def of allTools) {

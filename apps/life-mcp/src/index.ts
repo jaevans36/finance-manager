@@ -3,6 +3,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { buildBackends } from './backends/registry.js';
 import { ConfigError, loadConfig } from './config.js';
+import { registerResources } from './resources/index.js';
 import { registerTools } from './tools/index.js';
 import { log } from './utils/logger.js';
 
@@ -32,6 +33,7 @@ async function main(): Promise<void> {
 
   const server = new McpServer({ name: 'life-manager-mcp', version: '1.0.0' });
   registerTools(server, backends);
+  registerResources(server, backends);
 
   await server.connect(new StdioServerTransport());
   log.info(`life-mcp ready — backends: ${Object.keys(backends).join(', ')}`);

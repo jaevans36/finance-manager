@@ -2,10 +2,11 @@
 
 A [Model Context Protocol](https://modelcontextprotocol.io) server that wraps the Life
 Manager API so an MCP client (Claude CLI, Claude Desktop, MCP Inspector) can read and
-manage your tasks and events without a browser.
+manage your tasks, events and labels without a browser.
 
-> **Status:** Phase 64 — task tools shipped (PR1). Events, labels, resources and the SSE
-> transport land in follow-ups. See `specs/platform/mcp-server.md`.
+> **Status:** Phase 64 complete + events/resources part of Phase 65 — 14 tools (task,
+> event, label) and 3 resources. Deferred: stats/user tools, the `stats/week` resource,
+> and the SSE transport (Phase 66). See `specs/platform/mcp-server.md`.
 
 ## How it authenticates
 
@@ -68,9 +69,45 @@ then add the three env vars under `mcpServers.life-manager.env` in `~/.claude.js
 | `complete_task` | Mark completed (idempotent) |
 | `delete_task` | Delete permanently |
 | `add_subtask` | Add a subtask under a task |
+| `list_events` | Events in a date window, grouped by day |
+| `get_event` | One event by id |
+| `create_event` | Create an event (`title`, `startDate`, `endDate` required; **not idempotent**) |
+| `update_event` | Update fields; omitted fields unchanged |
+| `delete_event` | Delete permanently |
+| `list_labels` | The user's task labels with id and colour |
+| `create_label` | Create a label (`name`, `colourHex` `#rrggbb`); fails on a duplicate name |
 
-Priority is the string enum `Low | Medium | High | Critical`. `search_tasks` is deferred until
-`life-api` has a search endpoint.
+Priority is the string enum `Low | Medium | High | Critical`. Events have no recurrence in
+`life-api` — plain CRUD, no RRULE / delete-mode. `search_tasks` is deferred until `life-api`
+has a search endpoint.
+
+## Resources
+
+| URI | Content |
+|---|---|
+| `life-manager://tasks/today` | Open tasks due today, as a checklist |
+| `life-manager://tasks/overdue` | Open tasks past their due date, with days overdue |
+| `life-manager://events/upcoming` | The next 7 days of events, grouped by day |
+
+## Verifying against a running life-api
+
+```bash
+pnpm --filter @life-manager/mcp typecheck && pnpm --filter @life-manager/mcp test && pnpm --filter @life-manager/mcp build
+```
+
+Then drive the tools with the MCP Inspector. **Note:** some installed Inspector CLI versions
+mis-parse the positional `node dist/index.js … --method tools/call` form (`"No servers found
+in config file"` / `"Method is required"`). Work around it with a small config file:
+
+```jsonc
+// inspector.json
+{ "mcpServers": { "life-mcp": { "command": "node", "args": ["apps/life-mcp/dist/index.js"] } } }
+```
+```bash
+LM_API_BASE_URL=http://localhost:5000 LM_MCP_EMAIL=you@example.com LM_MCP_PASSWORD=... \
+  npx @modelcontextprotocol/inspector --cli --config inspector.json --server life-mcp --method tools/list
+```
+Delete the config file afterwards — it can end up next to your plaintext password.
 
 ## Development notes
 
@@ -78,6 +115,7 @@ Priority is the string enum `Low | Medium | High | Critical`. `search_tasks` is 
   carry a `.js` suffix** (`import { loadConfig } from './config.js'`) even though the file is
   `.ts` — that's the Node16 resolver rule, and `dist/` output depends on it.
 - The MCP SDK is ESM-only and is imported in only four files (`src/index.ts`,
-  `src/tools/index.ts`, `src/tools/_register.ts`, plus `src/resources/index.ts` later).
-  Everything else is SDK-free so the Jest suite runs under CommonJS.
+  `src/tools/index.ts`, `src/tools/_register.ts`, `src/resources/index.ts`). Everything
+  else — including every tool handler and resource loader — is SDK-free, so the Jest suite
+  runs under CommonJS and tests call handlers/loaders directly.
 - `pnpm --filter @life-manager/mcp test` · `... typecheck` · `... build`.
