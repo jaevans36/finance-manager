@@ -56,6 +56,7 @@ The Life Manager productivity application is MVP-complete and ready for v1.0.0 r
 - **Backend**: .NET 8 / C# Web API; EF Core 8 + PostgreSQL 15; JWT auth; Serilog; rate limiting; OWASP security headers
 - **Design system**: `@life-manager/ui` package with Tailwind design tokens
 - **Shared schema**: `@life-manager/schema` with Zod validation schemas
+- **MCP server**: `@life-manager/mcp` (`apps/life-mcp/`) — stdio Model Context Protocol server wrapping `life-api` for Claude. Phase 64 + part of 65 shipped: 14 tools (7 task, 5 event, 2 label) + 3 resources (`tasks/today`, `tasks/overdue`, `events/upcoming`). Multi-backend-ready (finance/fitness namespaces are a config bolt-on). Deferred: stats/user tools, `stats/week` resource, SSE transport (Phase 66)
 - **Service Worker**: `apps/web/public/sw.js` — IndexedDB reminder storage, 60s polling, push notifications
 - **Tests**: 1021 total passing — see `docs/testing/TEST-INVENTORY.md` for the current breakdown (frontend Jest + React Testing Library, finance/life API xUnit unit + integration)
 - **CI**: GitHub Actions (PR checks, nightly extended suite, release-please)
@@ -85,7 +86,7 @@ See `specs/applications/finance/spec.md` and `specs/applications/finance/tasks.m
 
 ### Platform (Parallel / Post-Stocks)
 
-- Phase 64–66: Life Manager MCP Server (`apps/life-mcp/`) — wraps the API for Claude CLI / Obsidian second-brain workflows (T1596–T1667)
+- ~~Phase 64–66: Life Manager MCP Server~~ — **Phase 64 + events/resources part of 65 shipped 2026-09-10** (`apps/life-mcp/`, PRs #131 + events/labels/resources follow-up). Remaining: stats/user tools (T1635–T1642), `stats/week` resource (T1647), Phase 66 SSE transport (T1650–T1667)
 - Work Stream 3: Rename remaining `finance-manager` references → `life-manager` in package names and repo
 - Work Stream 4: LAN deployment hardening (Docker Compose production profile, nginx reverse proxy)
 - Phase 22–24: Auth service extraction (currently embedded in monolith)

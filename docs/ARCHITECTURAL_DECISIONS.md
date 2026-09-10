@@ -450,3 +450,28 @@ Full details in `docs/BRANCHING-STRATEGY.md`.
 - **Single feature branch**: Current approach — no isolation, no rollback capability
 - **Phase branches from main (no develop)**: Simpler, but no integration testing point before release
 - **Trunk-based development**: Too risky without comprehensive CI/CD and feature flags
+
+---
+
+## ADR-021: MCP Server is Multi-Backend and Acts as the User
+
+**Date**: 2026-09-10
+**Status**: Accepted
+
+### Context
+`apps/life-mcp` (`@life-manager/mcp`) wraps the API for Claude. Two questions shaped its design: (1) how does it authenticate, given `life-api` has no cross-user data scoping and no API-key/refresh-token mechanism; (2) it must later also front `finance-api` (a second service, different host) and gain `finance_*` / `fitness_*` tool namespaces.
+
+### Decision
+- **Authenticates as the user's own `life-api` login** (`LM_MCP_EMAIL` / `LM_MCP_PASSWORD`), not a dedicated service account. Life Manager is multi-user (family); a service account would be an invisible third identity. Scaling pattern is one MCP instance per person. No refresh token exists, so "refresh" is re-login: in-memory JWT cache, proactive re-login ~5 min before `exp`, single 401-retry.
+- **Multi-backend from day one**: a `createBackend({ name, baseUrl, email, password, userAgent })` factory returns `{ http, auth }`; a registry keys them by name; every tool/resource declares `backend: 'life'`. Adding `finance-api` is a new config block + a `tools/finance/` dir — no change to auth, HTTP, or registration plumbing.
+- **MCP SDK confined to 4 glue files** (`src/index.ts`, `src/tools/index.ts`, `src/tools/_register.ts`, `src/resources/index.ts`); everything else is SDK-free so Jest runs under CommonJS.
+
+### Consequences
+- (+) Everything Claude creates lands on the real user account; the app's existing share/assign features cover the family case
+- (+) `finance-api` integration is additive, matching the vault Service Topology decision (`life-mcp` runs on the home box, federates cloud `life-api` + local `finance-api`)
+- (-) The env file holds the user's password until `life-api` grows scoped personal-access tokens
+- (-) A future Discord bot that must act as multiple people needs a different auth path (API keys in `life-api`) — out of scope for `life-mcp` v1
+
+### Rejected Alternatives
+- **Dedicated `mcp@life-manager.local` service account** (per the original spec): its tasks/events are invisible to every real user without also building cross-account sharing
+- **Add API keys / impersonation to `life-api` first**: correct long-term for a multi-identity server, but expands scope well beyond the MCP server

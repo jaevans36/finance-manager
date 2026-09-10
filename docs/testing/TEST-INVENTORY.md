@@ -16,6 +16,7 @@ This document tracks all automated tests in the Life Manager project. It serves 
 | Frontend Unit + Integration | 600 | Every PR | ~4min | `apps/web/tests/` |
 | Life API Backend Unit | 26 | Every PR | ~45s | `apps/life-api-tests/LifeApi.UnitTests/` |
 | Life API Integration | 5 (labels) | Every PR | ~30s | `apps/life-api-tests/LifeApi.IntegrationTests/` |
+| Life MCP (`@life-manager/mcp`) | 109 | Every PR | ~9s | `apps/life-mcp/src/**/__tests__/` — `pnpm --filter @life-manager/mcp test` |
 | Finance API Backend Unit | 313 | Every PR | ~1min | `apps/finance-api-tests/FinanceApi.UnitTests/` |
 | Finance API Integration | 91 | Every PR | ~3s | `apps/finance-api-tests/FinanceApi.IntegrationTests/` |
 | E2E (Playwright) | ~38 (est.) | Every PR | ~6min | `apps/web/e2e/` |
