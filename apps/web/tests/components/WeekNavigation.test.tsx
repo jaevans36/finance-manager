@@ -176,22 +176,16 @@ describe('WeeklyProgressPage - Week Navigation (T239)', () => {
     it('should have a "This Week" button or "Today" button', async () => {
       renderWeeklyProgress();
 
-      await waitFor(() => {
-        expect(mockStatisticsService.getWeeklyStatistics).toHaveBeenCalled();
-      });
-
-      const thisWeekButton = screen.queryByText('This Week') || screen.queryByText('Today');
+      // Wait for the button itself to render (it only mounts once the page has
+      // loaded its data) — waiting on the mock being *called* races the re-render.
+      const thisWeekButton = await screen.findByText(/^(This Week|Today)$/);
       expect(thisWeekButton).toBeInTheDocument();
     });
 
     it('should reset to current week when "Today" button clicked', async () => {
       renderWeeklyProgress();
 
-      await waitFor(() => {
-        expect(mockStatisticsService.getWeeklyStatistics).toHaveBeenCalled();
-      });
-
-      const todayButton = screen.getByText('Today');
+      const todayButton = await screen.findByText('Today');
       fireEvent.click(todayButton);
 
       // Clicking Today triggers another loadData call (+2 getWeeklyStatistics)
