@@ -1,29 +1,13 @@
-# Stop all Life Manager services
+# Stop all Life Manager dev services
+#
+# Only tears down this project's containers (docker compose down is scoped
+# to the compose project) - unlike the old process-based approach, this
+# can't touch an unrelated .NET/Node process running on the machine.
 
 Write-Host "Stopping Life Manager services..." -ForegroundColor Yellow
 Set-Location "C:\Projects\Finance Manager"
 
-# Kill anything holding the known API and dev-server ports
-Write-Host "Freeing ports..." -ForegroundColor Cyan
-@(5000, 5001, 5002, 5003, 5173) | ForEach-Object {
-    $port = $_
-    Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue |
-        Select-Object -ExpandProperty OwningProcess |
-        ForEach-Object {
-            Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue
-        }
-}
-
-# Kill remaining dotnet and node processes
-Write-Host "Stopping .NET and Node.js processes..." -ForegroundColor Cyan
-Get-Process -Name "dotnet" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-Get-Process -Name "node"   -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-Write-Host "[OK] API and web services stopped" -ForegroundColor Green
-
-# Stop Docker containers
-Write-Host "Stopping database..." -ForegroundColor Cyan
-docker-compose down
-Write-Host "[OK] Database stopped" -ForegroundColor Green
+docker compose -f docker-compose.yml -f docker-compose.dev.yml down
 
 Write-Host ""
 Write-Host "[OK] All services stopped" -ForegroundColor Green

@@ -18,11 +18,15 @@
 
 The script will:
 1. Check Docker is running (starts Docker Desktop if needed)
-2. Start the PostgreSQL container and wait for it to be healthy
-3. Verify EF Core migrations are available for both APIs
-4. Start all three development servers (life-api, finance-api, web) in parallel
+2. Build and start postgres, life-api, finance-api and web as containers
+   (`docker-compose.yml` + `docker-compose.dev.yml`)
 
-On first run, both APIs apply pending migrations automatically on startup.
+Everything runs in Docker — no native `dotnet`/`node` processes on the host, and
+`docker compose down` (via `pnpm stop`) cleanly tears down only this project's
+containers. Both APIs apply pending migrations automatically on startup, and
+each container live-reloads on source changes (`dotnet watch` / Vite's dev
+server) via a bind mount — no rebuild needed for a source edit, only for a new
+NuGet/npm package (`pnpm start` always rebuilds, so a plain re-run covers it).
 
 ---
 
@@ -78,20 +82,14 @@ Press `Ctrl+Shift+P` → **Tasks: Run Task**:
 ## Manual Setup (without the script)
 
 ```powershell
-# 1. Start database
-docker-compose up -d
+# Everything (DB + all three apps, live-reloading):
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 
-# 2. Start Life API
-cd apps/life-api
-dotnet watch run --launch-profile http
-
-# 3. Start Finance API (new terminal)
-cd apps/finance-api
-dotnet watch run --launch-profile http
-
-# 4. Start web app (new terminal)
-cd apps/web
-pnpm dev
+# Just the database, if you want to run an app natively instead:
+docker compose up -d postgres
+cd apps/life-api    ; dotnet watch run --launch-profile http
+cd apps/finance-api ; dotnet watch run --launch-profile http
+cd apps/web         ; pnpm dev
 ```
 
 ---
@@ -145,7 +143,6 @@ Key values (already set in config files):
 ### "Can't reach database server"
 PostgreSQL container not running:
 ```powershell
-docker-compose up -d
 .\scripts\restart-dev.ps1
 ```
 
@@ -153,10 +150,13 @@ docker-compose up -d
 1. Open Docker Desktop and wait for it to fully start (~30 s)
 2. Run `.\scripts\start-dev.ps1` again
 
-### "Port 5000 / 5002 is already in use"
+### "Port 5000 / 5002 / 5173 is already in use"
+Almost always a previous dev stack that wasn't stopped cleanly (or a different
+project using the same port):
 ```powershell
-# Find and kill the process occupying the port (replace 5002 with the port):
-Stop-Process -Id (Get-NetTCPConnection -LocalPort 5002).OwningProcess -Force
+.\scripts\stop-dev.ps1
+# still stuck? see what's actually holding the port:
+Get-NetTCPConnection -LocalPort 5002 | Select-Object OwningProcess
 ```
 
 ### Migrations not found

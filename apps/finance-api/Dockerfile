@@ -9,6 +9,12 @@ RUN dotnet restore "FinanceApi.csproj"
 COPY . .
 RUN dotnet build "FinanceApi.csproj" -c Release -o /app/build
 
+# ── Dev stage — dotnet watch, live source bind-mounted over /src at runtime
+# (see docker-compose.dev.yml). The COPY above is unused there but keeps this
+# stage buildable standalone.
+FROM build AS dev
+ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile", "--urls", "http://+:8080"]
+
 FROM build AS publish
 RUN dotnet publish "FinanceApi.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
