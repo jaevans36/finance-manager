@@ -8,6 +8,13 @@ export interface DailyStatistics {
   tasks: Task[];
 }
 
+/** Matches the backend's DelegatedStatsDto/AssignedToMeStatsDto shape — a count plus its own completion rate, not a bare number. */
+export interface TaskGroupStats {
+  total: number;
+  completed: number;
+  completionRate: number;
+}
+
 export interface WeeklyStatistics {
   weekStart: string;
   weekEnd: string;
@@ -15,8 +22,8 @@ export interface WeeklyStatistics {
   completedTasks: number;
   completionPercentage: number;
   dailyBreakdown: DailyStatistics[];
-  delegated: number;
-  assignedToMe: number;
+  delegated: TaskGroupStats;
+  assignedToMe: TaskGroupStats;
 }
 
 export interface UrgentTask {
