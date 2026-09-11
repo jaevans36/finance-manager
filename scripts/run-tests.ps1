@@ -23,48 +23,53 @@ $runAll = -not ($Backend -or $Frontend -or $E2E)
 if ($Backend -or $runAll) {
     Write-Host "Running Backend Tests (.NET)..." -ForegroundColor Yellow
     Write-Host "================================" -ForegroundColor Yellow
-    
-    # Unit Tests
-    Write-Host "Running Unit Tests..." -ForegroundColor Cyan
-    Set-Location "apps/finance-api-tests/FinanceApi.UnitTests"
-    
-    if ($Coverage) {
-        dotnet test --collect:"XPlat Code Coverage" --settings ../coverlet.runsettings
+
+    foreach ($api in @(
+        @{ Name = "life-api"; TestDir = "apps/life-api-tests"; UnitProj = "LifeApi.UnitTests"; IntegrationProj = "LifeApi.IntegrationTests" },
+        @{ Name = "finance-api"; TestDir = "apps/finance-api-tests"; UnitProj = "FinanceApi.UnitTests"; IntegrationProj = "FinanceApi.IntegrationTests" }
+    )) {
+        # Unit Tests
+        Write-Host "Running $($api.Name) Unit Tests..." -ForegroundColor Cyan
+        Set-Location "$($api.TestDir)/$($api.UnitProj)"
+
+        if ($Coverage) {
+            dotnet test --collect:"XPlat Code Coverage" --settings ../coverlet.runsettings
+        }
+        else {
+            dotnet test --verbosity minimal
+        }
+
+        if ($LASTEXITCODE -ne 0) {
+            $testsFailed = $true
+            Write-Host "[X] $($api.Name) unit tests failed" -ForegroundColor Red
+        }
+        else {
+            Write-Host "[OK] $($api.Name) unit tests passed" -ForegroundColor Green
+        }
+
+        # Integration Tests
+        Write-Host ""
+        Write-Host "Running $($api.Name) Integration Tests..." -ForegroundColor Cyan
+        Set-Location "../$($api.IntegrationProj)"
+
+        if ($Coverage) {
+            dotnet test --collect:"XPlat Code Coverage" --settings ../coverlet.runsettings
+        }
+        else {
+            dotnet test --verbosity minimal
+        }
+
+        if ($LASTEXITCODE -ne 0) {
+            $testsFailed = $true
+            Write-Host "[X] $($api.Name) integration tests failed" -ForegroundColor Red
+        }
+        else {
+            Write-Host "[OK] $($api.Name) integration tests passed" -ForegroundColor Green
+        }
+
+        Write-Host ""
+        Set-Location "C:\Projects\Finance Manager"
     }
-    else {
-        dotnet test --verbosity minimal
-    }
-    
-    if ($LASTEXITCODE -ne 0) {
-        $testsFailed = $true
-        Write-Host "[X] Unit tests failed" -ForegroundColor Red
-    }
-    else {
-        Write-Host "[OK] Unit tests passed" -ForegroundColor Green
-    }
-    
-    # Integration Tests
-    Write-Host ""
-    Write-Host "Running Integration Tests..." -ForegroundColor Cyan
-    Set-Location "../FinanceApi.IntegrationTests"
-    
-    if ($Coverage) {
-        dotnet test --collect:"XPlat Code Coverage" --settings ../coverlet.runsettings
-    }
-    else {
-        dotnet test --verbosity minimal
-    }
-    
-    if ($LASTEXITCODE -ne 0) {
-        $testsFailed = $true
-        Write-Host "[X] Integration tests failed" -ForegroundColor Red
-    }
-    else {
-        Write-Host "[OK] Integration tests passed" -ForegroundColor Green
-    }
-    
-    Write-Host ""
-    Set-Location "C:\Projects\Finance Manager"
 }
 
 # Frontend Tests

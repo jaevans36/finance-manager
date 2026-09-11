@@ -21,11 +21,14 @@
     "db:reset": "powershell -ExecutionPolicy Bypass -File ./scripts/reset-db.ps1",
     "db:reset-test": "powershell -ExecutionPolicy Bypass -File ./scripts/reset-test-db.ps1",
     "logs": "powershell -ExecutionPolicy Bypass -File ./scripts/view-logs.ps1",
-    "test:all": "powershell -ExecutionPolicy Bypass -File ./scripts/run-tests.ps1"
+    "test:all": "powershell -ExecutionPolicy Bypass -File ./scripts/run-tests.ps1",
+    "verify": "powershell -ExecutionPolicy Bypass -File ./scripts/verify.ps1",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
     "eslint": "^8.55.0",
+    "husky": "^9.1.7",
     "prettier": "^3.1.0",
     "typescript": "^5.3.3"
   },

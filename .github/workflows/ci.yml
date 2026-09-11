@@ -29,23 +29,44 @@ jobs:
           dotnet restore apps/life-api/LifeApi.csproj
           dotnet restore apps/life-api-tests/LifeApi.UnitTests/LifeApi.UnitTests.csproj
           dotnet restore apps/life-api-tests/LifeApi.IntegrationTests/LifeApi.IntegrationTests.csproj
+          dotnet restore apps/finance-api/FinanceApi.csproj
+          dotnet restore apps/finance-api-tests/FinanceApi.UnitTests/FinanceApi.UnitTests.csproj
+          dotnet restore apps/finance-api-tests/FinanceApi.IntegrationTests/FinanceApi.IntegrationTests.csproj
 
-      - name: Run unit tests
+      - name: Run unit tests (life-api)
         run: >
           dotnet test
           apps/life-api-tests/LifeApi.UnitTests/LifeApi.UnitTests.csproj
           --no-restore
           --configuration Release
-          --logger "trx;LogFileName=unit-results.trx"
+          --logger "trx;LogFileName=life-api-unit-results.trx"
           --results-directory TestResults
 
-      - name: Run integration tests
+      - name: Run integration tests (life-api)
         run: >
           dotnet test
           apps/life-api-tests/LifeApi.IntegrationTests/LifeApi.IntegrationTests.csproj
           --no-restore
           --configuration Release
-          --logger "trx;LogFileName=integration-results.trx"
+          --logger "trx;LogFileName=life-api-integration-results.trx"
+          --results-directory TestResults
+
+      - name: Run unit tests (finance-api)
+        run: >
+          dotnet test
+          apps/finance-api-tests/FinanceApi.UnitTests/FinanceApi.UnitTests.csproj
+          --no-restore
+          --configuration Release
+          --logger "trx;LogFileName=finance-api-unit-results.trx"
+          --results-directory TestResults
+
+      - name: Run integration tests (finance-api)
+        run: >
+          dotnet test
+          apps/finance-api-tests/FinanceApi.IntegrationTests/FinanceApi.IntegrationTests.csproj
+          --no-restore
+          --configuration Release
+          --logger "trx;LogFileName=finance-api-integration-results.trx"
           --results-directory TestResults
 
       - name: Upload test results
@@ -150,10 +171,15 @@ jobs:
         run: pnpm typecheck
 
       - name: Restore .NET dependencies
-        run: dotnet restore apps/life-api/LifeApi.csproj
+        run: |
+          dotnet restore apps/life-api/LifeApi.csproj
+          dotnet restore apps/finance-api/FinanceApi.csproj
 
-      - name: Build API (type check via dotnet build)
+      - name: Build life-api (type check via dotnet build)
         run: dotnet build apps/life-api/LifeApi.csproj --configuration Release --no-restore
+
+      - name: Build finance-api (type check via dotnet build)
+        run: dotnet build apps/finance-api/FinanceApi.csproj --configuration Release --no-restore
 
   build:
     name: Build Check
