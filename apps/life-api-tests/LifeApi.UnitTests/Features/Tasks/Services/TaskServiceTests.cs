@@ -8,6 +8,7 @@ using LifeApi.Features.Tasks.DTOs;
 using LifeApi.Features.Tasks.Models;
 using LifeApi.Features.Auth.Models;
 using LifeApi.Features.Common.ActivityLogs.Services;
+using LifeApi.Features.Common.ActivityLogs.Models;
 using LifeApi.Features.Notifications.Services;
 using LifeApi.Features.Settings.Services;
 using TaskModel = LifeApi.Features.Tasks.Models.Task; // Alias to avoid ambiguity
@@ -86,6 +87,24 @@ public class TaskServiceTests : IDisposable
         var savedTask = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == result.Id);
         savedTask.Should().NotBeNull();
         savedTask!.Title.Should().Be(request.Title);
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task CreateTaskAsync_WithClientInfo_ShouldPassIpAndUserAgentToActivityLog()
+    {
+        // Arrange — regression guard for the audit-log attribution gap: TaskService used to
+        // hardcode null/null for ipAddress/userAgent on every LogAsync call regardless of the
+        // caller-supplied values, so task-level audit rows never recorded who/what made the
+        // request (unlike login rows, which always did).
+        var request = new CreateTaskRequest { Title = "Test Task" };
+
+        // Act
+        await _taskService.CreateTaskAsync(_testUser.Id, request, "203.0.113.5", "LifeManager-MCP/1.0");
+
+        // Assert
+        _mockActivityLogService.Verify(
+            s => s.LogAsync(_testUser.Id, ActivityType.TaskCreated, It.IsAny<string>(), "203.0.113.5", "LifeManager-MCP/1.0"),
+            Times.Once);
     }
 
     // NOTE: Priority validation test removed

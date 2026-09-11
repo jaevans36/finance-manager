@@ -68,7 +68,7 @@ public class TasksController : ControllerBase
             return BadRequest("ReminderAt requires a DueDate to be set.");
 
         var userId = GetUserId();
-        var task = await _taskService.CreateTaskAsync(userId, request);
+        var task = await _taskService.CreateTaskAsync(userId, request, GetIpAddress(), GetUserAgent());
         return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
     }
 
@@ -87,7 +87,7 @@ public class TasksController : ControllerBase
                     return BadRequest("ReminderAt requires a DueDate to be set.");
             }
 
-            var task = await _taskService.UpdateTaskAsync(userId, id, request);
+            var task = await _taskService.UpdateTaskAsync(userId, id, request, GetIpAddress(), GetUserAgent());
             return Ok(task);
         }
         catch (KeyNotFoundException)
@@ -102,7 +102,7 @@ public class TasksController : ControllerBase
         try
         {
             var userId = GetUserId();
-            await _taskService.DeleteTaskAsync(userId, id);
+            await _taskService.DeleteTaskAsync(userId, id, GetIpAddress(), GetUserAgent());
             return NoContent();
         }
         catch (KeyNotFoundException)
@@ -122,7 +122,7 @@ public class TasksController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var task = await _taskService.UpdateTaskStatusAsync(userId, id, request);
+            var task = await _taskService.UpdateTaskStatusAsync(userId, id, request, GetIpAddress(), GetUserAgent());
             return Ok(task);
         }
         catch (KeyNotFoundException)
@@ -150,7 +150,7 @@ public class TasksController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var task = await _taskService.ClassifyTaskAsync(userId, id, request);
+            var task = await _taskService.ClassifyTaskAsync(userId, id, request, GetIpAddress(), GetUserAgent());
             return Ok(task);
         }
         catch (KeyNotFoundException)
@@ -173,7 +173,7 @@ public class TasksController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var tasks = await _taskService.BulkClassifyAsync(userId, request);
+            var tasks = await _taskService.BulkClassifyAsync(userId, request, GetIpAddress(), GetUserAgent());
             return Ok(tasks);
         }
         catch (KeyNotFoundException ex)
@@ -364,4 +364,8 @@ public class TasksController : ControllerBase
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
         return Guid.Parse(userIdClaim!);
     }
+
+    private string? GetIpAddress() => HttpContext.Connection.RemoteIpAddress?.ToString();
+
+    private string? GetUserAgent() => HttpContext.Request.Headers["User-Agent"].ToString();
 }

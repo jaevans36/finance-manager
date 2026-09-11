@@ -12,9 +12,9 @@ namespace LifeApi.Features.Events.Services;
 
 public interface IEventService
 {
-    System.Threading.Tasks.Task<EventDto> CreateEventAsync(Guid userId, CreateEventRequest request);
-    System.Threading.Tasks.Task<EventDto> UpdateEventAsync(Guid userId, Guid eventId, UpdateEventRequest request);
-    System.Threading.Tasks.Task DeleteEventAsync(Guid userId, Guid eventId);
+    System.Threading.Tasks.Task<EventDto> CreateEventAsync(Guid userId, CreateEventRequest request, string? ipAddress = null, string? userAgent = null);
+    System.Threading.Tasks.Task<EventDto> UpdateEventAsync(Guid userId, Guid eventId, UpdateEventRequest request, string? ipAddress = null, string? userAgent = null);
+    System.Threading.Tasks.Task DeleteEventAsync(Guid userId, Guid eventId, string? ipAddress = null, string? userAgent = null);
     System.Threading.Tasks.Task<EventDto?> GetEventByIdAsync(Guid userId, Guid eventId);
     System.Threading.Tasks.Task<List<EventDto>> GetEventsAsync(
         Guid userId, 
@@ -34,7 +34,7 @@ public class EventService : IEventService
         _activityLogService = activityLogService;
     }
 
-    public async System.Threading.Tasks.Task<EventDto> CreateEventAsync(Guid userId, CreateEventRequest request)
+    public async System.Threading.Tasks.Task<EventDto> CreateEventAsync(Guid userId, CreateEventRequest request, string? ipAddress = null, string? userAgent = null)
     {
         // Validate the request
         if (!EventValidator.ValidateCreateEventRequest(request, out var errors))
@@ -78,13 +78,13 @@ public class EventService : IEventService
             userId,
             ActivityType.EventCreated,
             $"Created event '{eventEntity.Title}'",
-            null,
-            null);
+            ipAddress,
+            userAgent);
 
         return await MapToEventDtoAsync(eventEntity);
     }
 
-    public async System.Threading.Tasks.Task<EventDto> UpdateEventAsync(Guid userId, Guid eventId, UpdateEventRequest request)
+    public async System.Threading.Tasks.Task<EventDto> UpdateEventAsync(Guid userId, Guid eventId, UpdateEventRequest request, string? ipAddress = null, string? userAgent = null)
     {
         var eventEntity = await _context.Events
             .FirstOrDefaultAsync(e => e.Id == eventId && e.UserId == userId);
@@ -162,13 +162,13 @@ public class EventService : IEventService
             userId,
             ActivityType.EventUpdated,
             $"Updated event '{eventEntity.Title}'",
-            null,
-            null);
+            ipAddress,
+            userAgent);
 
         return await MapToEventDtoAsync(eventEntity);
     }
 
-    public async System.Threading.Tasks.Task DeleteEventAsync(Guid userId, Guid eventId)
+    public async System.Threading.Tasks.Task DeleteEventAsync(Guid userId, Guid eventId, string? ipAddress = null, string? userAgent = null)
     {
         var eventEntity = await _context.Events
             .FirstOrDefaultAsync(e => e.Id == eventId && e.UserId == userId);
@@ -188,8 +188,8 @@ public class EventService : IEventService
             userId,
             ActivityType.EventDeleted,
             $"Deleted event '{eventTitle}'",
-            null,
-            null);
+            ipAddress,
+            userAgent);
     }
 
     public async System.Threading.Tasks.Task<EventDto?> GetEventByIdAsync(Guid userId, Guid eventId)

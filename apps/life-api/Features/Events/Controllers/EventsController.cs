@@ -76,7 +76,7 @@ public class EventsController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var eventDto = await _eventService.CreateEventAsync(userId, request);
+            var eventDto = await _eventService.CreateEventAsync(userId, request, GetIpAddress(), GetUserAgent());
             return CreatedAtAction(nameof(GetEvent), new { id = eventDto.Id }, eventDto);
         }
         catch (InvalidOperationException ex)
@@ -101,7 +101,7 @@ public class EventsController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var eventDto = await _eventService.UpdateEventAsync(userId, id, request);
+            var eventDto = await _eventService.UpdateEventAsync(userId, id, request, GetIpAddress(), GetUserAgent());
             return Ok(eventDto);
         }
         catch (UnauthorizedAccessException ex)
@@ -125,7 +125,7 @@ public class EventsController : ControllerBase
         try
         {
             var userId = GetUserId();
-            await _eventService.DeleteEventAsync(userId, id);
+            await _eventService.DeleteEventAsync(userId, id, GetIpAddress(), GetUserAgent());
             return NoContent();
         }
         catch (UnauthorizedAccessException ex)
@@ -234,4 +234,8 @@ public class EventsController : ControllerBase
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
         return Guid.Parse(userIdClaim!);
     }
+
+    private string? GetIpAddress() => HttpContext.Connection.RemoteIpAddress?.ToString();
+
+    private string? GetUserAgent() => HttpContext.Request.Headers["User-Agent"].ToString();
 }
