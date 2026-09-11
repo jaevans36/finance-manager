@@ -33,9 +33,14 @@ PowerShell scripts for common development tasks.
 ### Testing
 
 - **run-tests.ps1** - Run all test suites
-  - Executes unit tests
-  - Runs integration tests
-  - Displays test coverage
+  - Executes unit + integration tests for both life-api and finance-api
+  - Runs frontend tests with `-Frontend`, E2E with `-E2E`
+  - Displays test coverage with `-Coverage`
+
+- **verify.ps1** - Run everything CI (`.github/workflows/ci.yml`) runs, locally
+  - Lint + type check (frontend), `dotnet build` for both APIs
+  - Full backend + frontend test suites (delegates to `run-tests.ps1`)
+  - Also runs automatically as a git pre-push hook (`.husky/pre-push`) — `git push --no-verify` skips it if you need to push through a known-broken state
 
 ### Debugging
 
