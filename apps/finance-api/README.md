@@ -231,6 +231,9 @@ A transaction is marked as a duplicate if an existing transaction exists with th
     "Audience": "life-manager-dev",
     "ExpiresInMinutes": 60
   },
+  "Encryption": {
+    "Key": "base64-encoded 32-byte AES-256 key — see Column Encryption below"
+  },
   "Cors": {
     "AllowedOrigins": ["http://localhost:5173"]
   },
@@ -245,6 +248,44 @@ A transaction is marked as a duplicate if an existing transaction exists with th
 | `ASPNETCORE_ENVIRONMENT` | `Development`, `Production` |
 | `ConnectionStrings__DefaultConnection` | Full PostgreSQL connection string |
 | `Jwt__Secret` | JWT signing secret (must match life-api) |
+| `Encryption__Key` | Base64 AES-256 key for column encryption (see below) — no default, app fails to start without it |
+
+---
+
+## Column Encryption
+
+Free-text fields that are never used in SQL `WHERE`/`GROUP BY`/`.Contains()` (account names,
+institution, notes, bill/budget/pot/goal names, category-rule patterns) are encrypted at rest
+with AES-256-GCM, via an EF Core `ValueConverter` (`Infrastructure/Encryption/`). Transaction
+amounts/balances and transaction description/payee fields stay plaintext — they're required by
+SQL-side aggregation, search, and CSV-import dedup, and encrypting them would need those features
+rewritten. See the "Column Encryption" ADR in `docs/ARCHITECTURAL_DECISIONS.md` for the full
+field-by-field reasoning.
+
+Stored values are prefixed `ENC1:` so a decrypt against not-yet-migrated plaintext fails loudly
+instead of throwing a cryptic AES error.
+
+### One-time setup for an existing database
+
+Applies once, the first time this feature is deployed to a database that already has data in the
+encrypted columns (a brand-new database just needs `Encryption:Key` configured — migrations
+create the columns as `text` from the start).
+
+1. **Back up first** — `pg_dump` the database. This changes data in place; make sure you can
+   roll back.
+2. **Stop the app** if it's running — starting it normally between steps 3 and 4 would apply the
+   encrypting `ValueConverter` against still-plaintext data and every read would throw.
+3. Apply the schema migration only (widens the encrypted columns to `text`, touches no data):
+   ```powershell
+   cd apps/finance-api
+   dotnet ef database update
+   ```
+4. Run the one-time backfill (encrypts existing plaintext rows in place; safe to re-run — it
+   skips rows already prefixed `ENC1:`):
+   ```powershell
+   dotnet run --project apps/finance-api -- --backfill-encrypt-columns
+   ```
+5. Start the app normally.
 
 ---
 

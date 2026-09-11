@@ -16,9 +16,11 @@ public class AccountService : IAccountService
 
     public async Task<IEnumerable<AccountSummary>> GetAccountsAsync(Guid userId, CancellationToken ct = default)
     {
-        return await _db.Accounts
+        // Name is column-encrypted, so sorting has to happen after materialization — SQL
+        // can't meaningfully ORDER BY ciphertext. Per-user account lists are short, so this
+        // costs nothing in practice.
+        var accounts = await _db.Accounts
             .Where(a => a.UserId == userId && a.IsActive)
-            .OrderBy(a => a.Name)
             .Select(a => new AccountSummary(
                 a.Id, a.Name, a.Type, a.Currency, a.Balance,
                 a.Institution, a.Colour, a.Icon, a.IsActive, a.ExcludeFromNetWorth,
@@ -27,6 +29,8 @@ public class AccountService : IAccountService
                 a.MortgageStartDate, a.MortgageTermYears,
                 a.IsInterestOnly, a.MinimumMonthlyPayment, a.CurrentMonthlyPayment, a.LoanEndDate))
             .ToListAsync(ct);
+
+        return accounts.OrderBy(a => a.Name);
     }
 
     public async Task<Account?> GetAccountByIdAsync(Guid userId, Guid accountId, CancellationToken ct = default)

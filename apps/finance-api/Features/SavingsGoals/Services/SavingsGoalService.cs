@@ -12,12 +12,12 @@ public class SavingsGoalService : ISavingsGoalService
 
     public async Task<IEnumerable<SavingsGoalWithProjection>> GetGoalsAsync(Guid userId, CancellationToken ct = default)
     {
+        // Name is column-encrypted — sort after materialization, SQL can't ORDER BY ciphertext.
         var goals = await _db.SavingsGoals
             .Where(g => g.UserId == userId)
-            .OrderBy(g => g.Name)
             .ToListAsync(ct);
 
-        return goals.Select(Project);
+        return goals.OrderBy(g => g.Name).Select(Project);
     }
 
     public async Task<SavingsGoalWithProjection> CreateGoalAsync(Guid userId, CreateSavingsGoalRequest request, CancellationToken ct = default)

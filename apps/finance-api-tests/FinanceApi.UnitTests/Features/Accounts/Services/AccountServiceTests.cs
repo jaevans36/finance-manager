@@ -19,7 +19,7 @@ public class AccountServiceTests : IDisposable
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
 
-        _db = new FinanceDbContext(options);
+        _db = new FinanceDbContext(options, FinanceApi.UnitTests.TestHelpers.TestEncryption.Service);
         _sut = new AccountService(_db);
     }
 
