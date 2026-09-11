@@ -8,6 +8,7 @@ using LifeApi.Features.Events.DTOs;
 using LifeApi.Features.Events.Models;
 using LifeApi.Features.Auth.Models;
 using LifeApi.Features.Common.ActivityLogs.Services;
+using LifeApi.Features.Common.ActivityLogs.Models;
 
 namespace LifeApi.UnitTests.Features.Events.Services;
 
@@ -88,6 +89,29 @@ public class EventServiceTests : IDisposable
         var savedEvent = await _context.Events.FirstOrDefaultAsync(e => e.Id == result.Id);
         savedEvent.Should().NotBeNull();
         savedEvent!.UserId.Should().Be(_testUser.Id);
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task CreateEventAsync_WithClientInfo_ShouldPassIpAndUserAgentToActivityLog()
+    {
+        // Arrange — regression guard for the audit-log attribution gap: EventService used to
+        // hardcode null/null for ipAddress/userAgent on every LogAsync call regardless of the
+        // caller-supplied values, so event-level audit rows never recorded who/what made the
+        // request (unlike login rows, which always did).
+        var request = new CreateEventRequest
+        {
+            Title = "Team Meeting",
+            StartDate = DateTime.UtcNow.AddDays(1),
+            EndDate = DateTime.UtcNow.AddDays(1).AddHours(1)
+        };
+
+        // Act
+        await _eventService.CreateEventAsync(_testUser.Id, request, "203.0.113.5", "LifeManager-MCP/1.0");
+
+        // Assert
+        _mockActivityLogService.Verify(
+            s => s.LogAsync(_testUser.Id, ActivityType.EventCreated, It.IsAny<string>(), "203.0.113.5", "LifeManager-MCP/1.0"),
+            Times.Once);
     }
 
     [Fact]

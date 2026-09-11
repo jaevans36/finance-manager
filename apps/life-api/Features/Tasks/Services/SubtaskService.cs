@@ -13,28 +13,28 @@ namespace LifeApi.Features.Tasks.Services;
 public interface ISubtaskService
 {
     /// <summary>Creates a subtask under the specified parent task.</summary>
-    System.Threading.Tasks.Task<TaskDto> CreateSubtaskAsync(Guid userId, Guid parentId, CreateSubtaskRequest request);
+    System.Threading.Tasks.Task<TaskDto> CreateSubtaskAsync(Guid userId, Guid parentId, CreateSubtaskRequest request, string? ipAddress = null, string? userAgent = null);
 
     /// <summary>Returns subtasks of the specified parent, optionally including nested descendants.</summary>
     System.Threading.Tasks.Task<List<TaskDto>> GetSubtasksAsync(Guid userId, Guid parentId, bool includeNested = false);
 
     /// <summary>Moves a subtask to a new parent, or promotes it to a root task if newParentId is null.</summary>
-    System.Threading.Tasks.Task<TaskDto> MoveSubtaskAsync(Guid userId, Guid subtaskId, Guid? newParentId);
+    System.Threading.Tasks.Task<TaskDto> MoveSubtaskAsync(Guid userId, Guid subtaskId, Guid? newParentId, string? ipAddress = null, string? userAgent = null);
 
     /// <summary>Reorders the direct subtasks of a parent task.</summary>
     System.Threading.Tasks.Task ReorderSubtasksAsync(Guid userId, Guid parentId, List<Guid> orderedIds);
 
     /// <summary>Creates multiple subtasks at once from a list of titles.</summary>
-    System.Threading.Tasks.Task<List<TaskDto>> BulkCreateSubtasksAsync(Guid userId, Guid parentId, List<string> titles);
+    System.Threading.Tasks.Task<List<TaskDto>> BulkCreateSubtasksAsync(Guid userId, Guid parentId, List<string> titles, string? ipAddress = null, string? userAgent = null);
 
     /// <summary>Marks all subtasks of a parent task as completed.</summary>
-    System.Threading.Tasks.Task BulkCompleteSubtasksAsync(Guid userId, Guid parentId);
+    System.Threading.Tasks.Task BulkCompleteSubtasksAsync(Guid userId, Guid parentId, string? ipAddress = null, string? userAgent = null);
 
     /// <summary>Returns completion progress statistics for a task's subtasks.</summary>
     System.Threading.Tasks.Task<SubtaskProgressDto> GetProgressAsync(Guid userId, Guid taskId);
 
     /// <summary>Deletes a subtask. When cascade is true, deletes all descendants; otherwise promotes children.</summary>
-    System.Threading.Tasks.Task DeleteSubtaskAsync(Guid userId, Guid subtaskId, bool cascade = true);
+    System.Threading.Tasks.Task DeleteSubtaskAsync(Guid userId, Guid subtaskId, bool cascade = true, string? ipAddress = null, string? userAgent = null);
 }
 
 /// <summary>
@@ -53,7 +53,7 @@ public class SubtaskService : ISubtaskService
     }
 
     /// <inheritdoc />
-    public async System.Threading.Tasks.Task<TaskDto> CreateSubtaskAsync(Guid userId, Guid parentId, CreateSubtaskRequest request)
+    public async System.Threading.Tasks.Task<TaskDto> CreateSubtaskAsync(Guid userId, Guid parentId, CreateSubtaskRequest request, string? ipAddress = null, string? userAgent = null)
     {
         var parentTask = await _context.Tasks
             .FirstOrDefaultAsync(t => t.Id == parentId && t.UserId == userId)
@@ -95,7 +95,7 @@ public class SubtaskService : ISubtaskService
 
         await _activityLogService.LogAsync(
             userId, ActivityType.TaskCreated,
-            $"Created subtask: {subtask.Title} (under {parentTask.Title})", null, null);
+            $"Created subtask: {subtask.Title} (under {parentTask.Title})", ipAddress, userAgent);
 
         return MapToDto(subtask);
     }
@@ -128,7 +128,7 @@ public class SubtaskService : ISubtaskService
     }
 
     /// <inheritdoc />
-    public async System.Threading.Tasks.Task<TaskDto> MoveSubtaskAsync(Guid userId, Guid subtaskId, Guid? newParentId)
+    public async System.Threading.Tasks.Task<TaskDto> MoveSubtaskAsync(Guid userId, Guid subtaskId, Guid? newParentId, string? ipAddress = null, string? userAgent = null)
     {
         var subtask = await _context.Tasks
             .FirstOrDefaultAsync(t => t.Id == subtaskId && t.UserId == userId)
@@ -193,7 +193,7 @@ public class SubtaskService : ISubtaskService
 
         await _activityLogService.LogAsync(
             userId, ActivityType.TaskUpdated,
-            $"Moved subtask: {subtask.Title}", null, null);
+            $"Moved subtask: {subtask.Title}", ipAddress, userAgent);
 
         return MapToDto(subtask);
     }
@@ -228,7 +228,7 @@ public class SubtaskService : ISubtaskService
     }
 
     /// <inheritdoc />
-    public async System.Threading.Tasks.Task<List<TaskDto>> BulkCreateSubtasksAsync(Guid userId, Guid parentId, List<string> titles)
+    public async System.Threading.Tasks.Task<List<TaskDto>> BulkCreateSubtasksAsync(Guid userId, Guid parentId, List<string> titles, string? ipAddress = null, string? userAgent = null)
     {
         var parentTask = await _context.Tasks
             .FirstOrDefaultAsync(t => t.Id == parentId && t.UserId == userId)
@@ -266,13 +266,13 @@ public class SubtaskService : ISubtaskService
 
         await _activityLogService.LogAsync(
             userId, ActivityType.TaskCreated,
-            $"Bulk created {subtasks.Count} subtask(s) under: {parentTask.Title}", null, null);
+            $"Bulk created {subtasks.Count} subtask(s) under: {parentTask.Title}", ipAddress, userAgent);
 
         return subtasks.Select(MapToDto).ToList();
     }
 
     /// <inheritdoc />
-    public async System.Threading.Tasks.Task BulkCompleteSubtasksAsync(Guid userId, Guid parentId)
+    public async System.Threading.Tasks.Task BulkCompleteSubtasksAsync(Guid userId, Guid parentId, string? ipAddress = null, string? userAgent = null)
     {
         var parentExists = await _context.Tasks
             .AnyAsync(t => t.Id == parentId && t.UserId == userId);
@@ -298,7 +298,7 @@ public class SubtaskService : ISubtaskService
 
         await _activityLogService.LogAsync(
             userId, ActivityType.TaskCompleted,
-            $"Bulk completed {subtasks.Count} subtask(s)", null, null);
+            $"Bulk completed {subtasks.Count} subtask(s)", ipAddress, userAgent);
     }
 
     /// <inheritdoc />
@@ -335,7 +335,7 @@ public class SubtaskService : ISubtaskService
     }
 
     /// <inheritdoc />
-    public async System.Threading.Tasks.Task DeleteSubtaskAsync(Guid userId, Guid subtaskId, bool cascade = true)
+    public async System.Threading.Tasks.Task DeleteSubtaskAsync(Guid userId, Guid subtaskId, bool cascade = true, string? ipAddress = null, string? userAgent = null)
     {
         var subtask = await _context.Tasks
             .FirstOrDefaultAsync(t => t.Id == subtaskId && t.UserId == userId)
@@ -381,7 +381,7 @@ public class SubtaskService : ISubtaskService
 
         await _activityLogService.LogAsync(
             userId, ActivityType.TaskDeleted,
-            $"Deleted subtask: {subtask.Title} (cascade: {cascade})", null, null);
+            $"Deleted subtask: {subtask.Title} (cascade: {cascade})", ipAddress, userAgent);
     }
 
     /// <summary>

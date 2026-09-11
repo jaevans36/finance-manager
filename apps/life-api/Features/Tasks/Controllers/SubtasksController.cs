@@ -32,7 +32,7 @@ public class SubtasksController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var subtask = await _subtaskService.CreateSubtaskAsync(userId, taskId, request);
+            var subtask = await _subtaskService.CreateSubtaskAsync(userId, taskId, request, GetIpAddress(), GetUserAgent());
             return CreatedAtAction(nameof(GetSubtasks), new { taskId }, subtask);
         }
         catch (KeyNotFoundException)
@@ -76,7 +76,7 @@ public class SubtasksController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var subtasks = await _subtaskService.BulkCreateSubtasksAsync(userId, taskId, request.Titles);
+            var subtasks = await _subtaskService.BulkCreateSubtasksAsync(userId, taskId, request.Titles, GetIpAddress(), GetUserAgent());
             return CreatedAtAction(nameof(GetSubtasks), new { taskId }, subtasks);
         }
         catch (KeyNotFoundException)
@@ -121,7 +121,7 @@ public class SubtasksController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var moved = await _subtaskService.MoveSubtaskAsync(userId, subtaskId, request.NewParentId);
+            var moved = await _subtaskService.MoveSubtaskAsync(userId, subtaskId, request.NewParentId, GetIpAddress(), GetUserAgent());
             return Ok(moved);
         }
         catch (KeyNotFoundException ex)
@@ -143,7 +143,7 @@ public class SubtasksController : ControllerBase
         try
         {
             var userId = GetUserId();
-            await _subtaskService.BulkCompleteSubtasksAsync(userId, taskId);
+            await _subtaskService.BulkCompleteSubtasksAsync(userId, taskId, GetIpAddress(), GetUserAgent());
             return NoContent();
         }
         catch (KeyNotFoundException)
@@ -182,7 +182,7 @@ public class SubtasksController : ControllerBase
         try
         {
             var userId = GetUserId();
-            await _subtaskService.DeleteSubtaskAsync(userId, subtaskId, cascade);
+            await _subtaskService.DeleteSubtaskAsync(userId, subtaskId, cascade, GetIpAddress(), GetUserAgent());
             return NoContent();
         }
         catch (KeyNotFoundException)
@@ -196,4 +196,8 @@ public class SubtasksController : ControllerBase
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
         return Guid.Parse(userIdClaim!);
     }
+
+    private string? GetIpAddress() => HttpContext.Connection.RemoteIpAddress?.ToString();
+
+    private string? GetUserAgent() => HttpContext.Request.Headers["User-Agent"].ToString();
 }

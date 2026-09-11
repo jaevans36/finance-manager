@@ -14,18 +14,18 @@ namespace LifeApi.Features.Tasks.Services;
 
 public interface ITaskService
 {
-    System.Threading.Tasks.Task<TaskDto> CreateTaskAsync(Guid userId, CreateTaskRequest request);
-    System.Threading.Tasks.Task<TaskDto> UpdateTaskAsync(Guid userId, Guid taskId, UpdateTaskRequest request);
-    System.Threading.Tasks.Task<TaskDto> UpdateTaskStatusAsync(Guid userId, Guid taskId, UpdateTaskStatusRequest request);
-    System.Threading.Tasks.Task<TaskDto> ClassifyTaskAsync(Guid userId, Guid taskId, ClassifyTaskRequest request);
-    System.Threading.Tasks.Task<List<TaskDto>> BulkClassifyAsync(Guid userId, BulkClassifyRequest request);
+    System.Threading.Tasks.Task<TaskDto> CreateTaskAsync(Guid userId, CreateTaskRequest request, string? ipAddress = null, string? userAgent = null);
+    System.Threading.Tasks.Task<TaskDto> UpdateTaskAsync(Guid userId, Guid taskId, UpdateTaskRequest request, string? ipAddress = null, string? userAgent = null);
+    System.Threading.Tasks.Task<TaskDto> UpdateTaskStatusAsync(Guid userId, Guid taskId, UpdateTaskStatusRequest request, string? ipAddress = null, string? userAgent = null);
+    System.Threading.Tasks.Task<TaskDto> ClassifyTaskAsync(Guid userId, Guid taskId, ClassifyTaskRequest request, string? ipAddress = null, string? userAgent = null);
+    System.Threading.Tasks.Task<List<TaskDto>> BulkClassifyAsync(Guid userId, BulkClassifyRequest request, string? ipAddress = null, string? userAgent = null);
     System.Threading.Tasks.Task<MatrixResponse> GetMatrixAsync(Guid userId, Guid? groupId = null, string? priority = null, bool includeCompleted = false);
     System.Threading.Tasks.Task<TaskDto> SetEnergyAsync(Guid userId, Guid taskId, SetEnergyRequest request);
     System.Threading.Tasks.Task<TaskDto> SetEstimateAsync(Guid userId, Guid taskId, SetEstimateRequest request);
     System.Threading.Tasks.Task<List<TaskDto>> BulkSetEnergyAsync(Guid userId, BulkEnergyRequest request);
     System.Threading.Tasks.Task<List<TaskDto>> GetSuggestionsAsync(Guid userId, string? energy = null, int? maxMinutes = null);
     System.Threading.Tasks.Task<EnergyDistributionDto> GetEnergyDistributionAsync(Guid userId);
-    System.Threading.Tasks.Task DeleteTaskAsync(Guid userId, Guid taskId);
+    System.Threading.Tasks.Task DeleteTaskAsync(Guid userId, Guid taskId, string? ipAddress = null, string? userAgent = null);
     System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid userId, Guid taskId, bool includeSubtasks = false);
     System.Threading.Tasks.Task<List<TaskDto>> GetTasksAsync(
         Guid userId,
@@ -60,7 +60,7 @@ public class TaskService : ITaskService
         _notificationService = notificationService;
     }
 
-    public async System.Threading.Tasks.Task<TaskDto> CreateTaskAsync(Guid userId, CreateTaskRequest request)
+    public async System.Threading.Tasks.Task<TaskDto> CreateTaskAsync(Guid userId, CreateTaskRequest request, string? ipAddress = null, string? userAgent = null)
     {
         var priority = Enum.TryParse<Models.Priority>(request.Priority, true, out var parsedPriority) 
             ? parsedPriority 
@@ -107,12 +107,12 @@ public class TaskService : ITaskService
             await _context.SaveChangesAsync();
         }
 
-        await _activityLogService.LogAsync(userId, ActivityType.TaskCreated, $"Created task: {task.Title}", null, null);
+        await _activityLogService.LogAsync(userId, ActivityType.TaskCreated, $"Created task: {task.Title}", ipAddress, userAgent);
 
         return await MapToTaskDtoAsync(task);
     }
 
-    public async System.Threading.Tasks.Task<TaskDto> UpdateTaskAsync(Guid userId, Guid taskId, UpdateTaskRequest request)
+    public async System.Threading.Tasks.Task<TaskDto> UpdateTaskAsync(Guid userId, Guid taskId, UpdateTaskRequest request, string? ipAddress = null, string? userAgent = null)
     {
         var task = await _context.Tasks
             .Include(t => t.AssignedTo)
@@ -158,7 +158,7 @@ public class TaskService : ITaskService
             {
                 task.CompletedAt = DateTime.UtcNow;
                 task.Status = Models.TaskStatus.Completed;
-                await _activityLogService.LogAsync(userId, ActivityType.TaskCompleted, $"Completed task: {task.Title}", null, null);
+                await _activityLogService.LogAsync(userId, ActivityType.TaskCompleted, $"Completed task: {task.Title}", ipAddress, userAgent);
             }
             else if (!request.Completed.Value)
             {
@@ -188,12 +188,12 @@ public class TaskService : ITaskService
         task.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
-        await _activityLogService.LogAsync(userId, ActivityType.TaskUpdated, $"Updated task: {task.Title}", null, null);
+        await _activityLogService.LogAsync(userId, ActivityType.TaskUpdated, $"Updated task: {task.Title}", ipAddress, userAgent);
 
         return await MapToTaskDtoAsync(task);
     }
 
-    public async System.Threading.Tasks.Task<TaskDto> UpdateTaskStatusAsync(Guid userId, Guid taskId, UpdateTaskStatusRequest request)
+    public async System.Threading.Tasks.Task<TaskDto> UpdateTaskStatusAsync(Guid userId, Guid taskId, UpdateTaskStatusRequest request, string? ipAddress = null, string? userAgent = null)
     {
         var task = await _context.Tasks
             .Include(t => t.AssignedTo)
@@ -259,7 +259,7 @@ public class TaskService : ITaskService
         var action = newStatus == Models.TaskStatus.Completed
             ? ActivityType.TaskCompleted
             : ActivityType.TaskUpdated;
-        await _activityLogService.LogAsync(userId, action, $"Changed task status to {newStatus}: {task.Title}", null, null);
+        await _activityLogService.LogAsync(userId, action, $"Changed task status to {newStatus}: {task.Title}", ipAddress, userAgent);
 
         // Notify owner if assignee completed the task
         if (task.Status == LifeApi.Features.Tasks.Models.TaskStatus.Completed
@@ -285,7 +285,7 @@ public class TaskService : ITaskService
         // Future: add strict transition rules if needed
     }
 
-    public async System.Threading.Tasks.Task<TaskDto> ClassifyTaskAsync(Guid userId, Guid taskId, ClassifyTaskRequest request)
+    public async System.Threading.Tasks.Task<TaskDto> ClassifyTaskAsync(Guid userId, Guid taskId, ClassifyTaskRequest request, string? ipAddress = null, string? userAgent = null)
     {
         var task = await _context.Tasks
             .Include(t => t.Group)
@@ -323,12 +323,12 @@ public class TaskService : ITaskService
         await _context.SaveChangesAsync();
 
         await _activityLogService.LogAsync(userId, ActivityType.TaskUpdated,
-            $"Classified task: {task.Title} (Urgency={task.Urgency}, Importance={task.Importance})", null, null);
+            $"Classified task: {task.Title} (Urgency={task.Urgency}, Importance={task.Importance})", ipAddress, userAgent);
 
         return await MapToTaskDtoAsync(task);
     }
 
-    public async System.Threading.Tasks.Task<List<TaskDto>> BulkClassifyAsync(Guid userId, BulkClassifyRequest request)
+    public async System.Threading.Tasks.Task<List<TaskDto>> BulkClassifyAsync(Guid userId, BulkClassifyRequest request, string? ipAddress = null, string? userAgent = null)
     {
         if (request.Items == null || request.Items.Count == 0)
         {
@@ -371,7 +371,7 @@ public class TaskService : ITaskService
         await _context.SaveChangesAsync();
 
         await _activityLogService.LogAsync(userId, ActivityType.TaskUpdated,
-            $"Bulk classified {request.Items.Count} tasks", null, null);
+            $"Bulk classified {request.Items.Count} tasks", ipAddress, userAgent);
 
         var result = new List<TaskDto>();
         foreach (var task in tasks)
@@ -598,7 +598,7 @@ public class TaskService : ITaskService
         };
     }
 
-    public async System.Threading.Tasks.Task DeleteTaskAsync(Guid userId, Guid taskId)
+    public async System.Threading.Tasks.Task DeleteTaskAsync(Guid userId, Guid taskId, string? ipAddress = null, string? userAgent = null)
     {
         var task = await _context.Tasks
             .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
@@ -614,7 +614,7 @@ public class TaskService : ITaskService
         _context.Tasks.Remove(task);
         await _context.SaveChangesAsync();
 
-        await _activityLogService.LogAsync(userId, ActivityType.TaskDeleted, $"Deleted task: {task.Title}", null, null);
+        await _activityLogService.LogAsync(userId, ActivityType.TaskDeleted, $"Deleted task: {task.Title}", ipAddress, userAgent);
     }
 
     public async System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid userId, Guid taskId, bool includeSubtasks = false)
