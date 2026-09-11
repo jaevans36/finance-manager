@@ -6,18 +6,17 @@ PowerShell scripts for common development tasks.
 
 ### Environment Management
 
-- **start-dev.ps1** - Start the complete development environment
-  - Starts Docker containers
-  - Launches the API backend
-  - Starts the frontend development server
-  
-- **stop-dev.ps1** - Stop all development services
-  - Stops frontend and backend servers
-  - Stops Docker containers
+Everything (postgres, life-api, finance-api, web) runs as live-reloading Docker
+containers via `docker-compose.yml` + `docker-compose.dev.yml` — no native
+`dotnet`/`node` processes on the host. Source edits hot-reload through a bind
+mount; a new NuGet/npm package needs a rebuild (`start-dev.ps1` always passes
+`--build`, so a plain re-run covers it).
 
-- **restart-dev.ps1** - Quick restart of development servers
-  - Stops and restarts both frontend and backend
-  - Useful after configuration changes
+- **start-dev.ps1** - Build and start the full dev stack
+- **stop-dev.ps1** - `docker compose down` - stops and removes only this
+  project's containers, nothing else on the machine
+- **restart-dev.ps1** - Stop then start again (equivalent to running the two
+  above back to back) - useful after a config change
 
 ### Database Management
 

@@ -1,0 +1,75 @@
+# Local dev stack — layer on top of docker-compose.yml:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+#
+# Runs life-api, finance-api and web as live-reloading containers (dotnet watch /
+# Vite dev server) alongside the postgres service from docker-compose.yml. Ports
+# match the existing native dev setup (5000, 5002, 5173, 5432) so nothing else
+# in the workflow changes.
+#
+# Adding a new NuGet or npm package needs a rebuild to pick up the restore —
+# dotnet watch / Vite's own file-watchers only catch source changes, not new
+# dependencies: `docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build`.
+#
+# If hot reload seems to stall (rare, seen on some Docker Desktop + WSL2 setups),
+# add `DOTNET_USE_POLLING_FILE_WATCHER: "1"` to life-api's/finance-api's
+# environment below — not on by default since polling has a real CPU cost.
+#
+# restart is "no" here (unlike the base file's "unless-stopped") deliberately —
+# in dev you want to see a crash, not have it silently restart-looped.
+
+services:
+  finance-api:
+    build:
+      target: dev
+    restart: "no"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Encryption__Key: "${ENCRYPTION_KEY:-3HIeEoJGNTO82CwxC+ZpnFl/kI9ZSMZevIuksyYIKMw=}"
+    volumes:
+      - ./apps/finance-api:/src
+      - /src/bin
+      - /src/obj
+
+  life-api:
+    build:
+      context: .
+      dockerfile: apps/life-api/Dockerfile
+      target: dev
+    container_name: life-manager-api-dev
+    restart: "no"
+    ports:
+      - "5000:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=life_manager_dev;Username=postgres;Password=password"
+      Jwt__Secret: "${JWT_SECRET:-your-secret-key-change-in-production}"
+      Cors__AllowedOrigins__0: "http://localhost:5173"
+    volumes:
+      - ./apps/life-api:/src
+      - /src/bin
+      - /src/obj
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: dev
+    container_name: life-manager-web-dev
+    restart: "no"
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:5000
+      VITE_FINANCE_API_URL: http://localhost:5002
+    volumes:
+      - ./apps/web:/app/apps/web
+      - ./packages:/app/packages
+      - /app/apps/web/node_modules
+      - /app/packages/schema/node_modules
+      - /app/packages/ui/node_modules
+    depends_on:
+      - life-api
+      - finance-api

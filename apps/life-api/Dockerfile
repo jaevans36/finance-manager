@@ -10,6 +10,11 @@ RUN dotnet restore
 COPY apps/life-api/ .
 RUN dotnet publish -c Release -o /app/publish --no-restore
 
+# ── Dev stage — dotnet watch, live source bind-mounted over /src at runtime
+# (see docker-compose.dev.yml).
+FROM build AS dev
+ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile", "--urls", "http://+:5000"]
+
 # ── Runtime stage ─────────────────────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app

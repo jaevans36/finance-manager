@@ -18,6 +18,18 @@ COPY apps/web/ apps/web/
 # Install all workspace dependencies (workspace symlinks need source to exist)
 RUN pnpm install --frozen-lockfile
 
+# ── Dev stage — Vite's own dev server, live source bind-mounted over /app at
+# runtime (see docker-compose.dev.yml). node_modules stays inside the image
+# (anonymous volume in the compose file) rather than syncing from the host.
+FROM builder AS dev
+WORKDIR /app/apps/web
+EXPOSE 5173
+CMD ["pnpm", "dev", "--", "--host"]
+
+# ── Prod build — forks from `builder` explicitly so `dev` (above) doesn't
+# pull in the build step it doesn't need. ────────────────────────────────────
+FROM builder AS build-prod
+
 # VITE_API_URL is baked in at build time.
 # Default: http://localhost:5000 (same-machine access).
 # For LAN access from other devices, set to your machine's hostname or IP:
@@ -31,7 +43,7 @@ RUN pnpm build
 # ── Serve stage ───────────────────────────────────────────────────────────────
 FROM nginx:alpine AS runtime
 
-COPY --from=builder /app/apps/web/dist /usr/share/nginx/html
+COPY --from=build-prod /app/apps/web/dist /usr/share/nginx/html
 COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
