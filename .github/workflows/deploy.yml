@@ -57,6 +57,12 @@ jobs:
           echo "::error::Health check failed after 10 attempts"
           exit 1
 
+      - name: Prune old Docker build cache and dangling images
+        if: success()
+        run: |
+          docker builder prune -f --filter until=168h
+          docker image prune -f
+
       - name: Show running containers
         if: always()
         run: docker compose -f docker-compose.vps.yml ps
