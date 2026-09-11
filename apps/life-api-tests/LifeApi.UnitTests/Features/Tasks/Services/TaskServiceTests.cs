@@ -11,6 +11,7 @@ using LifeApi.Features.Common.ActivityLogs.Services;
 using LifeApi.Features.Common.ActivityLogs.Models;
 using LifeApi.Features.Notifications.Services;
 using LifeApi.Features.Settings.Services;
+using LifeApi.Features.Labels.Models;
 using TaskModel = LifeApi.Features.Tasks.Models.Task; // Alias to avoid ambiguity
 
 namespace LifeApi.UnitTests.Features.Tasks.Services;
@@ -87,6 +88,30 @@ public class TaskServiceTests : IDisposable
         var savedTask = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == result.Id);
         savedTask.Should().NotBeNull();
         savedTask!.Title.Should().Be(request.Title);
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task CreateTaskAsync_WithLabelIds_ShouldReturnLabelsWithoutThrowing()
+    {
+        // Regression guard: MapToTaskDtoAsync used to NullReferenceException on tl.Label because
+        // the labels were attached to the new TaskLabel rows by Id only, leaving the Label
+        // navigation property unpopulated (EF's relationship fixup does not resolve a full
+        // entity from a bare FK). See TaskService.CreateTaskAsync.
+        var label = new Label { Id = Guid.NewGuid(), UserId = _testUser.Id, Name = "urgent", ColourHex = "#F87171" };
+        _context.Labels.Add(label);
+        await _context.SaveChangesAsync();
+
+        var request = new CreateTaskRequest
+        {
+            Title = "Task with a label",
+            LabelIds = new List<Guid> { label.Id },
+        };
+
+        var result = await _taskService.CreateTaskAsync(_testUser.Id, request);
+
+        result.Labels.Should().ContainSingle();
+        result.Labels[0].Id.Should().Be(label.Id);
+        result.Labels[0].Name.Should().Be("urgent");
     }
 
     [Fact]
