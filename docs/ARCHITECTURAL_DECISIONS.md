@@ -475,3 +475,78 @@ Full details in `docs/BRANCHING-STRATEGY.md`.
 ### Rejected Alternatives
 - **Dedicated `mcp@life-manager.local` service account** (per the original spec): its tasks/events are invisible to every real user without also building cross-account sharing
 - **Add API keys / impersonation to `life-api` first**: correct long-term for a multi-identity server, but expands scope well beyond the MCP server
+
+---
+
+## ADR-022: `finance-api` Column Encryption Scope — Contextual Text Only, Not Amounts or Search Fields
+
+**Date**: 2026-09-11
+**Status**: Accepted
+
+### Context
+The vault's Service Topology decision (`Service Topology & Data Sensitivity.md` §2.1) called
+for encrypting "amounts, descriptions, account-number suffix, institution" in `finance-api` —
+the mitigation that makes Tailscale-only self-hosting of Finance data defensible regardless of
+where it ends up hosted. That scope was written before checking how those fields are actually
+used in the codebase.
+
+### Decision
+Encrypt only free-text fields that are **never** touched by SQL `WHERE`/`GROUP BY`/`.Contains()`
+— pure write-and-display data: `Account.Name`, `Account.Institution`,
+`Account.AccountNumberSuffix`, `Account.Notes`, `Transaction.Notes`, `Bill.Name`,
+`Bill.Description`, `Budget.Title`, `Budget.Note`, `CategoryRule.Pattern`, `IncomeStream.Name`,
+`SavingsGoal.Name`, `SpendingPot.Name`. Implementation: AES-256-GCM via an EF Core
+`ValueConverter` (`Infrastructure/Encryption/`), random 96-bit nonce per value (semantic
+security — none of these fields need SQL-side equality), stored as `"ENC1:" + base64(nonce ‖
+ciphertext ‖ tag)`. The `ENC1:` prefix makes a not-yet-migrated read fail with a clear error
+instead of a cryptic AES exception, and makes the one-time backfill tool idempotent.
+
+**Explicitly excluded, and why:**
+- **`Transaction.Amount`, `BaseCurrencyAmount`, `Account.Balance` + rate/limit fields** — used
+  in SQL-side `.Sum()`/`.Where()`/`.GroupBy()` across 12 files (Affordability, Budgets, Debt
+  projection, Insights, Income detection, Recurring-payment detection). Postgres cannot
+  aggregate or compare ciphertext; encrypting these would mean pulling entire tables into memory
+  and reimplementing the app's analytical core in C#. Not proportionate to the threat model
+  already established in the vault decision: a breach leaks a financial *picture*, not the
+  ability to transact.
+- **`Transaction.Description`, `Payee`, `OriginalDescription`, `Reference`** — used in free-text
+  transaction search (`TransactionService.cs`, SQL `.Contains()`), merchant grouping across 4
+  Insights/Affordability services, and CSV-import duplicate detection (`CsvImportService.cs`,
+  exact-match `WHERE OriginalDescription = @p`). Ciphertext has no substring or equality
+  relationship to plaintext — encrypting these breaks substring search outright and silently
+  breaks import dedup and every merchant-grouping feature. Fixing that is a second project.
+- **`Category.Name`** — seeded via `modelBuilder.Entity<Category>().HasData(...)` (~24 system
+  rows). An encrypting converter would bake ciphertext computed at `dotnet ef migrations add`
+  **design time** into the migration file, creating a design-time/runtime key mismatch. Category
+  labels aren't sensitive on their own — the sensitive part (which transactions map to them)
+  stays linked by GUID.
+
+Three fields (`Account.Name`, `SpendingPot.Name`, `SavingsGoal.Name`) were SQL-`ORDER BY`'d
+only — fixed by moving those three sorts to after `ToListAsync()` (trivial; short per-user
+lists, not paginated tables).
+
+**Migration for existing data**: a pure-DDL EF Core migration widens the encrypted columns to
+`text` (no data touched); a separate `--backfill-encrypt-columns` startup-arg branch in
+`Program.cs` then encrypts existing plaintext rows via a raw `NpgsqlConnection` (bypassing EF
+entirely), idempotent via the `ENC1:` prefix check. Required run order — migrate, then backfill,
+then start normally — is documented in `apps/finance-api/README.md`; starting the app between
+those steps would apply the decrypting converter against still-plaintext data and crash every
+read.
+
+### Consequences
+- (+) Directly satisfies the vault decision's intent — identifying/contextual text (who, where,
+  which bank, personal notes) is protected at rest, independent of where Finance ends up hosted
+- (+) Key comes from `Encryption:Key` config with no default in `docker-compose.yml` (fails
+  fast rather than silently running unencrypted with a placeholder key)
+- (-) Transaction-level "what for" text and all amounts/balances stay plaintext — a breach still
+  exposes spending patterns and merchant names, just not account identity/notes
+- (-) None of the encrypted fields can be searched, sorted in SQL, or indexed — acceptable since
+  none of them were performance-critical query paths (short per-user lists, in-memory sort)
+
+### Rejected Alternatives
+- **Encrypt the originally-scoped fields (amounts, descriptions) as specified**: would require
+  redesigning the app's analytics core (SQL aggregation) and search/dedup — out of scope for
+  "add column encryption," and disproportionate to the actual threat model
+- **Deterministic encryption (fixed nonce) to preserve SQL equality on some fields**: rejected in
+  favour of semantic security (random nonce) since, once amounts/descriptions are excluded, none
+  of the remaining encrypted fields need SQL-side equality anyway

@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text;
 using FinanceApi.Data;
+using FinanceApi.Infrastructure.Encryption;
 using FinanceApi.Features.Accounts.Services;
 using FinanceApi.Features.Affordability.Services;
 using FinanceApi.Features.IncomeStreams.Services;
@@ -14,8 +15,10 @@ using FinanceApi.Features.SavingsGoals.Services;
 using FinanceApi.Features.Transactions.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Npgsql;
 using Serilog;
 using Serilog.Events;
 
@@ -35,6 +38,17 @@ try
     Log.Information("Starting Finance API");
 
     var builder = WebApplication.CreateBuilder(args);
+
+    // One-time maintenance mode: encrypt existing plaintext rows in columns that just gained
+    // encryption, then exit — never reaches app.Run(). Must be run after `dotnet ef database
+    // update` (which widens the columns to `text`) and before the app is started normally
+    // (which would otherwise try to decrypt still-plaintext rows and throw). Safe to re-run —
+    // already-encrypted rows (ENC1: prefix) are skipped. See apps/finance-api/README.md.
+    if (args.Contains("--backfill-encrypt-columns"))
+    {
+        await EncryptionBackfill.RunAsync(builder.Configuration);
+        return;
+    }
 
     builder.Host.UseSerilog((context, services, configuration) =>
         configuration
@@ -98,6 +112,18 @@ try
         }
 
         options.CustomSchemaIds(type => type.FullName);
+    });
+
+    // ── Column encryption ───────────────────────────────────────────────────
+    // Factory-registered (not read eagerly here) so the config lookup happens at first
+    // resolution, after every configuration source — including test-host overrides — has been
+    // layered in. Same fail-fast intent as Jwt:Secret: no default fallback, a default key would
+    // defeat the point. Generate a real key with `openssl rand -base64 32`.
+    builder.Services.AddSingleton<IColumnEncryptionService>(sp =>
+    {
+        var keyBase64 = sp.GetRequiredService<IConfiguration>()["Encryption:Key"]
+            ?? throw new InvalidOperationException("Encryption:Key is not configured");
+        return new AesColumnEncryptionService(Convert.FromBase64String(keyBase64));
     });
 
     // ── Database ─────────────────────────────────────────────────────────────
@@ -227,4 +253,80 @@ finally
 
 // Exposes the implicit Program class to the integration test project
 public partial class Program { }
+
+/// <summary>
+/// One-time data migration: encrypts existing plaintext values in columns that have just
+/// gained an EncryptedStringConverter. Run via `dotnet run --project apps/finance-api --
+/// --backfill-encrypt-columns` after `dotnet ef database update` and before starting the app
+/// normally. Bypasses FinanceDbContext/EF entirely (raw Npgsql) so there is no read-path/
+/// write-path converter duality to reason about. Idempotent: already-encrypted values (the
+/// "ENC1:" prefix) are skipped, so a re-run after an interruption just picks up where it left off.
+/// </summary>
+internal static class EncryptionBackfill
+{
+    private static readonly (string Table, string Column)[] EncryptedColumns =
+    {
+        ("Accounts", "Name"),
+        ("Accounts", "Institution"),
+        ("Accounts", "AccountNumberSuffix"),
+        ("Accounts", "Notes"),
+        ("Transactions", "Notes"),
+        ("Bills", "Name"),
+        ("Bills", "Description"),
+        ("Budgets", "Title"),
+        ("Budgets", "Note"),
+        ("CategoryRules", "Pattern"),
+        ("IncomeStreams", "Name"),
+        ("SavingsGoals", "Name"),
+        ("SpendingPots", "Name"),
+    };
+
+    public static async System.Threading.Tasks.Task RunAsync(IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is not configured");
+        var encryptionKeyBase64 = configuration["Encryption:Key"]
+            ?? throw new InvalidOperationException("Encryption:Key is not configured");
+        var encryption = new AesColumnEncryptionService(Convert.FromBase64String(encryptionKeyBase64));
+
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+
+        Console.WriteLine("[backfill-encrypt-columns] Starting...");
+        var totalEncrypted = 0;
+
+        foreach (var (table, column) in EncryptedColumns)
+        {
+            var rows = new List<(Guid Id, string Value)>();
+
+            await using (var select = new NpgsqlCommand(
+                $"SELECT \"Id\", \"{column}\" FROM finance.\"{table}\" " +
+                $"WHERE \"{column}\" IS NOT NULL AND \"{column}\" NOT LIKE '{AesColumnEncryptionService.VersionPrefix}%'",
+                connection))
+            await using (var reader = await select.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    rows.Add((reader.GetGuid(0), reader.GetString(1)));
+                }
+            }
+
+            foreach (var (id, value) in rows)
+            {
+                var encrypted = encryption.Encrypt(value);
+                await using var update = new NpgsqlCommand(
+                    $"UPDATE finance.\"{table}\" SET \"{column}\" = @value WHERE \"Id\" = @id",
+                    connection);
+                update.Parameters.AddWithValue("value", encrypted!);
+                update.Parameters.AddWithValue("id", id);
+                await update.ExecuteNonQueryAsync();
+            }
+
+            totalEncrypted += rows.Count;
+            Console.WriteLine($"[backfill-encrypt-columns] {table}.{column}: encrypted {rows.Count} row(s).");
+        }
+
+        Console.WriteLine($"[backfill-encrypt-columns] Done — {totalEncrypted} value(s) encrypted across {EncryptedColumns.Length} columns.");
+    }
+}
 

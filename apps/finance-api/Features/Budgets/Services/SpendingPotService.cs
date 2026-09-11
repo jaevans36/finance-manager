@@ -14,10 +14,12 @@ public class SpendingPotService : ISpendingPotService
 
     public async Task<IEnumerable<SpendingPotWithProgress>> GetPotsWithProgressAsync(Guid userId, int month, int year, CancellationToken ct = default)
     {
-        var pots = await _db.SpendingPots
+        // Name is column-encrypted — sort after materialization, SQL can't ORDER BY ciphertext.
+        var pots = (await _db.SpendingPots
             .Where(p => p.UserId == userId)
+            .ToListAsync(ct))
             .OrderBy(p => p.Name)
-            .ToListAsync(ct);
+            .ToList();
 
         if (pots.Count == 0) return Array.Empty<SpendingPotWithProgress>();
 

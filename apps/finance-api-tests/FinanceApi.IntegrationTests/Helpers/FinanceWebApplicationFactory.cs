@@ -20,6 +20,9 @@ public class FinanceWebApplicationFactory : WebApplicationFactory<Program>
                 ["Jwt:Secret"] = "test-secret-key-minimum-32-characters-long!!",
                 ["Jwt:Issuer"] = "finance-test",
                 ["Jwt:Audience"] = "finance-test",
+                // Fixed base64(32 zero-indexed bytes) — no meaning beyond satisfying
+                // Program.cs's fail-fast Encryption:Key check for integration tests.
+                ["Encryption:Key"] = "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=",
             });
         });
 

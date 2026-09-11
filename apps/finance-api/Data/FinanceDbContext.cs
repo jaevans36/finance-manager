@@ -7,6 +7,7 @@ using FinanceApi.Features.IncomeStreams.Models;
 using FinanceApi.Features.SavingsGoals.Models;
 using FinanceApi.Features.Settings.Models;
 using FinanceApi.Features.Transactions.Models;
+using FinanceApi.Infrastructure.Encryption;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
@@ -15,10 +16,28 @@ namespace FinanceApi.Data;
 /// <summary>
 /// Entity Framework Core DbContext for the Finance API.
 /// All tables live in the "finance" PostgreSQL schema — isolated from the life-api "public" schema.
+///
+/// A subset of free-text columns are encrypted at rest via <see cref="IColumnEncryptionService"/>
+/// (see the "ENCRYPTED" markers below). Amounts/balances and Transaction.Description/Payee/
+/// OriginalDescription/Category.Name are deliberately NOT encrypted — they're used in SQL-side
+/// Sum/Where/GroupBy/Contains across the analytics and search features, which ciphertext can't
+/// support. See docs/ARCHITECTURAL_DECISIONS.md (encryption ADR) before changing this list.
 /// </summary>
 public class FinanceDbContext : DbContext
 {
-    public FinanceDbContext(DbContextOptions<FinanceDbContext> options) : base(options) { }
+    private readonly IColumnEncryptionService _encryption;
+
+    public FinanceDbContext(DbContextOptions<FinanceDbContext> options, IColumnEncryptionService encryption)
+        : base(options)
+    {
+        _encryption = encryption;
+    }
+
+    // Typed as the non-generic base so callers bind to PropertyBuilder's non-generic
+    // HasConversion(ValueConverter) overload — avoids a nullable-generic-inference mismatch
+    // warning when applying this string?/string? converter to non-nullable `string` properties.
+    private Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter Encrypted
+        => new EncryptedStringConverter(_encryption);
 
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
@@ -42,11 +61,13 @@ public class FinanceDbContext : DbContext
         modelBuilder.Entity<Account>(entity =>
         {
             entity.HasKey(a => a.Id);
-            entity.Property(a => a.Name).HasMaxLength(200).IsRequired();
+            // ENCRYPTED — no HasMaxLength: widened to `text` to hold ciphertext, IsRequired kept.
+            entity.Property(a => a.Name).IsRequired().HasConversion(Encrypted);
             entity.Property(a => a.Currency).HasMaxLength(3).IsRequired();
             entity.Property(a => a.Balance).HasPrecision(18, 4);
-            entity.Property(a => a.Institution).HasMaxLength(200);
-            entity.Property(a => a.AccountNumberSuffix).HasMaxLength(4);
+            entity.Property(a => a.Institution).HasConversion(Encrypted); // ENCRYPTED
+            entity.Property(a => a.AccountNumberSuffix).HasConversion(Encrypted); // ENCRYPTED
+            entity.Property(a => a.Notes).HasConversion(Encrypted); // ENCRYPTED
             entity.Property(a => a.Colour).HasMaxLength(7);
             entity.Property(a => a.Icon).HasMaxLength(100);
             entity.Property(a => a.Type)
@@ -92,6 +113,7 @@ public class FinanceDbContext : DbContext
             entity.Property(t => t.OriginalDescription).HasMaxLength(500);
             entity.Property(t => t.Payee).HasMaxLength(200);
             entity.Property(t => t.Reference).HasMaxLength(100);
+            entity.Property(t => t.Notes).HasConversion(Encrypted); // ENCRYPTED
             entity.Property(t => t.Currency).HasMaxLength(3).IsRequired();
             entity.Property(t => t.Amount).HasPrecision(18, 4);
             entity.Property(t => t.BaseCurrencyAmount).HasPrecision(18, 4);
@@ -125,6 +147,8 @@ public class FinanceDbContext : DbContext
             entity.HasKey(b => b.Id);
             entity.Property(b => b.Amount).HasPrecision(18, 4);
             entity.Property(b => b.RolloverFromPrevious).HasPrecision(18, 4);
+            entity.Property(b => b.Title).HasConversion(Encrypted); // ENCRYPTED
+            entity.Property(b => b.Note).HasConversion(Encrypted); // ENCRYPTED
             entity.HasIndex(b => new { b.UserId, b.Month, b.Year });
 
             entity.HasOne(b => b.Category)
@@ -137,7 +161,8 @@ public class FinanceDbContext : DbContext
         modelBuilder.Entity<SpendingPot>(entity =>
         {
             entity.HasKey(p => p.Id);
-            entity.Property(p => p.Name).HasMaxLength(200).IsRequired();
+            // ENCRYPTED — no HasMaxLength: widened to `text` to hold ciphertext.
+            entity.Property(p => p.Name).IsRequired().HasConversion(Encrypted);
             entity.Property(p => p.BudgetAmount).HasPrecision(18, 4);
             entity.Property(p => p.AnnualAmount).HasPrecision(18, 4);
             entity.Property(p => p.AccumulatedAmount).HasPrecision(18, 4);
@@ -163,7 +188,9 @@ public class FinanceDbContext : DbContext
         modelBuilder.Entity<Bill>(entity =>
         {
             entity.HasKey(b => b.Id);
-            entity.Property(b => b.Name).HasMaxLength(200).IsRequired();
+            // ENCRYPTED — no HasMaxLength: widened to `text` to hold ciphertext.
+            entity.Property(b => b.Name).IsRequired().HasConversion(Encrypted);
+            entity.Property(b => b.Description).HasConversion(Encrypted); // ENCRYPTED
             entity.Property(b => b.Amount).HasPrecision(18, 4);
             entity.Property(b => b.Frequency).HasConversion<string>().HasMaxLength(20);
             entity.HasIndex(b => b.UserId);
@@ -183,7 +210,8 @@ public class FinanceDbContext : DbContext
         modelBuilder.Entity<IncomeStream>(entity =>
         {
             entity.HasKey(s => s.Id);
-            entity.Property(s => s.Name).HasMaxLength(200).IsRequired();
+            // ENCRYPTED — no HasMaxLength: widened to `text` to hold ciphertext.
+            entity.Property(s => s.Name).IsRequired().HasConversion(Encrypted);
             entity.Property(s => s.MonthlyAmount).HasPrecision(18, 4);
             entity.HasIndex(s => s.UserId);
 
@@ -197,7 +225,8 @@ public class FinanceDbContext : DbContext
         modelBuilder.Entity<SavingsGoal>(entity =>
         {
             entity.HasKey(g => g.Id);
-            entity.Property(g => g.Name).HasMaxLength(200).IsRequired();
+            // ENCRYPTED — no HasMaxLength: widened to `text` to hold ciphertext.
+            entity.Property(g => g.Name).IsRequired().HasConversion(Encrypted);
             entity.Property(g => g.TargetAmount).HasPrecision(18, 4);
             entity.Property(g => g.CurrentAmount).HasPrecision(18, 4);
             entity.Property(g => g.MonthlyContribution).HasPrecision(18, 4);
@@ -209,7 +238,8 @@ public class FinanceDbContext : DbContext
         modelBuilder.Entity<CategoryRule>(entity =>
         {
             entity.HasKey(r => r.Id);
-            entity.Property(r => r.Pattern).HasMaxLength(200).IsRequired();
+            // ENCRYPTED — no HasMaxLength: widened to `text` to hold ciphertext.
+            entity.Property(r => r.Pattern).IsRequired().HasConversion(Encrypted);
             entity.Property(r => r.MatchType).HasConversion<string>().HasMaxLength(20);
             entity.HasIndex(r => r.UserId);
             entity.HasOne(r => r.Category)
