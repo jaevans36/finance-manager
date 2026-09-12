@@ -1,9 +1,10 @@
 import { memo } from 'react';
-import { ChevronDown, Pencil, UserPlus, Trash2, AlertTriangle } from 'lucide-react';
+import { ChevronDown, Pencil, UserPlus, Trash2, AlertTriangle, Flag } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Task } from '../../services/taskService';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
+import { Checkbox } from '../ui/checkbox';
 import { SubtaskProgress } from './SubtaskProgress';
 import { StatusBadge } from './StatusBadge';
 import { QuadrantBadge } from './QuadrantBadge';
@@ -52,30 +53,34 @@ export const TaskItem = memo(({
   return (
     <div
       className={cn(
-        'group flex items-stretch gap-[15px] p-[15px] md:flex-col md:items-start md:gap-3 md:p-3',
+        'group flex items-stretch gap-3 p-[15px] md:flex-col md:items-start md:gap-3 md:p-3',
         task.completed && 'opacity-60',
         isSubtaskExpanded ? 'border-none rounded-none' : 'mb-2.5 rounded-lg border border-border bg-card',
       )}
       role="article"
       aria-label={`Task: ${task.title}`}
     >
-      {/* Priority stripe — replaces a loud filled priority badge with a quieter, scannable signal */}
+      {/* Priority stripe — a quieter, scannable severity signal than a filled badge */}
       <div className={cn('w-1 flex-shrink-0 rounded-sm md:h-1 md:w-full', priority.stripe)} aria-hidden="true" />
 
-      <input
-        type="checkbox"
+      <Checkbox
         checked={task.completed}
-        onChange={() => onToggleComplete(task.id)}
-        className="mt-0.5 h-[18px] w-[18px] cursor-pointer self-start md:h-6 md:w-6 flex-shrink-0"
+        onCheckedChange={() => onToggleComplete(task.id)}
+        className="mt-1 h-[18px] w-[18px] self-start md:h-5 md:w-5 flex-shrink-0"
         aria-label={`Mark task "${task.title}" as ${task.completed ? 'incomplete' : 'complete'}`}
       />
 
       <div className="flex-1 min-w-0">
-        <div className="mb-[5px] flex flex-wrap items-center gap-2">
-          <h3 className={cn('m-0 text-base text-foreground', task.completed && 'line-through')}>
-            {task.title}
-          </h3>
-          <span className={cn('text-badge font-medium uppercase tracking-wide', priority.text)}>
+        {/* Title on its own line — badges below don't compete with long titles for space */}
+        <h3 className={cn('m-0 text-base text-foreground', task.completed && 'line-through')}>
+          {task.title}
+        </h3>
+
+        {/* Meta row — priority (flag icon) and energy (zap icon) get distinct icons so
+            two badges that can both read "MEDIUM" are still unambiguous at a glance */}
+        <div className="mt-1.5 flex flex-wrap items-center gap-2">
+          <span className={cn('inline-flex items-center gap-1 text-badge font-medium uppercase tracking-wide', priority.text)}>
+            <Flag className="h-2.5 w-2.5" />
             {task.priority}
           </span>
           {task.groupName && (
@@ -92,7 +97,7 @@ export const TaskItem = memo(({
           )}
           <StatusBadge status={task.status} size="sm" />
           {task.quadrant && <QuadrantBadge quadrant={task.quadrant} size="sm" />}
-          {task.energyLevel && <EnergyBadge energy={task.energyLevel} size="sm" showLabel />}
+          {task.energyLevel && <EnergyBadge energy={task.energyLevel} size="sm" showLabel showIcon />}
           {/* Assignment badge — shown to both owner and assignee */}
           {(task.assignedToUsername || task.assignedByUsername) && (
             <TaskAssignmentBadge
