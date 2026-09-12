@@ -133,9 +133,23 @@ public class TaskService : ITaskService
         {
             task.Priority = priority;
         }
-        if (request.DueDate.HasValue) task.DueDate = DateTime.SpecifyKind(request.DueDate.Value, DateTimeKind.Utc);
+        if (request.ClearDueDate)
+        {
+            task.DueDate = null;
+        }
+        else if (request.DueDate.HasValue)
+        {
+            task.DueDate = DateTime.SpecifyKind(request.DueDate.Value, DateTimeKind.Utc);
+        }
 
-        if (request.GroupId.HasValue) task.GroupId = request.GroupId;
+        if (request.ClearGroupId)
+        {
+            task.GroupId = null;
+        }
+        else if (request.GroupId.HasValue)
+        {
+            task.GroupId = request.GroupId;
+        }
 
         if (request.EnergyLevel != null && Enum.TryParse<Models.EnergyLevel>(request.EnergyLevel, true, out var energyLevel))
         {

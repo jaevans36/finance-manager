@@ -314,6 +314,43 @@ const TasksPage = () => {
     }
   };
 
+  const handleDueDateChange = async (id: string, dueDate: string | null) => {
+    try {
+      const updatedTask = await taskService.updateTask(id, dueDate ? { dueDate } : { clearDueDate: true });
+      setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
+      setEditingTask((prev) => (prev && prev.id === id ? updatedTask : prev));
+      toast.success('Due date updated');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update due date';
+      toast.error(message);
+    }
+  };
+
+  const handleGroupChange = async (id: string, groupId: string | null) => {
+    try {
+      const updatedTask = await taskService.updateTask(id, groupId ? { groupId } : { clearGroupId: true });
+      setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
+      setEditingTask((prev) => (prev && prev.id === id ? updatedTask : prev));
+      toast.success('Group updated');
+      loadGroups();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update group';
+      toast.error(message);
+    }
+  };
+
+  const handlePriorityChange = async (id: string, priority: 'Low' | 'Medium' | 'High' | 'Critical') => {
+    try {
+      const updatedTask = await taskService.updateTask(id, { priority });
+      setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
+      setEditingTask((prev) => (prev && prev.id === id ? updatedTask : prev));
+      toast.success('Priority updated');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update priority';
+      toast.error(message);
+    }
+  };
+
   const handleGroupCreated = () => {
     loadGroups();
   };
@@ -451,6 +488,9 @@ const TasksPage = () => {
           onClassificationChange={handleClassificationChange}
           onEnergyChange={handleEnergyChange}
           onEstimateChange={handleEstimateChange}
+          onDueDateChange={handleDueDateChange}
+          onGroupChange={handleGroupChange}
+          onPriorityChange={handlePriorityChange}
           onSubtaskChange={handleSubtaskChange}
         />
       )}

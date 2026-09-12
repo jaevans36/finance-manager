@@ -240,6 +240,61 @@ public class TaskServiceTests : IDisposable
     }
 
     [Fact]
+    public async System.Threading.Tasks.Task UpdateTaskAsync_WithClearDueDate_ShouldSetDueDateToNull()
+    {
+        // Arrange
+        var task = new TaskModel
+        {
+            UserId = _testUser.Id,
+            Title = "Task with due date",
+            Priority = Priority.Medium,
+            DueDate = DateTime.UtcNow.AddDays(3)
+        };
+        _context.Tasks.Add(task);
+        await _context.SaveChangesAsync();
+
+        var updateRequest = new UpdateTaskRequest { ClearDueDate = true };
+
+        // Act
+        var result = await _taskService.UpdateTaskAsync(_testUser.Id, task.Id, updateRequest);
+
+        // Assert
+        result.DueDate.Should().BeNull();
+
+        var updatedTask = await _context.Tasks.FindAsync(task.Id);
+        updatedTask!.DueDate.Should().BeNull();
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task UpdateTaskAsync_WithClearGroupId_ShouldSetGroupIdToNull()
+    {
+        // Arrange
+        var group = new TaskGroup { UserId = _testUser.Id, Name = "Work" };
+        _context.TaskGroups.Add(group);
+
+        var task = new TaskModel
+        {
+            UserId = _testUser.Id,
+            Title = "Grouped task",
+            Priority = Priority.Medium,
+            GroupId = group.Id
+        };
+        _context.Tasks.Add(task);
+        await _context.SaveChangesAsync();
+
+        var updateRequest = new UpdateTaskRequest { ClearGroupId = true };
+
+        // Act
+        var result = await _taskService.UpdateTaskAsync(_testUser.Id, task.Id, updateRequest);
+
+        // Assert
+        result.GroupId.Should().BeNull();
+
+        var updatedTask = await _context.Tasks.FindAsync(task.Id);
+        updatedTask!.GroupId.Should().BeNull();
+    }
+
+    [Fact]
     public async System.Threading.Tasks.Task UpdateTaskAsync_MarkingAsCompleted_ShouldSetCompletedAt()
     {
         // Arrange

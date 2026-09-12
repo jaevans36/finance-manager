@@ -213,12 +213,6 @@ describe('TaskDetailModal', () => {
       expect(
         (screen.getByLabelText(/task description/i) as HTMLTextAreaElement).value,
       ).toBe('Original description');
-      expect(
-        (screen.getByLabelText(/task priority/i) as HTMLSelectElement).value,
-      ).toBe('Medium');
-      expect(
-        (document.getElementById('dueDate') as HTMLInputElement).value,
-      ).toBe('2024-12-31');
     });
 
     it('should show character count for title', () => {
@@ -262,28 +256,6 @@ describe('TaskDetailModal', () => {
       });
 
       expect(textarea.value).toBe('Updated description');
-    });
-
-    it('should update priority when selecting different option', () => {
-      renderModal();
-      enterEditMode();
-
-      const select = screen.getByLabelText(
-        /task priority/i,
-      ) as HTMLSelectElement;
-      fireEvent.change(select, { target: { value: 'High' } });
-
-      expect(select.value).toBe('High');
-    });
-
-    it('should update due date when changing date', () => {
-      renderModal();
-      enterEditMode();
-
-      const dateInput = document.getElementById('dueDate') as HTMLInputElement;
-      fireEvent.change(dateInput, { target: { value: '2025-01-15' } });
-
-      expect(dateInput.value).toBe('2025-01-15');
     });
 
     it('should exit edit mode when Cancel is clicked', () => {
@@ -391,20 +363,16 @@ describe('TaskDetailModal', () => {
       fireEvent.change(screen.getByLabelText(/task description/i), {
         target: { value: 'New Description' },
       });
-      fireEvent.change(screen.getByLabelText(/task priority/i), {
-        target: { value: 'Low' },
-      });
-      fireEvent.change(document.getElementById('dueDate') as HTMLInputElement, {
-        target: { value: '2025-06-15' },
-      });
       fireEvent.submit(screen.getByRole('form'));
 
+      // Priority and due date are edited live (outside this form) so the save
+      // payload carries the task's existing values through unchanged.
       await waitFor(() => {
         expect(mockOnSubmit).toHaveBeenCalledWith('task-1', {
           title: 'New Title',
           description: 'New Description',
-          priority: 'Low',
-          dueDate: '2025-06-15',
+          priority: 'Medium',
+          dueDate: '2024-12-31',
           labelIds: [],
         });
       });
@@ -452,24 +420,6 @@ describe('TaskDetailModal', () => {
       });
     });
 
-    it('should send undefined for empty due date', async () => {
-      mockOnSubmit.mockResolvedValue(undefined);
-      renderModal();
-      enterEditMode();
-
-      fireEvent.change(document.getElementById('dueDate') as HTMLInputElement, {
-        target: { value: '' },
-      });
-      fireEvent.submit(screen.getByRole('form'));
-
-      await waitFor(() => {
-        expect(mockOnSubmit).toHaveBeenCalledWith(
-          'task-1',
-          expect.objectContaining({ dueDate: undefined }),
-        );
-      });
-    });
-
     it('should show error message on submission failure', async () => {
       mockOnSubmit.mockRejectedValue(new Error('Update failed'));
       renderModal();
@@ -509,40 +459,104 @@ describe('TaskDetailModal', () => {
     const groupedTask = { ...mockTask, groupId: 'g1', groupName: 'Work', groupColour: '#ff0000' };
 
     it('should not render the group selector when no groups are provided', () => {
-      renderModal({ task: groupedTask });
-      enterEditMode();
+      renderModal({ task: groupedTask, onGroupChange: jest.fn() });
       expect(screen.queryByLabelText(/task group/i)).not.toBeInTheDocument();
     });
 
-    it('should render the group selector in edit mode preselected to the current group', () => {
+    it('should not render the group selector when onGroupChange is not provided', () => {
       renderModal({ task: groupedTask, groups: mockGroups });
-      enterEditMode();
+      expect(screen.queryByLabelText(/task group/i)).not.toBeInTheDocument();
+      expect(screen.getAllByText('Work').length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should render the group selector preselected to the current group when onGroupChange is provided', () => {
+      renderModal({ task: groupedTask, groups: mockGroups, onGroupChange: jest.fn() });
       const select = screen.getByLabelText(/task group/i) as HTMLSelectElement;
       expect(select).toBeInTheDocument();
       expect(select.value).toBe('g1');
     });
 
-    it('should not render the group selector in view mode', () => {
-      renderModal({ task: groupedTask, groups: mockGroups });
-      expect(screen.queryByLabelText(/task group/i)).not.toBeInTheDocument();
-    });
-
-    it('should call onSubmit with the newly selected groupId', async () => {
-      mockOnSubmit.mockResolvedValue(undefined);
-      renderModal({ task: groupedTask, groups: mockGroups });
-      enterEditMode();
+    it('should call onGroupChange immediately when a different group is selected', () => {
+      const onGroupChange = jest.fn();
+      renderModal({ task: groupedTask, groups: mockGroups, onGroupChange });
 
       fireEvent.change(screen.getByLabelText(/task group/i), {
         target: { value: 'g2' },
       });
-      fireEvent.submit(screen.getByRole('form'));
 
-      await waitFor(() => {
-        expect(mockOnSubmit).toHaveBeenCalledWith(
-          'task-1',
-          expect.objectContaining({ groupId: 'g2' }),
-        );
+      expect(onGroupChange).toHaveBeenCalledWith('task-1', 'g2');
+    });
+
+    it('should call onGroupChange with null when "No group" is selected', () => {
+      const onGroupChange = jest.fn();
+      renderModal({ task: groupedTask, groups: mockGroups, onGroupChange });
+
+      fireEvent.change(screen.getByLabelText(/task group/i), {
+        target: { value: '' },
       });
+
+      expect(onGroupChange).toHaveBeenCalledWith('task-1', null);
+    });
+  });
+
+  // ════════════════════════════════════════════════════════════════════════
+  // Live Metadata Editing (Priority & Due Date)
+  // ════════════════════════════════════════════════════════════════════════
+
+  describe('Live Metadata Editing', () => {
+    it('should display priority as read-only text when onPriorityChange is not provided', () => {
+      renderModal();
+      expect(screen.queryByLabelText(/task priority/i)).not.toBeInTheDocument();
+      expect(screen.getAllByText('Medium').length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should render a live priority selector when onPriorityChange is provided', () => {
+      renderModal({ onPriorityChange: jest.fn() });
+      expect(
+        (screen.getByLabelText(/task priority/i) as HTMLSelectElement).value,
+      ).toBe('Medium');
+    });
+
+    it('should call onPriorityChange immediately when a different priority is selected', () => {
+      const onPriorityChange = jest.fn();
+      renderModal({ onPriorityChange });
+
+      fireEvent.change(screen.getByLabelText(/task priority/i), {
+        target: { value: 'Critical' },
+      });
+
+      expect(onPriorityChange).toHaveBeenCalledWith('task-1', 'Critical');
+    });
+
+    it('should display "No due date" as read-only text when onDueDateChange is not provided', () => {
+      renderModal({ task: { ...mockTask, dueDate: null } });
+      expect(screen.queryByLabelText('Due date', { selector: 'input' })).not.toBeInTheDocument();
+      expect(screen.getByText('No due date')).toBeInTheDocument();
+    });
+
+    it('should render a live due date input when onDueDateChange is provided', () => {
+      renderModal({ onDueDateChange: jest.fn() });
+      expect(screen.getByLabelText('Due date', { selector: 'input' })).toBeInTheDocument();
+    });
+
+    it('should call onDueDateChange immediately when the date is changed', () => {
+      const onDueDateChange = jest.fn();
+      renderModal({ onDueDateChange });
+
+      fireEvent.change(screen.getByLabelText('Due date', { selector: 'input' }), {
+        target: { value: '2025-06-15' },
+      });
+
+      expect(onDueDateChange).toHaveBeenCalledWith('task-1', new Date('2025-06-15').toISOString());
+    });
+
+    it('should call onDueDateChange with null when the clear button is clicked', () => {
+      const onDueDateChange = jest.fn();
+      renderModal({ onDueDateChange });
+
+      fireEvent.click(screen.getByRole('button', { name: /clear due date/i }));
+
+      expect(onDueDateChange).toHaveBeenCalledWith('task-1', null);
     });
   });
 
