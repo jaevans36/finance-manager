@@ -62,8 +62,10 @@ interface UpdateTaskInput {
   description?: string;
   priority?: 'Low' | 'Medium' | 'High' | 'Critical';
   dueDate?: string;
+  clearDueDate?: boolean;
   completed?: boolean;
   groupId?: string;
+  clearGroupId?: boolean;
   energyLevel?: EnergyLevel;
   estimatedMinutes?: number;
   labelIds?: string[];

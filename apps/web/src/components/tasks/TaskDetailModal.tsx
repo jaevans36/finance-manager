@@ -39,8 +39,10 @@ import { ClassificationPicker } from './ClassificationPicker';
 import { EnergyBadge } from './EnergyBadge';
 import { EnergySelector } from './EnergySelector';
 import { DurationInput, formatDuration } from './DurationInput';
+import { DueDateInput } from './DueDateInput';
 import { LabelPicker } from '../labels/LabelPicker';
 import { LabelBadge } from '../labels/LabelBadge';
+import { getPriorityStyle } from '../../lib/taskPriority';
 
 // =============================================================================
 // Types
@@ -72,6 +74,9 @@ interface TaskDetailModalProps {
   onClassificationChange?: (id: string, urgency: UrgencyLevel | null, importance: ImportanceLevel | null) => void;
   onEnergyChange?: (id: string, energy: EnergyLevel | null) => void;
   onEstimateChange?: (id: string, minutes: number | null) => void;
+  onDueDateChange?: (id: string, dueDate: string | null) => void;
+  onGroupChange?: (id: string, groupId: string | null) => void;
+  onPriorityChange?: (id: string, priority: Priority) => void;
   /** Called whenever subtasks are added, removed, or toggled so the parent can refresh counts */
   onSubtaskChange?: (taskId: string, counts: { subtaskCount: number; completedSubtaskCount: number }) => void;
 }
@@ -89,29 +94,13 @@ const formatDate = (iso: string): string => {
   });
 };
 
-const getPriorityVariant = (
-  p: Priority,
-): 'destructive' | 'warning' | 'success' | 'secondary' => {
-  switch (p) {
-    case 'Critical':
-    case 'High':
-      return 'destructive';
-    case 'Medium':
-      return 'warning';
-    case 'Low':
-      return 'success';
-    default:
-      return 'secondary';
-  }
-};
-
 // =============================================================================
 // Tailwind CSS class constants
 // =============================================================================
 
 const overlayClasses = 'fixed inset-0 z-[1100] flex items-center justify-center bg-black/80';
 const modalClasses = 'flex w-[95%] max-w-[680px] flex-col overflow-hidden rounded-lg border border-border bg-card shadow-xl max-h-[95vh] md:w-[90%] md:max-h-[90vh]';
-const headerClasses = 'flex items-center justify-between gap-2 px-5 py-3.5 md:px-7 md:py-4';
+const headerClasses = 'flex items-center justify-end gap-2 px-5 py-3.5 md:px-7 md:py-4';
 const bodyClasses = 'flex-1 overflow-y-auto space-y-5 px-5 pb-4 pt-1 md:px-7 md:pb-5';
 const footerClasses = 'flex justify-end gap-2 border-t border-border bg-secondary px-5 py-3.5 md:px-7 md:py-4';
 const actionButtonClasses = 'flex h-8 w-8 items-center justify-center rounded border-none bg-transparent text-muted-foreground transition-all hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
@@ -132,6 +121,9 @@ export const TaskDetailModal = ({
   onClassificationChange,
   onEnergyChange,
   onEstimateChange,
+  onDueDateChange,
+  onGroupChange,
+  onPriorityChange,
   onSubtaskChange,
 }: TaskDetailModalProps) => {
   // ── State ──────────────────────────────────────────────────────────────
@@ -383,34 +375,6 @@ export const TaskDetailModal = ({
   function renderHeader() {
     return (
       <div className={headerClasses}>
-        <div className="flex min-w-0 flex-1 items-center gap-2">
-          {/* Group badge */}
-          {task.groupName && (
-            <Badge variant="outline">
-              <span
-                className="h-2 w-2 shrink-0 rounded-full"
-                style={{ background: task.groupColour || undefined }}
-              />
-              <span className="ml-1">{task.groupName}</span>
-            </Badge>
-          )}
-
-          {/* Status badge */}
-          <StatusBadge status={task.status} />
-
-          {/* Quadrant badge */}
-          {task.quadrant && <QuadrantBadge quadrant={task.quadrant} showLabel />}
-
-          {/* Energy badge */}
-          {task.energyLevel && <EnergyBadge energy={task.energyLevel} showLabel showIcon />}
-
-          {/* Priority badge */}
-          <Badge variant={getPriorityVariant(task.priority)}>
-            <Flag size={12} className="mr-1" />
-            {task.priority}
-          </Badge>
-        </div>
-
         <div className="flex shrink-0 items-center gap-1">
           {/* Toggle complete */}
           {onToggleComplete && !isEditing && (
@@ -620,68 +584,81 @@ export const TaskDetailModal = ({
             )}
           </div>
 
-          {/* Group — only in edit mode; header shows badge in view mode */}
-          {isEditing && groups.length > 0 && (
-            <>
-              <span className="flex items-center justify-center text-muted-foreground">
-                <FolderOpen size={16} aria-hidden="true" />
-              </span>
-              <span className="text-sm font-medium text-muted-foreground" id="meta-group-label">Group</span>
-              <div className="min-w-0 text-sm text-foreground" aria-labelledby="meta-group-label">
-                <select
-                  id="task-group"
-                  {...register('groupId')}
-                  disabled={isSubmitting}
-                  aria-label="Task group"
-                  className={metaSelectClasses}
-                >
-                  {groups.map((g) => (
-                    <option key={g.id} value={g.id}>{g.name}</option>
-                  ))}
-                </select>
-              </div>
-            </>
-          )}
+          {/* Group — always visible; editable via inline selector when onGroupChange is provided */}
+          <span className="flex items-center justify-center text-muted-foreground">
+            <FolderOpen size={16} aria-hidden="true" />
+          </span>
+          <span className="text-sm font-medium text-muted-foreground" id="meta-group-label">Group</span>
+          <div className="min-w-0 text-sm text-foreground" aria-labelledby="meta-group-label">
+            {onGroupChange && groups.length > 0 ? (
+              <select
+                id="meta-group"
+                value={task.groupId ?? ''}
+                onChange={(e) => onGroupChange(task.id, e.target.value || null)}
+                disabled={isSubmitting}
+                aria-label="Task group"
+                className={metaSelectClasses}
+              >
+                <option value="">No group</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id}>{g.name}</option>
+                ))}
+              </select>
+            ) : task.groupName ? (
+              <Badge
+                variant="outline"
+                className="rounded-sm"
+                style={{
+                  borderColor: task.groupColour || 'hsl(var(--muted-foreground))',
+                  color: task.groupColour || 'hsl(var(--muted-foreground))',
+                }}
+              >
+                {task.groupName}
+              </Badge>
+            ) : (
+              <span className="text-muted-foreground">No group</span>
+            )}
+          </div>
 
-          {/* Priority — only in edit mode; header shows badge in view mode */}
-          {isEditing && (
-            <>
-              <span className="flex items-center justify-center text-muted-foreground">
-                <Flag size={16} aria-hidden="true" />
+          {/* Priority — always visible; editable via inline selector when onPriorityChange is provided */}
+          <span className="flex items-center justify-center text-muted-foreground">
+            <Flag size={16} aria-hidden="true" />
+          </span>
+          <span className="text-sm font-medium text-muted-foreground" id="meta-priority-label">Priority</span>
+          <div className="min-w-0 text-sm text-foreground" aria-labelledby="meta-priority-label">
+            {onPriorityChange ? (
+              <select
+                id="meta-priority"
+                value={task.priority}
+                onChange={(e) => onPriorityChange(task.id, e.target.value as Priority)}
+                disabled={isSubmitting}
+                aria-label="Task priority"
+                className={metaSelectClasses}
+              >
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+                <option value="Critical">Critical</option>
+              </select>
+            ) : (
+              <span className={cn('inline-flex items-center gap-1 font-medium uppercase tracking-wide', getPriorityStyle(task.priority).text)}>
+                <Flag size={12} aria-hidden="true" />
+                {task.priority}
               </span>
-              <span className="text-sm font-medium text-muted-foreground" id="meta-priority-label">Priority</span>
-              <div className="min-w-0 text-sm text-foreground" aria-labelledby="meta-priority-label">
-                <select
-                  id="priority"
-                  {...register('priority')}
-                  disabled={isSubmitting}
-                  aria-label="Task priority"
-                  className={metaSelectClasses}
-                >
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
-                  <option value="Critical">Critical</option>
-                </select>
-              </div>
-            </>
-          )}
+            )}
+          </div>
 
-          {/* Due date — always visible */}
+          {/* Due date — always visible; editable via DueDateInput when onDueDateChange is provided */}
           <span className="flex items-center justify-center text-muted-foreground">
             <Calendar size={16} aria-hidden="true" />
           </span>
           <span className="text-sm font-medium text-muted-foreground" id="meta-due-label">Due date</span>
           <div className="min-w-0 text-sm text-foreground" aria-labelledby="meta-due-label">
-            {isEditing ? (
-              <Input
-                id="dueDate"
-                type="date"
-                {...register('dueDate')}
-                min={new Date().toISOString().split('T')[0]}
+            {onDueDateChange ? (
+              <DueDateInput
+                value={task.dueDate}
+                onChange={(dueDate) => onDueDateChange(task.id, dueDate)}
                 disabled={isSubmitting}
-                aria-label="Due date"
-                className="h-auto px-2 py-1 text-sm"
               />
             ) : task.dueDate ? (
               formatDate(task.dueDate)

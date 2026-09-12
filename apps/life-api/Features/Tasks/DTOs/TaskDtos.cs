@@ -41,10 +41,12 @@ public class UpdateTaskRequest
     public string? Priority { get; set; }
 
     public DateTime? DueDate { get; set; }
+    public bool ClearDueDate { get; set; } = false;
 
     public bool? Completed { get; set; }
 
     public Guid? GroupId { get; set; }
+    public bool ClearGroupId { get; set; } = false;
 
     [RegularExpression("^(Low|Medium|High)$", ErrorMessage = "EnergyLevel must be Low, Medium, or High")]
     public string? EnergyLevel { get; set; }
