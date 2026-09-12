@@ -57,14 +57,14 @@ describe('TaskItem', () => {
       expect(screen.queryByText('Test Description')).not.toBeInTheDocument();
     });
 
-    it('should show OVERDUE badge for past due dates on incomplete tasks', () => {
+    it('should mark the due date as overdue for past due dates on incomplete tasks', () => {
       const overdueTask = { ...mockTask, dueDate: '2020-01-01' };
       render(<TaskItem task={overdueTask} {...mockHandlers} />);
 
-      expect(screen.getByText('OVERDUE')).toBeInTheDocument();
+      expect(screen.getByText(/overdue/i)).toBeInTheDocument();
     });
 
-    it('should not show OVERDUE badge for completed tasks', () => {
+    it('should not mark the due date as overdue for completed tasks', () => {
       const completedOverdueTask = {
         ...mockTask,
         dueDate: '2020-01-01',
@@ -72,7 +72,7 @@ describe('TaskItem', () => {
       };
       render(<TaskItem task={completedOverdueTask} {...mockHandlers} />);
 
-      expect(screen.queryByText('OVERDUE')).not.toBeInTheDocument();
+      expect(screen.queryByText(/overdue/i)).not.toBeInTheDocument();
     });
 
     it('should show completed date when task is completed', () => {
@@ -124,17 +124,19 @@ describe('TaskItem', () => {
   });
 
   describe('Button Interactions', () => {
+    // Edit/Assign/Delete are icon-only buttons (revealed on row hover/focus) identified by
+    // aria-label rather than visible text — see TaskItem.tsx for the hover-reveal pattern.
     it('should render Edit and Delete buttons', () => {
       render(<TaskItem task={mockTask} {...mockHandlers} />);
 
-      expect(screen.getByText('Edit')).toBeInTheDocument();
-      expect(screen.getByText('Delete')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: `Edit task "${mockTask.title}"` })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: `Delete task "${mockTask.title}"` })).toBeInTheDocument();
     });
 
     it('should call onEdit with task when Edit button is clicked', () => {
       render(<TaskItem task={mockTask} {...mockHandlers} />);
 
-      const editButton = screen.getByText('Edit');
+      const editButton = screen.getByRole('button', { name: `Edit task "${mockTask.title}"` });
       fireEvent.click(editButton);
 
       expect(mockHandlers.onEdit).toHaveBeenCalledTimes(1);
@@ -144,7 +146,7 @@ describe('TaskItem', () => {
     it('should call onDelete with task id when Delete button is clicked', () => {
       render(<TaskItem task={mockTask} {...mockHandlers} />);
 
-      const deleteButton = screen.getByText('Delete');
+      const deleteButton = screen.getByRole('button', { name: `Delete task "${mockTask.title}"` });
       fireEvent.click(deleteButton);
 
       expect(mockHandlers.onDelete).toHaveBeenCalledTimes(1);

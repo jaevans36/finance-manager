@@ -231,10 +231,10 @@ export function AccountsDashboard({ onAccountSelect, onAddAccount, onEdit }: Acc
     <div className="space-y-4">
       {/* Net worth summary card */}
       {netWorth !== null && (
-        <div className="rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 p-5 text-white">
+        <div className="rounded-lg border border-brand/30 bg-brand-muted p-5 text-brand-muted-foreground">
           <p className="text-sm opacity-80">Net worth</p>
-          <p className="text-3xl font-bold mt-1">{formatBalance(netWorth, 'GBP')}</p>
-          <p className="text-xs opacity-60 mt-1">{accounts.length} active accounts</p>
+          <p className="mt-1 font-display text-display-lg">{formatBalance(netWorth, 'GBP')}</p>
+          <p className="mt-1 text-xs opacity-70">{accounts.length} active accounts</p>
         </div>
       )}
 

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import type { Event } from '../../types/event';
+import { getPriorityStyle } from '../../lib/taskPriority';
 
 interface StatIconProps {
   color?: 'primary' | 'success' | 'warning' | 'error' | 'info';
@@ -274,25 +275,32 @@ const DashboardPage = () => {
       {recentTasks.length > 0 && (
         <div className="mb-8 rounded-lg border border-border bg-secondary p-6">
           <h2 className="m-0 mb-4 font-display text-display-sm text-foreground">Priority Tasks</h2>
-          {recentTasks.map(task => (
-            <div
-              key={task.id}
-              onClick={() => navigate('/tasks')}
-              className="mb-2 flex cursor-pointer items-center justify-between rounded-lg bg-background p-3 last:mb-0"
-            >
-              <div className="flex items-center gap-3">
-                <ListTodo size={16} />
-                <div>
-                  <div className="text-sm font-medium text-foreground">{task.title}</div>
-                  {task.dueDate && (
-                    <div className="text-xs font-medium text-muted-foreground">
-                      Due: {new Date(task.dueDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
-                    </div>
-                  )}
+          {recentTasks.map(task => {
+            const priority = getPriorityStyle(task.priority);
+            return (
+              <div
+                key={task.id}
+                onClick={() => navigate('/tasks')}
+                className="mb-2 flex cursor-pointer items-stretch gap-3 rounded-lg bg-background p-3 last:mb-0"
+              >
+                <div className={cn('w-1 flex-shrink-0 rounded-sm', priority.stripe)} aria-hidden="true" />
+                <div className="flex flex-1 items-center gap-3">
+                  <ListTodo size={16} />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-foreground">{task.title}</div>
+                    {task.dueDate && (
+                      <div className="text-xs font-medium text-muted-foreground">
+                        Due: {new Date(task.dueDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
+                      </div>
+                    )}
+                  </div>
+                  <span className={cn('text-badge font-medium uppercase tracking-wide', priority.text)}>
+                    {task.priority}
+                  </span>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

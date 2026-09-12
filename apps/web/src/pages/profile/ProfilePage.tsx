@@ -243,7 +243,7 @@ const ProfilePage = () => {
             <DownloadIcon size={18} />
             {exporting ? 'Exporting...' : 'Export my data'}
           </Button>
-          <Button variant="destructive" onClick={handleLogout}>
+          <Button variant="outline" onClick={handleLogout}>
             <LogOutIcon size={18} />
             Logout
           </Button>

@@ -1,9 +1,13 @@
 /**
- * CSS Variable Theme — Finance Manager
+ * CSS Variable Theme — Life Manager (Cockpit theme)
+ *
+ * Tokens sourced from the personal design system: dark, techy/terminal,
+ * cool blues & teals, monospace-forward, dense/cockpit.
+ * See: Resources/System — Personal Design System.md
  *
  * Defines colour tokens as HSL values that Tailwind CSS references via
  * `hsl(var(--token))`. Both light (:root) and dark (.dark) palettes
- * are provided, matching the existing styled-components theme values.
+ * are provided — dark is the flagship/primary mode.
  *
  * Usage: Tailwind classes like `bg-primary`, `text-foreground`, `border-border`
  *        automatically resolve to the correct theme value.
@@ -11,112 +15,120 @@
 
 @layer base {
   :root {
-    /* ── Backgrounds ─────────────────────────────────── */
-    --background: 0 0% 100%;           /* #FFFFFF */
-    --foreground: 0 0% 10%;            /* #1A1A1A */
+    /* ── Backgrounds (cool off-white, light variant) ──────────── */
+    --background: 210 20% 98%;         /* #F7F9FA */
+    --foreground: 215 25% 12%;         /* #171E29 */
 
     /* ── Card ────────────────────────────────────────── */
-    --card: 0 0% 100%;                 /* #FFFFFF */
-    --card-foreground: 0 0% 10%;       /* #1A1A1A */
+    --card: 210 25% 100%;              /* #FFFFFF */
+    --card-foreground: 215 25% 12%;    /* #171E29 */
 
     /* ── Popover ─────────────────────────────────────── */
-    --popover: 0 0% 100%;              /* #FFFFFF */
-    --popover-foreground: 0 0% 10%;    /* #1A1A1A */
+    --popover: 210 25% 100%;           /* #FFFFFF */
+    --popover-foreground: 215 25% 12%; /* #171E29 */
 
-    /* ── Primary (near-black for calm, professional UI) */
-    --primary: 0 0% 10%;               /* #1A1A1A */
+    /* ── Primary (Signal Teal — primary actions) ──────── */
+    --primary: 172 66% 40%;            /* #22AB98 deeper teal for AA on white */
     --primary-foreground: 0 0% 100%;   /* #FFFFFF */
 
     /* ── Secondary ───────────────────────────────────── */
-    --secondary: 0 0% 97%;             /* #F7F7F7 */
-    --secondary-foreground: 0 0% 32%;  /* #525252 */
+    --secondary: 210 20% 95%;          /* #EEF1F3 */
+    --secondary-foreground: 215 15% 35%; /* #4A5568 */
 
     /* ── Muted ───────────────────────────────────────── */
-    --muted: 0 0% 94%;                 /* #EFEFEF */
-    --muted-foreground: 0 0% 32%;      /* #525252 */
+    --muted: 210 15% 93%;              /* #E8EBED */
+    --muted-foreground: 215 15% 40%;   /* #545F6E */
 
     /* ── Accent ──────────────────────────────────────── */
-    --accent: 0 0% 96%;                /* #F5F5F5 */
-    --accent-foreground: 0 0% 10%;     /* #1A1A1A */
+    --accent: 210 20% 94%;             /* #EAEDEF */
+    --accent-foreground: 215 25% 12%;  /* #171E29 */
+
+    /* ── Info (Electric Blue — secondary interactive) ─── */
+    --info: 198 93% 45%;               /* #0EA0E0 deeper sky for AA on white */
+    --info-foreground: 0 0% 100%;      /* #FFFFFF */
 
     /* ── Destructive ─────────────────────────────────── */
-    --destructive: 0 100% 65%;         /* #FF4D4D */
+    --destructive: 0 84% 55%;          /* #E23636 */
     --destructive-foreground: 0 0% 100%; /* white text on red */
 
     /* ── Success ─────────────────────────────────────── */
-    --success: 160 84% 39%;            /* #10B981 — better WCAG contrast */
-    --success-foreground: 160 84% 25%; /* #0D7A54 dark green — readable on tinted bg */
+    --success: 158 64% 38%;            /* #1D9A6C */
+    --success-foreground: 158 64% 25%; /* dark green text on tinted bg */
 
     /* ── Warning (amber — distinct from destructive) ── */
-    --warning: 38 92% 50%;             /* #F59E0B amber */
-    --warning-foreground: 26 90% 20%;  /* #612A00 dark amber text */
+    --warning: 43 90% 45%;             /* #D6A324 */
+    --warning-foreground: 43 90% 25%;  /* dark amber text on tinted bg */
 
-    /* ── Brand (teal — visual identity accent) ────────── */
-    --brand: 174 72% 46%;              /* #21B8A4 teal */
+    /* ── Brand (alias of primary — kept for existing usage) ──── */
+    --brand: 172 66% 40%;              /* #22AB98 */
     --brand-foreground: 0 0% 100%;     /* white text on teal */
-    --brand-muted: 174 60% 95%;        /* #E6FAF7 light teal bg */
-    --brand-muted-foreground: 174 72% 30%; /* #1A7A6D dark teal text */
+    --brand-muted: 172 50% 94%;        /* #E7F7F4 light teal bg */
+    --brand-muted-foreground: 172 66% 28%; /* #187A6C dark teal text */
 
     /* ── Border / Input / Ring ───────────────────────── */
-    --border: 0 0% 85%;                /* #D9D9D9 */
-    --input: 0 0% 85%;                 /* #D9D9D9 */
-    --ring: 0 0% 10%;                  /* #1A1A1A — focus ring */
+    --border: 210 15% 88%;             /* #DCE1E4 */
+    --input: 210 15% 88%;              /* #DCE1E4 */
+    --ring: 172 66% 40%;               /* teal focus ring — no default browser blue */
 
     /* ── Radius ──────────────────────────────────────── */
-    --radius: 6px;
+    --radius: 4px;
   }
 
   .dark {
-    /* ── Backgrounds ─────────────────────────────────── */
-    --background: 0 0% 10%;            /* #1A1A1A */
-    --foreground: 0 0% 91%;            /* #E8E8E8 */
+    /* ── Backgrounds (near-black navy, flagship mode) ─────────── */
+    --background: 216 33% 6%;          /* #0A0E14 bg-base */
+    --foreground: 208 35% 93%;         /* #E6EDF3 text-primary */
 
     /* ── Card ────────────────────────────────────────── */
-    --card: 0 0% 13%;                  /* #222222 */
-    --card-foreground: 0 0% 91%;       /* #E8E8E8 */
+    --card: 221 39% 11%;               /* #111827 bg-surface */
+    --card-foreground: 208 35% 93%;    /* #E6EDF3 */
 
-    /* ── Popover ─────────────────────────────────────── */
-    --popover: 0 0% 13%;               /* #222222 */
-    --popover-foreground: 0 0% 91%;    /* #E8E8E8 */
+    /* ── Popover (elevated surface — modals, popovers) ── */
+    --popover: 215 25% 14%;            /* #1A212B bg-elevated */
+    --popover-foreground: 208 35% 93%; /* #E6EDF3 */
 
-    /* ── Primary (near-white on dark) ────────────────── */
-    --primary: 0 0% 91%;               /* #E8E8E8 */
-    --primary-foreground: 0 0% 10%;    /* #1A1A1A */
+    /* ── Primary (Signal Teal — primary actions) ──────── */
+    --primary: 172 66% 50%;            /* #2DD4BF accent-primary */
+    --primary-foreground: 216 33% 6%;  /* dark text on bright teal */
 
     /* ── Secondary ───────────────────────────────────── */
-    --secondary: 0 0% 18%;             /* #2D2D2D */
-    --secondary-foreground: 0 0% 69%;  /* #B0B0B0 */
+    --secondary: 215 25% 14%;          /* #1A212B bg-elevated */
+    --secondary-foreground: 210 13% 60%; /* #8B98A5 text-secondary */
 
     /* ── Muted ───────────────────────────────────────── */
-    --muted: 0 0% 18%;                 /* #2D2D2D */
-    --muted-foreground: 0 0% 69%;      /* #B0B0B0 */
+    --muted: 215 21% 17%;              /* #232B36 border-default, used as muted panel */
+    --muted-foreground: 210 13% 60%;   /* #8B98A5 text-secondary */
 
     /* ── Accent ──────────────────────────────────────── */
-    --accent: 0 0% 16%;                /* #2A2A2A */
-    --accent-foreground: 0 0% 91%;     /* #E8E8E8 */
+    --accent: 215 25% 14%;             /* #1A212B bg-elevated */
+    --accent-foreground: 208 35% 93%;  /* #E6EDF3 */
+
+    /* ── Info (Electric Blue — secondary interactive) ─── */
+    --info: 198 93% 60%;               /* #38BDF8 accent-secondary */
+    --info-foreground: 216 33% 6%;     /* dark text on bright blue */
 
     /* ── Destructive ─────────────────────────────────── */
-    --destructive: 0 100% 65%;         /* #FF4D4D */
-    --destructive-foreground: 0 0% 91%; /* light text on red */
+    --destructive: 0 91% 71%;          /* #F87171 error */
+    --destructive-foreground: 216 33% 6%; /* dark text on light red */
 
     /* ── Success ─────────────────────────────────────── */
-    --success: 160 84% 39%;            /* #10B981 */
-    --success-foreground: 160 84% 39%; /* self-coloured on dark bg */
+    --success: 158 64% 52%;            /* #34D399 */
+    --success-foreground: 158 64% 52%; /* self-coloured on dark bg */
 
     /* ── Warning ─────────────────────────────────────── */
-    --warning: 38 92% 56%;             /* #FBBF24 slightly lighter for dark */
-    --warning-foreground: 38 92% 56%;  /* self-coloured on dark bg */
+    --warning: 43 96% 56%;             /* #FBBF24 */
+    --warning-foreground: 43 96% 56%;  /* self-coloured on dark bg */
 
-    /* ── Brand ────────────────────────────────────────── */
-    --brand: 174 72% 50%;              /* #26CCBA lighter teal for dark */
-    --brand-foreground: 0 0% 10%;      /* dark text on teal */
-    --brand-muted: 174 40% 18%;        /* #1A3D38 dark teal surface */
-    --brand-muted-foreground: 174 72% 65%; /* #4DE6D4 light teal text */
+    /* ── Brand (alias of primary — kept for existing usage) ──── */
+    --brand: 172 66% 50%;              /* #2DD4BF */
+    --brand-foreground: 216 33% 6%;    /* dark text on teal */
+    --brand-muted: 171 40% 17%;        /* #1A3D38 dark teal surface */
+    --brand-muted-foreground: 173 75% 60%; /* #4DE6D4 light teal text */
 
     /* ── Border / Input / Ring ───────────────────────── */
-    --border: 0 0% 20%;                /* #333333 */
-    --input: 0 0% 20%;                 /* #333333 */
-    --ring: 0 0% 91%;                  /* #E8E8E8 — focus ring */
+    --border: 215 21% 17%;             /* #232B36 border-default */
+    --input: 215 21% 17%;              /* #232B36 */
+    --ring: 172 66% 50%;               /* teal focus ring — no default browser blue */
   }
 }
 

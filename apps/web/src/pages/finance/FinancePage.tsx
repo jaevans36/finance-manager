@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { PiggyBank, Plus, X } from 'lucide-react';
 import { PageLayout } from '../../components/layout/PageLayout';
-import { cn } from '../../lib/utils';
+import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { financeCategoryService } from '../../services/finance-category-service';
 import { transactionsService } from '../../services/transactions-service';
 import type { TransactionFilters as TxFilters } from '../../services/transactions-service';
@@ -128,23 +128,16 @@ export default function FinancePage() {
         </div>
       }
     >
-      {/* Tab bar */}
-      <div className="flex gap-1 border-b border-border mb-6 overflow-x-auto pb-px">
-        {TABS.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => handleTabChange(tab.id)}
-            className={cn(
-              'px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px',
-              activeTab === tab.id
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
-            )}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {/* Tab bar — shared Tabs component, matching the filter style used on Tasks */}
+      <Tabs value={activeTab} onValueChange={(value) => handleTabChange(value as Tab)} className="mb-6">
+        <TabsList className="w-full justify-start overflow-x-auto">
+          {TABS.map(tab => (
+            <TabsTrigger key={tab.id} value={tab.id} className="whitespace-nowrap">
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       {/* ── Accounts tab ─────────────────────────────────────────────────── */}
       {activeTab === 'accounts' && (
@@ -177,7 +170,7 @@ export default function FinancePage() {
           ) : (
             <button
               onClick={() => setShowForm(true)}
-              className="flex items-center gap-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+              className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
             >
               <Plus size={16} /> Add account
             </button>
@@ -209,13 +202,13 @@ export default function FinancePage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => { setShowAddTx(v => !v); setShowImport(false); }}
-                    className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                    className="text-sm font-medium text-primary hover:underline"
                   >
                     {showAddTx ? 'Cancel' : 'Add manually'}
                   </button>
                   <button
                     onClick={() => { setShowImport(v => !v); setShowAddTx(false); }}
-                    className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                    className="text-sm font-medium text-primary hover:underline"
                   >
                     {showImport ? 'Hide import' : 'Import CSV'}
                   </button>
@@ -263,7 +256,7 @@ export default function FinancePage() {
               <p className="text-sm">Select an account to view its transactions</p>
               <button
                 onClick={() => setActiveTab('accounts')}
-                className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                className="text-sm font-medium text-primary hover:underline"
               >
                 Go to Accounts
               </button>
@@ -300,7 +293,7 @@ export default function FinancePage() {
                   <BudgetForm categories={categories} onSuccess={handleSaved} onCancel={() => setShowForm(false)} />
                 </div>
               ) : (
-                <button onClick={() => setShowForm(true)} className="flex items-center gap-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
+                <button onClick={() => setShowForm(true)} className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
                   <Plus size={16} /> Add budget
                 </button>
               )}
@@ -341,7 +334,7 @@ export default function FinancePage() {
           {canAddOnTab && (
             <div className="mb-2">
               {!showForm ? (
-                <button onClick={() => setShowForm(true)} className="flex items-center gap-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
+                <button onClick={() => setShowForm(true)} className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
                   <Plus size={16} /> Add bill
                 </button>
               ) : (
@@ -368,7 +361,7 @@ export default function FinancePage() {
           {canAddOnTab && (
             <div className="mb-4">
               {!showForm ? (
-                <button onClick={() => setShowForm(true)} className="flex items-center gap-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
+                <button onClick={() => setShowForm(true)} className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
                   <Plus size={16} /> Add goal
                 </button>
               ) : (
