@@ -31,6 +31,12 @@ import type { CreateEventRequest } from '../../types/event';
 import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { AssignTaskModal } from '../../features/tasks/components/AssignTaskModal';
 import { useLabels } from '../../hooks/queries/useLabels';
+import { Checkbox } from '../../components/ui/checkbox';
+import { cn } from '../../lib/utils';
+import { getPriorityStyle } from '../../lib/taskPriority';
+
+type Priority = 'Low' | 'Medium' | 'High' | 'Critical';
+const PRIORITIES: Priority[] = ['Critical', 'High', 'Medium', 'Low'];
 
 const TasksPage = () => {
   const navigate = useNavigate();
@@ -48,6 +54,8 @@ const TasksPage = () => {
   const [taskView, setTaskView] = useState<'all' | 'mine' | 'assigned-to-me' | 'assigned-by-me'>('all');
   const [assigningTask, setAssigningTask] = useState<Task | null>(null);
   const [selectedLabelId, setSelectedLabelId] = useState<string>('');
+  const [selectedPriorities, setSelectedPriorities] = useState<Set<Priority>>(new Set());
+  const [hideCompleted, setHideCompleted] = useState(false);
   const { data: labels = [] } = useLabels();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -106,6 +114,16 @@ const TasksPage = () => {
         return false;
       }
 
+      // Filter by priority
+      if (selectedPriorities.size > 0 && !selectedPriorities.has(task.priority)) {
+        return false;
+      }
+
+      // Hide completed tasks
+      if (hideCompleted && task.completed) {
+        return false;
+      }
+
       // Filter by search query
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -115,7 +133,25 @@ const TasksPage = () => {
       }
 
       return true;
+    })
+    // High/Critical tasks always float to the top, regardless of group/search order.
+    // Array.prototype.sort is stable (ES2019+), so within each tier the existing order is preserved.
+    .sort((a, b) => {
+      const tier = (task: Task) => (task.priority === 'Critical' || task.priority === 'High' ? 0 : 1);
+      return tier(a) - tier(b);
     });
+
+  const togglePriority = (priority: Priority) => {
+    setSelectedPriorities((prev) => {
+      const next = new Set(prev);
+      if (next.has(priority)) {
+        next.delete(priority);
+      } else {
+        next.add(priority);
+      }
+      return next;
+    });
+  };
 
   const handleSelectGroup = (groupId: string | null) => {
     // Toggle off if clicking the same group
@@ -374,6 +410,36 @@ const TasksPage = () => {
                 ))}
               </select>
             )}
+            <div className="flex items-center gap-1.5" role="group" aria-label="Filter by priority">
+              {PRIORITIES.map((priority) => {
+                const active = selectedPriorities.has(priority);
+                const style = getPriorityStyle(priority);
+                return (
+                  <button
+                    key={priority}
+                    type="button"
+                    onClick={() => togglePriority(priority)}
+                    aria-pressed={active}
+                    className={cn(
+                      'rounded-sm border px-2 py-1 text-badge font-medium uppercase tracking-wide transition-colors',
+                      active
+                        ? cn(style.stripe, 'border-transparent text-white')
+                        : 'border-border text-muted-foreground hover:bg-secondary',
+                    )}
+                  >
+                    {priority}
+                  </button>
+                );
+              })}
+            </div>
+            <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Checkbox
+                checked={hideCompleted}
+                onCheckedChange={(checked) => setHideCompleted(checked === true)}
+                aria-label="Hide completed tasks"
+              />
+              Hide completed
+            </label>
             <WipCounter />
           </div>
 
