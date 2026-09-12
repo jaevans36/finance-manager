@@ -342,7 +342,10 @@ public class StatisticsServiceEdgeCaseTests : IDisposable
     [Fact]
     public async Task GetUrgentTasks_OnlyIncludesIncompleteHighPriorityTasks()
     {
-        // Use DateTime.UtcNow-relative dates so the service's future-date filter passes
+        // GetUrgentTasksAsync filters strictly by [weekStart, weekStart+7) — anchor due dates to
+        // weekStart rather than DateTime.UtcNow so the test doesn't flake depending on which day
+        // of the week it runs (a now.AddDays(2) due date can fall past weekEnd and be silently
+        // excluded once "today" is late enough in the week, e.g. Friday/Saturday).
         var now = DateTime.UtcNow;
         var weekStart = now.Date.AddDays(now.DayOfWeek == DayOfWeek.Sunday ? -6 : -(int)now.DayOfWeek + 1);
         var weekEnd = weekStart.AddDays(7);
@@ -353,7 +356,7 @@ public class StatisticsServiceEdgeCaseTests : IDisposable
                 Id = Guid.NewGuid(),
                 UserId = _userId,
                 Title = "Critical Incomplete",
-                DueDate = now.AddDays(1),
+                DueDate = weekStart.AddDays(1),
                 Priority = Priority.Critical,
                 Completed = false
             },
@@ -362,7 +365,7 @@ public class StatisticsServiceEdgeCaseTests : IDisposable
                 Id = Guid.NewGuid(),
                 UserId = _userId,
                 Title = "Critical Complete",
-                DueDate = now.AddDays(1),
+                DueDate = weekStart.AddDays(1),
                 Priority = Priority.Critical,
                 Completed = true
             },
@@ -371,7 +374,7 @@ public class StatisticsServiceEdgeCaseTests : IDisposable
                 Id = Guid.NewGuid(),
                 UserId = _userId,
                 Title = "High Incomplete",
-                DueDate = now.AddDays(2),
+                DueDate = weekStart.AddDays(2),
                 Priority = Priority.High,
                 Completed = false
             },
@@ -380,7 +383,7 @@ public class StatisticsServiceEdgeCaseTests : IDisposable
                 Id = Guid.NewGuid(),
                 UserId = _userId,
                 Title = "Medium Incomplete",
-                DueDate = now.AddDays(3),
+                DueDate = weekStart.AddDays(3),
                 Priority = Priority.Medium,
                 Completed = false
             }
