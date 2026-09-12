@@ -40,7 +40,7 @@ export const TaskGroupList = ({
   return (
     <>
       <div
-        className="flex flex-col gap-1 rounded-lg border border-border bg-background p-4 md:p-3"
+        className="flex flex-col gap-1 overflow-y-auto rounded-lg border border-border bg-background p-4 md:p-3 lg:sticky lg:top-[90px] lg:max-h-[calc(100vh-106px)]"
         role="navigation"
         aria-label="Task groups navigation"
       >
