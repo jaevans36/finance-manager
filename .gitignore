@@ -122,3 +122,6 @@ artifacts/
 
 # Git worktrees
 .worktrees/
+
+# Redesign review scratch (screenshots for manual review — not project code)
+.redesign-preview/

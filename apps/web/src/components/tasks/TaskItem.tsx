@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Pencil, UserPlus, Trash2, AlertTriangle } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Task } from '../../services/taskService';
 import { Badge } from '../ui/badge';
@@ -10,6 +10,7 @@ import { QuadrantBadge } from './QuadrantBadge';
 import { EnergyBadge } from './EnergyBadge';
 import { TaskAssignmentBadge } from '../../features/tasks/components/TaskAssignmentBadge';
 import { LabelBadge } from '../labels/LabelBadge';
+import { getPriorityStyle } from '../../lib/taskPriority';
 
 interface TaskItemProps {
   task: Task;
@@ -22,20 +23,6 @@ interface TaskItemProps {
   onToggleSubtaskExpand?: (taskId: string) => void;
   onAssign?: (task: Task) => void;
 }
-
-const getPriorityVariant = (priority: string) => {
-  switch (priority) {
-    case 'Critical':
-    case 'High':
-      return 'destructive' as const;
-    case 'Medium':
-      return 'warning' as const;
-    case 'Low':
-      return 'success' as const;
-    default:
-      return 'secondary' as const;
-  }
-};
 
 export const TaskItem = memo(({
   task,
@@ -60,33 +47,41 @@ export const TaskItem = memo(({
   };
   
   const wasModified = new Date(task.updatedAt).getTime() > new Date(task.createdAt).getTime() + 1000;
+  const priority = getPriorityStyle(task.priority);
 
   return (
     <div
       className={cn(
-        'flex items-center gap-[15px] p-[15px] md:flex-col md:items-start md:gap-3 md:p-3',
+        'group flex items-stretch gap-[15px] p-[15px] md:flex-col md:items-start md:gap-3 md:p-3',
         task.completed && 'opacity-60',
         isSubtaskExpanded ? 'border-none rounded-none' : 'mb-2.5 rounded-lg border border-border bg-card',
       )}
       role="article"
       aria-label={`Task: ${task.title}`}
     >
+      {/* Priority stripe — replaces a loud filled priority badge with a quieter, scannable signal */}
+      <div className={cn('w-1 flex-shrink-0 rounded-sm md:h-1 md:w-full', priority.stripe)} aria-hidden="true" />
+
       <input
         type="checkbox"
         checked={task.completed}
         onChange={() => onToggleComplete(task.id)}
-        className="h-[18px] w-[18px] cursor-pointer md:h-6 md:w-6 flex-shrink-0"
+        className="mt-0.5 h-[18px] w-[18px] cursor-pointer self-start md:h-6 md:w-6 flex-shrink-0"
         aria-label={`Mark task "${task.title}" as ${task.completed ? 'incomplete' : 'complete'}`}
       />
 
       <div className="flex-1 min-w-0">
-        <div className="mb-[5px] flex flex-wrap items-center gap-2.5">
+        <div className="mb-[5px] flex flex-wrap items-center gap-2">
           <h3 className={cn('m-0 text-base text-foreground', task.completed && 'line-through')}>
             {task.title}
           </h3>
+          <span className={cn('text-badge font-medium uppercase tracking-wide', priority.text)}>
+            {task.priority}
+          </span>
           {task.groupName && (
             <Badge
               variant="outline"
+              className="rounded-sm"
               style={{
                 borderColor: task.groupColour || 'hsl(var(--muted-foreground))',
                 color: task.groupColour || 'hsl(var(--muted-foreground))',
@@ -95,7 +90,6 @@ export const TaskItem = memo(({
               {task.groupName}
             </Badge>
           )}
-          <Badge variant={getPriorityVariant(task.priority)}>{task.priority}</Badge>
           <StatusBadge status={task.status} size="sm" />
           {task.quadrant && <QuadrantBadge quadrant={task.quadrant} size="sm" />}
           {task.energyLevel && <EnergyBadge energy={task.energyLevel} size="sm" showLabel />}
@@ -111,36 +105,34 @@ export const TaskItem = memo(({
           {(task.labels ?? []).length > 3 && (
             <span className="text-xs text-muted-foreground">+{(task.labels ?? []).length - 3}</span>
           )}
-          {isOverdue && <Badge variant="destructive">OVERDUE</Badge>}
-          {task.hasSubtasks && (
-            <Badge
-              variant={task.completedSubtaskCount === task.subtaskCount ? 'success' : 'secondary'}
-              className="px-1.5 py-0.5 text-[10px]"
-            >
-              {task.completedSubtaskCount}/{task.subtaskCount} ✓
-            </Badge>
-          )}
         </div>
 
         {task.description && (
           <p className="my-[5px] text-sm text-foreground">{task.description}</p>
         )}
 
-        {/* Inline subtask progress bar */}
+        {/* Inline subtask progress bar — the bar already communicates completion, so a duplicate count badge was noise */}
         {task.hasSubtasks && (
-          <div className="mt-1 max-w-[240px]">
+          <div className="mt-1 flex max-w-[240px] items-center gap-2">
             <SubtaskProgress
               completed={task.completedSubtaskCount}
               total={task.subtaskCount}
               percentage={task.progressPercentage}
               compact
             />
+            <span className="whitespace-nowrap text-[10px] text-muted-foreground">
+              {task.completedSubtaskCount}/{task.subtaskCount}
+            </span>
           </div>
         )}
 
         <p className="mt-[5px] text-xs text-muted-foreground">
           {task.dueDate && (
-            <span>Due: {new Date(task.dueDate).toLocaleDateString()}</span>
+            <span className={cn('inline-flex items-center gap-1', isOverdue && 'font-semibold text-destructive')}>
+              {isOverdue && <AlertTriangle className="h-3 w-3" />}
+              Due: {new Date(task.dueDate).toLocaleDateString()}
+              {isOverdue && ' (overdue)'}
+            </span>
           )}
           {task.completedAt && (
             <span className="ml-[15px]">
@@ -158,10 +150,11 @@ export const TaskItem = memo(({
         </p>
       </div>
 
-      <div className="flex items-center gap-[5px]">
+      {/* Row actions — recede until hovered/focused so 15 rows of buttons don't outweigh the tasks themselves */}
+      <div className="flex items-center gap-[5px] opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 md:opacity-100">
         {onToggleSubtaskExpand && (
           <button
-            className="flex items-center justify-center rounded border-none bg-transparent p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="flex items-center justify-center rounded-sm border-none bg-transparent p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             onClick={() => onToggleSubtaskExpand(task.id)}
             aria-label={isSubtaskExpanded ? 'Collapse subtasks' : 'Expand subtasks'}
             aria-expanded={isSubtaskExpanded}
@@ -171,31 +164,37 @@ export const TaskItem = memo(({
           </button>
         )}
         <Button
-          variant="default"
-          size="sm"
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
           onClick={() => onEdit(task)}
           aria-label={`Edit task "${task.title}"`}
+          title="Edit"
         >
-          Edit
+          <Pencil className="h-4 w-4" />
         </Button>
         {/* Only show Assign button to task owner */}
         {task.isOwner !== false && onAssign && (
           <Button
-            variant="outline"
-            size="sm"
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
             onClick={() => onAssign(task)}
             aria-label={`Assign task '${task.title}'`}
+            title="Assign"
           >
-            Assign
+            <UserPlus className="h-4 w-4" />
           </Button>
         )}
         <Button
-          variant="destructive"
-          size="sm"
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
           onClick={() => onDelete(task.id)}
           aria-label={`Delete task "${task.title}"`}
+          title="Delete"
         >
-          Delete
+          <Trash2 className="h-4 w-4" />
         </Button>
       </div>
     </div>

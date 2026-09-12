@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Bell, Calendar, MapPin } from 'lucide-react';
+import { Bell, Calendar, MapPin, Pencil, Trash2 } from 'lucide-react';
 import type { Event } from '../../types/event';
 import { REMINDER_OPTIONS } from '../../types/event';
 import { Badge } from '../ui/badge';
@@ -57,7 +57,7 @@ export const EventItem = memo(({
 
   return (
     <div
-      className="mb-2.5 flex items-center gap-[15px] rounded-lg border border-border bg-card p-[15px] md:flex-col md:items-start md:gap-3 md:p-3"
+      className="group mb-2.5 flex items-center gap-[15px] rounded-lg border border-border bg-card p-[15px] md:flex-col md:items-start md:gap-3 md:p-3"
       role="article"
       aria-label={`Event: ${event.title}`}
     >
@@ -102,7 +102,7 @@ export const EventItem = memo(({
         </p>
       </div>
 
-      <div className="flex gap-[5px]">
+      <div className="flex gap-[5px] opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 md:opacity-100">
         {onShare && (
           <Button
             variant="outline"
@@ -114,20 +114,24 @@ export const EventItem = memo(({
           </Button>
         )}
         <Button
-          variant="default"
-          size="sm"
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
           onClick={() => onEdit(event)}
           aria-label={`Edit event "${event.title}"`}
+          title="Edit"
         >
-          Edit
+          <Pencil className="h-4 w-4" />
         </Button>
         <Button
-          variant="destructive"
-          size="sm"
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
           onClick={() => onDelete(event.id)}
           aria-label={`Delete event "${event.title}"`}
+          title="Delete"
         >
-          Delete
+          <Trash2 className="h-4 w-4" />
         </Button>
       </div>
     </div>

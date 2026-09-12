@@ -25,6 +25,7 @@
 4. **API-First Design** — Define OpenAPI contracts before implementation. All functionality accessible via RESTful API. Consistent error response format.
 5. **Compliance & Audit Trail** — All user actions logged with attribution and timestamps. Privacy controls mandatory for personal data.
 6. **Living Documentation** — Documentation is updated as part of implementation, never as a separate follow-up. Code and docs ship together. See "Documentation Requirements" below.
+7. **Design & Usability Consistency** — New or changed UI must (a) use the current design tokens (`packages/ui/tailwind.preset.ts`, `apps/web/src/styles/theme.css`, `docs/guides/DESIGN_SYSTEM_USAGE.md`) rather than raw Tailwind palette colours or one-off styling, and (b) be checked for basic usability before it's considered done — no redundant/competing controls on one row, consistent action and badge patterns with equivalent existing screens (e.g. a new list screen should look and behave like the Tasks/Events list pattern, not invent its own), and correct semantic colour use (`destructive` only for actually destructive actions). Theming a screen is not the same as finishing it — check it against a screen that already works well.
 
 ---
 
@@ -56,6 +57,8 @@
 - **Always use `apiClient`** from `services/api-client.ts` — never import axios directly
 - New components use Tailwind + shadcn/ui; use `cn()` from `@/lib/utils` for class merging
 - Dark mode via `dark:` Tailwind prefix — no ThemeProvider needed
+- Never use raw Tailwind palette colours (`bg-blue-600`, `text-red-500`, `border-gray-400`, ...) — use the semantic tokens (`bg-primary`, `text-destructive`, `border-border`, ...) so a future retheme stays global instead of missing hardcoded spots
+- Dense list rows (tasks, events, and similar): put per-row destructive/edit actions behind hover/focus reveal, not permanently-visible filled buttons on every row — keep status/data badges visible per the design system's density rules, but don't let action buttons outweigh content
 
 ### C# / .NET
 - Feature-based folder structure: `Features/{FeatureName}/{Controllers,Services,Models}/`

@@ -65,36 +65,43 @@ const preset: Config = {
           muted: 'hsl(var(--brand-muted))',
           'muted-foreground': 'hsl(var(--brand-muted-foreground))',
         },
+        info: {
+          DEFAULT: 'hsl(var(--info))',
+          foreground: 'hsl(var(--info-foreground))',
+        },
       },
 
-      /* ── Border Radius (matches borderRadius tokens) ────────── */
+      /* ── Border Radius — cockpit theme: sharp, not rounded ──── */
       borderRadius: {
-        lg: '12px',
-        md: '6px',
-        sm: '4px',
+        lg: '4px',
+        md: '4px',
+        sm: '2px',
       },
 
       /* ── Shadows (matches shadows.elevated) ─────────────────── */
       boxShadow: {
-        elevated: '0 4px 16px rgba(0, 0, 0, 0.08)',
+        elevated: '0 4px 16px rgba(0, 0, 0, 0.35)',
       },
 
-      /* ── Font Family ────────────────────────────────────────── */
+      /* ── Font Family — cockpit theme: mono carries everything ─ */
       fontFamily: {
         sans: [
-          '"IBM Plex Sans"',
-          'system-ui',
-          '-apple-system',
-          'BlinkMacSystemFont',
-          '"Segoe UI"',
-          'Roboto',
-          'sans-serif',
+          '"JetBrains Mono"',
+          '"Fira Code"',
+          'ui-monospace',
+          '"SFMono-Regular"',
+          'Menlo',
+          'Consolas',
+          'monospace',
         ],
         display: [
-          '"DM Sans"',
-          '"IBM Plex Sans"',
-          'system-ui',
-          'sans-serif',
+          '"JetBrains Mono"',
+          '"Fira Code"',
+          'ui-monospace',
+          '"SFMono-Regular"',
+          'Menlo',
+          'Consolas',
+          'monospace',
         ],
       },
       /* ── Typography Scale ───────────────────────────────────── */
