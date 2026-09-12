@@ -94,14 +94,16 @@ public class TaskService : ITaskService
 
         if (request.LabelIds != null && request.LabelIds.Count > 0)
         {
+            // Load the full Label entities (not just Ids) so TaskLabel.Label is populated —
+            // MapToTaskDtoAsync reads tl.Label directly and previously NRE'd when only the
+            // FK was set, since EF's relationship fixup does not resolve Label from LabelId alone.
             var validLabels = await _context.Labels
                 .Where(l => l.UserId == userId && request.LabelIds.Contains(l.Id))
-                .Select(l => l.Id)
                 .ToListAsync();
 
-            foreach (var labelId in validLabels)
+            foreach (var label in validLabels)
             {
-                _context.TaskLabels.Add(new TaskLabel { TaskId = task.Id, LabelId = labelId });
+                _context.TaskLabels.Add(new TaskLabel { TaskId = task.Id, LabelId = label.Id, Label = label });
             }
 
             await _context.SaveChangesAsync();
