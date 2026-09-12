@@ -64,7 +64,7 @@ public class TaskGroupService
             Icon = tg.Icon,
             IsDefault = tg.IsDefault,
             WipLimit = tg.WipLimit,
-            TaskCount = tg.Tasks.Count,
+            TaskCount = tg.Tasks.Count(t => t.ParentTaskId == null),
             CreatedAt = tg.CreatedAt,
             UpdatedAt = tg.UpdatedAt,
             SharedPermission = null,
@@ -92,7 +92,7 @@ public class TaskGroupService
                 Icon = share.TaskGroup.Icon,
                 IsDefault = false,
                 WipLimit = share.TaskGroup.WipLimit,
-                TaskCount = share.TaskGroup.Tasks.Count,
+                TaskCount = share.TaskGroup.Tasks.Count(t => t.ParentTaskId == null),
                 CreatedAt = share.TaskGroup.CreatedAt,
                 UpdatedAt = share.TaskGroup.UpdatedAt,
                 SharedPermission = share.Permission,
@@ -121,7 +121,7 @@ public class TaskGroupService
                 Icon = group.Icon,
                 IsDefault = group.IsDefault,
                 WipLimit = group.WipLimit,
-                TaskCount = group.Tasks.Count,
+                TaskCount = group.Tasks.Count(t => t.ParentTaskId == null),
                 CreatedAt = group.CreatedAt,
                 UpdatedAt = group.UpdatedAt
             };
@@ -147,7 +147,7 @@ public class TaskGroupService
             Icon = share.TaskGroup.Icon,
             IsDefault = false,
             WipLimit = share.TaskGroup.WipLimit,
-            TaskCount = share.TaskGroup.Tasks.Count,
+            TaskCount = share.TaskGroup.Tasks.Count(t => t.ParentTaskId == null),
             CreatedAt = share.TaskGroup.CreatedAt,
             UpdatedAt = share.TaskGroup.UpdatedAt,
             SharedPermission = share.Permission,
@@ -260,7 +260,7 @@ public class TaskGroupService
             Icon = group.Icon,
             IsDefault = group.IsDefault,
             WipLimit = group.WipLimit,
-            TaskCount = group.Tasks.Count,
+            TaskCount = group.Tasks.Count(t => t.ParentTaskId == null),
             CreatedAt = group.CreatedAt,
             UpdatedAt = group.UpdatedAt
         };
