@@ -2,13 +2,13 @@ import { cn } from '../../lib/utils';
 import { CheckCircleIcon, CircleIcon, AlertCircleIcon, FolderIcon } from 'lucide-react';
 
 const colorMap = {
-  info: { icon: 'bg-muted text-muted-foreground', border: 'border-l-muted-foreground' },
-  success: { icon: 'bg-success/15 text-success', border: 'border-l-success' },
-  warning: { icon: 'bg-warning/15 text-warning', border: 'border-l-warning' },
-  primary: { icon: 'bg-primary/15 text-primary', border: 'border-l-primary' },
+  info: 'text-muted-foreground',
+  success: 'text-success',
+  warning: 'text-warning',
+  primary: 'text-primary',
 } as const;
 
-interface StatCardProps {
+interface StatChipProps {
   color: keyof typeof colorMap;
   icon: React.ReactNode;
   value: React.ReactNode;
@@ -16,24 +16,18 @@ interface StatCardProps {
   ariaLabel: string;
 }
 
-const StatCard = ({ color, icon, value, label, ariaLabel }: StatCardProps) => (
+// A slim inline chip rather than a tall bordered card — these are secondary
+// context, not the main content, so they shouldn't cost a full row of chrome.
+const StatChip = ({ color, icon, value, label, ariaLabel }: StatChipProps) => (
   <div
-    className={cn(
-      'flex items-center gap-4 rounded-lg border border-border bg-card p-5 border-l-4 transition-transform hover:-translate-y-0.5 md:gap-3 md:p-3.5',
-      colorMap[color].border,
-    )}
+    className="flex items-center gap-1.5 whitespace-nowrap text-sm"
     aria-label={ariaLabel}
   >
-    <div
-      className={cn('flex size-12 shrink-0 items-center justify-center rounded-lg md:size-10', colorMap[color].icon)}
-      aria-hidden="true"
-    >
+    <span className={cn('flex shrink-0 items-center', colorMap[color])} aria-hidden="true">
       {icon}
-    </div>
-    <div className="flex-1">
-      <div className="text-[28px] font-bold leading-tight text-foreground">{value}</div>
-      <div className="mt-1 text-[13px] text-muted-foreground opacity-80">{label}</div>
-    </div>
+    </span>
+    <span className="font-semibold text-foreground">{value}</span>
+    <span className="text-muted-foreground">{label}</span>
   </div>
 );
 
@@ -65,43 +59,43 @@ export const TaskStatistics = ({ tasks, totalGroups }: TaskStatisticsProps) => {
 
   return (
     <div
-      className="mb-6 grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 md:grid-cols-[repeat(auto-fit,minmax(150px,1fr))] md:gap-3 md:mb-5"
+      className="flex flex-wrap items-center gap-x-5 gap-y-1.5"
       role="region"
       aria-label="Task statistics"
     >
-      <StatCard
+      <StatChip
         color="info"
-        icon={<CircleIcon size={24} />}
+        icon={<CircleIcon size={15} />}
         value={totalTasks}
-        label="Total Tasks"
+        label="total"
         ariaLabel={`Total tasks: ${totalTasks}`}
       />
-      <StatCard
+      <StatChip
         color="success"
-        icon={<CheckCircleIcon size={24} />}
+        icon={<CheckCircleIcon size={15} />}
         value={
           <>
             {completedTasks}
-            <span className={cn('ml-2 text-sm font-semibold', completionRate >= 50 ? 'text-success' : 'text-muted-foreground')}>
-              {completionRate}%
+            <span className={cn('ml-1', completionRate >= 50 ? 'text-success' : 'text-muted-foreground')}>
+              ({completionRate}%)
             </span>
           </>
         }
-        label="Completed"
+        label="completed"
         ariaLabel={`Completed tasks: ${completedTasks} of ${totalTasks}, ${completionRate}%`}
       />
-      <StatCard
+      <StatChip
         color="warning"
-        icon={<AlertCircleIcon size={24} />}
+        icon={<AlertCircleIcon size={15} />}
         value={overdueTasks}
-        label="Overdue Tasks"
+        label="overdue"
         ariaLabel={`Overdue tasks: ${overdueTasks}`}
       />
-      <StatCard
+      <StatChip
         color="primary"
-        icon={<FolderIcon size={24} />}
+        icon={<FolderIcon size={15} />}
         value={totalGroups}
-        label="Task Groups"
+        label="groups"
         ariaLabel={`Task groups: ${totalGroups}`}
       />
     </div>

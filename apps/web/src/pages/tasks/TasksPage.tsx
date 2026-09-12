@@ -345,9 +345,21 @@ const TasksPage = () => {
         />
 
         <main role="main" aria-label="Task management">
-          <TaskStatistics tasks={tasks} totalGroups={groups.length} />
+          {/* Context bar — at-a-glance counts + view scope in one row, so filtering
+              doesn't cost three separate stacked sections before reaching tasks */}
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <TaskStatistics tasks={tasks} totalGroups={groups.length} />
+            <Tabs value={taskView} onValueChange={(v) => setTaskView(v as typeof taskView)}>
+              <TabsList>
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="mine">Mine</TabsTrigger>
+                <TabsTrigger value="assigned-to-me">Assigned to me</TabsTrigger>
+                <TabsTrigger value="assigned-by-me">Assigned by me</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
 
-          <div className="mb-4 flex items-center gap-3">
+          <div className="mb-4 flex flex-wrap items-center gap-3">
             <TaskSearch ref={searchInputRef} value={searchQuery} onChange={setSearchQuery} />
             {labels.length > 0 && (
               <select
@@ -364,19 +376,6 @@ const TasksPage = () => {
             )}
             <WipCounter />
           </div>
-
-          <Tabs
-            value={taskView}
-            onValueChange={(v) => setTaskView(v as typeof taskView)}
-            className="mb-4"
-          >
-            <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="mine">Mine</TabsTrigger>
-              <TabsTrigger value="assigned-to-me">Assigned to me</TabsTrigger>
-              <TabsTrigger value="assigned-by-me">Assigned by me</TabsTrigger>
-            </TabsList>
-          </Tabs>
 
           {showCreateForm && !isViewOnlyGroup ? (
             createType === 'task' ? (
