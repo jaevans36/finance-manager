@@ -1,0 +1,88 @@
+# Life Manager — VPS "dev" Docker Compose
+#
+# A second, independent stack — Postgres + life-api + web — running alongside the production
+# stack (docker-compose.vps.yml) on the SAME box, behind a second Tailscale Serve port. Deployed
+# by pushing to the `dev` branch (.github/workflows/deploy-dev.yml) — no CI gate, no approval
+# gate, deliberately: this is a fast, optional scratch space for seeing a branch actually running
+# before it's ready for a PR, not a required step in the normal merge flow. See
+# docs/intent/2026-09-12-deploy-approval-and-dev-branch.md for why this exists, and
+# docs/BRANCHING-STRATEGY.md for how it differs from the old (retired) develop/UAT model.
+#
+# Every identifier here is distinct from docker-compose.vps.yml's on purpose — separate Compose
+# project, separate containers, separate database, separate port — so the two stacks can run
+# simultaneously without ever touching each other's data.
+#
+# FIRST TIME SETUP (see the VPS Setup Runbook, second brain vault):
+#   1. .env.dev-remote with DB_USER/DB_NAME/DB_PASSWORD/JWT_SECRET/JWT_ISSUER/JWT_AUDIENCE/
+#      VITE_API_URL/FRONTEND_ORIGIN/DISCORD_ERROR_WEBHOOK (gitignored, never commit) — use
+#      throwaway values, this database is not backed up and not meant to hold real data
+#   2. certs/ is shared with the production stack (Tailscale terminates the real cert either
+#      way; the backend's self-signed cert identity is irrelevant — connections use
+#      https+insecure)
+#   3. tailscale serve --bg --https=8444 https+insecure://127.0.0.1:8444
+#   4. docker compose -f docker-compose.vps-dev.yml --env-file .env.dev-remote up -d --build
+#
+# UPDATE: pushed automatically by .github/workflows/deploy-dev.yml on every push to `dev`.
+
+name: life-manager-dev
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: life-manager-dev-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-life_manager}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-life_manager_staging}
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-life_manager}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [life-manager-dev]
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/life-api/Dockerfile
+    container_name: life-manager-dev-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${DB_NAME:-life_manager_staging};Username=${DB_USER:-life_manager};Password=${DB_PASSWORD}"
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      Cors__AllowedOrigins__0: ${FRONTEND_ORIGIN}
+      RateLimit__Enabled: "false"
+      DISCORD_ERROR_WEBHOOK: ${DISCORD_ERROR_WEBHOOK}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [life-manager-dev]
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    container_name: life-manager-dev-web
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8444:443"
+    volumes:
+      - ./certs:/etc/nginx/certs:ro
+    depends_on: [api]
+    networks: [life-manager-dev]
+
+networks:
+  life-manager-dev:
+    driver: bridge
+
+volumes:
+  postgres_dev_data:
+    driver: local

@@ -21,9 +21,10 @@ and `main` in sync added a step and a failure mode without adding a gate that an
 
 | Branch | Purpose | Lifetime | Merges Into |
 |--------|---------|----------|-------------|
-| `main` | The trunk. Always releasable. The deploy source. | Permanent | — |
+| `main` | The trunk. Always releasable. The deploy source (behind a manual approval gate — see below). | Permanent | — |
 | `phase-XX/description` | A single phase of spec'd work | Hours to days | `main` |
 | `feat/description` / `fix/description` | Ad-hoc work not tied to a spec phase | Hours to days | `main` |
+| `dev` | Optional scratch space — push to it to see a branch actually running remotely. Not part of the merge flow; nothing requires passing through it. See "Dev branch" below. | Permanent, but disposable — safe to force-push/reset | — |
 
 Feature branches are **squash-merged** into `main` (one commit per PR) and deleted automatically on
 merge (repo setting: *Automatically delete head branches*).
@@ -85,6 +86,32 @@ main ─────────────────────────
 
 No special flow — a hotfix is just a `fix/*` branch with a fast PR to `main`. Because `main` is the
 deploy source, merging the fix ships it.
+
+## Production Approval Gate (added 2026-09-12)
+
+CI passing and merging to `main` no longer means the deploy runs unattended. `.github/workflows/
+deploy.yml`'s job targets the GitHub Environment **`production`**, which has a required reviewer
+(`jaevans36`) — the job pauses as "Waiting for review" until approved from the Actions UI.
+
+This is a deliberate checkpoint, not a process gap being closed: with AI increasingly writing the
+code, tests-and-lint-passing is no longer the same guarantee that a human has actually read every
+line before it reaches the live app. See `docs/intent/2026-09-12-deploy-approval-and-dev-branch.md`
+for the full reasoning — notably, this is *not* the `develop`/UAT model being reintroduced (see
+"History" below); it adds zero extra branches and zero extra steps to the normal merge flow, it
+only pauses the one step that already existed.
+
+## Dev Branch (optional, added 2026-09-12)
+
+`dev` is a scratch space for seeing a branch actually running remotely, decoupled entirely from
+the `main` merge flow:
+
+- Push (or force-push) anything to `dev` → `.github/workflows/deploy-dev.yml` deploys it to a
+  second Compose stack on the same VPS (`docker-compose.vps-dev.yml`), no CI dependency, no
+  approval gate.
+- Reachable at `https://life-manager.tail15a827.ts.net:8444`, entirely separate database
+  (`life_manager_staging`, not backed up, not meant to hold real data).
+- Nothing requires using it — routine PRs go straight `feat/*` → `main` as before. It exists for
+  the moments you want to see something running before it's PR-ready.
 
 ## Release Process (versioning)
 
@@ -148,3 +175,7 @@ gh pr create --base main --fill
   and deleted). The LAN UAT environment and `scripts/deploy-uat.ps1` / `.github/workflows/deploy-uat.yml`
   are no longer used; the always-on deployment is the VPS (see
   [VPS deployment](guides/ENVIRONMENTS_AND_RELEASES.md)).
+- **2026-09-12** — Added a manual approval gate on the production deploy (GitHub Environment
+  `production`), and a `dev` branch auto-deployed to a second, ungated stack on the same VPS. Not
+  a return to the 2026-03 model: `dev` is optional and outside the merge flow, not a required hop
+  for every change. See `docs/intent/2026-09-12-deploy-approval-and-dev-branch.md`.
