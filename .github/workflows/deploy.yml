@@ -22,6 +22,9 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success'
     runs-on: [self-hosted, linux, vps]
     timeout-minutes: 20
+    # Pauses for manual approval (GitHub Environment "production", required reviewer: jaevans36)
+    # before this job runs — a deliberate checkpoint before AI-assisted code reaches the live app.
+    environment: production
 
     steps:
       - name: Checkout code at the tested commit

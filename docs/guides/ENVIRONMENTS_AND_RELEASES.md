@@ -16,8 +16,18 @@
 > (Section 3), quality gates (Section 6), security (Section 8), backup & DR (Section 10).
 > **Stale below** (kept for reference until this doc is rewritten): the three-environment /
 > `develop` → UAT machinery in Sections 1, 4 and 5, and the nightly "Dev ← UAT" refresh in Section 2.
-> Current deploy flow: branch from `main` → PR → squash-merge → the VPS pulls `main` and rebuilds
-> (interim `~/life-manager/deploy.sh`; GitHub Actions → GHCR pipeline planned).
+> Current deploy flow: branch from `main` → PR → squash-merge → CI → **manual approval** → the VPS
+> pulls `main` and rebuilds (interim `~/life-manager/deploy.sh`; GitHub Actions → GHCR pipeline
+> planned).
+>
+> **⚠️ 2026-09-12 addendum.** Production deploys (`deploy.yml`) now pause for manual approval —
+> GitHub Environment `production`, required reviewer `jaevans36` — before running, added
+> specifically because AI-assisted code shouldn't auto-ship to live with zero human checkpoint.
+> Separately, a `dev` branch now auto-deploys (no gate) to a second Compose stack on the same VPS
+> — an **optional** scratch space, not a reintroduction of the retired `develop`/UAT model (it's
+> outside the normal merge flow, nothing requires using it). See `docs/BRANCHING-STRATEGY.md`
+> § "Production Approval Gate" / § "Dev Branch" and
+> `docs/intent/2026-09-12-deploy-approval-and-dev-branch.md` for the full reasoning.
 
 ---
 

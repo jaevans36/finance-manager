@@ -1,0 +1,81 @@
+name: Deploy dev branch to VPS (scratch)
+
+# Fast, ungated deploy of the `dev` branch to a second stack on the same VPS
+# (docker-compose.vps-dev.yml) — no CI dependency, no approval gate. This is an optional
+# scratch space, not a required step before `main`: push it, see it running, that's the whole
+# point. If the code doesn't even build, this workflow fails loudly and Discord says so — that
+# failure IS the signal, not something to prevent upstream.
+#
+# See docs/intent/2026-09-12-deploy-approval-and-dev-branch.md for why this exists, and
+# docs/BRANCHING-STRATEGY.md for how it differs from the old (retired) develop/UAT model.
+
+on:
+  push:
+    branches: [dev]
+
+jobs:
+  deploy-dev:
+    name: Deploy dev branch to VPS
+    runs-on: [self-hosted, linux, vps]
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code at the pushed commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Link persistent secrets and certs
+        run: |
+          set -euo pipefail
+          if [ ! -f "$HOME/life-manager/.env.dev-remote" ]; then
+            echo "::error::$HOME/life-manager/.env.dev-remote not found — see the VPS Setup Runbook."
+            exit 1
+          fi
+          ln -sf "$HOME/life-manager/.env.dev-remote" .env.dev-remote
+          ln -sf "$HOME/life-manager/certs" certs
+
+      - name: Build and start containers
+        run: docker compose -f docker-compose.vps-dev.yml --env-file .env.dev-remote up -d --build --remove-orphans
+
+      - name: Wait for containers to settle
+        run: sleep 10
+
+      - name: Health check
+        run: |
+          for i in $(seq 1 10); do
+            if curl -sk -f https://127.0.0.1:8444/api/health > /dev/null; then
+              echo "Healthy after $i attempt(s)"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Health check failed after 10 attempts"
+          exit 1
+
+      - name: Prune old Docker build cache and dangling images
+        if: success()
+        run: |
+          docker builder prune -f --filter until=168h
+          docker image prune -f
+
+      - name: Show running containers
+        if: always()
+        run: docker compose -f docker-compose.vps-dev.yml ps
+
+      - name: Notify Discord — success
+        if: success()
+        run: |
+          SHA_SHORT="$(echo '${{ github.sha }}' | cut -c1-7)"
+          curl -s -X POST -H 'Content-Type: application/json' \
+            -d "{\"content\":\"🧪 [dev] Deployed \`${SHA_SHORT}\` to the VPS dev stack — health check passed.\"}" \
+            "${{ secrets.DISCORD_DEPLOY_WEBHOOK }}" || true
+
+      - name: Notify Discord — failure
+        if: failure()
+        run: |
+          SHA_SHORT="$(echo '${{ github.sha }}' | cut -c1-7)"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          curl -s -X POST -H 'Content-Type: application/json' \
+            -d "{\"content\":\"🧪❌ [dev] Deploy of \`${SHA_SHORT}\` to the VPS dev stack FAILED — ${RUN_URL}\"}" \
+            "${{ secrets.DISCORD_DEPLOY_WEBHOOK }}" || true
