@@ -11,11 +11,17 @@ budgeting app":
 1. **Net worth is a live number, not a trend.** `GetNetWorthAsync` sums active account balances
    on demand — there's no history, so there's no way to see it moving over time, and it doesn't
    include the actual value of the house or other physical assets, only account balances. A
-   mortgage shows as a large negative with nothing offsetting it.
-2. **There's no notification/alert mechanism at all.** Confirmed while scoping this: zero
-   `BackgroundService`/scheduled-job infrastructure exists anywhere in life-api or finance-api —
-   the only existing Discord wiring is a one-way error sink. "Discord digests" has been on the
-   life-api roadmap unbuilt since the original service-topology pass.
+   mortgage shows as a large negative with nothing offsetting it. **Already on the backlog**:
+   `specs/applications/finance/tasks.md` Phase 45 has `T1233 NetWorthTimeline` (a Recharts line
+   chart, all accounts summed by month) — not a new idea, an unbuilt, already-specced one. The
+   asset/liability-netting piece (below) isn't covered by T1233 as written and would extend it.
+2. **There's a real notification system, but no time-scheduled trigger for it.** Corrected after
+   further digging: life-api already has a working `Notification`/`NotificationService`/
+   `ActivityLog`-adjacent system (bell + dropdown UI, used for task assignment and event sharing)
+   — it's not "zero infrastructure." What's actually missing is a `BackgroundService`/cron-style
+   trigger to fire notifications on a *schedule* (daily bill digest) rather than only in response
+   to a user action, and a Discord-specific delivery path, since the existing system delivers to
+   the in-app bell, not Discord.
 3. **No live bank feed means silent drift is possible.** Without Open Banking, the app's computed
    balance can only be as accurate as the last statement/CSV Jay fed it — nothing currently checks
    that computed and actual balances still agree.

@@ -58,11 +58,34 @@ door. `finance-mcp` is that front door, mirroring `life-mcp`, which already prov
 
 ## Constraints / relevant history
 
-- `life-mcp` (`apps/life-mcp/`) is the direct template — same auth model, same tool/resource
-  structure, same test approach.
+- **`specs/applications/finance/tasks.md` Phase 49 ("MCP Server Integration", T1275–T1289)
+  already exists as a detailed spec** — found after this intent was first drafted. It already
+  names the full tool surface (`finance_get_transactions`, `finance_add_manual_transaction`,
+  `finance_get_bills_due`, `finance_get_pot_balances`, `finance_get_savings_goals`,
+  `finance_get_disposable_income`, `finance_get_financial_health_score`,
+  `finance_get_ai_insights`, `finance_get_cashflow_forecast`, `finance_get_monthly_report`,
+  `finance_get_tax_year_summary`, `finance_compare_months`, `finance_export_transactions`, and
+  more) — use these names/shapes rather than inventing new ones.
+- **One assumption in Phase 49 is outdated and shouldn't be carried forward**: it specs
+  `finance-mcp` as a network-bound service (`FINANCE_MCP_BIND_ADDRESS`, defaulting to
+  localhost-only). `life-mcp` — built after this spec was written — actually runs as a stdio
+  process launched per-user by Claude Code, authenticating with that user's own login, not a
+  network service. Follow `life-mcp`'s real, proven pattern instead — it also fits the sharing
+  model better: Jay's and Jade's Claude sessions each run their own `finance-mcp`, each with their
+  own login, each seeing whatever `AccountSharingService` (see the VPS-migration intent) says
+  they can see.
+- Phase 49's spec lists "Phase 44 [Financial Dashboard & Reports] complete" as a dependency —
+  not done yet. Building `finance-mcp` ahead of that is a deliberate reprioritisation, not an
+  oversight, but means tools like `finance_get_monthly_report`/`finance_get_financial_health_score`
+  need either a minimal version of the not-yet-built `DashboardService`/`ReportsService` logic, or
+  a simpler direct implementation that doesn't wait for Phase 44.
+- `life-mcp` (`apps/life-mcp/`) is the direct template beyond the tool names themselves — same
+  auth model, same resource structure, same test approach.
 - The existing CSV importer's dedup logic (`CsvImportService.cs`) already solves "don't
   double-import the same transaction" for the structured path — reuse its matching logic rather
   than inventing a second dedup mechanism.
+- Every finance-mcp write should land in the general activity log described in the sibling
+  VPS-migration intent, not a separate MCP-only audit table — one place to answer "who did what."
 - Depends on the sibling VPS-migration intent being done first (or at least decided) — this
   should be built and tested against finance-api's *real* eventual location, not the dev-PC copy
   that's about to stop being canonical.

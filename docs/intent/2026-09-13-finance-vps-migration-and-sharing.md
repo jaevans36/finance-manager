@@ -22,9 +22,23 @@ better to point that at its permanent home from day one than move it later.
 - It starts from a **fresh, empty database** — no migration of the current dev-PC data. The
   dev-PC copy stops being canonical and becomes just a local dev/test instance, the same
   relationship life-api's local copy already has to its VPS original.
-- Jade has her own life-api login and full (read/write) access to the finance data — reusing the
-  sharing pattern that already works for task groups (`POST /task-groups/{id}/shares`), not a new
-  permission model invented from scratch.
+- Jade has her own life-api login and **full read/write** access to the finance data. Note: this
+  is a deliberate departure from `specs/applications/finance/tasks.md` Phase 50 ("Household
+  Account Sharing"), which already exists in detail but scopes sharing as **view-only**, with
+  edit access explicitly called out there as "a materially bigger feature" and deferred. Jay
+  confirmed (2026-09-13) he wants full access from the start, not the phased view-only-first
+  approach — so Phase 50's `AccountShare` entity/`Permission` enum and the "no update/delete on
+  shared accounts" enforcement in `AccountService`/`TransactionService` need extending to allow a
+  write-capable share, not just adopting as-specced.
+- **Audit logging is a requirement of full read/write sharing, not a nice-to-have** — with two
+  people able to change the same data, "who changed what" needs to be answerable. finance-api
+  currently has **no** activity/audit log of any kind (confirmed — nothing like it exists there
+  today). life-api already has a proven, working pattern to port over directly: `ActivityLog`/
+  `IActivityLogService`/`ActivityLogsController` (`apps/life-api/Features/Common/ActivityLogs/`)
+  — action, description, IP, user-agent, timestamp, per-user. Rather than also building Phase
+  49's narrower `finance.mcp_audit_log` (MCP-tool-calls only) as a separate mechanism, one general
+  activity log covering *all* finance-api writes — web UI and MCP alike — is simpler and answers
+  the actual question ("what did Jade do this week") more usefully than an MCP-only log would.
 - The finance backup pipeline gets **rebuilt in the opposite direction** from what exists today.
   `push-finance-backup.ps1` (shipped 2026-09-12) was built on the premise that the dev PC is the
   only copy and pushes an off-site backup to the VPS — that premise is now wrong. Once the VPS is
@@ -43,6 +57,12 @@ better to point that at its permanent home from day one than move it later.
 
 ## Constraints / relevant history
 
+- **`specs/applications/finance/tasks.md` Phase 50 ("Household Account Sharing", T1750–T1773)
+  already exists as a detailed spec for this exact feature** — found after this intent was first
+  drafted. Treat it as the authoritative starting design (it already specifies reusing the
+  existing, working `EventShare` model — `apps/life-api/Features/Events/Models/EventShare.cs` —
+  not the task-group sharing pattern originally suggested here) and adapt it for full read/write
+  rather than writing a competing design from scratch.
 - `docs/BRANCHING-STRATEGY.md` / `VPS Setup Runbook.md` Phase 11 (2026-09-12) already added a
   production approval gate and an optional `dev` branch — this migration should extend both
   (finance-api gets a service in `docker-compose.vps.yml` *and* in `docker-compose.vps-dev.yml`
