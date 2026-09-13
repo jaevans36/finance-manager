@@ -1,8 +1,9 @@
 import { memo, useState, useRef, useEffect, useCallback } from 'react';
-import { GripVertical, Pencil, Trash2, Check, X } from 'lucide-react';
+import { GripVertical, Pencil, Trash2, Check, X, Square, SquareCheck } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import type { Task } from '../../services/taskService';
 import { Badge } from '../ui/badge';
+import { Checkbox } from '../ui/checkbox';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -104,16 +105,14 @@ export const SubtaskItem = memo(({
       role="listitem"
       aria-label={`Subtask: ${subtask.title}`}
     >
-      {/* Selection checkbox */}
-      {onSelect && (
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={() => onSelect(subtask.id)}
-          className="h-3.5 w-3.5 flex-shrink-0 cursor-pointer accent-primary"
-          aria-label={`Select subtask "${subtask.title}"`}
-        />
-      )}
+      {/* Completion checkbox — same control as the parent task list, so ticking it
+          here means the same thing it does everywhere else in the app */}
+      <Checkbox
+        checked={subtask.completed}
+        onCheckedChange={() => onToggleComplete(subtask.id, !subtask.completed)}
+        aria-label={`Mark "${subtask.title}" as ${subtask.completed ? 'incomplete' : 'complete'}`}
+        className="flex-shrink-0"
+      />
 
       {/* Drag handle – visible on hover */}
       <span
@@ -125,7 +124,7 @@ export const SubtaskItem = memo(({
         <GripVertical className="h-3.5 w-3.5" />
       </span>
 
-      {/* Title – click to toggle completion, or inline edit */}
+      {/* Title, or inline edit */}
       {isEditing ? (
         <input
           ref={editInputRef}
@@ -139,13 +138,9 @@ export const SubtaskItem = memo(({
       ) : (
         <span
           className={cn(
-            'min-w-0 flex-1 cursor-pointer select-none truncate text-[13px] hover:text-primary',
+            'min-w-0 flex-1 select-none truncate text-[13px]',
             subtask.completed ? 'text-muted-foreground line-through' : 'text-foreground',
           )}
-          onClick={() => onToggleComplete(subtask.id, !subtask.completed)}
-          role="button"
-          tabIndex={0}
-          aria-label={`Mark "${subtask.title}" as ${subtask.completed ? 'incomplete' : 'complete'}`}
         >
           {subtask.title}
         </span>
@@ -200,6 +195,20 @@ export const SubtaskItem = memo(({
           </>
         ) : (
           <>
+            {onSelect && (
+              <button
+                className={cn(
+                  'flex items-center justify-center rounded border-none bg-transparent p-1 transition-colors hover:bg-muted hover:text-foreground',
+                  isSelected ? 'text-primary' : 'text-muted-foreground',
+                )}
+                onClick={() => onSelect(subtask.id)}
+                aria-label={isSelected ? `Deselect subtask "${subtask.title}"` : `Select subtask "${subtask.title}" for bulk actions`}
+                aria-pressed={isSelected}
+                title="Select for bulk actions"
+              >
+                {isSelected ? <SquareCheck className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
+              </button>
+            )}
             <button
               className="flex items-center justify-center rounded border-none bg-transparent p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               onClick={() => {
