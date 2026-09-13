@@ -14,8 +14,12 @@
 #
 # FIRST TIME SETUP (see the VPS Setup Runbook, second brain vault):
 #   1. .env.dev-remote with DB_USER/DB_NAME/DB_PASSWORD/JWT_SECRET/JWT_ISSUER/JWT_AUDIENCE/
-#      VITE_API_URL/FRONTEND_ORIGIN/DISCORD_ERROR_WEBHOOK (gitignored, never commit) — use
-#      throwaway values, this database is not backed up and not meant to hold real data
+#      VITE_API_URL/FRONTEND_ORIGIN/DISCORD_ERROR_WEBHOOK/FINANCE_ENCRYPTION_KEY (gitignored,
+#      never commit) — use throwaway values, this database is not backed up and not meant to
+#      hold real data
+#
+# finance-api shares this stack's own postgres (life_manager_staging), isolated into its own
+# "finance" schema — same reasoning as docker-compose.vps.yml (see that file's header comment).
 #   2. certs/ is shared with the production stack (Tailscale terminates the real cert either
 #      way; the backend's self-signed cert identity is irrelevant — connections use
 #      https+insecure)
@@ -64,19 +68,38 @@ services:
         condition: service_healthy
     networks: [life-manager-dev]
 
+  finance-api:
+    build:
+      context: .
+      dockerfile: apps/finance-api/Dockerfile
+    container_name: life-manager-dev-finance-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${DB_NAME:-life_manager_staging};Username=${DB_USER:-life_manager};Password=${DB_PASSWORD}"
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      Encryption__Key: ${FINANCE_ENCRYPTION_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [life-manager-dev]
+
   web:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL}
+        VITE_FINANCE_API_URL: ${VITE_API_URL}
     container_name: life-manager-dev-web
     restart: unless-stopped
     ports:
       - "127.0.0.1:8444:443"
     volumes:
       - ./certs:/etc/nginx/certs:ro
-    depends_on: [api]
+    depends_on: [api, finance-api]
     networks: [life-manager-dev]
 
 networks:

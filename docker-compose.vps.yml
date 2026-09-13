@@ -11,10 +11,16 @@
 #
 # FIRST TIME SETUP (see the runbook):
 #   1. .env.production with DB_USER/DB_NAME/DB_PASSWORD/JWT_SECRET/JWT_ISSUER/
-#      JWT_AUDIENCE/VITE_API_URL/FRONTEND_ORIGIN (gitignored, never commit)
+#      JWT_AUDIENCE/VITE_API_URL/FRONTEND_ORIGIN/FINANCE_ENCRYPTION_KEY (gitignored, never commit)
 #   2. certs/life-manager.pem + certs/life-manager-key.pem (self-signed; Tailscale
 #      terminates the real TLS in front)
 #   3. docker compose -f docker-compose.vps.yml --env-file .env.production up -d --build
+#
+# finance-api shares this same Postgres instance/database as life-api, isolated into its own
+# "finance" schema (FinanceDbContext.cs: HasDefaultSchema("finance")) — not a separate container.
+# Deliberate: the existing backup script already dumps the whole database, so finance data is
+# covered by it automatically, no second backup pipeline needed. See
+# docs/intent/2026-09-13-finance-vps-migration-and-sharing.md.
 #
 # UPDATE:
 #   git pull && docker compose -f docker-compose.vps.yml --env-file .env.production up -d --build
@@ -63,19 +69,43 @@ services:
     # root-owned host dir; Serilog file sink would fail silently. Use `docker compose logs`.
     # Add persistent file logs (named volume + perms) in the observability pass.
 
+  finance-api:
+    build:
+      context: .
+      dockerfile: apps/finance-api/Dockerfile
+    container_name: life-manager-finance-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${DB_NAME:-life_manager_prod};Username=${DB_USER:-life_manager};Password=${DB_PASSWORD}"
+      # Same JWT config as life-api — finance-api validates the tokens life-api issues, doesn't
+      # issue its own.
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      # No default — fail fast if unset, same posture as the other secrets here.
+      Encryption__Key: ${FINANCE_ENCRYPTION_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [life-manager]
+
   web:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL}
+        # Same origin as the app itself — nginx proxies both APIs from one place (see
+        # apps/web/nginx.conf), so this isn't a separate host/port.
+        VITE_FINANCE_API_URL: ${VITE_API_URL}
     container_name: life-manager-web
     restart: unless-stopped
     ports:
       - "127.0.0.1:8443:443"
     volumes:
       - ./certs:/etc/nginx/certs:ro
-    depends_on: [api]
+    depends_on: [api, finance-api]
     networks: [life-manager]
 
 networks:
