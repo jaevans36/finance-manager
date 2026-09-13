@@ -48,16 +48,28 @@ jobs:
       - name: Wait for containers to settle
         run: sleep 10
 
-      - name: Health check
+      - name: Health check — life-api
         run: |
           for i in $(seq 1 10); do
             if curl -sk -f https://127.0.0.1:8443/api/health > /dev/null; then
-              echo "Healthy after $i attempt(s)"
+              echo "life-api healthy after $i attempt(s)"
               exit 0
             fi
             sleep 5
           done
-          echo "::error::Health check failed after 10 attempts"
+          echo "::error::life-api health check failed after 10 attempts"
+          exit 1
+
+      - name: Health check — finance-api
+        run: |
+          for i in $(seq 1 10); do
+            if curl -sk -f https://127.0.0.1:8443/api/v1/finance/health > /dev/null; then
+              echo "finance-api healthy after $i attempt(s)"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::finance-api health check failed after 10 attempts"
           exit 1
 
       - name: Prune old Docker build cache and dangling images
