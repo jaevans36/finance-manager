@@ -70,8 +70,10 @@ services:
 
   finance-api:
     build:
-      context: .
-      dockerfile: apps/finance-api/Dockerfile
+      # See docker-compose.vps.yml's comment on this same block — finance-api's Dockerfile needs
+      # its own directory as the build context, not the repo root.
+      context: ./apps/finance-api
+      dockerfile: Dockerfile
     container_name: life-manager-dev-finance-api
     restart: unless-stopped
     environment:

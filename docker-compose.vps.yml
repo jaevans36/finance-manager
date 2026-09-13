@@ -71,8 +71,11 @@ services:
 
   finance-api:
     build:
-      context: .
-      dockerfile: apps/finance-api/Dockerfile
+      # finance-api's own Dockerfile (COPY ["FinanceApi.csproj", "."]) expects its own directory
+      # as the build context, unlike life-api's — mismatching this fails the build with
+      # "FinanceApi.csproj: not found" (caught live on first deploy, 2026-09-13).
+      context: ./apps/finance-api
+      dockerfile: Dockerfile
     container_name: life-manager-finance-api
     restart: unless-stopped
     environment:
