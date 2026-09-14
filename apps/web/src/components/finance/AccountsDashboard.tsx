@@ -233,7 +233,7 @@ export function AccountsDashboard({ onAccountSelect, onAddAccount, onEdit }: Acc
       {netWorth !== null && (
         <div className="rounded-lg border border-brand/30 bg-brand-muted p-5 text-brand-muted-foreground">
           <p className="text-sm opacity-80">Net worth</p>
-          <p className="mt-1 font-display text-display-lg">{formatBalance(netWorth, 'GBP')}</p>
+          <p className="mt-1 font-display text-display-lg whitespace-nowrap">{formatBalance(netWorth, 'GBP')}</p>
           <p className="mt-1 text-xs opacity-70">{accounts.length} active accounts</p>
         </div>
       )}

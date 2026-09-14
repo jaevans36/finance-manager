@@ -1,4 +1,5 @@
 using FinanceApi.Features.Accounts.Models;
+using FinanceApi.Features.Assets.Models;
 using FinanceApi.Features.Bills.Models;
 using FinanceApi.Features.Budgets.Models;
 using FinanceApi.Features.Categories.Models;
@@ -53,6 +54,7 @@ public class FinanceDbContext : DbContext
     public DbSet<IncomeStream> IncomeStreams => Set<IncomeStream>();
     public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
     public DbSet<AccountShare> AccountShares => Set<AccountShare>();
+    public DbSet<Asset> Assets => Set<Asset>();
 
     /// <summary>Read-only — see LifeManagerUser's doc comment. Never written to from finance-api.</summary>
     public DbSet<LifeManagerUser> LifeManagerUsers => Set<LifeManagerUser>();
@@ -291,6 +293,20 @@ public class FinanceDbContext : DbContext
                   .WithMany()
                   .HasForeignKey(s => s.AccountId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ── Asset ─────────────────────────────────────────────────────────────
+        modelBuilder.Entity<Asset>(entity =>
+        {
+            entity.HasKey(a => a.Id);
+            // ENCRYPTED — no HasMaxLength: widened to `text` to hold ciphertext.
+            entity.Property(a => a.Name).IsRequired().HasConversion(Encrypted);
+            entity.Property(a => a.Notes).HasConversion(Encrypted); // ENCRYPTED
+            entity.Property(a => a.Value).HasPrecision(18, 4);
+            entity.Property(a => a.Type)
+                  .HasConversion<string>()
+                  .HasMaxLength(50);
+            entity.HasIndex(a => a.UserId);
         });
 
         // ── LifeManagerUser — read-only, owned by life-api's "public" schema ────

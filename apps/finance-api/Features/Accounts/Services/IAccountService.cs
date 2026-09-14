@@ -78,6 +78,13 @@ public record UpdateAccountRequest(
     DateOnly? LoanEndDate = null
 );
 
+/// <summary>
+/// One point on the net-worth history chart — account balances only (reconstructed from
+/// transaction history), not current asset values. See docs/intent/2026-09-14-net-worth-history.md
+/// for why the trend line is accounts-only while the current net-worth figure includes assets.
+/// </summary>
+public record NetWorthHistoryPoint(int Month, int Year, string MonthLabel, decimal NetWorth);
+
 public interface IAccountService
 {
     Task<IEnumerable<AccountSummary>> GetAccountsAsync(Guid userId, CancellationToken ct = default);
@@ -86,4 +93,5 @@ public interface IAccountService
     Task<Account?> UpdateAccountAsync(Guid userId, Guid accountId, UpdateAccountRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default);
     Task<bool> DeleteAccountAsync(Guid userId, Guid accountId, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default);
     Task<decimal> GetNetWorthAsync(Guid userId, CancellationToken ct = default);
+    Task<IReadOnlyList<NetWorthHistoryPoint>> GetNetWorthHistoryAsync(Guid userId, int months = 12, CancellationToken ct = default);
 }
