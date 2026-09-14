@@ -11,20 +11,24 @@ public class AccountService : IAccountService
 {
     private readonly FinanceDbContext _db;
     private readonly IActivityLogService _activityLog;
+    private readonly IAccountSharingService _sharing;
 
-    public AccountService(FinanceDbContext db, IActivityLogService activityLog)
+    public AccountService(FinanceDbContext db, IActivityLogService activityLog, IAccountSharingService sharing)
     {
         _db = db;
         _activityLog = activityLog;
+        _sharing = sharing;
     }
 
     public async Task<IEnumerable<AccountSummary>> GetAccountsAsync(Guid userId, CancellationToken ct = default)
     {
+        var visibleIds = await _sharing.GetVisibleAccountIdsAsync(userId);
+
         // Name is column-encrypted, so sorting has to happen after materialization — SQL
         // can't meaningfully ORDER BY ciphertext. Per-user account lists are short, so this
         // costs nothing in practice.
         var accounts = await _db.Accounts
-            .Where(a => a.UserId == userId && a.IsActive)
+            .Where(a => visibleIds.Contains(a.Id) && a.IsActive)
             .Select(a => new AccountSummary(
                 a.Id, a.Name, a.Type, a.Currency, a.Balance,
                 a.Institution, a.Colour, a.Icon, a.IsActive, a.ExcludeFromNetWorth,
@@ -39,8 +43,10 @@ public class AccountService : IAccountService
 
     public async Task<Account?> GetAccountByIdAsync(Guid userId, Guid accountId, CancellationToken ct = default)
     {
-        return await _db.Accounts
-            .FirstOrDefaultAsync(a => a.Id == accountId && a.UserId == userId, ct);
+        var visibleIds = await _sharing.GetVisibleAccountIdsAsync(userId);
+        if (!visibleIds.Contains(accountId)) return null;
+
+        return await _db.Accounts.FirstOrDefaultAsync(a => a.Id == accountId, ct);
     }
 
     public async Task<Account> CreateAccountAsync(Guid userId, CreateAccountRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
@@ -80,8 +86,12 @@ public class AccountService : IAccountService
 
     public async Task<Account?> UpdateAccountAsync(Guid userId, Guid accountId, UpdateAccountRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
-        var account = await _db.Accounts
-            .FirstOrDefaultAsync(a => a.Id == accountId && a.UserId == userId, ct);
+        // Full read/write for anyone the account is shared with, not just the owner — the
+        // deliberate design choice for this feature (see AccountShare's doc comment).
+        var visibleIds = await _sharing.GetVisibleAccountIdsAsync(userId);
+        if (!visibleIds.Contains(accountId)) return null;
+
+        var account = await _db.Accounts.FirstOrDefaultAsync(a => a.Id == accountId, ct);
 
         if (account is null) return null;
 
@@ -124,6 +134,9 @@ public class AccountService : IAccountService
 
     public async Task<bool> DeleteAccountAsync(Guid userId, Guid accountId, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
+        // Deliberately owner-only, unlike Update — sharing an account grants full day-to-day
+        // read/write (transactions, balances, details), but deleting the account entirely is a
+        // step beyond that. Matches RevokeShareAsync's owner-only restriction on sharing itself.
         var account = await _db.Accounts
             .FirstOrDefaultAsync(a => a.Id == accountId && a.UserId == userId, ct);
 
@@ -139,8 +152,12 @@ public class AccountService : IAccountService
 
     public async Task<decimal> GetNetWorthAsync(Guid userId, CancellationToken ct = default)
     {
+        // Consistent with the read paths above: a shared account counts the same as an owned
+        // one everywhere, rather than being visible in the list but silently excluded here.
+        var visibleIds = await _sharing.GetVisibleAccountIdsAsync(userId);
+
         return await _db.Accounts
-            .Where(a => a.UserId == userId && a.IsActive && !a.ExcludeFromNetWorth)
+            .Where(a => visibleIds.Contains(a.Id) && a.IsActive && !a.ExcludeFromNetWorth)
             .SumAsync(a => a.Balance, ct);
     }
 }

@@ -4,6 +4,7 @@ using FinanceApi.Features.Budgets.Models;
 using FinanceApi.Features.Categories.Models;
 using FinanceApi.Features.CategoryRules.Models;
 using FinanceApi.Features.Common.ActivityLogs.Models;
+using FinanceApi.Features.Common.Users.Models;
 using FinanceApi.Features.IncomeStreams.Models;
 using FinanceApi.Features.SavingsGoals.Models;
 using FinanceApi.Features.Settings.Models;
@@ -51,6 +52,10 @@ public class FinanceDbContext : DbContext
     public DbSet<UserFinanceSettings> UserFinanceSettings => Set<UserFinanceSettings>();
     public DbSet<IncomeStream> IncomeStreams => Set<IncomeStream>();
     public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
+    public DbSet<AccountShare> AccountShares => Set<AccountShare>();
+
+    /// <summary>Read-only — see LifeManagerUser's doc comment. Never written to from finance-api.</summary>
+    public DbSet<LifeManagerUser> LifeManagerUsers => Set<LifeManagerUser>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -274,6 +279,25 @@ public class FinanceDbContext : DbContext
             entity.HasIndex(l => l.UserId);
             // Not encrypted, and Description must never embed an encrypted column's plaintext —
             // see the class doc comment on ActivityLog.
+        });
+
+        // ── AccountShare ──────────────────────────────────────────────────────
+        modelBuilder.Entity<AccountShare>(entity =>
+        {
+            entity.HasKey(s => s.Id);
+            entity.HasIndex(s => s.AccountId);
+            entity.HasIndex(s => s.SharedWithUserId);
+            entity.HasOne(s => s.Account)
+                  .WithMany()
+                  .HasForeignKey(s => s.AccountId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ── LifeManagerUser — read-only, owned by life-api's "public" schema ────
+        modelBuilder.Entity<LifeManagerUser>(entity =>
+        {
+            entity.ToTable("users", "public", t => t.ExcludeFromMigrations());
+            entity.HasKey(u => u.Id);
         });
 
         // ── Seed system categories ───────────────────────────────────────────
