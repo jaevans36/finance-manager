@@ -198,6 +198,25 @@ public class AuthController : ControllerBase
         return Ok(new { username = user.Username, message = "Username updated successfully." });
     }
 
+    [Authorize]
+    [HttpPatch("me/password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+            var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
+
+            await _authService.ChangePasswordAsync(userId, request.CurrentPassword, request.NewPassword, ipAddress, userAgent);
+            return Ok(new { message = "Password changed successfully." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = new { message = ex.Message } });
+        }
+    }
+
     /// <summary>
     /// Exports all data belonging to the authenticated user as a JSON archive.
     /// </summary>

@@ -51,6 +51,14 @@ export const authService = {
     return response.data;
   },
 
+  async changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
+    const response = await apiClient.patch<{ message: string }>('/auth/me/password', {
+      currentPassword,
+      newPassword,
+    });
+    return response.data;
+  },
+
   async logout(): Promise<void> {
     await apiClient.post('/auth/logout');
   },

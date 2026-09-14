@@ -9,6 +9,7 @@ import { UserIcon, MailIcon, CalendarIcon, LogOutIcon, ArrowLeftIcon, EditIcon, 
 import { useProfileForm } from '../../hooks/forms';
 import { cn } from '../../lib/utils';
 import { LabelsSettingsSection } from './LabelsSettingsSection';
+import { ChangePasswordSection } from './ChangePasswordSection';
 
 const formatDate = (dateString?: string | null) => {
   if (!dateString) return 'Not available';
@@ -210,6 +211,9 @@ const ProfilePage = () => {
           </div>
           <div className="pl-7 text-base font-medium text-foreground md:pl-0 md:text-body-lg">{user.email}</div>
         </div>
+
+        {/* Password Section */}
+        <ChangePasswordSection />
 
         {/* Created At */}
         {user.createdAt && (
