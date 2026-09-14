@@ -117,6 +117,7 @@ public class TransactionsController : ControllerBase
     /// <param name="accountId">Target account ID.</param>
     /// <param name="bankFormat">Bank format identifier (barclays, hsbc, lloyds, monzo, starling, natwest, generic).</param>
     /// <param name="file">The CSV file to import.</param>
+    /// <param name="ct">Cancellation token.</param>
     [HttpPost("import")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
