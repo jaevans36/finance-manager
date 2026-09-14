@@ -1,5 +1,7 @@
 using FinanceApi.Data;
 using FinanceApi.Features.Bills.Models;
+using FinanceApi.Features.Common.ActivityLogs.Models;
+using FinanceApi.Features.Common.ActivityLogs.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinanceApi.Features.Bills.Services;
@@ -7,8 +9,13 @@ namespace FinanceApi.Features.Bills.Services;
 public class BillService : IBillService
 {
     private readonly FinanceDbContext _db;
+    private readonly IActivityLogService _activityLog;
 
-    public BillService(FinanceDbContext db) => _db = db;
+    public BillService(FinanceDbContext db, IActivityLogService activityLog)
+    {
+        _db = db;
+        _activityLog = activityLog;
+    }
 
     public async Task<IEnumerable<BillResponse>> GetBillsAsync(Guid userId, CancellationToken ct = default)
         => await _db.Bills
@@ -61,7 +68,7 @@ public class BillService : IBillService
         return results.OrderBy(u => u.NextDueDate);
     }
 
-    public async Task<BillResponse> CreateBillAsync(Guid userId, CreateBillRequest request, CancellationToken ct = default)
+    public async Task<BillResponse> CreateBillAsync(Guid userId, CreateBillRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var bill = new Bill
         {
@@ -83,10 +90,12 @@ public class BillService : IBillService
         if (bill.CategoryId.HasValue)
             await _db.Entry(bill).Reference(b => b.Category).LoadAsync(ct);
 
+        // Bill.Name and Bill.Description are column-encrypted — never put their values in a log.
+        await _activityLog.LogAsync(userId, FinanceActivityType.BillCreated, $"Created {bill.Frequency} bill", ipAddress, userAgent);
         return ToResponse(bill);
     }
 
-    public async Task<BillResponse?> UpdateBillAsync(Guid userId, Guid billId, UpdateBillRequest request, CancellationToken ct = default)
+    public async Task<BillResponse?> UpdateBillAsync(Guid userId, Guid billId, UpdateBillRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var bill = await _db.Bills
             .Include(b => b.Account)
@@ -95,17 +104,21 @@ public class BillService : IBillService
 
         if (bill is null) return null;
 
-        if (request.Name is not null) bill.Name = request.Name;
-        if (request.Description is not null) bill.Description = request.Description == string.Empty ? null : request.Description;
-        if (request.Amount.HasValue) bill.Amount = request.Amount.Value;
-        if (request.Frequency.HasValue) bill.Frequency = request.Frequency.Value;
-        if (request.DueDay.HasValue) bill.DueDay = request.DueDay.Value;
-        if (request.ReminderDaysBefore.HasValue) bill.ReminderDaysBefore = request.ReminderDaysBefore.Value;
-        if (request.IsActive.HasValue) bill.IsActive = request.IsActive.Value;
+        // Track which fields actually changed, by name only — never log field values here.
+        // Name/Description are column-encrypted; logging them would defeat the point.
+        var changedFields = new List<string>();
+        if (request.Name is not null) { bill.Name = request.Name; changedFields.Add(nameof(Bill.Name)); }
+        if (request.Description is not null) { bill.Description = request.Description == string.Empty ? null : request.Description; changedFields.Add(nameof(Bill.Description)); }
+        if (request.Amount.HasValue) { bill.Amount = request.Amount.Value; changedFields.Add(nameof(Bill.Amount)); }
+        if (request.Frequency.HasValue) { bill.Frequency = request.Frequency.Value; changedFields.Add(nameof(Bill.Frequency)); }
+        if (request.DueDay.HasValue) { bill.DueDay = request.DueDay.Value; changedFields.Add(nameof(Bill.DueDay)); }
+        if (request.ReminderDaysBefore.HasValue) { bill.ReminderDaysBefore = request.ReminderDaysBefore.Value; changedFields.Add(nameof(Bill.ReminderDaysBefore)); }
+        if (request.IsActive.HasValue) { bill.IsActive = request.IsActive.Value; changedFields.Add(nameof(Bill.IsActive)); }
         // CategoryId can be explicitly set to null to unlink
         if (request.CategoryId != bill.CategoryId)
         {
             bill.CategoryId = request.CategoryId;
+            changedFields.Add(nameof(Bill.CategoryId));
             if (bill.CategoryId.HasValue)
                 await _db.Entry(bill).Reference(b => b.Category).LoadAsync(ct);
             else
@@ -115,6 +128,7 @@ public class BillService : IBillService
         if (request.AccountId != bill.AccountId)
         {
             bill.AccountId = request.AccountId;
+            changedFields.Add(nameof(Bill.AccountId));
             // Reload the Account navigation after change
             if (bill.AccountId.HasValue)
                 await _db.Entry(bill).Reference(b => b.Account).LoadAsync(ct);
@@ -124,10 +138,14 @@ public class BillService : IBillService
 
         bill.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
+        if (changedFields.Count > 0)
+        {
+            await _activityLog.LogAsync(userId, FinanceActivityType.BillUpdated, $"Updated: {string.Join(", ", changedFields)}", ipAddress, userAgent);
+        }
         return ToResponse(bill);
     }
 
-    public async Task<bool> DeleteBillAsync(Guid userId, Guid billId, CancellationToken ct = default)
+    public async Task<bool> DeleteBillAsync(Guid userId, Guid billId, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var bill = await _db.Bills
             .FirstOrDefaultAsync(b => b.Id == billId && b.UserId == userId, ct);
@@ -135,10 +153,11 @@ public class BillService : IBillService
         if (bill is null) return false;
         _db.Bills.Remove(bill);
         await _db.SaveChangesAsync(ct);
+        await _activityLog.LogAsync(userId, FinanceActivityType.BillDeleted, $"Deleted {bill.Frequency} bill", ipAddress, userAgent);
         return true;
     }
 
-    public async Task<bool> MarkAsPaidAsync(Guid userId, Guid billId, CancellationToken ct = default)
+    public async Task<bool> MarkAsPaidAsync(Guid userId, Guid billId, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var bill = await _db.Bills
             .FirstOrDefaultAsync(b => b.Id == billId && b.UserId == userId && b.IsActive, ct);
@@ -148,6 +167,7 @@ public class BillService : IBillService
         bill.LastPaidDate = DateTime.UtcNow;
         bill.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
+        await _activityLog.LogAsync(userId, FinanceActivityType.BillUpdated, "Marked as paid", ipAddress, userAgent);
         return true;
     }
 

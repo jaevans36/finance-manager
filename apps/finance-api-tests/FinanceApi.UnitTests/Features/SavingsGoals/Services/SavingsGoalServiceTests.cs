@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using FinanceApi.Data;
+using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.SavingsGoals.Models;
 using FinanceApi.Features.SavingsGoals.Services;
 
@@ -19,7 +20,7 @@ public class SavingsGoalServiceTests : IDisposable
             .Options;
         _db = new FinanceDbContext(options, FinanceApi.UnitTests.TestHelpers.TestEncryption.Service);
         _db.Database.EnsureCreated();
-        _sut = new SavingsGoalService(_db);
+        _sut = new SavingsGoalService(_db, new ActivityLogService(_db));
     }
 
     public void Dispose() => _db.Dispose();
@@ -63,6 +64,18 @@ public class SavingsGoalServiceTests : IDisposable
         _db.SavingsGoals.Should().HaveCount(1);
     }
 
+    [Fact]
+    public async Task CreateGoalAsync_WritesASavingsGoalCreatedLogEntry()
+    {
+        var request = new CreateSavingsGoalRequest("Emergency Fund", 3000m, DateTime.UtcNow.AddMonths(12), 250m);
+
+        await _sut.CreateGoalAsync(_userId, request, "203.0.113.5", "TestAgent/1.0");
+
+        var log = await _db.ActivityLogs.SingleAsync();
+        log.Action.Should().Be(FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.SavingsGoalCreated);
+        log.IpAddress.Should().Be("203.0.113.5");
+    }
+
     // ── UpdateGoalAsync ──────────────────────────────────────────────────────
 
     [Fact]
@@ -91,6 +104,20 @@ public class SavingsGoalServiceTests : IDisposable
         var result = await _sut.UpdateGoalAsync(_userId, goal.Id, new UpdateSavingsGoalRequest(Name: "Hijacked"));
 
         result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task UpdateGoalAsync_LogsChangedFieldNamesOnly_NeverTheEncryptedValue()
+    {
+        var goal = MakeGoal(_userId, "Old Name", targetAmount: 1000m);
+        _db.SavingsGoals.Add(goal);
+        await _db.SaveChangesAsync();
+
+        await _sut.UpdateGoalAsync(_userId, goal.Id, new UpdateSavingsGoalRequest(Name: "New Kitchen Fund", TargetAmount: 1500m));
+
+        var log = await _db.ActivityLogs.SingleAsync(l => l.Action == FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.SavingsGoalUpdated);
+        log.Description.Should().Contain("Name").And.Contain("TargetAmount");
+        log.Description.Should().NotContain("New Kitchen Fund");
     }
 
     // ── ContributeAsync ──────────────────────────────────────────────────────
@@ -133,6 +160,19 @@ public class SavingsGoalServiceTests : IDisposable
     }
 
     // ── DeleteGoalAsync ──────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task DeleteGoalAsync_WritesASavingsGoalDeletedLogEntry()
+    {
+        var goal = MakeGoal(_userId, "Laptop");
+        _db.SavingsGoals.Add(goal);
+        await _db.SaveChangesAsync();
+
+        await _sut.DeleteGoalAsync(_userId, goal.Id);
+
+        var log = await _db.ActivityLogs.SingleAsync();
+        log.Action.Should().Be(FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.SavingsGoalDeleted);
+    }
 
     [Fact]
     public async Task DeleteGoalAsync_WhenGoalExists_RemovesItFromDatabase()

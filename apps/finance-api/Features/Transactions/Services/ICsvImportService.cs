@@ -18,6 +18,8 @@ public interface ICsvImportService
         Guid accountId,
         Stream csvStream,
         string bankFormat,
+        string? ipAddress = null,
+        string? userAgent = null,
         CancellationToken ct = default);
 
     IEnumerable<string> GetSupportedFormats();

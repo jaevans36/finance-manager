@@ -17,6 +17,10 @@ public class GoalsController : ControllerBase
 
     private Guid UserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+    private string? GetIpAddress() => HttpContext.Connection.RemoteIpAddress?.ToString();
+
+    private string? GetUserAgent() => HttpContext.Request.Headers["User-Agent"].ToString();
+
     /// <summary>List all savings goals for the authenticated user.</summary>
     [HttpGet]
     public async Task<IActionResult> GetGoals(CancellationToken ct)
@@ -29,7 +33,7 @@ public class GoalsController : ControllerBase
         if (request.TargetAmount <= 0) return BadRequest("TargetAmount must be greater than zero.");
         if (string.IsNullOrWhiteSpace(request.Name)) return BadRequest("Name is required.");
 
-        var goal = await _goals.CreateGoalAsync(UserId, request, ct);
+        var goal = await _goals.CreateGoalAsync(UserId, request, GetIpAddress(), GetUserAgent(), ct);
         return CreatedAtAction(nameof(GetGoals), new { id = goal.Goal.Id }, goal);
     }
 
@@ -37,7 +41,7 @@ public class GoalsController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateGoal(Guid id, [FromBody] UpdateSavingsGoalRequest request, CancellationToken ct)
     {
-        var updated = await _goals.UpdateGoalAsync(UserId, id, request, ct);
+        var updated = await _goals.UpdateGoalAsync(UserId, id, request, GetIpAddress(), GetUserAgent(), ct);
         return updated is null ? NotFound() : Ok(updated);
     }
 
@@ -46,7 +50,7 @@ public class GoalsController : ControllerBase
     public async Task<IActionResult> Contribute(Guid id, [FromBody] ContributeRequest request, CancellationToken ct)
     {
         if (request.Amount <= 0) return BadRequest("Amount must be greater than zero.");
-        var result = await _goals.ContributeAsync(UserId, id, request.Amount, ct);
+        var result = await _goals.ContributeAsync(UserId, id, request.Amount, GetIpAddress(), GetUserAgent(), ct);
         return result is null ? NotFound() : Ok(result);
     }
 
@@ -54,7 +58,7 @@ public class GoalsController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteGoal(Guid id, CancellationToken ct)
     {
-        var success = await _goals.DeleteGoalAsync(UserId, id, ct);
+        var success = await _goals.DeleteGoalAsync(UserId, id, GetIpAddress(), GetUserAgent(), ct);
         return success ? NoContent() : NotFound();
     }
 }

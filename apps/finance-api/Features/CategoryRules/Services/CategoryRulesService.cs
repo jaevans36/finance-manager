@@ -1,5 +1,7 @@
 using FinanceApi.Data;
 using FinanceApi.Features.CategoryRules.Models;
+using FinanceApi.Features.Common.ActivityLogs.Models;
+using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Transactions.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,10 +10,12 @@ namespace FinanceApi.Features.CategoryRules.Services;
 public class CategoryRulesService : ICategoryRulesService
 {
     private readonly FinanceDbContext _db;
+    private readonly IActivityLogService _activityLog;
 
-    public CategoryRulesService(FinanceDbContext db)
+    public CategoryRulesService(FinanceDbContext db, IActivityLogService activityLog)
     {
         _db = db;
+        _activityLog = activityLog;
     }
 
     public async Task<IEnumerable<CategoryRuleDto>> GetRulesAsync(Guid userId, CancellationToken ct = default)
@@ -25,7 +29,7 @@ public class CategoryRulesService : ICategoryRulesService
             .ToListAsync(ct);
     }
 
-    public async Task<CategoryRuleDto> CreateRuleAsync(Guid userId, CreateCategoryRuleRequest request, CancellationToken ct = default)
+    public async Task<CategoryRuleDto> CreateRuleAsync(Guid userId, CreateCategoryRuleRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var rule = new CategoryRule
         {
@@ -40,10 +44,12 @@ public class CategoryRulesService : ICategoryRulesService
         await _db.SaveChangesAsync(ct);
 
         await _db.Entry(rule).Reference(r => r.Category).LoadAsync(ct);
+        // Pattern is column-encrypted — never put its value in a log.
+        await _activityLog.LogAsync(userId, FinanceActivityType.CategoryRuleCreated, $"Created a {rule.MatchType} category rule", ipAddress, userAgent);
         return ToDto(rule);
     }
 
-    public async Task<CategoryRuleDto?> UpdateRuleAsync(Guid userId, Guid ruleId, UpdateCategoryRuleRequest request, CancellationToken ct = default)
+    public async Task<CategoryRuleDto?> UpdateRuleAsync(Guid userId, Guid ruleId, UpdateCategoryRuleRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var rule = await _db.CategoryRules
             .Include(r => r.Category)
@@ -51,17 +57,22 @@ public class CategoryRulesService : ICategoryRulesService
 
         if (rule is null) return null;
 
-        if (request.IsActive is not null) rule.IsActive = request.IsActive.Value;
-        if (request.Priority is not null) rule.Priority = request.Priority.Value;
-        if (request.CategoryId is not null) rule.CategoryId = request.CategoryId.Value;
+        var changedFields = new List<string>();
+        if (request.IsActive is not null) { rule.IsActive = request.IsActive.Value; changedFields.Add(nameof(CategoryRule.IsActive)); }
+        if (request.Priority is not null) { rule.Priority = request.Priority.Value; changedFields.Add(nameof(CategoryRule.Priority)); }
+        if (request.CategoryId is not null) { rule.CategoryId = request.CategoryId.Value; changedFields.Add(nameof(CategoryRule.CategoryId)); }
         rule.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync(ct);
         await _db.Entry(rule).Reference(r => r.Category).LoadAsync(ct);
+        if (changedFields.Count > 0)
+        {
+            await _activityLog.LogAsync(userId, FinanceActivityType.CategoryRuleUpdated, $"Updated: {string.Join(", ", changedFields)}", ipAddress, userAgent);
+        }
         return ToDto(rule);
     }
 
-    public async Task<bool> DeleteRuleAsync(Guid userId, Guid ruleId, CancellationToken ct = default)
+    public async Task<bool> DeleteRuleAsync(Guid userId, Guid ruleId, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var rule = await _db.CategoryRules
             .FirstOrDefaultAsync(r => r.Id == ruleId && r.UserId == userId, ct);
@@ -70,6 +81,7 @@ public class CategoryRulesService : ICategoryRulesService
 
         _db.CategoryRules.Remove(rule);
         await _db.SaveChangesAsync(ct);
+        await _activityLog.LogAsync(userId, FinanceActivityType.CategoryRuleDeleted, "Deleted category rule", ipAddress, userAgent);
         return true;
     }
 
@@ -97,7 +109,7 @@ public class CategoryRulesService : ICategoryRulesService
         return null;
     }
 
-    public async Task<int> ApplyRulesToAllUnreviewedAsync(Guid userId, CancellationToken ct = default)
+    public async Task<int> ApplyRulesToAllUnreviewedAsync(Guid userId, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var rules = await _db.CategoryRules
             .Where(r => r.UserId == userId && r.IsActive)
@@ -127,7 +139,12 @@ public class CategoryRulesService : ICategoryRulesService
             }
         }
 
-        if (updated > 0) await _db.SaveChangesAsync(ct);
+        if (updated > 0)
+        {
+            await _db.SaveChangesAsync(ct);
+            // One entry for the bulk action, not one per rule/transaction it touched.
+            await _activityLog.LogAsync(userId, FinanceActivityType.CategoryRuleUpdated, $"Applied rules to {updated} transaction(s)", ipAddress, userAgent);
+        }
         return updated;
     }
 

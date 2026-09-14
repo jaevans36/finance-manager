@@ -37,7 +37,7 @@ public class TransactionServiceTests : IDisposable
         _db.SaveChanges();
 
         var activityLog = new ActivityLogService(_db);
-        _sut = new TransactionService(_db, new AccountSharingService(_db, activityLog));
+        _sut = new TransactionService(_db, new AccountSharingService(_db, activityLog), activityLog);
     }
 
     public void Dispose() => _db.Dispose();
@@ -177,6 +177,21 @@ public class TransactionServiceTests : IDisposable
         result.ImportSource.Should().Be(ImportSource.Manual);
     }
 
+    [Fact]
+    public async Task CreateTransactionAsync_WritesATransactionCreatedLogEntry()
+    {
+        var request = new CreateTransactionRequest(
+            _accountId, null, TransactionType.Debit, 10m, "GBP",
+            "COFFEE", null, new DateOnly(2025, 1, 1), null, null, null);
+
+        await _sut.CreateTransactionAsync(_userId, request, "203.0.113.5", "TestAgent/1.0");
+
+        var log = await _db.ActivityLogs.SingleAsync();
+        log.Action.Should().Be(FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.TransactionCreated);
+        log.IpAddress.Should().Be("203.0.113.5");
+        log.Description.Should().NotContain("COFFEE");
+    }
+
     // ── UpdateTransactionAsync ────────────────────────────────────────────────
 
     [Fact]
@@ -218,7 +233,35 @@ public class TransactionServiceTests : IDisposable
         result!.IsReviewed.Should().BeTrue();
     }
 
+    [Fact]
+    public async Task UpdateTransactionAsync_LogsChangedFieldNamesOnly_NeverTheDescriptionValue()
+    {
+        var transaction = MakeTransaction(_userId, _accountId, "INITIAL DESC");
+        _db.Transactions.Add(transaction);
+        await _db.SaveChangesAsync();
+
+        var request = new UpdateTransactionRequest(null, "Amazon Marketplace order", null, null, null);
+        await _sut.UpdateTransactionAsync(_userId, transaction.Id, request);
+
+        var log = await _db.ActivityLogs.SingleAsync(l => l.Action == FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.TransactionUpdated);
+        log.Description.Should().Contain("Description");
+        log.Description.Should().NotContain("Amazon Marketplace order");
+    }
+
     // ── DeleteTransactionAsync ────────────────────────────────────────────────
+
+    [Fact]
+    public async Task DeleteTransactionAsync_WritesATransactionDeletedLogEntry()
+    {
+        var transaction = MakeTransaction(_userId, _accountId, "TO DELETE");
+        _db.Transactions.Add(transaction);
+        await _db.SaveChangesAsync();
+
+        await _sut.DeleteTransactionAsync(_userId, transaction.Id);
+
+        var log = await _db.ActivityLogs.SingleAsync();
+        log.Action.Should().Be(FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.TransactionDeleted);
+    }
 
     [Fact]
     public async Task DeleteTransactionAsync_WhenDebit_ReversesByAddingBackToBalance()

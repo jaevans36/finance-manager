@@ -4,6 +4,7 @@ using FinanceApi.Data;
 using FinanceApi.Features.CategoryRules.Models;
 using FinanceApi.Features.CategoryRules.Services;
 using FinanceApi.Features.Categories.Models;
+using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Transactions.Models;
 
 namespace FinanceApi.UnitTests.Features.CategoryRules.Services;
@@ -33,7 +34,7 @@ public class CategoryRulesServiceTests : IDisposable
         );
         _db.SaveChanges();
 
-        _sut = new CategoryRulesService(_db);
+        _sut = new CategoryRulesService(_db, new ActivityLogService(_db));
     }
 
     public void Dispose() => _db.Dispose();
@@ -199,6 +200,46 @@ public class CategoryRulesServiceTests : IDisposable
         await _db.Entry(rule).ReloadAsync();
 
         rule.AppliedCount.Should().Be(1);
+    }
+
+    // ── Activity logging ─────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task CreateRuleAsync_WritesACategoryRuleCreatedLogEntry()
+    {
+        var request = new CreateCategoryRuleRequest("TESCO", RuleMatchType.Contains, _groceriesId);
+
+        await _sut.CreateRuleAsync(_userId, request, "203.0.113.5", "TestAgent/1.0");
+
+        var log = await _db.ActivityLogs.SingleAsync();
+        log.Action.Should().Be(FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.CategoryRuleCreated);
+        log.IpAddress.Should().Be("203.0.113.5");
+        // Pattern is column-encrypted — never put its value in a log.
+        log.Description.Should().NotContain("TESCO");
+    }
+
+    [Fact]
+    public async Task UpdateRuleAsync_LogsChangedFieldNamesOnly()
+    {
+        await SeedRuleAsync("TESCO", RuleMatchType.Contains, _groceriesId);
+        var rule = await _db.CategoryRules.FirstAsync(r => r.UserId == _userId);
+
+        await _sut.UpdateRuleAsync(_userId, rule.Id, new UpdateCategoryRuleRequest(false, 5, _transportId));
+
+        var log = await _db.ActivityLogs.SingleAsync(l => l.Action == FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.CategoryRuleUpdated);
+        log.Description.Should().Contain("IsActive").And.Contain("Priority").And.Contain("CategoryId");
+    }
+
+    [Fact]
+    public async Task DeleteRuleAsync_WritesACategoryRuleDeletedLogEntry()
+    {
+        await SeedRuleAsync("TESCO", RuleMatchType.Contains, _groceriesId);
+        var rule = await _db.CategoryRules.FirstAsync(r => r.UserId == _userId);
+
+        await _sut.DeleteRuleAsync(_userId, rule.Id);
+
+        var log = await _db.ActivityLogs.SingleAsync();
+        log.Action.Should().Be(FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.CategoryRuleDeleted);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

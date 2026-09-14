@@ -5,6 +5,7 @@ using FinanceApi.Features.Accounts.Models;
 using FinanceApi.Features.Bills.Models;
 using FinanceApi.Features.Bills.Services;
 using FinanceApi.Features.Categories.Models;
+using FinanceApi.Features.Common.ActivityLogs.Services;
 
 namespace FinanceApi.UnitTests.Features.Bills.Services;
 
@@ -21,7 +22,7 @@ public class BillServiceTests : IDisposable
             .Options;
         _db = new FinanceDbContext(options, FinanceApi.UnitTests.TestHelpers.TestEncryption.Service);
         _db.Database.EnsureCreated();
-        _sut = new BillService(_db);
+        _sut = new BillService(_db, new ActivityLogService(_db));
     }
 
     public void Dispose() => _db.Dispose();
@@ -385,6 +386,18 @@ public class BillServiceTests : IDisposable
         result.CategoryName.Should().Be("Credit Card Payment");
     }
 
+    [Fact]
+    public async Task CreateBillAsync_WritesABillCreatedLogEntry()
+    {
+        var request = new CreateBillRequest("Spotify", 9.99m, BillFrequency.Monthly, 1, 3, null);
+
+        await _sut.CreateBillAsync(_userId, request, "203.0.113.5", "TestAgent/1.0");
+
+        var log = await _db.ActivityLogs.SingleAsync();
+        log.Action.Should().Be(FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.BillCreated);
+        log.IpAddress.Should().Be("203.0.113.5");
+    }
+
     // ── UpdateBillAsync ──────────────────────────────────────────────────────
 
     [Fact]
@@ -473,6 +486,20 @@ public class BillServiceTests : IDisposable
         result.Should().BeNull();
     }
 
+    [Fact]
+    public async Task UpdateBillAsync_LogsChangedFieldNamesOnly_NeverTheEncryptedValue()
+    {
+        var bill = MakeBill(_userId, "Original Name", amount: 20m);
+        _db.Bills.Add(bill);
+        await _db.SaveChangesAsync();
+
+        await _sut.UpdateBillAsync(_userId, bill.Id, new UpdateBillRequest(Name: "British Gas Direct Debit", Amount: 45m));
+
+        var log = await _db.ActivityLogs.SingleAsync(l => l.Action == FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.BillUpdated);
+        log.Description.Should().Contain("Name").And.Contain("Amount");
+        log.Description.Should().NotContain("British Gas Direct Debit");
+    }
+
     // ── MarkAsPaidAsync ──────────────────────────────────────────────────────
 
     [Fact]
@@ -503,6 +530,19 @@ public class BillServiceTests : IDisposable
     }
 
     // ── DeleteBillAsync ──────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task DeleteBillAsync_WritesABillDeletedLogEntry()
+    {
+        var bill = MakeBill(_userId, "Mortgage");
+        _db.Bills.Add(bill);
+        await _db.SaveChangesAsync();
+
+        await _sut.DeleteBillAsync(_userId, bill.Id);
+
+        var log = await _db.ActivityLogs.SingleAsync();
+        log.Action.Should().Be(FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.BillDeleted);
+    }
 
     [Fact]
     public async Task DeleteBillAsync_WhenBillExists_RemovesItFromDatabase()

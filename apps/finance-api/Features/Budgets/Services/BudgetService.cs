@@ -1,5 +1,7 @@
 using FinanceApi.Data;
 using FinanceApi.Features.Budgets.Models;
+using FinanceApi.Features.Common.ActivityLogs.Models;
+using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Transactions.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,8 +11,13 @@ namespace FinanceApi.Features.Budgets.Services;
 public class BudgetService : IBudgetService
 {
     private readonly FinanceDbContext _db;
+    private readonly IActivityLogService _activityLog;
 
-    public BudgetService(FinanceDbContext db) => _db = db;
+    public BudgetService(FinanceDbContext db, IActivityLogService activityLog)
+    {
+        _db = db;
+        _activityLog = activityLog;
+    }
 
     public Task<IEnumerable<BudgetWithProgress>> GetCurrentBudgetsAsync(Guid userId, CancellationToken ct = default)
     {
@@ -86,7 +93,7 @@ public class BudgetService : IBudgetService
         return points;
     }
 
-    public async Task<BudgetWithProgress> CreateBudgetAsync(Guid userId, CreateBudgetRequest request, CancellationToken ct = default)
+    public async Task<BudgetWithProgress> CreateBudgetAsync(Guid userId, CreateBudgetRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var budget = new Budget
         {
@@ -101,10 +108,11 @@ public class BudgetService : IBudgetService
         _db.Budgets.Add(budget);
         await _db.SaveChangesAsync(ct);
         await _db.Entry(budget).Reference(b => b.Category).LoadAsync(ct);
+        await _activityLog.LogAsync(userId, FinanceActivityType.BudgetCreated, $"Created budget for {budget.Month}/{budget.Year}", ipAddress, userAgent);
         return await BuildProgressAsync(budget, ct);
     }
 
-    public async Task<BudgetWithProgress?> UpdateBudgetAsync(Guid userId, Guid budgetId, UpdateBudgetRequest request, CancellationToken ct = default)
+    public async Task<BudgetWithProgress?> UpdateBudgetAsync(Guid userId, Guid budgetId, UpdateBudgetRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var budget = await _db.Budgets
             .Include(b => b.Category)
@@ -112,15 +120,21 @@ public class BudgetService : IBudgetService
 
         if (budget is null) return null;
 
-        if (request.Amount.HasValue) budget.Amount = request.Amount.Value;
-        if (request.Title is not null) budget.Title = request.Title;
-        if (request.Note is not null) budget.Note = request.Note;
+        // Track which fields actually changed, by name only — Title/Note are column-encrypted.
+        var changedFields = new List<string>();
+        if (request.Amount.HasValue) { budget.Amount = request.Amount.Value; changedFields.Add(nameof(Budget.Amount)); }
+        if (request.Title is not null) { budget.Title = request.Title; changedFields.Add(nameof(Budget.Title)); }
+        if (request.Note is not null) { budget.Note = request.Note; changedFields.Add(nameof(Budget.Note)); }
         budget.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
+        if (changedFields.Count > 0)
+        {
+            await _activityLog.LogAsync(userId, FinanceActivityType.BudgetUpdated, $"Updated: {string.Join(", ", changedFields)}", ipAddress, userAgent);
+        }
         return await BuildProgressAsync(budget, ct);
     }
 
-    public async Task<bool> DeleteBudgetAsync(Guid userId, Guid budgetId, CancellationToken ct = default)
+    public async Task<bool> DeleteBudgetAsync(Guid userId, Guid budgetId, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var budget = await _db.Budgets
             .FirstOrDefaultAsync(b => b.Id == budgetId && b.UserId == userId, ct);
@@ -128,10 +142,11 @@ public class BudgetService : IBudgetService
         if (budget is null) return false;
         _db.Budgets.Remove(budget);
         await _db.SaveChangesAsync(ct);
+        await _activityLog.LogAsync(userId, FinanceActivityType.BudgetDeleted, $"Deleted budget for {budget.Month}/{budget.Year}", ipAddress, userAgent);
         return true;
     }
 
-    public async Task<IEnumerable<BudgetWithProgress>> CopyFromPreviousMonthAsync(Guid userId, int month, int year, CancellationToken ct = default)
+    public async Task<IEnumerable<BudgetWithProgress>> CopyFromPreviousMonthAsync(Guid userId, int month, int year, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var prev = new DateTime(year, month, 1).AddMonths(-1);
         var previousBudgets = await _db.Budgets
@@ -159,6 +174,10 @@ public class BudgetService : IBudgetService
 
         _db.Budgets.AddRange(newBudgets);
         await _db.SaveChangesAsync(ct);
+        if (newBudgets.Count > 0)
+        {
+            await _activityLog.LogAsync(userId, FinanceActivityType.BudgetCreated, $"Copied {newBudgets.Count} budget(s) from {prev.Month}/{prev.Year}", ipAddress, userAgent);
+        }
         return await GetBudgetsAsync(userId, month, year, ct);
     }
 

@@ -50,9 +50,9 @@ public record UpdateSpendingPotRequest(
 public interface ISpendingPotService
 {
     Task<IEnumerable<SpendingPotWithProgress>> GetPotsWithProgressAsync(Guid userId, int month, int year, CancellationToken ct = default);
-    Task<SpendingPotWithProgress> CreatePotAsync(Guid userId, CreateSpendingPotRequest request, CancellationToken ct = default);
-    Task<SpendingPotWithProgress?> UpdatePotAsync(Guid userId, Guid potId, UpdateSpendingPotRequest request, CancellationToken ct = default);
-    Task<bool> DeletePotAsync(Guid userId, Guid potId, CancellationToken ct = default);
-    Task<bool> AssignTransactionAsync(Guid userId, Guid potId, Guid transactionId, CancellationToken ct = default);
-    Task<SpendingPotWithProgress?> ContributeToSinkingFundAsync(Guid userId, Guid potId, CancellationToken ct = default);
+    Task<SpendingPotWithProgress> CreatePotAsync(Guid userId, CreateSpendingPotRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default);
+    Task<SpendingPotWithProgress?> UpdatePotAsync(Guid userId, Guid potId, UpdateSpendingPotRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default);
+    Task<bool> DeletePotAsync(Guid userId, Guid potId, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default);
+    Task<bool> AssignTransactionAsync(Guid userId, Guid potId, Guid transactionId, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default);
+    Task<SpendingPotWithProgress?> ContributeToSinkingFundAsync(Guid userId, Guid potId, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default);
 }

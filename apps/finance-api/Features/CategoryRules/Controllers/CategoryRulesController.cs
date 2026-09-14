@@ -20,6 +20,10 @@ public class CategoryRulesController : ControllerBase
 
     private Guid UserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+    private string? GetIpAddress() => HttpContext.Connection.RemoteIpAddress?.ToString();
+
+    private string? GetUserAgent() => HttpContext.Request.Headers["User-Agent"].ToString();
+
     /// <summary>List all category rules for the current user.</summary>
     [HttpGet]
     public async Task<IActionResult> GetRules(CancellationToken ct)
@@ -32,7 +36,7 @@ public class CategoryRulesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateRule([FromBody] CreateCategoryRuleRequest request, CancellationToken ct)
     {
-        var rule = await _service.CreateRuleAsync(UserId, request, ct);
+        var rule = await _service.CreateRuleAsync(UserId, request, GetIpAddress(), GetUserAgent(), ct);
         return CreatedAtAction(nameof(GetRules), new { }, rule);
     }
 
@@ -40,7 +44,7 @@ public class CategoryRulesController : ControllerBase
     [HttpPatch("{id:guid}")]
     public async Task<IActionResult> UpdateRule(Guid id, [FromBody] UpdateCategoryRuleRequest request, CancellationToken ct)
     {
-        var rule = await _service.UpdateRuleAsync(UserId, id, request, ct);
+        var rule = await _service.UpdateRuleAsync(UserId, id, request, GetIpAddress(), GetUserAgent(), ct);
         return rule is null ? NotFound() : Ok(rule);
     }
 
@@ -48,7 +52,7 @@ public class CategoryRulesController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteRule(Guid id, CancellationToken ct)
     {
-        var deleted = await _service.DeleteRuleAsync(UserId, id, ct);
+        var deleted = await _service.DeleteRuleAsync(UserId, id, GetIpAddress(), GetUserAgent(), ct);
         return deleted ? NoContent() : NotFound();
     }
 
@@ -56,7 +60,7 @@ public class CategoryRulesController : ControllerBase
     [HttpPost("apply-all")]
     public async Task<IActionResult> ApplyAll(CancellationToken ct)
     {
-        var count = await _service.ApplyRulesToAllUnreviewedAsync(UserId, ct);
+        var count = await _service.ApplyRulesToAllUnreviewedAsync(UserId, GetIpAddress(), GetUserAgent(), ct);
         return Ok(new { updated = count });
     }
 }

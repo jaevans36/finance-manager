@@ -1,12 +1,14 @@
 using FinanceApi.Data;
 using FinanceApi.Features.Affordability.Services;
+using FinanceApi.Features.Common.ActivityLogs.Models;
+using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.IncomeStreams.Models;
 using FinanceApi.Features.Transactions.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinanceApi.Features.IncomeStreams.Services;
 
-public class IncomeStreamService(FinanceDbContext db) : IIncomeStreamService
+public class IncomeStreamService(FinanceDbContext db, IActivityLogService activityLog) : IIncomeStreamService
 {
     public async Task<IEnumerable<IncomeStreamResponse>> GetStreamsAsync(Guid userId, CancellationToken ct = default)
         => await db.IncomeStreams
@@ -16,7 +18,7 @@ public class IncomeStreamService(FinanceDbContext db) : IIncomeStreamService
             .Select(s => ToResponse(s))
             .ToListAsync(ct);
 
-    public async Task<IncomeStreamResponse> CreateStreamAsync(Guid userId, CreateIncomeStreamRequest request, CancellationToken ct = default)
+    public async Task<IncomeStreamResponse> CreateStreamAsync(Guid userId, CreateIncomeStreamRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var stream = new IncomeStream
         {
@@ -31,10 +33,12 @@ public class IncomeStreamService(FinanceDbContext db) : IIncomeStreamService
         if (stream.AccountId.HasValue)
             await db.Entry(stream).Reference(s => s.Account).LoadAsync(ct);
 
+        // Name is column-encrypted — never put its value in a log.
+        await activityLog.LogAsync(userId, FinanceActivityType.IncomeStreamCreated, "Created income stream", ipAddress, userAgent);
         return ToResponse(stream);
     }
 
-    public async Task<IncomeStreamResponse?> UpdateStreamAsync(Guid userId, Guid streamId, UpdateIncomeStreamRequest request, CancellationToken ct = default)
+    public async Task<IncomeStreamResponse?> UpdateStreamAsync(Guid userId, Guid streamId, UpdateIncomeStreamRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var stream = await db.IncomeStreams
             .Include(s => s.Account)
@@ -42,12 +46,14 @@ public class IncomeStreamService(FinanceDbContext db) : IIncomeStreamService
 
         if (stream is null) return null;
 
-        if (request.Name is not null) stream.Name = request.Name;
-        if (request.MonthlyAmount.HasValue) stream.MonthlyAmount = request.MonthlyAmount.Value;
+        var changedFields = new List<string>();
+        if (request.Name is not null) { stream.Name = request.Name; changedFields.Add(nameof(IncomeStream.Name)); }
+        if (request.MonthlyAmount.HasValue) { stream.MonthlyAmount = request.MonthlyAmount.Value; changedFields.Add(nameof(IncomeStream.MonthlyAmount)); }
         // AccountId can be explicitly set to null to unlink
         if (request.AccountId != stream.AccountId)
         {
             stream.AccountId = request.AccountId;
+            changedFields.Add(nameof(IncomeStream.AccountId));
             if (stream.AccountId.HasValue)
                 await db.Entry(stream).Reference(s => s.Account).LoadAsync(ct);
             else
@@ -56,10 +62,14 @@ public class IncomeStreamService(FinanceDbContext db) : IIncomeStreamService
 
         stream.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
+        if (changedFields.Count > 0)
+        {
+            await activityLog.LogAsync(userId, FinanceActivityType.IncomeStreamUpdated, $"Updated: {string.Join(", ", changedFields)}", ipAddress, userAgent);
+        }
         return ToResponse(stream);
     }
 
-    public async Task<bool> DeleteStreamAsync(Guid userId, Guid streamId, CancellationToken ct = default)
+    public async Task<bool> DeleteStreamAsync(Guid userId, Guid streamId, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var stream = await db.IncomeStreams
             .FirstOrDefaultAsync(s => s.Id == streamId && s.UserId == userId, ct);
@@ -67,6 +77,7 @@ public class IncomeStreamService(FinanceDbContext db) : IIncomeStreamService
         if (stream is null) return false;
         db.IncomeStreams.Remove(stream);
         await db.SaveChangesAsync(ct);
+        await activityLog.LogAsync(userId, FinanceActivityType.IncomeStreamDeleted, "Deleted income stream", ipAddress, userAgent);
         return true;
     }
 

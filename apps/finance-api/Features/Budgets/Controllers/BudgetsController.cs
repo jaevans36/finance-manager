@@ -23,6 +23,10 @@ public class BudgetsController : ControllerBase
         return Guid.Parse(sub);
     }
 
+    private string? GetIpAddress() => HttpContext.Connection.RemoteIpAddress?.ToString();
+
+    private string? GetUserAgent() => HttpContext.Request.Headers["User-Agent"].ToString();
+
     /// <summary>List budgets for a given month/year (defaults to current month).</summary>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -56,7 +60,7 @@ public class BudgetsController : ControllerBase
     {
         if (request.Amount <= 0) return BadRequest("Budget amount must be greater than zero");
         if (request.CategoryId == Guid.Empty) return BadRequest("Category ID is required");
-        var budget = await _budgets.CreateBudgetAsync(GetUserId(), request, ct);
+        var budget = await _budgets.CreateBudgetAsync(GetUserId(), request, GetIpAddress(), GetUserAgent(), ct);
         return Created($"/api/v1/finance/budgets/{budget.Id}", budget);
     }
 
@@ -66,7 +70,7 @@ public class BudgetsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateBudget(Guid id, [FromBody] UpdateBudgetRequest request, CancellationToken ct)
     {
-        var budget = await _budgets.UpdateBudgetAsync(GetUserId(), id, request, ct);
+        var budget = await _budgets.UpdateBudgetAsync(GetUserId(), id, request, GetIpAddress(), GetUserAgent(), ct);
         return budget is null ? NotFound() : Ok(budget);
     }
 
@@ -76,7 +80,7 @@ public class BudgetsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteBudget(Guid id, CancellationToken ct)
     {
-        var deleted = await _budgets.DeleteBudgetAsync(GetUserId(), id, ct);
+        var deleted = await _budgets.DeleteBudgetAsync(GetUserId(), id, GetIpAddress(), GetUserAgent(), ct);
         return deleted ? NoContent() : NotFound();
     }
 
@@ -86,7 +90,7 @@ public class BudgetsController : ControllerBase
     public async Task<IActionResult> CopyFromPrevious([FromQuery] int? month, [FromQuery] int? year, CancellationToken ct)
     {
         var now = DateTime.UtcNow;
-        return Ok(await _budgets.CopyFromPreviousMonthAsync(GetUserId(), month ?? now.Month, year ?? now.Year, ct));
+        return Ok(await _budgets.CopyFromPreviousMonthAsync(GetUserId(), month ?? now.Month, year ?? now.Year, GetIpAddress(), GetUserAgent(), ct));
     }
 
     /// <summary>Suggest a starting budget for a category, based on the last 3 months of actual spend.</summary>

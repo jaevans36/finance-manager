@@ -1,5 +1,7 @@
 using FinanceApi.Data;
 using FinanceApi.Features.Accounts.Services;
+using FinanceApi.Features.Common.ActivityLogs.Models;
+using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Transactions.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,11 +12,13 @@ public class TransactionService : ITransactionService
 {
     private readonly FinanceDbContext _db;
     private readonly IAccountSharingService _sharing;
+    private readonly IActivityLogService _activityLog;
 
-    public TransactionService(FinanceDbContext db, IAccountSharingService sharing)
+    public TransactionService(FinanceDbContext db, IAccountSharingService sharing, IActivityLogService activityLog)
     {
         _db = db;
         _sharing = sharing;
+        _activityLog = activityLog;
     }
 
     public async Task<PagedResult<TransactionDto>> GetTransactionsAsync(Guid userId, TransactionListRequest request, CancellationToken ct = default)
@@ -79,7 +83,7 @@ public class TransactionService : ITransactionService
         return ToDto(t);
     }
 
-    public async Task<TransactionDto> CreateTransactionAsync(Guid userId, CreateTransactionRequest request, CancellationToken ct = default)
+    public async Task<TransactionDto> CreateTransactionAsync(Guid userId, CreateTransactionRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var visibleIds = await _sharing.GetVisibleAccountIdsAsync(userId);
         if (!visibleIds.Contains(request.AccountId))
@@ -114,10 +118,12 @@ public class TransactionService : ITransactionService
         }
 
         await _db.SaveChangesAsync(ct);
+        // Description/Payee/Notes are free text — logged by field name only, never the value.
+        await _activityLog.LogAsync(userId, FinanceActivityType.TransactionCreated, $"Created {transaction.Type} transaction", ipAddress, userAgent);
         return ToDto(transaction);
     }
 
-    public async Task<TransactionDto?> UpdateTransactionAsync(Guid userId, Guid transactionId, UpdateTransactionRequest request, CancellationToken ct = default)
+    public async Task<TransactionDto?> UpdateTransactionAsync(Guid userId, Guid transactionId, UpdateTransactionRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var transaction = await _db.Transactions
             .Include(t => t.Category)
@@ -128,12 +134,13 @@ public class TransactionService : ITransactionService
         var visibleIds = await _sharing.GetVisibleAccountIdsAsync(userId);
         if (!visibleIds.Contains(transaction.AccountId)) return null;
 
-        if (request.CategoryId is not null) transaction.CategoryId = request.CategoryId;
-        if (request.Description is not null) transaction.Description = request.Description;
-        if (request.Payee is not null) transaction.Payee = request.Payee;
-        if (request.Notes is not null) transaction.Notes = request.Notes;
-        if (request.IsReviewed is not null) transaction.IsReviewed = request.IsReviewed.Value;
-        if (request.TransactionDate.HasValue) transaction.TransactionDate = request.TransactionDate.Value;
+        var changedFields = new List<string>();
+        if (request.CategoryId is not null) { transaction.CategoryId = request.CategoryId; changedFields.Add(nameof(Transaction.CategoryId)); }
+        if (request.Description is not null) { transaction.Description = request.Description; changedFields.Add(nameof(Transaction.Description)); }
+        if (request.Payee is not null) { transaction.Payee = request.Payee; changedFields.Add(nameof(Transaction.Payee)); }
+        if (request.Notes is not null) { transaction.Notes = request.Notes; changedFields.Add(nameof(Transaction.Notes)); }
+        if (request.IsReviewed is not null) { transaction.IsReviewed = request.IsReviewed.Value; changedFields.Add(nameof(Transaction.IsReviewed)); }
+        if (request.TransactionDate.HasValue) { transaction.TransactionDate = request.TransactionDate.Value; changedFields.Add(nameof(Transaction.TransactionDate)); }
 
         if (request.Amount.HasValue || request.Type.HasValue)
         {
@@ -153,15 +160,21 @@ public class TransactionService : ITransactionService
             transaction.Amount = newAmount;
             transaction.BaseCurrencyAmount = newAmount;
             transaction.Type = newType;
+            changedFields.Add(nameof(Transaction.Amount));
+            changedFields.Add(nameof(Transaction.Type));
         }
 
         transaction.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync(ct);
+        if (changedFields.Count > 0)
+        {
+            await _activityLog.LogAsync(userId, FinanceActivityType.TransactionUpdated, $"Updated: {string.Join(", ", changedFields)}", ipAddress, userAgent);
+        }
         return ToDto(transaction);
     }
 
-    public async Task<bool> DeleteTransactionAsync(Guid userId, Guid transactionId, CancellationToken ct = default)
+    public async Task<bool> DeleteTransactionAsync(Guid userId, Guid transactionId, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var transaction = await _db.Transactions
             .FirstOrDefaultAsync(t => t.Id == transactionId, ct);
@@ -182,6 +195,7 @@ public class TransactionService : ITransactionService
         }
 
         await _db.SaveChangesAsync(ct);
+        await _activityLog.LogAsync(userId, FinanceActivityType.TransactionDeleted, $"Deleted {transaction.Type} transaction", ipAddress, userAgent);
         return true;
     }
 

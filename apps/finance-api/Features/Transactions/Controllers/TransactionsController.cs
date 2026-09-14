@@ -29,6 +29,10 @@ public class TransactionsController : ControllerBase
         return Guid.Parse(sub);
     }
 
+    private string? GetIpAddress() => HttpContext.Connection.RemoteIpAddress?.ToString();
+
+    private string? GetUserAgent() => HttpContext.Request.Headers["User-Agent"].ToString();
+
     /// <summary>List transactions for an account with optional filters and pagination.</summary>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -82,7 +86,7 @@ public class TransactionsController : ControllerBase
 
         try
         {
-            var transaction = await _transactions.CreateTransactionAsync(GetUserId(), request, ct);
+            var transaction = await _transactions.CreateTransactionAsync(GetUserId(), request, GetIpAddress(), GetUserAgent(), ct);
             return CreatedAtAction(nameof(GetTransaction), new { id = transaction.Id }, transaction);
         }
         catch (UnauthorizedAccessException ex)
@@ -99,7 +103,7 @@ public class TransactionsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateTransaction(Guid id, [FromBody] UpdateTransactionRequest request, CancellationToken ct)
     {
-        var transaction = await _transactions.UpdateTransactionAsync(GetUserId(), id, request, ct);
+        var transaction = await _transactions.UpdateTransactionAsync(GetUserId(), id, request, GetIpAddress(), GetUserAgent(), ct);
         return transaction is null ? NotFound() : Ok(transaction);
     }
 
@@ -109,7 +113,7 @@ public class TransactionsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteTransaction(Guid id, CancellationToken ct)
     {
-        var deleted = await _transactions.DeleteTransactionAsync(GetUserId(), id, ct);
+        var deleted = await _transactions.DeleteTransactionAsync(GetUserId(), id, GetIpAddress(), GetUserAgent(), ct);
         return deleted ? NoContent() : NotFound();
     }
 
@@ -144,7 +148,7 @@ public class TransactionsController : ControllerBase
         try
         {
             await using var stream = file.OpenReadStream();
-            var result = await _csvImport.ImportAsync(GetUserId(), accountId, stream, bankFormat, ct);
+            var result = await _csvImport.ImportAsync(GetUserId(), accountId, stream, bankFormat, GetIpAddress(), GetUserAgent(), ct);
             return Ok(result);
         }
         catch (UnauthorizedAccessException ex)
