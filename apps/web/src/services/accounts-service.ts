@@ -5,6 +5,7 @@ import type {
   CreateAccountRequest,
   UpdateAccountRequest,
   NetWorthResponse,
+  NetWorthHistoryPoint,
 } from '../types/finance';
 
 export const accountsService = {
@@ -30,5 +31,11 @@ export const accountsService = {
 
   getNetWorth(): Promise<NetWorthResponse> {
     return financeApiClient.get<NetWorthResponse>('/api/v1/finance/accounts/net-worth').then((r) => r.data);
+  },
+
+  getNetWorthHistory(months = 12): Promise<NetWorthHistoryPoint[]> {
+    return financeApiClient
+      .get<NetWorthHistoryPoint[]>('/api/v1/finance/accounts/net-worth-history', { params: { months } })
+      .then((r) => r.data);
   },
 };

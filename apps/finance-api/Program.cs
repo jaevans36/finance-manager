@@ -4,6 +4,7 @@ using FinanceApi.Data;
 using FinanceApi.Infrastructure.Encryption;
 using FinanceApi.Features.Accounts.Services;
 using FinanceApi.Features.Affordability.Services;
+using FinanceApi.Features.Assets.Services;
 using FinanceApi.Features.IncomeStreams.Services;
 using FinanceApi.Features.Debt.Services;
 using FinanceApi.Features.Bills.Services;
@@ -207,6 +208,7 @@ try
     builder.Services.AddScoped<ISubscriptionAuditorService, SubscriptionAuditorService>();
     builder.Services.AddScoped<INegotiationEngineService, NegotiationEngineService>();
     builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
+    builder.Services.AddScoped<IAssetService, AssetService>();
 
     // ── Build + Middleware Pipeline ───────────────────────────────────────────
     var app = builder.Build();

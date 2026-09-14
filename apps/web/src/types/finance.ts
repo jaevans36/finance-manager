@@ -180,6 +180,45 @@ export interface NetWorthResponse {
   netWorth: number;
 }
 
+/**
+ * One point on the net-worth history chart — account balances only, reconstructed from
+ * transaction history. Not current asset values; see NetWorthDashboard for why.
+ */
+export interface NetWorthHistoryPoint {
+  month: number;
+  year: number;
+  monthLabel: string;
+  netWorth: number;
+}
+
+// ── Asset types ───────────────────────────────────────────────────────────────
+
+export type AssetType = 'Property' | 'Vehicle' | 'Other';
+
+export interface Asset {
+  id: string;
+  name: string;
+  type: AssetType;
+  value: number;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAssetRequest {
+  name: string;
+  type: AssetType;
+  value: number;
+  notes?: string;
+}
+
+export interface UpdateAssetRequest {
+  name?: string;
+  type?: AssetType;
+  value?: number;
+  notes?: string;
+}
+
 // ── Budget types ──────────────────────────────────────────────────────────────
 
 export type PotType =

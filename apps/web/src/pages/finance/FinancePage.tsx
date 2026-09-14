@@ -27,11 +27,13 @@ import { SavingsGoalForm } from '../../components/finance/SavingsGoalForm';
 import { DebtBurndownDashboard } from '../../components/finance/DebtBurndownDashboard';
 import { InsightsDashboard } from '../../components/finance/InsightsDashboard';
 import { CashFlowSummary } from '../../components/finance/CashFlowSummary';
+import { NetWorthDashboard } from '../../components/finance/NetWorthDashboard';
 
-type Tab = 'accounts' | 'transactions' | 'budgets' | 'pots' | 'bills' | 'goals' | 'trends' | 'cashflow' | 'debt' | 'insights';
+type Tab = 'accounts' | 'networth' | 'transactions' | 'budgets' | 'pots' | 'bills' | 'goals' | 'trends' | 'cashflow' | 'debt' | 'insights';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'accounts',     label: 'Accounts' },
+  { id: 'networth',     label: 'Net Worth' },
   { id: 'transactions', label: 'Transactions' },
   { id: 'budgets',      label: 'Budgets' },
   { id: 'pots',         label: 'Spending Pots' },
@@ -130,7 +132,7 @@ export default function FinancePage() {
     >
       {/* Tab bar — shared Tabs component, matching the filter style used on Tasks */}
       <Tabs value={activeTab} onValueChange={(value) => handleTabChange(value as Tab)} className="mb-6">
-        <TabsList className="w-full justify-start overflow-x-auto">
+        <TabsList className="h-auto w-full flex-wrap justify-start gap-1">
           {TABS.map(tab => (
             <TabsTrigger key={tab.id} value={tab.id} className="whitespace-nowrap">
               {tab.label}
@@ -377,6 +379,11 @@ export default function FinancePage() {
           )}
           <SavingsGoalsDashboard key={refreshKey} onAddGoal={() => setShowForm(true)} />
         </section>
+      )}
+
+      {/* ── Net Worth tab ─────────────────────────────────────────────────── */}
+      {activeTab === 'networth' && (
+        <section><NetWorthDashboard /></section>
       )}
 
       {/* ── Trends tab ────────────────────────────────────────────────────── */}
