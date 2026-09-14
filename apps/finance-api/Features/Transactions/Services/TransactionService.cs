@@ -1,4 +1,5 @@
 using FinanceApi.Data;
+using FinanceApi.Features.Accounts.Services;
 using FinanceApi.Features.Transactions.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,17 +9,25 @@ namespace FinanceApi.Features.Transactions.Services;
 public class TransactionService : ITransactionService
 {
     private readonly FinanceDbContext _db;
+    private readonly IAccountSharingService _sharing;
 
-    public TransactionService(FinanceDbContext db)
+    public TransactionService(FinanceDbContext db, IAccountSharingService sharing)
     {
         _db = db;
+        _sharing = sharing;
     }
 
     public async Task<PagedResult<TransactionDto>> GetTransactionsAsync(Guid userId, TransactionListRequest request, CancellationToken ct = default)
     {
+        var visibleIds = await _sharing.GetVisibleAccountIdsAsync(userId);
+        if (!visibleIds.Contains(request.AccountId))
+            return new PagedResult<TransactionDto>(Enumerable.Empty<TransactionDto>(), 0, request.Page, request.PageSize);
+
+        // Scoped by AccountId only, not by who created each row — full read access for anyone
+        // the account is visible to, matching AccountsController (see AccountShare's doc comment).
         var query = _db.Transactions
             .Include(t => t.Category)
-            .Where(t => t.UserId == userId && t.AccountId == request.AccountId);
+            .Where(t => t.AccountId == request.AccountId);
 
         if (request.From.HasValue)
             query = query.Where(t => t.TransactionDate >= request.From.Value);
@@ -58,13 +67,24 @@ public class TransactionService : ITransactionService
     {
         var t = await _db.Transactions
             .Include(t => t.Category)
-            .FirstOrDefaultAsync(t => t.Id == transactionId && t.UserId == userId, ct);
+            .FirstOrDefaultAsync(t => t.Id == transactionId, ct);
 
-        return t is null ? null : ToDto(t);
+        if (t is null) return null;
+
+        var visibleIds = await _sharing.GetVisibleAccountIdsAsync(userId);
+        // Not-visible and not-found both surface as null here, deliberately — mirrors
+        // AccountSharingController's "can't tell doesn't-exist from isn't-yours" principle.
+        if (!visibleIds.Contains(t.AccountId)) return null;
+
+        return ToDto(t);
     }
 
     public async Task<TransactionDto> CreateTransactionAsync(Guid userId, CreateTransactionRequest request, CancellationToken ct = default)
     {
+        var visibleIds = await _sharing.GetVisibleAccountIdsAsync(userId);
+        if (!visibleIds.Contains(request.AccountId))
+            throw new UnauthorizedAccessException("You do not have access to this account.");
+
         var transaction = new Transaction
         {
             UserId = userId,
@@ -101,9 +121,12 @@ public class TransactionService : ITransactionService
     {
         var transaction = await _db.Transactions
             .Include(t => t.Category)
-            .FirstOrDefaultAsync(t => t.Id == transactionId && t.UserId == userId, ct);
+            .FirstOrDefaultAsync(t => t.Id == transactionId, ct);
 
         if (transaction is null) return null;
+
+        var visibleIds = await _sharing.GetVisibleAccountIdsAsync(userId);
+        if (!visibleIds.Contains(transaction.AccountId)) return null;
 
         if (request.CategoryId is not null) transaction.CategoryId = request.CategoryId;
         if (request.Description is not null) transaction.Description = request.Description;
@@ -141,9 +164,12 @@ public class TransactionService : ITransactionService
     public async Task<bool> DeleteTransactionAsync(Guid userId, Guid transactionId, CancellationToken ct = default)
     {
         var transaction = await _db.Transactions
-            .FirstOrDefaultAsync(t => t.Id == transactionId && t.UserId == userId, ct);
+            .FirstOrDefaultAsync(t => t.Id == transactionId, ct);
 
         if (transaction is null) return false;
+
+        var visibleIds = await _sharing.GetVisibleAccountIdsAsync(userId);
+        if (!visibleIds.Contains(transaction.AccountId)) return false;
 
         _db.Transactions.Remove(transaction);
 

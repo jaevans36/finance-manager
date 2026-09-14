@@ -2,6 +2,8 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using FinanceApi.Data;
 using FinanceApi.Features.Accounts.Models;
+using FinanceApi.Features.Accounts.Services;
+using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Transactions.Models;
 using FinanceApi.Features.Transactions.Services;
 
@@ -34,10 +36,23 @@ public class TransactionServiceTests : IDisposable
         });
         _db.SaveChanges();
 
-        _sut = new TransactionService(_db);
+        var activityLog = new ActivityLogService(_db);
+        _sut = new TransactionService(_db, new AccountSharingService(_db, activityLog));
     }
 
     public void Dispose() => _db.Dispose();
+
+    private void ShareAccountWith(Guid recipientUserId)
+    {
+        _db.AccountShares.Add(new AccountShare
+        {
+            AccountId = _accountId,
+            SharedByUserId = _userId,
+            SharedWithUserId = recipientUserId,
+            Status = AccountShareStatus.Accepted
+        });
+        _db.SaveChanges();
+    }
 
     // ── GetTransactionsAsync ──────────────────────────────────────────────────
 
@@ -254,6 +269,140 @@ public class TransactionServiceTests : IDisposable
 
         var inDb = await _db.Transactions.FindAsync(transaction.Id);
         inDb.Should().BeNull();
+    }
+
+    // ── Account sharing / visibility ────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetTransactionsAsync_WhenAccountIsSharedAndAccepted_ReturnsTheOwnersTransactions()
+    {
+        ShareAccountWith(_otherUserId);
+        _db.Transactions.Add(MakeTransaction(_userId, _accountId, "OWNER'S TESCO"));
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetTransactionsAsync(_otherUserId, MakeListRequest(_accountId));
+
+        result.Items.Should().ContainSingle(t => t.Description == "OWNER'S TESCO");
+    }
+
+    [Fact]
+    public async Task GetTransactionsAsync_WhenCallerHasNoVisibilityIntoAccount_ReturnsEmptyResult()
+    {
+        _db.Transactions.Add(MakeTransaction(_userId, _accountId, "PRIVATE"));
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetTransactionsAsync(_otherUserId, MakeListRequest(_accountId));
+
+        result.Items.Should().BeEmpty();
+        result.TotalCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetTransactionByIdAsync_WhenAccountIsSharedAndAccepted_ReturnsTheTransaction()
+    {
+        ShareAccountWith(_otherUserId);
+        var transaction = MakeTransaction(_userId, _accountId, "SHARED TX");
+        _db.Transactions.Add(transaction);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetTransactionByIdAsync(_otherUserId, transaction.Id);
+
+        result.Should().NotBeNull();
+        result!.Description.Should().Be("SHARED TX");
+    }
+
+    [Fact]
+    public async Task GetTransactionByIdAsync_WhenCallerHasNoVisibilityIntoAccount_ReturnsNull()
+    {
+        var transaction = MakeTransaction(_userId, _accountId, "PRIVATE TX");
+        _db.Transactions.Add(transaction);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetTransactionByIdAsync(_otherUserId, transaction.Id);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateTransactionAsync_WhenAccountIsSharedAndAccepted_AllowsTheRecipientToCreate()
+    {
+        ShareAccountWith(_otherUserId);
+        var request = new CreateTransactionRequest(
+            _accountId, null, TransactionType.Debit, 20m, "GBP",
+            "RECIPIENT'S COFFEE", null, new DateOnly(2025, 1, 1), null, null, null);
+
+        var result = await _sut.CreateTransactionAsync(_otherUserId, request);
+
+        result.Description.Should().Be("RECIPIENT'S COFFEE");
+    }
+
+    [Fact]
+    public async Task CreateTransactionAsync_WhenCallerHasNoVisibilityIntoAccount_Throws()
+    {
+        var request = new CreateTransactionRequest(
+            _accountId, null, TransactionType.Debit, 20m, "GBP",
+            "SHOULD NOT BE CREATED", null, new DateOnly(2025, 1, 1), null, null, null);
+
+        var act = () => _sut.CreateTransactionAsync(_otherUserId, request);
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>();
+        (await _db.Transactions.CountAsync()).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task UpdateTransactionAsync_WhenAccountIsSharedAndAccepted_AllowsTheRecipientToUpdateTheOwnersTransaction()
+    {
+        ShareAccountWith(_otherUserId);
+        var transaction = MakeTransaction(_userId, _accountId, "ORIGINAL");
+        _db.Transactions.Add(transaction);
+        await _db.SaveChangesAsync();
+
+        var request = new UpdateTransactionRequest(null, "EDITED BY RECIPIENT", null, null, null);
+        var result = await _sut.UpdateTransactionAsync(_otherUserId, transaction.Id, request);
+
+        result.Should().NotBeNull();
+        result!.Description.Should().Be("EDITED BY RECIPIENT");
+    }
+
+    [Fact]
+    public async Task UpdateTransactionAsync_WhenCallerHasNoVisibilityIntoAccount_ReturnsNull()
+    {
+        var transaction = MakeTransaction(_userId, _accountId, "ORIGINAL");
+        _db.Transactions.Add(transaction);
+        await _db.SaveChangesAsync();
+
+        var request = new UpdateTransactionRequest(null, "SHOULD NOT APPLY", null, null, null);
+        var result = await _sut.UpdateTransactionAsync(_otherUserId, transaction.Id, request);
+
+        result.Should().BeNull();
+        (await _db.Transactions.FindAsync(transaction.Id))!.Description.Should().Be("ORIGINAL");
+    }
+
+    [Fact]
+    public async Task DeleteTransactionAsync_WhenAccountIsSharedAndAccepted_AllowsTheRecipientToDeleteTheOwnersTransaction()
+    {
+        ShareAccountWith(_otherUserId);
+        var transaction = MakeTransaction(_userId, _accountId, "TO DELETE BY RECIPIENT");
+        _db.Transactions.Add(transaction);
+        await _db.SaveChangesAsync();
+
+        var deleted = await _sut.DeleteTransactionAsync(_otherUserId, transaction.Id);
+
+        deleted.Should().BeTrue();
+        (await _db.Transactions.FindAsync(transaction.Id)).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task DeleteTransactionAsync_WhenCallerHasNoVisibilityIntoAccount_ReturnsFalseAndLeavesTheTransactionInPlace()
+    {
+        var transaction = MakeTransaction(_userId, _accountId, "SHOULD SURVIVE");
+        _db.Transactions.Add(transaction);
+        await _db.SaveChangesAsync();
+
+        var deleted = await _sut.DeleteTransactionAsync(_otherUserId, transaction.Id);
+
+        deleted.Should().BeFalse();
+        (await _db.Transactions.FindAsync(transaction.Id)).Should().NotBeNull();
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

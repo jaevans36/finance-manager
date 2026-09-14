@@ -1,6 +1,7 @@
 using CsvHelper;
 using CsvHelper.Configuration;
 using FinanceApi.Data;
+using FinanceApi.Features.Accounts.Services;
 using FinanceApi.Features.Bills.Models;
 using FinanceApi.Features.Transactions.Models;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,7 @@ public class CsvImportService : ICsvImportService
 {
     private readonly FinanceDbContext _db;
     private readonly IMerchantNormalisationService _merchantNormaliser;
+    private readonly IAccountSharingService _sharing;
 
     private static readonly HashSet<string> SupportedFormats = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -28,10 +30,11 @@ public class CsvImportService : ICsvImportService
         "generic"
     };
 
-    public CsvImportService(FinanceDbContext db, IMerchantNormalisationService merchantNormaliser)
+    public CsvImportService(FinanceDbContext db, IMerchantNormalisationService merchantNormaliser, IAccountSharingService sharing)
     {
         _db = db;
         _merchantNormaliser = merchantNormaliser;
+        _sharing = sharing;
     }
 
     public IEnumerable<string> GetSupportedFormats() => SupportedFormats;
@@ -43,6 +46,10 @@ public class CsvImportService : ICsvImportService
         string bankFormat,
         CancellationToken ct = default)
     {
+        var visibleIds = await _sharing.GetVisibleAccountIdsAsync(userId);
+        if (!visibleIds.Contains(accountId))
+            throw new UnauthorizedAccessException("You do not have access to this account.");
+
         var batchId = Guid.NewGuid();
         var errors = new List<string>();
         var imported = 0;

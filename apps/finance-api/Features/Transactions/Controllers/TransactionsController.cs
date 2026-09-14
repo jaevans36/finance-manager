@@ -75,11 +75,22 @@ public class TransactionsController : ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CreateTransaction([FromBody] CreateTransactionRequest request, CancellationToken ct)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        var transaction = await _transactions.CreateTransactionAsync(GetUserId(), request, ct);
-        return CreatedAtAction(nameof(GetTransaction), new { id = transaction.Id }, transaction);
+
+        try
+        {
+            var transaction = await _transactions.CreateTransactionAsync(GetUserId(), request, ct);
+            return CreatedAtAction(nameof(GetTransaction), new { id = transaction.Id }, transaction);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            // No visibility into the target account looks the same as it not existing — a
+            // caller shouldn't be able to distinguish the two (see AccountSharingController).
+            return NotFound(new { error = new { message = ex.Message } });
+        }
     }
 
     /// <summary>Update a transaction (category, description, notes, reviewed flag).</summary>
@@ -106,9 +117,11 @@ public class TransactionsController : ControllerBase
     /// <param name="accountId">Target account ID.</param>
     /// <param name="bankFormat">Bank format identifier (barclays, hsbc, lloyds, monzo, starling, natwest, generic).</param>
     /// <param name="file">The CSV file to import.</param>
+    /// <param name="ct">Cancellation token.</param>
     [HttpPost("import")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ImportCsv(
         [FromQuery] Guid accountId,
         [FromQuery] string bankFormat,
@@ -128,9 +141,16 @@ public class TransactionsController : ControllerBase
         if (extension != ".csv" && extension != ".txt")
             return BadRequest("Only CSV files are supported");
 
-        await using var stream = file.OpenReadStream();
-        var result = await _csvImport.ImportAsync(GetUserId(), accountId, stream, bankFormat, ct);
-        return Ok(result);
+        try
+        {
+            await using var stream = file.OpenReadStream();
+            var result = await _csvImport.ImportAsync(GetUserId(), accountId, stream, bankFormat, ct);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return NotFound(new { error = new { message = ex.Message } });
+        }
     }
 
     /// <summary>List supported bank CSV formats.</summary>
