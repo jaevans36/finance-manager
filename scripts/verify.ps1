@@ -5,7 +5,8 @@ Write-Host "Life Manager - Verify (mirrors CI)" -ForegroundColor Cyan
 Write-Host "===================================" -ForegroundColor Cyan
 Write-Host ""
 
-Set-Location "C:\Projects\Finance Manager"
+$repoRoot = Split-Path -Parent $PSScriptRoot
+Set-Location $repoRoot
 
 $failed = $false
 
@@ -40,7 +41,7 @@ if ($LASTEXITCODE -ne 0) { $failed = $true }
 Step "Frontend tests (Jest)" {
     Set-Location "apps/web"
     pnpm exec jest --passWithNoTests
-    Set-Location "C:\Projects\Finance Manager"
+    Set-Location $repoRoot
 }
 
 # -- Compose config sanity (mirrors the `build` CI job's compose validation) ---

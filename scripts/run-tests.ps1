@@ -12,7 +12,8 @@ Write-Host "Finance Manager - Test Runner" -ForegroundColor Cyan
 Write-Host "==============================" -ForegroundColor Cyan
 Write-Host ""
 
-Set-Location "C:\Projects\Finance Manager"
+$repoRoot = Split-Path -Parent $PSScriptRoot
+Set-Location $repoRoot
 
 $testsFailed = $false
 
@@ -68,7 +69,7 @@ if ($Backend -or $runAll) {
         }
 
         Write-Host ""
-        Set-Location "C:\Projects\Finance Manager"
+        Set-Location $repoRoot
     }
 }
 
@@ -96,7 +97,7 @@ if ($Frontend -or $runAll) {
         Write-Host "[OK] Frontend tests passed" -ForegroundColor Green
     }
     Write-Host ""
-    Set-Location "C:\Projects\Finance Manager"
+    Set-Location $repoRoot
 }
 
 # E2E Tests
@@ -141,7 +142,7 @@ if ($E2E -or $runAll) {
         } else {
             Write-Host "[OK] E2E tests passed" -ForegroundColor Green
         }
-        Set-Location "C:\Projects\Finance Manager"
+        Set-Location $repoRoot
     }
     Write-Host ""
 }
