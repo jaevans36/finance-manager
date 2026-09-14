@@ -3,6 +3,7 @@ using FinanceApi.Features.Bills.Models;
 using FinanceApi.Features.Budgets.Models;
 using FinanceApi.Features.Categories.Models;
 using FinanceApi.Features.CategoryRules.Models;
+using FinanceApi.Features.Common.ActivityLogs.Models;
 using FinanceApi.Features.IncomeStreams.Models;
 using FinanceApi.Features.SavingsGoals.Models;
 using FinanceApi.Features.Settings.Models;
@@ -49,6 +50,7 @@ public class FinanceDbContext : DbContext
     public DbSet<CategoryRule> CategoryRules => Set<CategoryRule>();
     public DbSet<UserFinanceSettings> UserFinanceSettings => Set<UserFinanceSettings>();
     public DbSet<IncomeStream> IncomeStreams => Set<IncomeStream>();
+    public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -263,6 +265,15 @@ public class FinanceDbContext : DbContext
                     (c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
                     c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
                     c => c == null ? null : c.ToList()));
+        });
+
+        // ── ActivityLog ───────────────────────────────────────────────────────
+        modelBuilder.Entity<ActivityLog>(entity =>
+        {
+            entity.HasKey(l => l.Id);
+            entity.HasIndex(l => l.UserId);
+            // Not encrypted, and Description must never embed an encrypted column's plaintext —
+            // see the class doc comment on ActivityLog.
         });
 
         // ── Seed system categories ───────────────────────────────────────────

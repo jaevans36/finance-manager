@@ -82,8 +82,8 @@ public interface IAccountService
 {
     Task<IEnumerable<AccountSummary>> GetAccountsAsync(Guid userId, CancellationToken ct = default);
     Task<Account?> GetAccountByIdAsync(Guid userId, Guid accountId, CancellationToken ct = default);
-    Task<Account> CreateAccountAsync(Guid userId, CreateAccountRequest request, CancellationToken ct = default);
-    Task<Account?> UpdateAccountAsync(Guid userId, Guid accountId, UpdateAccountRequest request, CancellationToken ct = default);
-    Task<bool> DeleteAccountAsync(Guid userId, Guid accountId, CancellationToken ct = default);
+    Task<Account> CreateAccountAsync(Guid userId, CreateAccountRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default);
+    Task<Account?> UpdateAccountAsync(Guid userId, Guid accountId, UpdateAccountRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default);
+    Task<bool> DeleteAccountAsync(Guid userId, Guid accountId, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default);
     Task<decimal> GetNetWorthAsync(Guid userId, CancellationToken ct = default);
 }

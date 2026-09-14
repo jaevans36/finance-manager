@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using FinanceApi.Data;
 using FinanceApi.Features.Accounts.Models;
 using FinanceApi.Features.Accounts.Services;
+using FinanceApi.Features.Common.ActivityLogs.Services;
 
 namespace FinanceApi.UnitTests.Features.Accounts.Services;
 
@@ -20,7 +21,7 @@ public class AccountServiceTests : IDisposable
             .Options;
 
         _db = new FinanceDbContext(options, FinanceApi.UnitTests.TestHelpers.TestEncryption.Service);
-        _sut = new AccountService(_db);
+        _sut = new AccountService(_db, new ActivityLogService(_db));
     }
 
     public void Dispose() => _db.Dispose();
@@ -164,6 +165,65 @@ public class AccountServiceTests : IDisposable
         var result = await _sut.DeleteAccountAsync(_userId, Guid.NewGuid());
 
         result.Should().BeFalse();
+    }
+
+    // ── Activity logging ──────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task CreateAccountAsync_WritesAnAccountCreatedLogEntry()
+    {
+        var request = new CreateAccountRequest("Test", AccountType.Checking, "GBP", null, null, null, null, null, false, null);
+
+        await _sut.CreateAccountAsync(_userId, request, "203.0.113.5", "TestAgent/1.0");
+
+        var log = await _db.ActivityLogs.SingleAsync();
+        log.UserId.Should().Be(_userId);
+        log.Action.Should().Be(FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.AccountCreated);
+        log.IpAddress.Should().Be("203.0.113.5");
+        log.UserAgent.Should().Be("TestAgent/1.0");
+    }
+
+    [Fact]
+    public async Task UpdateAccountAsync_LogsChangedFieldNamesOnly_NeverTheEncryptedValue()
+    {
+        var account = MakeAccount(_userId, "Original Name");
+        _db.Accounts.Add(account);
+        await _db.SaveChangesAsync();
+
+        var request = new UpdateAccountRequest("Barclays Current Account", null, null, null, "Barclays", null, null, null, null, null, null);
+        await _sut.UpdateAccountAsync(_userId, account.Id, request);
+
+        var log = await _db.ActivityLogs.SingleAsync(l => l.Action == FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.AccountUpdated);
+        log.Description.Should().Contain("Name").And.Contain("Institution");
+        log.Description.Should().NotContain("Barclays Current Account");
+        log.Description.Should().NotContain("Barclays");
+    }
+
+    [Fact]
+    public async Task UpdateAccountAsync_WhenRequestChangesNothing_DoesNotWriteALogEntry()
+    {
+        var account = MakeAccount(_userId, "Untouched");
+        _db.Accounts.Add(account);
+        await _db.SaveChangesAsync();
+
+        // Every field null — nothing to update
+        var request = new UpdateAccountRequest(null, null, null, null, null, null, null, null, null, null, null);
+        await _sut.UpdateAccountAsync(_userId, account.Id, request);
+
+        (await _db.ActivityLogs.CountAsync()).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task DeleteAccountAsync_WritesAnAccountDeletedLogEntry()
+    {
+        var account = MakeAccount(_userId, "To Delete");
+        _db.Accounts.Add(account);
+        await _db.SaveChangesAsync();
+
+        await _sut.DeleteAccountAsync(_userId, account.Id);
+
+        var log = await _db.ActivityLogs.SingleAsync();
+        log.Action.Should().Be(FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.AccountDeleted);
     }
 
     // ── GetNetWorthAsync ──────────────────────────────────────────────────────
