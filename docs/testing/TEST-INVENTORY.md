@@ -3,7 +3,7 @@
 This document tracks all automated tests in the Life Manager project. It serves as a reference for what's tested, coverage gaps, and maintenance responsibilities.
 
 **Last Updated**: 2026-09-14  
-**Total Tests**: 1074 (600 frontend + 359 finance backend unit + 100 finance integration + 26 life-api unit + 5 labels integration — as of Phase 48 + bill categories/weekday due-day work + pay-vs-bills summary + multiple income streams + planned savings/sinking funds/budget suggestions + monthly debt burndown table + debt payment fallback fix + per-debt balance in monthly breakdown + debt snowball momentum fix + Cash Flow tab + Spending Pots in affordability + existing debt repayments in affordability + discretionary-spend floor fix + linked-bill debt payment resolution + bill/debt payment mismatch warning + per-account recurring payment detection + income-account scoping UI + manual-income-priority fix + budget titles/notes + budget edit/delete UI + task group reassignment in edit modal + week-range test month-abbreviation fix + finance-api column encryption + finance-api activity log + finance-api account sharing)
+**Total Tests**: 1238 (600 frontend + 359 finance backend unit + 100 finance integration + 26 life-api unit + 5 labels integration + 148 life-mcp — as of Phase 48 + bill categories/weekday due-day work + pay-vs-bills summary + multiple income streams + planned savings/sinking funds/budget suggestions + monthly debt burndown table + debt payment fallback fix + per-debt balance in monthly breakdown + debt snowball momentum fix + Cash Flow tab + Spending Pots in affordability + existing debt repayments in affordability + discretionary-spend floor fix + linked-bill debt payment resolution + bill/debt payment mismatch warning + per-account recurring payment detection + income-account scoping UI + manual-income-priority fix + budget titles/notes + budget edit/delete UI + task group reassignment in edit modal + week-range test month-abbreviation fix + finance-api column encryption + finance-api activity log + finance-api account sharing + finance-mcp core tools slice 1)
 
 > ⚠️ **Note**: The feature coverage matrix below reflects Phase 13. The suite has grown significantly since then (Phases 48–58, keyboard shortcuts, labels, service worker notifications). A full reconciliation of the coverage matrix is backlogged.
 
@@ -16,11 +16,11 @@ This document tracks all automated tests in the Life Manager project. It serves 
 | Frontend Unit + Integration | 600 | Every PR | ~4min | `apps/web/tests/` |
 | Life API Backend Unit | 26 | Every PR | ~45s | `apps/life-api-tests/LifeApi.UnitTests/` |
 | Life API Integration | 5 (labels) | Every PR | ~30s | `apps/life-api-tests/LifeApi.IntegrationTests/` |
-| Life MCP (`@life-manager/mcp`) | 109 | Every PR | ~9s | `apps/life-mcp/src/**/__tests__/` — `pnpm --filter @life-manager/mcp test` |
+| Life MCP (`@life-manager/mcp`) | 148 | Every PR | ~9s | `apps/life-mcp/src/**/__tests__/` — `pnpm --filter @life-manager/mcp test` |
 | Finance API Backend Unit | 359 | Every PR | ~1min | `apps/finance-api-tests/FinanceApi.UnitTests/` |
 | Finance API Integration | 100 | Every PR | ~3s | `apps/finance-api-tests/FinanceApi.IntegrationTests/` |
 | E2E (Playwright) | ~38 (est.) | Every PR | ~6min | `apps/web/e2e/` |
-| **Total** | **1061+** | | **~12min** | |
+| **Total** | **1238+** | | **~12min** | |
 
 ---
 

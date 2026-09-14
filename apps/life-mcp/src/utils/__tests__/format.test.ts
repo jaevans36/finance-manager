@@ -1,11 +1,23 @@
 import type { EventDto } from '../../types/event.js';
 import type { TaskDto } from '../../types/task.js';
+import type { AccountSummary } from '../../types/finance-account.js';
+import type { AffordabilityResponse } from '../../types/finance-affordability.js';
+import type { UpcomingBillResponse } from '../../types/finance-bill.js';
+import type { SavingsGoalWithProjection } from '../../types/finance-goal.js';
+import type { SpendingPotWithProgress } from '../../types/finance-pot.js';
+import type { PagedResult, TransactionDto } from '../../types/finance-transaction.js';
 import {
+  formatAccountList,
+  formatAffordability,
   formatEventDetail,
   formatEventList,
   formatLabelList,
+  formatPotBalances,
+  formatSavingsGoals,
   formatTaskDetail,
   formatTaskList,
+  formatTransactionList,
+  formatUpcomingBills,
 } from '../format.js';
 import { daysBetween, isoDate, startOfDay } from '../format-date.js';
 
@@ -138,6 +150,241 @@ describe('formatLabelList', () => {
   it('lists labels and handles the empty case', () => {
     expect(formatLabelList([{ id: 'l1', name: 'Home', colourHex: '#21B8A4' }])).toContain('Home — `#21B8A4`');
     expect(formatLabelList([])).toContain('_No labels defined._');
+  });
+});
+
+function account(overrides: Partial<AccountSummary> = {}): AccountSummary {
+  return {
+    id: 'a1',
+    name: 'Current Account',
+    type: 'Checking',
+    currency: 'GBP',
+    balance: 100,
+    institution: null,
+    colour: null,
+    icon: null,
+    isActive: true,
+    excludeFromNetWorth: false,
+    creditLimit: null,
+    interestRate: null,
+    promotionalBalance: null,
+    promotionalRate: null,
+    promotionalExpiry: null,
+    promotionalRevertRate: null,
+    mortgageStartDate: null,
+    mortgageTermYears: null,
+    isInterestOnly: false,
+    minimumMonthlyPayment: null,
+    currentMonthlyPayment: null,
+    loanEndDate: null,
+    ...overrides,
+  };
+}
+
+function transaction(overrides: Partial<TransactionDto> = {}): TransactionDto {
+  return {
+    id: 't1',
+    accountId: 'a1',
+    categoryId: null,
+    categoryName: null,
+    type: 'Debit',
+    amount: 10,
+    currency: 'GBP',
+    description: 'Coffee',
+    payee: null,
+    transactionDate: '2026-09-10',
+    reference: null,
+    isReviewed: false,
+    isRecurring: false,
+    isDuplicate: false,
+    importSource: 'Manual',
+    createdAt: '2026-09-10T00:00:00Z',
+    notes: null,
+    ...overrides,
+  };
+}
+
+describe('formatAccountList', () => {
+  it('renders balance with currency and flags inactive accounts', () => {
+    const out = formatAccountList([account({ balance: 1234.56 }), account({ id: 'a2', isActive: false })]);
+    expect(out).toContain('£1,234.56');
+    expect(out).toContain('inactive');
+  });
+
+  it('renders an empty list with a friendly line', () => {
+    expect(formatAccountList([])).toContain('_No accounts._');
+  });
+});
+
+describe('formatTransactionList', () => {
+  it('sorts newest first and includes pagination context', () => {
+    const page: PagedResult<TransactionDto> = {
+      items: [
+        transaction({ id: 'old', transactionDate: '2026-09-01', description: 'old one' }),
+        transaction({ id: 'new', transactionDate: '2026-09-10', description: 'new one' }),
+      ],
+      totalCount: 2,
+      page: 1,
+      pageSize: 50,
+    };
+    const out = formatTransactionList(page);
+    expect(out.indexOf('new one')).toBeLessThan(out.indexOf('old one'));
+    expect(out).toContain('Page 1 of 1 (2 total)');
+  });
+
+  it('shows a duplicate flag and an empty state', () => {
+    expect(
+      formatTransactionList({ items: [transaction({ isDuplicate: true })], totalCount: 1, page: 1, pageSize: 50 }),
+    ).toContain('possible duplicate');
+    expect(formatTransactionList({ items: [], totalCount: 0, page: 1, pageSize: 50 })).toContain('_No transactions._');
+  });
+});
+
+describe('formatUpcomingBills', () => {
+  function bill(overrides: Partial<UpcomingBillResponse> = {}): UpcomingBillResponse {
+    return {
+      bill: {
+        id: 'b1',
+        userId: 'u1',
+        name: 'Council Tax',
+        description: null,
+        amount: 150,
+        frequency: 'Monthly',
+        dueDay: 1,
+        reminderDaysBefore: 5,
+        isPaid: false,
+        lastPaidDate: null,
+        categoryId: null,
+        categoryName: null,
+        isActive: true,
+        createdAt: '2026-09-01T00:00:00Z',
+        updatedAt: '2026-09-01T00:00:00Z',
+        accountId: null,
+        accountName: null,
+        linkedAccountPayment: null,
+        hasPaymentMismatch: false,
+      },
+      nextDueDate: '2026-10-01',
+      daysUntilDue: 17,
+      isReminderDue: false,
+      ...overrides,
+    };
+  }
+
+  it('sorts soonest-due first', () => {
+    const out = formatUpcomingBills([
+      bill({ bill: { ...bill().bill, id: 'far', name: 'Far bill' }, daysUntilDue: 20 }),
+      bill({ bill: { ...bill().bill, id: 'soon', name: 'Soon bill' }, daysUntilDue: 2 }),
+    ]);
+    expect(out.indexOf('Soon bill')).toBeLessThan(out.indexOf('Far bill'));
+  });
+
+  it('flags a due reminder and payment mismatch', () => {
+    const out = formatUpcomingBills([
+      bill({ isReminderDue: true, bill: { ...bill().bill, hasPaymentMismatch: true } }),
+    ]);
+    expect(out).toContain('reminder due');
+    expect(out).toContain('payment mismatch');
+  });
+
+  it('renders an empty state', () => {
+    expect(formatUpcomingBills([])).toContain('_No bills due._');
+  });
+});
+
+describe('formatPotBalances', () => {
+  function pot(overrides: Partial<SpendingPotWithProgress> = {}): SpendingPotWithProgress {
+    return {
+      id: 'p1',
+      name: 'Groceries',
+      type: 'Groceries',
+      budgetAmount: 300,
+      spent: 100,
+      remaining: 200,
+      rolloverEnabled: false,
+      icon: null,
+      colour: null,
+      categoryIds: [],
+      percentageUsed: 33,
+      isWarning: false,
+      isExceeded: false,
+      annualAmount: null,
+      nextPaymentDate: null,
+      accumulatedAmount: 0,
+      monthlyAllocation: null,
+      monthsRemaining: null,
+      isReady: false,
+      ...overrides,
+    };
+  }
+
+  it('flags exceeded and warning pots', () => {
+    expect(formatPotBalances([pot({ isExceeded: true })])).toContain('exceeded');
+    expect(formatPotBalances([pot({ isWarning: true })])).toContain('warning');
+  });
+
+  it('renders an empty state', () => {
+    expect(formatPotBalances([])).toContain('_No spending pots._');
+  });
+});
+
+describe('formatSavingsGoals', () => {
+  function goal(overrides: Partial<SavingsGoalWithProjection['goal']> = {}, projOverrides: Partial<SavingsGoalWithProjection> = {}): SavingsGoalWithProjection {
+    return {
+      goal: {
+        id: 'g1',
+        userId: 'u1',
+        name: 'Emergency Fund',
+        targetAmount: 5000,
+        currentAmount: 2000,
+        targetDate: null,
+        monthlyContribution: 200,
+        status: 'Active',
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+        ...overrides,
+      },
+      percentageComplete: 40,
+      monthsToTarget: 15,
+      projectedCompletionDate: null,
+      isOnTrack: true,
+      ...projOverrides,
+    };
+  }
+
+  it('flags an active goal that is behind target', () => {
+    expect(formatSavingsGoals([goal({}, { isOnTrack: false })])).toContain('behind target');
+  });
+
+  it('does not flag an achieved goal as behind target even if isOnTrack is false', () => {
+    const out = formatSavingsGoals([goal({ status: 'Achieved' }, { isOnTrack: false })]);
+    expect(out).not.toContain('behind target');
+  });
+
+  it('renders an empty state', () => {
+    expect(formatSavingsGoals([])).toContain('_No savings goals._');
+  });
+});
+
+describe('formatAffordability', () => {
+  it('includes every headline figure', () => {
+    const out = formatAffordability({
+      monthlyIncome: 3000,
+      incomeConfidence: 'High',
+      incomeSource: 'Detected',
+      committedCosts: 1200,
+      existingDebtPayments: 300,
+      discretionarySpend: 600,
+      plannedSavings: 400,
+      emergencyBuffer: 200,
+      safeSurplus: 300,
+      suggestedDebtPayment: 150,
+      calculatedAt: '2026-09-14',
+      incomeAccountIds: [],
+    } satisfies AffordabilityResponse);
+    expect(out).toContain('# Disposable Income');
+    expect(out).toContain('£3,000.00');
+    expect(out).toContain('Safe surplus');
   });
 });
 

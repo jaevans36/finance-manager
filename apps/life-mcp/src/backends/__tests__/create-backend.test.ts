@@ -1,6 +1,7 @@
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import { createBackend } from '../create-backend.js';
+import { createBackend, createBackendWithSharedAuth } from '../create-backend.js';
+import { LifeManagerAuth } from '../life-manager-auth.js';
 import type { BackendConfig } from '../types.js';
 
 const cfg: BackendConfig = {
@@ -73,6 +74,39 @@ describe('createBackend', () => {
 
     await expect(http.get('/api/v1/tasks')).rejects.toMatchObject({ response: { status: 500 } });
     expect(loginMock.history.post).toHaveLength(1); // only the initial login
+    apiMock.restore();
+  });
+});
+
+describe('createBackendWithSharedAuth', () => {
+  it('reuses the given auth manager rather than logging in itself', async () => {
+    const auth = new LifeManagerAuth(cfg);
+    const backend = createBackendWithSharedAuth('finance', 'http://finance.test', 'LifeManager-MCP/1.0', auth);
+    expect(backend.name).toBe('finance');
+    expect(backend.auth).toBe(auth);
+
+    const apiMock = new MockAdapter(backend.http);
+    apiMock.onGet('/api/v1/finance/accounts').reply((config) => {
+      expect(config.headers?.Authorization).toMatch(/^Bearer /);
+      return [200, []];
+    });
+
+    await backend.http.get('/api/v1/finance/accounts');
+    // the one login came from the shared auth manager, not from a finance-api login endpoint
+    expect(loginMock.history.post).toHaveLength(1);
+    apiMock.restore();
+  });
+
+  it('re-logs-in via the shared auth manager and replays the request once on a 401', async () => {
+    const auth = new LifeManagerAuth(cfg);
+    const backend = createBackendWithSharedAuth('finance', 'http://finance.test', 'LifeManager-MCP/1.0', auth);
+    const apiMock = new MockAdapter(backend.http);
+    apiMock.onGet('/api/v1/finance/accounts').replyOnce(401);
+    apiMock.onGet('/api/v1/finance/accounts').replyOnce(200, [{ id: 'a1' }]);
+
+    const res = await backend.http.get('/api/v1/finance/accounts');
+    expect(res.data).toEqual([{ id: 'a1' }]);
+    expect(loginMock.history.post).toHaveLength(2);
     apiMock.restore();
   });
 });

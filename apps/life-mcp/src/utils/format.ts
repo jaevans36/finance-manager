@@ -1,6 +1,12 @@
 import type { EventDto } from '../types/event.js';
 import type { LabelDto } from '../types/label.js';
 import type { Priority, TaskDto } from '../types/task.js';
+import type { AccountSummary } from '../types/finance-account.js';
+import type { AffordabilityResponse } from '../types/finance-affordability.js';
+import type { UpcomingBillResponse } from '../types/finance-bill.js';
+import type { SavingsGoalWithProjection } from '../types/finance-goal.js';
+import type { SpendingPotWithProgress } from '../types/finance-pot.js';
+import type { PagedResult, TransactionDto } from '../types/finance-transaction.js';
 
 const PRIORITY_ORDER: Record<Priority, number> = { Critical: 0, High: 1, Medium: 2, Low: 3 };
 
@@ -116,4 +122,115 @@ export function formatEventDetail(e: EventDto): string {
 export function formatLabelList(labels: LabelDto[]): string {
   if (labels.length === 0) return '_No labels defined._';
   return labels.map((l) => `- ${l.name} — \`${l.colourHex}\`  \`${l.id}\``).join('\n');
+}
+
+// ── Finance ───────────────────────────────────────────────────────────────────
+
+/** £-style formatting for a given ISO currency code; falls back gracefully for unknown codes. */
+function money(amount: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat('en-GB', { style: 'currency', currency }).format(amount);
+  } catch {
+    return `${amount.toFixed(2)} ${currency}`;
+  }
+}
+
+function accountLine(a: AccountSummary): string {
+  const bits: string[] = [`- ${a.name} (${a.type})`, `${money(a.balance, a.currency)}`];
+  if (a.institution) bits.push(a.institution);
+  if (!a.isActive) bits.push('inactive');
+  return `${bits.slice(0, 2).join('  ')}${bits.length > 2 ? `  _(${bits.slice(2).join(' · ')})_` : ''}  \`${a.id}\``;
+}
+
+/** A flat markdown list of accounts. */
+export function formatAccountList(accounts: AccountSummary[], heading?: string): string {
+  const body = accounts.length === 0 ? '_No accounts._' : accounts.map(accountLine).join('\n');
+  return heading ? `${heading}\n\n${body}` : body;
+}
+
+function transactionLine(t: TransactionDto): string {
+  const sign = t.type === 'Credit' ? '+' : t.type === 'Debit' ? '-' : '';
+  const bits: string[] = [`- ${t.transactionDate}  ${sign}${money(Math.abs(t.amount), t.currency)}  ${t.description}`];
+  const meta: string[] = [];
+  if (t.payee) meta.push(t.payee);
+  if (t.categoryName) meta.push(t.categoryName);
+  if (t.isDuplicate) meta.push('possible duplicate');
+  if (meta.length > 0) bits.push(`  _(${meta.join(' · ')})_`);
+  bits.push(`  \`${t.id}\``);
+  return bits.join('');
+}
+
+/** A flat markdown list of transactions, newest first, with pagination context in the heading. */
+export function formatTransactionList(page: PagedResult<TransactionDto>, heading?: string): string {
+  const sorted = [...page.items].sort((a, b) => b.transactionDate.localeCompare(a.transactionDate));
+  const body = sorted.length === 0 ? '_No transactions._' : sorted.map(transactionLine).join('\n');
+  const pageInfo = `Page ${page.page} of ${Math.max(1, Math.ceil(page.totalCount / page.pageSize))} (${page.totalCount} total)`;
+  const full = heading ? `${heading} — ${pageInfo}\n\n${body}` : `${pageInfo}\n\n${body}`;
+  return full;
+}
+
+function upcomingBillLine(u: UpcomingBillResponse): string {
+  const bits: string[] = [
+    `- ${u.bill.name}  ${money(u.bill.amount, 'GBP')}  due ${u.nextDueDate.slice(0, 10)} (${u.daysUntilDue}d)`,
+  ];
+  const meta: string[] = [];
+  if (u.isReminderDue) meta.push('reminder due');
+  if (u.bill.hasPaymentMismatch) meta.push('payment mismatch');
+  if (meta.length > 0) bits.push(`  _(${meta.join(' · ')})_`);
+  bits.push(`  \`${u.bill.id}\``);
+  return bits.join('');
+}
+
+/** Upcoming bills, soonest-due first. */
+export function formatUpcomingBills(bills: UpcomingBillResponse[], heading?: string): string {
+  const sorted = [...bills].sort((a, b) => a.daysUntilDue - b.daysUntilDue);
+  const body = sorted.length === 0 ? '_No bills due._' : sorted.map(upcomingBillLine).join('\n');
+  return heading ? `${heading}\n\n${body}` : body;
+}
+
+function potLine(p: SpendingPotWithProgress): string {
+  const bits: string[] = [`- ${p.name} (${p.type})  ${money(p.spent, 'GBP')} / ${money(p.budgetAmount, 'GBP')}`];
+  const meta: string[] = [];
+  if (p.isExceeded) meta.push('exceeded');
+  else if (p.isWarning) meta.push('warning');
+  if (meta.length > 0) bits.push(`  _(${meta.join(' · ')})_`);
+  return bits.join('');
+}
+
+/** Spending pot balances for the requested month. */
+export function formatPotBalances(pots: SpendingPotWithProgress[], heading?: string): string {
+  const body = pots.length === 0 ? '_No spending pots._' : pots.map(potLine).join('\n');
+  return heading ? `${heading}\n\n${body}` : body;
+}
+
+function goalLine(g: SavingsGoalWithProjection): string {
+  const bits: string[] = [
+    `- ${g.goal.name}  ${money(g.goal.currentAmount, 'GBP')} / ${money(g.goal.targetAmount, 'GBP')} (${g.percentageComplete.toFixed(0)}%)`,
+  ];
+  const meta: string[] = [g.goal.status];
+  if (g.projectedCompletionDate) meta.push(`projected ${g.projectedCompletionDate.slice(0, 10)}`);
+  if (!g.isOnTrack && g.goal.status === 'Active') meta.push('behind target');
+  bits.push(`  _(${meta.join(' · ')})_`);
+  return bits.join('');
+}
+
+/** Savings goals with their projection. */
+export function formatSavingsGoals(goals: SavingsGoalWithProjection[], heading?: string): string {
+  const body = goals.length === 0 ? '_No savings goals._' : goals.map(goalLine).join('\n');
+  return heading ? `${heading}\n\n${body}` : body;
+}
+
+/** Full detail for the disposable-income breakdown. */
+export function formatAffordability(a: AffordabilityResponse): string {
+  const lines: string[] = ['# Disposable Income', ''];
+  lines.push(`- **Monthly income:** ${money(a.monthlyIncome, 'GBP')} (${a.incomeConfidence}, ${a.incomeSource})`);
+  lines.push(`- **Committed costs:** ${money(a.committedCosts, 'GBP')}`);
+  lines.push(`- **Existing debt payments:** ${money(a.existingDebtPayments, 'GBP')}`);
+  lines.push(`- **Discretionary spend:** ${money(a.discretionarySpend, 'GBP')}`);
+  lines.push(`- **Planned savings:** ${money(a.plannedSavings, 'GBP')}`);
+  lines.push(`- **Emergency buffer:** ${money(a.emergencyBuffer, 'GBP')}`);
+  lines.push(`- **Safe surplus:** ${money(a.safeSurplus, 'GBP')}`);
+  lines.push(`- **Suggested extra debt payment:** ${money(a.suggestedDebtPayment, 'GBP')}`);
+  lines.push(`- **Calculated:** ${a.calculatedAt}`);
+  return lines.join('\n');
 }
