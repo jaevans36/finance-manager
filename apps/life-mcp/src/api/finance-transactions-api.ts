@@ -25,6 +25,15 @@ export async function listTransactions(
   return res.data;
 }
 
+export async function categoriseTransaction(
+  http: AxiosInstance,
+  transactionId: string,
+  categoryId: string,
+): Promise<TransactionDto> {
+  const res = await http.patch<TransactionDto>(`${BASE}/${transactionId}`, { categoryId });
+  return res.data;
+}
+
 export async function createTransaction(
   http: AxiosInstance,
   input: CreateTransactionInput,

@@ -7,6 +7,10 @@ import type { UpcomingBillResponse } from '../types/finance-bill.js';
 import type { SavingsGoalWithProjection } from '../types/finance-goal.js';
 import type { SpendingPotWithProgress } from '../types/finance-pot.js';
 import type { PagedResult, TransactionDto } from '../types/finance-transaction.js';
+import type { RecurringPattern } from '../types/finance-bill.js';
+import type { BudgetWithProgress } from '../types/finance-budget.js';
+import type { IncomeStream } from '../types/finance-income.js';
+import type { InsightCard, InsightsSummaryResponse } from '../types/finance-insight.js';
 
 const PRIORITY_ORDER: Record<Priority, number> = { Critical: 0, High: 1, Medium: 2, Low: 3 };
 
@@ -217,6 +221,74 @@ function goalLine(g: SavingsGoalWithProjection): string {
 /** Savings goals with their projection. */
 export function formatSavingsGoals(goals: SavingsGoalWithProjection[], heading?: string): string {
   const body = goals.length === 0 ? '_No savings goals._' : goals.map(goalLine).join('\n');
+  return heading ? `${heading}\n\n${body}` : body;
+}
+
+function recurringPatternLine(p: RecurringPattern): string {
+  const bits: string[] = [
+    `- ${p.merchantName}  ~${money(p.averageAmount, 'GBP')}  ${p.detectedFrequency.toLowerCase()}  (${p.patternType})`,
+  ];
+  const meta: string[] = [`${p.occurrencesInPeriod}x on ${p.accountName}`];
+  if (p.amountTrend !== 'Stable') meta.push(p.amountTrend.toLowerCase());
+  if (p.isLikelyInactive) meta.push('possibly inactive');
+  bits.push(`  _(${meta.join(' · ')})_`);
+  return bits.join('');
+}
+
+/** Detected recurring payments/subscriptions, largest average amount first. */
+export function formatRecurringPayments(patterns: RecurringPattern[], heading?: string): string {
+  const sorted = [...patterns].sort((a, b) => b.averageAmount - a.averageAmount);
+  const body = sorted.length === 0 ? '_No recurring payments detected._' : sorted.map(recurringPatternLine).join('\n');
+  return heading ? `${heading}\n\n${body}` : body;
+}
+
+function budgetLine(b: BudgetWithProgress): string {
+  const bits: string[] = [`- ${b.title ?? b.categoryName ?? 'Uncategorised'}  ${money(b.spent, 'GBP')} / ${money(b.amount, 'GBP')}`];
+  const meta: string[] = [];
+  if (b.isExceeded) meta.push('exceeded');
+  else if (b.isWarning) meta.push('warning');
+  if (meta.length > 0) bits.push(`  _(${meta.join(' · ')})_`);
+  return bits.join('');
+}
+
+/** This month's budgets with a totalled summary line above the per-category breakdown. */
+export function formatBudgetSummary(budgets: BudgetWithProgress[], heading?: string): string {
+  if (budgets.length === 0) {
+    const body = '_No budgets set for the current month._';
+    return heading ? `${heading}\n\n${body}` : body;
+  }
+  const totalAmount = budgets.reduce((sum, b) => sum + b.amount, 0);
+  const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
+  const summary = `**Total:** ${money(totalSpent, 'GBP')} / ${money(totalAmount, 'GBP')} across ${budgets.length} budget${budgets.length === 1 ? '' : 's'}`;
+  const body = `${summary}\n\n${budgets.map(budgetLine).join('\n')}`;
+  return heading ? `${heading}\n\n${body}` : body;
+}
+
+function incomeStreamLine(s: IncomeStream): string {
+  const bits: string[] = [`- ${s.name}  ${money(s.monthlyAmount, 'GBP')}/mo`];
+  if (s.accountName) bits.push(`  _(${s.accountName})_`);
+  return bits.join('');
+}
+
+/** Income streams with a totalled monthly figure above the per-stream breakdown. */
+export function formatIncomeSummary(streams: IncomeStream[], heading?: string): string {
+  if (streams.length === 0) {
+    const body = '_No income streams configured._';
+    return heading ? `${heading}\n\n${body}` : body;
+  }
+  const total = streams.reduce((sum, s) => sum + s.monthlyAmount, 0);
+  const summary = `**Total monthly income:** ${money(total, 'GBP')} across ${streams.length} stream${streams.length === 1 ? '' : 's'}`;
+  const body = `${summary}\n\n${streams.map(incomeStreamLine).join('\n')}`;
+  return heading ? `${heading}\n\n${body}` : body;
+}
+
+function insightCardLine(c: InsightCard): string {
+  return `- **${c.title}** _(${c.severity})_\n  ${c.summary}`;
+}
+
+/** AI insight cards (spending velocity, anomalies, subscriptions), as-returned order. */
+export function formatInsights(summary: InsightsSummaryResponse, heading?: string): string {
+  const body = summary.cards.length === 0 ? '_No insights right now._' : summary.cards.map(insightCardLine).join('\n\n');
   return heading ? `${heading}\n\n${body}` : body;
 }
 

@@ -26,10 +26,18 @@ import { checkAccountCompletenessTool } from './finance/accounts/check-account-c
 import { getFinanceTransactionsTool } from './finance/transactions/get-transactions.js';
 import { addManualTransactionTool } from './finance/transactions/add-manual-transaction.js';
 import { importTransactionsTool } from './finance/transactions/import-transactions.js';
+import { searchTransactionsTool } from './finance/transactions/search-transactions.js';
+import { categoriseTransactionTool } from './finance/transactions/categorise-transaction.js';
 import { getBillsDueTool } from './finance/bills/get-bills-due.js';
+import { getRecurringPaymentsTool } from './finance/bills/get-recurring-payments.js';
 import { getPotBalancesTool } from './finance/pots/get-pot-balances.js';
+import { updatePotBudgetTool } from './finance/pots/update-pot-budget.js';
+import { getMonthlyBudgetSummaryTool } from './finance/budgets/get-monthly-budget-summary.js';
 import { getSavingsGoalsTool } from './finance/goals/get-savings-goals.js';
+import { updateSavingsGoalTool } from './finance/goals/update-savings-goal.js';
 import { getDisposableIncomeTool } from './finance/affordability/get-disposable-income.js';
+import { getIncomeSummaryTool } from './finance/income/get-income-summary.js';
+import { getAiInsightsTool } from './finance/insights/get-ai-insights.js';
 
 const taskTools: AnyToolDef[] = [
   listTasksTool,
@@ -59,10 +67,13 @@ const labelTools: AnyToolDef[] = [listLabelsTool, createLabelTool];
  * ingestion (CSV exports and PDF statements, both via the same generic-CSV path finance-api
  * already supports) and debt-account entry/completeness-checking.
  *
- * The remaining Phase 49 tools (transaction summary/search/categorise, bill history, pot
- * contributions, budget summary, income summary, savings goal updates, financial health
- * score, AI insights, cashflow forecast, monthly report, tax year summary, compare months,
- * export) are still deliberately out of scope — unrelated to ingestion.
+ * Slice 3 (see docs/intent/2026-09-14-finance-mcp-reporting-tools.md) adds the remaining
+ * Phase 49 tools that are pure wrappers over already-tested finance-api endpoints: transaction
+ * search/categorise, recurring-payment detection, pot budget updates, monthly budget/income
+ * summaries, savings goal updates, and AI insights. Still deliberately out of scope: the tools
+ * with no backend endpoint at all (transaction summary, bill history, bill-flag-for-review,
+ * pot transactions, financial health score, cashflow forecast, monthly report, tax year
+ * summary, compare months, export) — each needs a real finance-api design decision first.
  */
 const financeTools: AnyToolDef[] = [
   getFinanceAccountsTool,
@@ -71,10 +82,18 @@ const financeTools: AnyToolDef[] = [
   getFinanceTransactionsTool,
   addManualTransactionTool,
   importTransactionsTool,
+  searchTransactionsTool,
+  categoriseTransactionTool,
   getBillsDueTool,
+  getRecurringPaymentsTool,
   getPotBalancesTool,
+  updatePotBudgetTool,
+  getMonthlyBudgetSummaryTool,
   getSavingsGoalsTool,
+  updateSavingsGoalTool,
   getDisposableIncomeTool,
+  getIncomeSummaryTool,
+  getAiInsightsTool,
 ];
 
 /** Every tool the server exposes. Add fitness arrays here as they land. */

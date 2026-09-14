@@ -32,3 +32,29 @@ export interface UpcomingBillResponse {
   daysUntilDue: number;
   isReminderDue: boolean;
 }
+
+/** Mirrors apps/finance-api/Features/Bills/Models/RecurringPattern.cs. */
+export const RECURRING_FREQUENCIES = ['Weekly', 'Monthly', 'Quarterly', 'Annual', 'Unknown'] as const;
+export type RecurringFrequency = (typeof RECURRING_FREQUENCIES)[number];
+
+export const RECURRING_PATTERN_TYPES = ['FixedBill', 'VariableBill', 'Subscription', 'RegularSpend'] as const;
+export type RecurringPatternType = (typeof RECURRING_PATTERN_TYPES)[number];
+
+export const AMOUNT_TRENDS = ['Stable', 'Increasing', 'Decreasing'] as const;
+export type AmountTrend = (typeof AMOUNT_TRENDS)[number];
+
+export interface RecurringPattern {
+  merchantName: string;
+  averageAmount: number;
+  latestAmount: number;
+  minAmount: number;
+  maxAmount: number;
+  detectedFrequency: RecurringFrequency;
+  patternType: RecurringPatternType;
+  amountTrend: AmountTrend;
+  occurrencesInPeriod: number;
+  lastOccurrence: string | null;
+  accountId: string;
+  accountName: string;
+  isLikelyInactive: boolean;
+}
