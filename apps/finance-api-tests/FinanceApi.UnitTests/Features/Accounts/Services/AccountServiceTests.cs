@@ -3,7 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using FinanceApi.Data;
 using FinanceApi.Features.Accounts.Models;
 using FinanceApi.Features.Accounts.Services;
+using FinanceApi.Features.Assets.Models;
 using FinanceApi.Features.Common.ActivityLogs.Services;
+using FinanceApi.Features.Transactions.Models;
 
 namespace FinanceApi.UnitTests.Features.Accounts.Services;
 
@@ -259,6 +261,79 @@ public class AccountServiceTests : IDisposable
         netWorth.Should().Be(500m);
     }
 
+    [Fact]
+    public async Task GetNetWorthAsync_IncludesTheCallersAssets()
+    {
+        _db.Accounts.Add(MakeAccount(_userId, "Current", balance: 1000m));
+        _db.Assets.Add(new Asset { UserId = _userId, Name = "House", Type = AssetType.Property, Value = 350000m });
+        await _db.SaveChangesAsync();
+
+        var netWorth = await _sut.GetNetWorthAsync(_userId);
+
+        netWorth.Should().Be(351000m);
+    }
+
+    [Fact]
+    public async Task GetNetWorthAsync_DoesNotIncludeOtherUsersAssets()
+    {
+        _db.Accounts.Add(MakeAccount(_userId, "Current", balance: 1000m));
+        _db.Assets.Add(new Asset { UserId = _otherUserId, Name = "Their house", Type = AssetType.Property, Value = 500000m });
+        await _db.SaveChangesAsync();
+
+        var netWorth = await _sut.GetNetWorthAsync(_userId);
+
+        netWorth.Should().Be(1000m);
+    }
+
+    // ── GetNetWorthHistoryAsync ───────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetNetWorthHistoryAsync_ReturnsOneOldestFirstPointPerMonth()
+    {
+        _db.Accounts.Add(MakeAccount(_userId, "Current", balance: 1000m));
+        await _db.SaveChangesAsync();
+
+        var history = await _sut.GetNetWorthHistoryAsync(_userId, months: 3);
+
+        history.Should().HaveCount(3);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        history[^1].Month.Should().Be(today.Month);
+        history[^1].Year.Should().Be(today.Year);
+    }
+
+    [Fact]
+    public async Task GetNetWorthHistoryAsync_TodaysPointEqualsCurrentBalance()
+    {
+        _db.Accounts.Add(MakeAccount(_userId, "Current", balance: 1000m));
+        await _db.SaveChangesAsync();
+
+        var history = await _sut.GetNetWorthHistoryAsync(_userId, months: 1);
+
+        history.Should().ContainSingle();
+        history[0].NetWorth.Should().Be(1000m);
+    }
+
+    [Fact]
+    public async Task GetNetWorthHistoryAsync_ReconstructsAPastMonthByRollingBackLaterTransactions()
+    {
+        var accountId = Guid.NewGuid();
+        _db.Accounts.Add(MakeAccount(_userId, "Current", balance: 1000m, id: accountId));
+        _db.Transactions.AddRange(
+            // Far enough in the past to predate every cutoff this test computes.
+            MakeTransaction(_userId, accountId, TransactionType.Credit, 2000m, new DateOnly(2020, 1, 1)),
+            // A debit from yesterday — after the 1-month-ago cutoff, so it should be rolled
+            // back (added back) when reconstructing that earlier point, but not today's.
+            MakeTransaction(_userId, accountId, TransactionType.Debit, 150m, DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1))
+        );
+        await _db.SaveChangesAsync();
+
+        var history = await _sut.GetNetWorthHistoryAsync(_userId, months: 2);
+
+        history.Should().HaveCount(2);
+        history[1].NetWorth.Should().Be(1000m); // today — reflects the debit as already happened
+        history[0].NetWorth.Should().Be(1150m); // 1 month ago — debit rolled back
+    }
+
     // ── Shared account visibility ────────────────────────────────────────────
 
     private async Task<Account> ShareAnAccountWith(Guid ownerId, Guid recipientId, string recipientUsername)
@@ -336,10 +411,11 @@ public class AccountServiceTests : IDisposable
         string name,
         bool isActive = true,
         decimal balance = 100m,
-        bool excludeFromNetWorth = false) =>
+        bool excludeFromNetWorth = false,
+        Guid? id = null) =>
         new()
         {
-            Id = Guid.NewGuid(),
+            Id = id ?? Guid.NewGuid(),
             UserId = userId,
             Name = name,
             Type = AccountType.Checking,
@@ -347,5 +423,20 @@ public class AccountServiceTests : IDisposable
             Balance = balance,
             IsActive = isActive,
             ExcludeFromNetWorth = excludeFromNetWorth
+        };
+
+    private static Transaction MakeTransaction(Guid userId, Guid accountId, TransactionType type, decimal amount, DateOnly date) =>
+        new()
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            AccountId = accountId,
+            Description = "Test",
+            Amount = amount,
+            BaseCurrencyAmount = amount,
+            Currency = "GBP",
+            Type = type,
+            TransactionDate = date,
+            ImportSource = ImportSource.Manual
         };
 }

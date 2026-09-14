@@ -2,6 +2,7 @@ using FinanceApi.Data;
 using FinanceApi.Features.Accounts.Models;
 using FinanceApi.Features.Common.ActivityLogs.Models;
 using FinanceApi.Features.Common.ActivityLogs.Services;
+using FinanceApi.Features.Transactions.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinanceApi.Features.Accounts.Services;
@@ -156,8 +157,67 @@ public class AccountService : IAccountService
         // one everywhere, rather than being visible in the list but silently excluded here.
         var visibleIds = await _sharing.GetVisibleAccountIdsAsync(userId);
 
-        return await _db.Accounts
+        var accountsTotal = await _db.Accounts
             .Where(a => visibleIds.Contains(a.Id) && a.IsActive && !a.ExcludeFromNetWorth)
             .SumAsync(a => a.Balance, ct);
+
+        // Assets aren't shared (see docs/intent/2026-09-14-net-worth-history.md) — only the
+        // caller's own assets net in, regardless of which accounts are visible to them.
+        var assetsTotal = await _db.Assets
+            .Where(a => a.UserId == userId)
+            .SumAsync(a => a.Value, ct);
+
+        return accountsTotal + assetsTotal;
+    }
+
+    public async Task<IReadOnlyList<NetWorthHistoryPoint>> GetNetWorthHistoryAsync(Guid userId, int months = 12, CancellationToken ct = default)
+    {
+        months = Math.Clamp(months, 1, 36);
+
+        var visibleIds = await _sharing.GetVisibleAccountIdsAsync(userId);
+
+        var accounts = await _db.Accounts
+            .Where(a => visibleIds.Contains(a.Id) && a.IsActive && !a.ExcludeFromNetWorth)
+            .Select(a => new { a.Id, a.Balance })
+            .ToListAsync(ct);
+
+        var accountIds = accounts.Select(a => a.Id).ToHashSet();
+        var currentTotal = accounts.Sum(a => a.Balance);
+
+        // Only the signed amount and date matter for reconstruction — pull once, reuse per point.
+        // Same sign convention TransactionService already applies when it adjusts Account.Balance:
+        // Credit adds, everything else (Debit, Transfer) subtracts.
+        var transactions = await _db.Transactions
+            .Where(t => accountIds.Contains(t.AccountId))
+            .Select(t => new { t.TransactionDate, t.Amount, t.Type })
+            .ToListAsync(ct);
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var points = new List<NetWorthHistoryPoint>(months);
+
+        for (var i = months - 1; i >= 0; i--)
+        {
+            // The most recent point (i == 0) is "as of today", not a fabricated future
+            // month-end — every earlier point is that month's actual last day, reconstructed
+            // by rolling back every transaction dated after it.
+            DateOnly asOf;
+            if (i == 0)
+            {
+                asOf = today;
+            }
+            else
+            {
+                var monthDate = today.AddMonths(-i);
+                asOf = new DateOnly(monthDate.Year, monthDate.Month, DateTime.DaysInMonth(monthDate.Year, monthDate.Month));
+            }
+
+            var futureEffect = transactions
+                .Where(t => t.TransactionDate > asOf)
+                .Sum(t => t.Type == TransactionType.Credit ? t.Amount : -t.Amount);
+
+            points.Add(new NetWorthHistoryPoint(asOf.Month, asOf.Year, asOf.ToString("MMM yyyy"), currentTotal - futureEffect));
+        }
+
+        return points;
     }
 }

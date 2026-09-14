@@ -75,5 +75,8 @@ public enum FinanceActivityType
     IncomeStreamDeleted,
     CategoryRuleCreated,
     CategoryRuleUpdated,
-    CategoryRuleDeleted
+    CategoryRuleDeleted,
+    AssetCreated,
+    AssetUpdated,
+    AssetDeleted
 }

@@ -83,12 +83,23 @@ public class AccountsController : ControllerBase
         return deleted ? NoContent() : NotFound();
     }
 
-    /// <summary>Get the user's net worth (sum of all active non-excluded account balances in GBP).</summary>
+    /// <summary>Get the user's net worth (active non-excluded account balances plus tracked assets).</summary>
     [HttpGet("net-worth")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetNetWorth(CancellationToken ct)
     {
         var netWorth = await _accounts.GetNetWorthAsync(GetUserId(), ct);
         return Ok(new { netWorth });
+    }
+
+    /// <summary>
+    /// Net worth by month for the last N months (default 12, clamped 1-36) — account balances
+    /// only, reconstructed from transaction history. The most recent point is as of today.
+    /// </summary>
+    [HttpGet("net-worth-history")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetNetWorthHistory([FromQuery] int months = 12, CancellationToken ct = default)
+    {
+        return Ok(await _accounts.GetNetWorthHistoryAsync(GetUserId(), months, ct));
     }
 }

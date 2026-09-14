@@ -158,5 +158,21 @@ public class AccountsControllerTests
         result!.NetWorth.Should().Be(3500m); // 1000 + 2500 (mortgage excluded)
     }
 
+    // ── GET /accounts/net-worth-history ───────────────────────────────────────
+
+    [Fact]
+    public async Task GetNetWorthHistory_ReturnsOnePointPerRequestedMonth()
+    {
+        await _client.PostAsJsonAsync("/api/v1/finance/accounts",
+            new CreateAccountRequest("Current", AccountType.Checking, "GBP", 1000m, null, null, null, null, false, null));
+
+        var response = await _client.GetAsync("/api/v1/finance/accounts/net-worth-history?months=6");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var history = await response.Content.ReadFromJsonAsync<List<NetWorthHistoryPoint>>();
+        history.Should().HaveCount(6);
+        history!.All(p => p.NetWorth == 1000m).Should().BeTrue(); // no transactions yet — flat history
+    }
+
     private record NetWorthResult(decimal NetWorth);
 }
