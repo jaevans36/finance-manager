@@ -10,6 +10,7 @@ using FinanceApi.Features.Bills.Services;
 using FinanceApi.Features.Budgets.Services;
 using FinanceApi.Features.Categories.Services;
 using FinanceApi.Features.CategoryRules.Services;
+using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Insights.Services;
 using FinanceApi.Features.SavingsGoals.Services;
 using FinanceApi.Features.Transactions.Services;
@@ -204,6 +205,7 @@ try
     builder.Services.AddScoped<IAnomalyDetectionService, AnomalyDetectionService>();
     builder.Services.AddScoped<ISubscriptionAuditorService, SubscriptionAuditorService>();
     builder.Services.AddScoped<INegotiationEngineService, NegotiationEngineService>();
+    builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 
     // ── Build + Middleware Pipeline ───────────────────────────────────────────
     var app = builder.Build();

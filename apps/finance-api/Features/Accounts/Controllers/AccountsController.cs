@@ -27,6 +27,10 @@ public class AccountsController : ControllerBase
         return Guid.Parse(sub);
     }
 
+    private string? GetIpAddress() => HttpContext.Connection.RemoteIpAddress?.ToString();
+
+    private string? GetUserAgent() => HttpContext.Request.Headers["User-Agent"].ToString();
+
     /// <summary>Get all accounts for the authenticated user.</summary>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -55,7 +59,7 @@ public class AccountsController : ControllerBase
         if (!ModelState.IsValid) return BadRequest(ModelState);
         if (string.IsNullOrWhiteSpace(request.Name)) return BadRequest("Account name is required");
         if (string.IsNullOrWhiteSpace(request.Currency)) return BadRequest("Currency is required");
-        var account = await _accounts.CreateAccountAsync(GetUserId(), request, ct);
+        var account = await _accounts.CreateAccountAsync(GetUserId(), request, GetIpAddress(), GetUserAgent(), ct);
         return CreatedAtAction(nameof(GetAccount), new { id = account.Id }, account);
     }
 
@@ -65,7 +69,7 @@ public class AccountsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateAccount(Guid id, [FromBody] UpdateAccountRequest request, CancellationToken ct)
     {
-        var account = await _accounts.UpdateAccountAsync(GetUserId(), id, request, ct);
+        var account = await _accounts.UpdateAccountAsync(GetUserId(), id, request, GetIpAddress(), GetUserAgent(), ct);
         return account is null ? NotFound() : Ok(account);
     }
 
@@ -75,7 +79,7 @@ public class AccountsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteAccount(Guid id, CancellationToken ct)
     {
-        var deleted = await _accounts.DeleteAccountAsync(GetUserId(), id, ct);
+        var deleted = await _accounts.DeleteAccountAsync(GetUserId(), id, GetIpAddress(), GetUserAgent(), ct);
         return deleted ? NoContent() : NotFound();
     }
 
