@@ -21,8 +21,11 @@ import { listLabelsTool } from './labels/list-labels.js';
 import { createLabelTool } from './labels/create-label.js';
 
 import { getFinanceAccountsTool } from './finance/accounts/get-accounts.js';
+import { updateAccountTool } from './finance/accounts/update-account.js';
+import { checkAccountCompletenessTool } from './finance/accounts/check-account-completeness.js';
 import { getFinanceTransactionsTool } from './finance/transactions/get-transactions.js';
 import { addManualTransactionTool } from './finance/transactions/add-manual-transaction.js';
+import { importTransactionsTool } from './finance/transactions/import-transactions.js';
 import { getBillsDueTool } from './finance/bills/get-bills-due.js';
 import { getPotBalancesTool } from './finance/pots/get-pot-balances.js';
 import { getSavingsGoalsTool } from './finance/goals/get-savings-goals.js';
@@ -50,17 +53,24 @@ const labelTools: AnyToolDef[] = [listLabelsTool, createLabelTool];
 
 /**
  * finance-mcp core tools slice 1 (see docs/intent/2026-09-13-finance-mcp-and-ingestion.md):
- * read-only access plus one write (manual transaction entry). The remaining Phase 49 tools
- * (transaction summary/search/categorise, bill history, pot contributions, budget summary,
- * income summary, savings goal updates, financial health score, AI insights, cashflow
- * forecast, monthly report, tax year summary, compare months, export, and CSV/PDF ingestion)
- * are deliberately out of scope here — a follow-up slice, same two-slice pattern used for the
- * VPS migration.
+ * read-only access plus one write (manual transaction entry).
+ *
+ * Slice 2 (see docs/intent/2026-09-14-finance-mcp-statement-ingestion.md) adds statement
+ * ingestion (CSV exports and PDF statements, both via the same generic-CSV path finance-api
+ * already supports) and debt-account entry/completeness-checking.
+ *
+ * The remaining Phase 49 tools (transaction summary/search/categorise, bill history, pot
+ * contributions, budget summary, income summary, savings goal updates, financial health
+ * score, AI insights, cashflow forecast, monthly report, tax year summary, compare months,
+ * export) are still deliberately out of scope — unrelated to ingestion.
  */
 const financeTools: AnyToolDef[] = [
   getFinanceAccountsTool,
+  updateAccountTool,
+  checkAccountCompletenessTool,
   getFinanceTransactionsTool,
   addManualTransactionTool,
+  importTransactionsTool,
   getBillsDueTool,
   getPotBalancesTool,
   getSavingsGoalsTool,

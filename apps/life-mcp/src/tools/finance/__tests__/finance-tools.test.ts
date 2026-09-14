@@ -17,15 +17,18 @@ import * as goalsApi from '../../../api/finance-goals-api.js';
 import * as affordabilityApi from '../../../api/finance-affordability-api.js';
 
 import { getFinanceAccountsTool } from '../accounts/get-accounts.js';
+import { updateAccountTool } from '../accounts/update-account.js';
+import { checkAccountCompletenessTool } from '../accounts/check-account-completeness.js';
 import { getFinanceTransactionsTool } from '../transactions/get-transactions.js';
 import { addManualTransactionTool } from '../transactions/add-manual-transaction.js';
+import { importTransactionsTool } from '../transactions/import-transactions.js';
 import { getBillsDueTool } from '../bills/get-bills-due.js';
 import { getPotBalancesTool } from '../pots/get-pot-balances.js';
 import { getSavingsGoalsTool } from '../goals/get-savings-goals.js';
 import { getDisposableIncomeTool } from '../affordability/get-disposable-income.js';
 import type { AnyToolDef } from '../../_register.js';
 import type { AccountSummary } from '../../../types/finance-account.js';
-import type { TransactionDto } from '../../../types/finance-transaction.js';
+import type { CsvImportResult, TransactionDto } from '../../../types/finance-transaction.js';
 
 const mockAccountsApi = accountsApi as jest.Mocked<typeof accountsApi>;
 const mockTransactionsApi = transactionsApi as jest.Mocked<typeof transactionsApi>;
@@ -318,6 +321,137 @@ describe('finance_get_disposable_income', () => {
   it('maps an API error to an isError result', async () => {
     mockAffordabilityApi.getAffordability.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
     const res = await getDisposableIncomeTool.handler({}, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_update_account', () => {
+  it('forwards only the provided fields, not accountId', async () => {
+    mockAccountsApi.updateFinanceAccount.mockResolvedValue({ ...account, balance: 500 });
+    await updateAccountTool.handler({ accountId: UUID, balance: 500 }, ctx);
+    expect(mockAccountsApi.updateFinanceAccount).toHaveBeenCalledWith(http, UUID, { balance: 500 });
+  });
+
+  it('accepts debt-specific fields', () => {
+    const parsed = parse(updateAccountTool, {
+      accountId: UUID,
+      interestRate: 21.9,
+      creditLimit: 3000,
+      promotionalExpiry: '2027-01-01',
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it('rejects a missing accountId', () => {
+    expect(parse(updateAccountTool, { balance: 100 }).success).toBe(false);
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockAccountsApi.updateFinanceAccount.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await updateAccountTool.handler({ accountId: UUID, balance: 100 }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_check_account_completeness', () => {
+  it('reports nothing required for a non-debt account type', async () => {
+    mockAccountsApi.getFinanceAccount.mockResolvedValue({ ...account, type: 'Checking' });
+    const res = await checkAccountCompletenessTool.handler({ accountId: UUID }, ctx);
+    expect(res.content[0].text).toContain('no debt fields are required');
+    expect(res.structuredContent).toEqual({ account: { ...account, type: 'Checking' }, missing: [] });
+  });
+
+  it('lists missing fields for a credit account', async () => {
+    mockAccountsApi.getFinanceAccount.mockResolvedValue({
+      ...account,
+      type: 'Credit',
+      interestRate: null,
+      creditLimit: 3000,
+      minimumMonthlyPayment: null,
+    });
+    const res = await checkAccountCompletenessTool.handler({ accountId: UUID }, ctx);
+    expect(res.content[0].text).toContain('interest rate');
+    expect(res.content[0].text).toContain('minimum monthly payment');
+    expect(res.content[0].text).not.toContain('credit limit — ');
+    expect(res.structuredContent?.missing).toEqual(['interestRate', 'minimumMonthlyPayment']);
+  });
+
+  it('reports nothing missing when a debt account is fully filled in', async () => {
+    mockAccountsApi.getFinanceAccount.mockResolvedValue({
+      ...account,
+      type: 'Credit',
+      interestRate: 21.9,
+      creditLimit: 3000,
+      minimumMonthlyPayment: 50,
+    });
+    const res = await checkAccountCompletenessTool.handler({ accountId: UUID }, ctx);
+    expect(res.content[0].text).toContain('has everything');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockAccountsApi.getFinanceAccount.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await checkAccountCompletenessTool.handler({ accountId: UUID }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_import_transactions', () => {
+  const importResult: CsvImportResult = {
+    imported: 2,
+    duplicates: 1,
+    errors: 0,
+    errorMessages: [],
+    batchId: 'batch-1',
+    skipped: 0,
+    skipMessages: null,
+  };
+
+  it('defaults bankFormat to generic', () => {
+    const parsed = parse(importTransactionsTool, { accountId: UUID, csv: 'Date,Description,Amount\n01/01/2025,TESCO,-10' });
+    expect(parsed.success && parsed.data.bankFormat).toBe('generic');
+  });
+
+  it('rejects an unknown bankFormat', () => {
+    expect(parse(importTransactionsTool, { accountId: UUID, csv: 'x', bankFormat: 'made-up-bank' }).success).toBe(false);
+  });
+
+  it('forwards accountId, csv content, and bankFormat', async () => {
+    mockTransactionsApi.importTransactionsCsv.mockResolvedValue(importResult);
+    const csv = 'Date,Description,Amount\n01/01/2025,TESCO,-10';
+    await importTransactionsTool.handler({ accountId: UUID, csv, bankFormat: 'barclays' }, ctx);
+    expect(mockTransactionsApi.importTransactionsCsv).toHaveBeenCalledWith(http, UUID, csv, 'barclays');
+  });
+
+  it('reports imported, duplicate, and error counts', async () => {
+    mockTransactionsApi.importTransactionsCsv.mockResolvedValue(importResult);
+    const res = await importTransactionsTool.handler(
+      { accountId: UUID, csv: 'Date,Description,Amount\n01/01/2025,TESCO,-10', bankFormat: 'generic' },
+      ctx,
+    );
+    expect(res.content[0].text).toContain('Imported:** 2');
+    expect(res.content[0].text).toContain('Duplicates skipped:** 1');
+  });
+
+  it('surfaces row-level error messages', async () => {
+    mockTransactionsApi.importTransactionsCsv.mockResolvedValue({
+      ...importResult,
+      imported: 0,
+      errors: 1,
+      errorMessages: ['Row 2: could not parse amount'],
+    });
+    const res = await importTransactionsTool.handler(
+      { accountId: UUID, csv: 'bad csv', bankFormat: 'generic' },
+      ctx,
+    );
+    expect(res.content[0].text).toContain('could not parse amount');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockTransactionsApi.importTransactionsCsv.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await importTransactionsTool.handler(
+      { accountId: UUID, csv: 'Date,Description,Amount\n01/01/2025,TESCO,-10', bankFormat: 'generic' },
+      ctx,
+    );
     expect(res.isError).toBe(true);
   });
 });

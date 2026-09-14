@@ -59,3 +59,17 @@ export interface CreateTransactionInput {
   reference?: string;
   notes?: string;
 }
+
+/** Bank formats finance-api's importer understands natively — see GET /transactions/import/formats. */
+export const KNOWN_BANK_FORMATS = ['barclays', 'hsbc', 'lloyds', 'monzo', 'starling', 'natwest', 'generic'] as const;
+
+/** POST /api/v1/finance/transactions/import response. */
+export interface CsvImportResult {
+  imported: number;
+  duplicates: number;
+  errors: number;
+  errorMessages: string[];
+  batchId: string;
+  skipped: number;
+  skipMessages: string[] | null;
+}

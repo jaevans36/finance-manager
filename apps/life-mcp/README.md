@@ -10,10 +10,13 @@ manage your tasks, events, labels, and (optionally) finances without a browser.
 >
 > `finance-mcp` core tools slice 1 (2026-09-14, see
 > `docs/intent/2026-09-13-finance-mcp-and-ingestion.md`) added 7 `finance_*` tools behind
-> an optional `FIN_API_BASE_URL`. CSV/PDF ingestion, cross-session duplicate detection,
-> and the remaining Phase 49 tools (health score, AI insights, cashflow forecast, monthly
-> report, tax year summary, compare months, export, and more) are a deliberate follow-up
-> slice, not done here.
+> an optional `FIN_API_BASE_URL`. Slice 2 (2026-09-14, see
+> `docs/intent/2026-09-14-finance-mcp-statement-ingestion.md`) added statement ingestion
+> (CSV exports and PDF statements, both via finance-api's existing `generic`-format CSV
+> path) and debt-account entry/completeness-checking — 3 more tools. The remaining
+> Phase 49 tools (health score, AI insights, cashflow forecast, monthly report, tax year
+> summary, compare months, export, and more) are still a deliberate follow-up, not done
+> here.
 
 ## How it authenticates
 
@@ -88,8 +91,11 @@ then add the three env vars under `mcpServers.life-manager.env` in `~/.claude.js
 | `list_labels` | The user's task labels with id and colour |
 | `create_label` | Create a label (`name`, `colourHex` `#rrggbb`); fails on a duplicate name |
 | `finance_get_accounts` | List the user's finance accounts, including any shared with them |
+| `finance_update_account` | Update account fields — balance updates, debt terms (interest rate, credit limit, promotional details, mortgage term) |
+| `finance_check_account_completeness` | Check a debt account (credit/mortgage/loan) for fields the Debt/Affordability features depend on |
 | `finance_get_transactions` | Paginated transactions for one account, with date/category/type/search filters |
 | `finance_add_manual_transaction` | Record a transaction directly (spoken/typed figure); **does not de-duplicate** |
+| `finance_import_transactions` | Import a batch from CSV — a real bank export, or a `generic`-format CSV built from a PDF statement; de-duplicates against the database |
 | `finance_get_bills_due` | Upcoming bills within a window, soonest first |
 | `finance_get_pot_balances` | Spending pot (envelope budget) balances for a month |
 | `finance_get_savings_goals` | Savings goals with progress and projected completion |
@@ -100,10 +106,7 @@ Priority is the string enum `Low | Medium | High | Critical`. Events have no rec
 has a search endpoint.
 
 `finance_*` tools require `FIN_API_BASE_URL` (see Setup below); without it they're simply
-not registered. Note `finance_get_transactions` only sees transactions on accounts the
-caller owns — finance-api's `TransactionsController` isn't sharing-aware yet even though
-`AccountsController` is, so a transaction on an account shared with (not owned by) the
-caller isn't currently reachable through this tool.
+not registered.
 
 ## Resources
 
