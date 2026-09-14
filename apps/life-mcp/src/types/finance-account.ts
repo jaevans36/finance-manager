@@ -45,3 +45,33 @@ export interface AccountSummary {
 export interface NetWorthResponse {
   netWorth: number;
 }
+
+/**
+ * PATCH /api/v1/finance/accounts/{id} body — every field optional, omitted = unchanged.
+ * Mirrors UpdateAccountRequest in apps/finance-api/Features/Accounts/Services/IAccountService.cs exactly.
+ */
+export interface UpdateAccountInput {
+  name?: string;
+  type?: AccountType;
+  currency?: string;
+  balance?: number;
+  institution?: string;
+  accountNumberSuffix?: string;
+  isActive?: boolean;
+  colour?: string;
+  icon?: string;
+  excludeFromNetWorth?: boolean;
+  notes?: string;
+  creditLimit?: number;
+  interestRate?: number;
+  promotionalBalance?: number;
+  promotionalRate?: number;
+  promotionalExpiry?: string;
+  promotionalRevertRate?: number;
+  mortgageStartDate?: string;
+  mortgageTermYears?: number;
+  isInterestOnly?: boolean;
+  minimumMonthlyPayment?: number;
+  currentMonthlyPayment?: number;
+  loanEndDate?: string;
+}

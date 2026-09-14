@@ -1,6 +1,7 @@
 import type { AxiosInstance } from 'axios';
 import type {
   CreateTransactionInput,
+  CsvImportResult,
   ListTransactionsParams,
   PagedResult,
   TransactionDto,
@@ -29,5 +30,25 @@ export async function createTransaction(
   input: CreateTransactionInput,
 ): Promise<TransactionDto> {
   const res = await http.post<TransactionDto>(BASE, pruneUndefined({ ...input }));
+  return res.data;
+}
+
+/**
+ * Import a CSV (a real bank export, or a `generic`-format CSV built from a PDF
+ * statement Claude has already read) via the same multipart endpoint the web app uses.
+ * Duplicate detection happens server-side, against the real database.
+ */
+export async function importTransactionsCsv(
+  http: AxiosInstance,
+  accountId: string,
+  csvContent: string,
+  bankFormat: string,
+): Promise<CsvImportResult> {
+  const form = new FormData();
+  form.append('file', new Blob([csvContent], { type: 'text/csv' }), 'import.csv');
+
+  const res = await http.post<CsvImportResult>(`${BASE}/import`, form, {
+    params: { accountId, bankFormat },
+  });
   return res.data;
 }
