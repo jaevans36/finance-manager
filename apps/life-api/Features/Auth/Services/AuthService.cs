@@ -15,6 +15,7 @@ public interface IAuthService
     System.Threading.Tasks.Task<AuthResponse> LoginAsync(LoginRequest request, string? ipAddress, string? userAgent);
     System.Threading.Tasks.Task LogoutAsync(Guid userId, string token);
     System.Threading.Tasks.Task<User?> GetUserByIdAsync(Guid userId);
+    System.Threading.Tasks.Task ChangePasswordAsync(Guid userId, string currentPassword, string newPassword, string? ipAddress, string? userAgent);
 }
 
 public class AuthService : IAuthService
@@ -189,6 +190,35 @@ public class AuthService : IAuthService
     public async System.Threading.Tasks.Task<User?> GetUserByIdAsync(Guid userId)
     {
         return await _context.Users.FindAsync(userId);
+    }
+
+    public async System.Threading.Tasks.Task ChangePasswordAsync(Guid userId, string currentPassword, string newPassword, string? ipAddress, string? userAgent)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            throw new InvalidOperationException("User not found");
+        }
+
+        if (!_passwordHasher.VerifyPassword(currentPassword, user.PasswordHash))
+        {
+            throw new InvalidOperationException("Current password is incorrect");
+        }
+
+        user.PasswordHash = _passwordHasher.HashPassword(newPassword);
+        user.UpdatedAt = DateTime.UtcNow;
+
+        // Session rows are an audit/device list, not an auth gate (JWTs aren't checked against
+        // them), so clearing them here doesn't sign the caller out of their current session —
+        // it just forces re-authentication anywhere else the account was signed in.
+        var sessions = await _context.Sessions
+            .Where(s => s.UserId == userId)
+            .ToListAsync();
+        _context.Sessions.RemoveRange(sessions);
+
+        await _context.SaveChangesAsync();
+
+        await _activityLogService.LogAsync(userId, ActivityType.PasswordChange, "Password changed", ipAddress, userAgent);
     }
 
     private static UserDto MapToUserDto(User user)

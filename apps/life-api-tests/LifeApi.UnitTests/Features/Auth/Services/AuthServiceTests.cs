@@ -374,6 +374,94 @@ public class AuthServiceTests : IDisposable
 
     #endregion
 
+    #region ChangePassword Tests
+
+    [Fact]
+    public async Task ChangePasswordAsync_WithCorrectCurrentPassword_ShouldUpdateHashAndClearSessions()
+    {
+        // Arrange
+        var user = new User
+        {
+            Email = "test@example.com",
+            PasswordHash = "old_hash",
+            EmailVerified = true
+        };
+        _context.Users.Add(user);
+
+        var session = new Session
+        {
+            UserId = user.Id,
+            Token = "some_token",
+            ExpiresAt = DateTime.UtcNow.AddDays(1)
+        };
+        _context.Sessions.Add(session);
+        await _context.SaveChangesAsync();
+
+        _mockPasswordHasher
+            .Setup(x => x.VerifyPassword("CurrentPass123!", "old_hash"))
+            .Returns(true);
+        _mockPasswordHasher
+            .Setup(x => x.HashPassword("NewPass123!"))
+            .Returns("new_hash");
+
+        // Act
+        await _authService.ChangePasswordAsync(user.Id, "CurrentPass123!", "NewPass123!", "127.0.0.1", "TestUserAgent");
+
+        // Assert
+        var updatedUser = await _context.Users.FindAsync(user.Id);
+        updatedUser!.PasswordHash.Should().Be("new_hash");
+
+        var remainingSessions = await _context.Sessions.Where(s => s.UserId == user.Id).ToListAsync();
+        remainingSessions.Should().BeEmpty();
+
+        _mockActivityLogService.Verify(
+            x => x.LogAsync(user.Id, ActivityType.PasswordChange, It.IsAny<string>(), "127.0.0.1", "TestUserAgent"),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_WithIncorrectCurrentPassword_ShouldThrowAndLeaveHashUnchanged()
+    {
+        // Arrange
+        var user = new User
+        {
+            Email = "test@example.com",
+            PasswordHash = "old_hash",
+            EmailVerified = true
+        };
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        _mockPasswordHasher
+            .Setup(x => x.VerifyPassword("WrongPassword", "old_hash"))
+            .Returns(false);
+
+        // Act & Assert
+        var act = async () => await _authService.ChangePasswordAsync(user.Id, "WrongPassword", "NewPass123!", null, null);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Current password is incorrect");
+
+        var unchangedUser = await _context.Users.FindAsync(user.Id);
+        unchangedUser!.PasswordHash.Should().Be("old_hash");
+
+        _mockActivityLogService.Verify(
+            x => x.LogAsync(It.IsAny<Guid>(), ActivityType.PasswordChange, It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_WithNonExistentUser_ShouldThrow()
+    {
+        // Act & Assert
+        var act = async () => await _authService.ChangePasswordAsync(Guid.NewGuid(), "Whatever", "NewPass123!", null, null);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("User not found");
+    }
+
+    #endregion
+
     // Cleanup in-memory database after each test
     public void Dispose()
     {

@@ -267,4 +267,99 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>
     }
 
     #endregion
+
+    #region ChangePassword Tests
+
+    [Fact]
+    public async Task ChangePassword_WithCorrectCurrentPassword_ShouldReturnOkAndAllowLoginWithNewPassword()
+    {
+        // Arrange - Register to get token
+        var email = $"changepw{Guid.NewGuid()}@example.com";
+        var currentPassword = "OldPassword123!";
+        var registerRequest = new RegisterRequest
+        {
+            Email = email,
+            Username = $"u{Guid.NewGuid():N}"[..16],
+            Password = currentPassword
+        };
+        var registerResponse = await _client.PostAsJsonAsync("/api/v1/auth/register", registerRequest);
+        var authResponse = await registerResponse.Content.ReadFromJsonAsync<AuthResponse>();
+
+        _client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authResponse!.Token);
+
+        var changeRequest = new ChangePasswordRequest
+        {
+            CurrentPassword = currentPassword,
+            NewPassword = "NewPassword456!"
+        };
+
+        // Act
+        var response = await _client.PatchAsJsonAsync("/api/v1/auth/me/password", changeRequest);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // New password now works
+        var newLoginResponse = await _client.PostAsJsonAsync("/api/v1/auth/login", new LoginRequest
+        {
+            EmailOrUsername = email,
+            Password = "NewPassword456!"
+        });
+        newLoginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Old password no longer works
+        var oldLoginResponse = await _client.PostAsJsonAsync("/api/v1/auth/login", new LoginRequest
+        {
+            EmailOrUsername = email,
+            Password = currentPassword
+        });
+        oldLoginResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task ChangePassword_WithIncorrectCurrentPassword_ShouldReturnBadRequest()
+    {
+        // Arrange - Register to get token
+        var email = $"changepwwrong{Guid.NewGuid()}@example.com";
+        var registerRequest = new RegisterRequest
+        {
+            Email = email,
+            Username = $"u{Guid.NewGuid():N}"[..16],
+            Password = "CorrectPassword123!"
+        };
+        var registerResponse = await _client.PostAsJsonAsync("/api/v1/auth/register", registerRequest);
+        var authResponse = await registerResponse.Content.ReadFromJsonAsync<AuthResponse>();
+
+        _client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authResponse!.Token);
+
+        var changeRequest = new ChangePasswordRequest
+        {
+            CurrentPassword = "WrongPassword123!",
+            NewPassword = "NewPassword456!"
+        };
+
+        // Act
+        var response = await _client.PatchAsJsonAsync("/api/v1/auth/me/password", changeRequest);
+
+        // Assert - not a 401, so the frontend's global 401 handler doesn't log the caller out for a typo
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task ChangePassword_WithoutToken_ShouldReturnUnauthorized()
+    {
+        // Act
+        var response = await _client.PatchAsJsonAsync("/api/v1/auth/me/password", new ChangePasswordRequest
+        {
+            CurrentPassword = "Whatever123!",
+            NewPassword = "NewPassword456!"
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    #endregion
 }

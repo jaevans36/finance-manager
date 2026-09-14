@@ -3,8 +3,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   forgotPasswordSchema,
   resetPasswordSchema,
+  changePasswordSchema,
   type ForgotPasswordInput,
   type ResetPasswordInput,
+  type ChangePasswordInput,
 } from '@life-manager/schema';
 
 export function useForgotPasswordForm() {
@@ -21,6 +23,17 @@ export function useResetPasswordForm() {
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
       password: '',
+      confirmPassword: '',
+    },
+  });
+}
+
+export function useChangePasswordForm() {
+  return useForm<ChangePasswordInput>({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: {
+      currentPassword: '',
+      newPassword: '',
       confirmPassword: '',
     },
   });
