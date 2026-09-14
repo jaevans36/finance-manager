@@ -3,6 +3,8 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using FinanceApi.Data;
 using FinanceApi.Features.Accounts.Models;
+using FinanceApi.Features.Accounts.Services;
+using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Transactions.Models;
 using FinanceApi.Features.Transactions.Services;
 
@@ -34,7 +36,8 @@ public class CsvImportServiceTests : IDisposable
         });
         _db.SaveChanges();
 
-        _sut = new CsvImportService(_db, new MerchantNormalisationService());
+        var activityLog = new ActivityLogService(_db);
+        _sut = new CsvImportService(_db, new MerchantNormalisationService(), new AccountSharingService(_db, activityLog));
     }
 
     public void Dispose() => _db.Dispose();
@@ -300,6 +303,41 @@ public class CsvImportServiceTests : IDisposable
 
         result.Imported.Should().Be(0);
         result.Duplicates.Should().Be(0);
+    }
+
+    // ── Account visibility ────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task ImportAsync_WhenCallerHasNoVisibilityIntoTheAccount_ThrowsAndImportsNothing()
+    {
+        var otherUserId = Guid.NewGuid();
+        var csv = "Date,Memo,Amount\n01/01/2025,\"TESCO\",-12.50";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var act = () => _sut.ImportAsync(otherUserId, _accountId, stream, "barclays");
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>();
+        (await _db.Transactions.CountAsync()).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ImportAsync_WhenAccountIsSharedAndAccepted_AllowsTheRecipientToImport()
+    {
+        var recipientId = Guid.NewGuid();
+        _db.AccountShares.Add(new AccountShare
+        {
+            AccountId = _accountId,
+            SharedByUserId = _userId,
+            SharedWithUserId = recipientId,
+            Status = AccountShareStatus.Accepted
+        });
+        await _db.SaveChangesAsync();
+        var csv = "Date,Memo,Amount\n01/01/2025,\"TESCO\",-12.50";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var result = await _sut.ImportAsync(recipientId, _accountId, stream, "barclays");
+
+        result.Imported.Should().Be(1);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
