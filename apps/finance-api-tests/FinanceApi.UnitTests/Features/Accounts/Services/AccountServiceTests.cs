@@ -21,7 +21,8 @@ public class AccountServiceTests : IDisposable
             .Options;
 
         _db = new FinanceDbContext(options, FinanceApi.UnitTests.TestHelpers.TestEncryption.Service);
-        _sut = new AccountService(_db, new ActivityLogService(_db));
+        var activityLog = new ActivityLogService(_db);
+        _sut = new AccountService(_db, activityLog, new AccountSharingService(_db, activityLog));
     }
 
     public void Dispose() => _db.Dispose();
@@ -256,6 +257,76 @@ public class AccountServiceTests : IDisposable
         var netWorth = await _sut.GetNetWorthAsync(_userId);
 
         netWorth.Should().Be(500m);
+    }
+
+    // ── Shared account visibility ────────────────────────────────────────────
+
+    private async Task<Account> ShareAnAccountWith(Guid ownerId, Guid recipientId, string recipientUsername)
+    {
+        var account = MakeAccount(ownerId, "Joint Account");
+        _db.Accounts.Add(account);
+        _db.LifeManagerUsers.Add(new FinanceApi.Features.Common.Users.Models.LifeManagerUser { Id = recipientId, Email = $"{recipientUsername}@example.test", Username = recipientUsername });
+        await _db.SaveChangesAsync();
+
+        var sharing = new AccountSharingService(_db, new FinanceApi.Features.Common.ActivityLogs.Services.ActivityLogService(_db));
+        var share = await sharing.ShareAccountAsync(account.Id, ownerId, recipientUsername);
+        await sharing.AcceptInvitationAsync(share.Id, recipientId);
+        return account;
+    }
+
+    [Fact]
+    public async Task GetAccountsAsync_IncludesAnAcceptedSharedAccount()
+    {
+        var account = await ShareAnAccountWith(_otherUserId, _userId, "recipient1");
+
+        var result = await _sut.GetAccountsAsync(_userId);
+
+        result.Select(a => a.Id).Should().Contain(account.Id);
+    }
+
+    [Fact]
+    public async Task GetAccountByIdAsync_ReturnsAnAccountSharedWithTheCaller()
+    {
+        var account = await ShareAnAccountWith(_otherUserId, _userId, "recipient2");
+
+        var result = await _sut.GetAccountByIdAsync(_userId, account.Id);
+
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task UpdateAccountAsync_AllowsUpdatingAnAccountSharedWithTheCaller()
+    {
+        var account = await ShareAnAccountWith(_otherUserId, _userId, "recipient3");
+
+        var request = new UpdateAccountRequest("Updated By Recipient", null, null, null, null, null, null, null, null, null, null);
+        var result = await _sut.UpdateAccountAsync(_userId, account.Id, request);
+
+        result.Should().NotBeNull();
+        result!.Name.Should().Be("Updated By Recipient");
+    }
+
+    [Fact]
+    public async Task DeleteAccountAsync_DoesNotAllowDeletingAnAccountOnlySharedWithTheCaller()
+    {
+        var account = await ShareAnAccountWith(_otherUserId, _userId, "recipient4");
+
+        var deleted = await _sut.DeleteAccountAsync(_userId, account.Id);
+
+        deleted.Should().BeFalse();
+        (await _db.Accounts.FindAsync(account.Id))!.IsActive.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetNetWorthAsync_IncludesAnAcceptedSharedAccount()
+    {
+        var account = await ShareAnAccountWith(_otherUserId, _userId, "recipient5");
+        account.Balance = 2500m;
+        await _db.SaveChangesAsync();
+
+        var netWorth = await _sut.GetNetWorthAsync(_userId);
+
+        netWorth.Should().Be(2500m);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

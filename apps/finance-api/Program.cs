@@ -187,6 +187,7 @@ try
 
     // ── Application Services ──────────────────────────────────────────────────
     builder.Services.AddScoped<IAccountService, AccountService>();
+    builder.Services.AddScoped<IAccountSharingService, AccountSharingService>();
     builder.Services.AddScoped<ITransactionService, TransactionService>();
     builder.Services.AddScoped<ICategoryService, CategoryService>();
     builder.Services.AddSingleton<IMerchantNormalisationService, MerchantNormalisationService>();
