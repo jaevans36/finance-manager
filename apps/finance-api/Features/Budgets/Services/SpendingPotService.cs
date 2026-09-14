@@ -1,5 +1,7 @@
 using FinanceApi.Data;
 using FinanceApi.Features.Budgets.Models;
+using FinanceApi.Features.Common.ActivityLogs.Models;
+using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Transactions.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,8 +11,13 @@ namespace FinanceApi.Features.Budgets.Services;
 public class SpendingPotService : ISpendingPotService
 {
     private readonly FinanceDbContext _db;
+    private readonly IActivityLogService _activityLog;
 
-    public SpendingPotService(FinanceDbContext db) => _db = db;
+    public SpendingPotService(FinanceDbContext db, IActivityLogService activityLog)
+    {
+        _db = db;
+        _activityLog = activityLog;
+    }
 
     public async Task<IEnumerable<SpendingPotWithProgress>> GetPotsWithProgressAsync(Guid userId, int month, int year, CancellationToken ct = default)
     {
@@ -52,7 +59,7 @@ public class SpendingPotService : ISpendingPotService
         return pots.Select(pot => BuildProgress(pot, categorySpend, today));
     }
 
-    public async Task<SpendingPotWithProgress> CreatePotAsync(Guid userId, CreateSpendingPotRequest request, CancellationToken ct = default)
+    public async Task<SpendingPotWithProgress> CreatePotAsync(Guid userId, CreateSpendingPotRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var pot = new SpendingPot
         {
@@ -79,45 +86,52 @@ public class SpendingPotService : ISpendingPotService
 
         _db.SpendingPots.Add(pot);
         await _db.SaveChangesAsync(ct);
+        // Name is column-encrypted — never put its value in a log.
+        await _activityLog.LogAsync(userId, FinanceActivityType.SpendingPotCreated, $"Created {pot.Type} pot", ipAddress, userAgent);
 
         var now = DateTime.UtcNow;
         return (await GetPotsWithProgressAsync(userId, now.Month, now.Year, ct))
             .First(p => p.Id == pot.Id);
     }
 
-    public async Task<SpendingPotWithProgress?> UpdatePotAsync(Guid userId, Guid potId, UpdateSpendingPotRequest request, CancellationToken ct = default)
+    public async Task<SpendingPotWithProgress?> UpdatePotAsync(Guid userId, Guid potId, UpdateSpendingPotRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var pot = await _db.SpendingPots
             .FirstOrDefaultAsync(p => p.Id == potId && p.UserId == userId, ct);
 
         if (pot is null) return null;
 
-        if (request.Name is not null) pot.Name = request.Name;
-        if (request.RolloverEnabled.HasValue) pot.RolloverEnabled = request.RolloverEnabled.Value;
-        if (request.Icon is not null) pot.Icon = request.Icon;
-        if (request.Colour is not null) pot.Colour = request.Colour;
+        var changedFields = new List<string>();
+        if (request.Name is not null) { pot.Name = request.Name; changedFields.Add(nameof(SpendingPot.Name)); }
+        if (request.RolloverEnabled.HasValue) { pot.RolloverEnabled = request.RolloverEnabled.Value; changedFields.Add(nameof(SpendingPot.RolloverEnabled)); }
+        if (request.Icon is not null) { pot.Icon = request.Icon; changedFields.Add(nameof(SpendingPot.Icon)); }
+        if (request.Colour is not null) { pot.Colour = request.Colour; changedFields.Add(nameof(SpendingPot.Colour)); }
 
         if (pot.Type == PotType.SinkingFund)
         {
-            if (request.AnnualAmount.HasValue) pot.AnnualAmount = request.AnnualAmount.Value;
-            if (request.NextPaymentDate.HasValue) pot.NextPaymentDate = request.NextPaymentDate.Value;
+            if (request.AnnualAmount.HasValue) { pot.AnnualAmount = request.AnnualAmount.Value; changedFields.Add(nameof(SpendingPot.AnnualAmount)); }
+            if (request.NextPaymentDate.HasValue) { pot.NextPaymentDate = request.NextPaymentDate.Value; changedFields.Add(nameof(SpendingPot.NextPaymentDate)); }
             pot.BudgetAmount = Math.Round((pot.AnnualAmount ?? 0m) / 12, 2);
         }
         else
         {
-            if (request.BudgetAmount.HasValue) pot.BudgetAmount = request.BudgetAmount.Value;
-            if (request.CategoryIds is not null) pot.CategoryIds = request.CategoryIds.ToList();
+            if (request.BudgetAmount.HasValue) { pot.BudgetAmount = request.BudgetAmount.Value; changedFields.Add(nameof(SpendingPot.BudgetAmount)); }
+            if (request.CategoryIds is not null) { pot.CategoryIds = request.CategoryIds.ToList(); changedFields.Add(nameof(SpendingPot.CategoryIds)); }
         }
 
         pot.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
+        if (changedFields.Count > 0)
+        {
+            await _activityLog.LogAsync(userId, FinanceActivityType.SpendingPotUpdated, $"Updated: {string.Join(", ", changedFields)}", ipAddress, userAgent);
+        }
 
         var now = DateTime.UtcNow;
         return (await GetPotsWithProgressAsync(userId, now.Month, now.Year, ct))
             .First(p => p.Id == pot.Id);
     }
 
-    public async Task<SpendingPotWithProgress?> ContributeToSinkingFundAsync(Guid userId, Guid potId, CancellationToken ct = default)
+    public async Task<SpendingPotWithProgress?> ContributeToSinkingFundAsync(Guid userId, Guid potId, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var pot = await _db.SpendingPots
             .FirstOrDefaultAsync(p => p.Id == potId && p.UserId == userId && p.Type == PotType.SinkingFund, ct);
@@ -133,13 +147,14 @@ public class SpendingPotService : ISpendingPotService
             : pot.AccumulatedAmount + pot.BudgetAmount;
         pot.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
+        await _activityLog.LogAsync(userId, FinanceActivityType.SpendingPotUpdated, "Sinking fund contribution", ipAddress, userAgent);
 
         var now = DateTime.UtcNow;
         return (await GetPotsWithProgressAsync(userId, now.Month, now.Year, ct))
             .First(p => p.Id == pot.Id);
     }
 
-    public async Task<bool> DeletePotAsync(Guid userId, Guid potId, CancellationToken ct = default)
+    public async Task<bool> DeletePotAsync(Guid userId, Guid potId, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var pot = await _db.SpendingPots
             .FirstOrDefaultAsync(p => p.Id == potId && p.UserId == userId, ct);
@@ -147,10 +162,11 @@ public class SpendingPotService : ISpendingPotService
         if (pot is null) return false;
         _db.SpendingPots.Remove(pot);
         await _db.SaveChangesAsync(ct);
+        await _activityLog.LogAsync(userId, FinanceActivityType.SpendingPotDeleted, $"Deleted {pot.Type} pot", ipAddress, userAgent);
         return true;
     }
 
-    public async Task<bool> AssignTransactionAsync(Guid userId, Guid potId, Guid transactionId, CancellationToken ct = default)
+    public async Task<bool> AssignTransactionAsync(Guid userId, Guid potId, Guid transactionId, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default)
     {
         var pot = await _db.SpendingPots.FirstOrDefaultAsync(p => p.Id == potId && p.UserId == userId, ct);
         var tx = await _db.Transactions.FirstOrDefaultAsync(t => t.Id == transactionId && t.UserId == userId, ct);
@@ -162,6 +178,7 @@ public class SpendingPotService : ISpendingPotService
             pot.CategoryIds.Add(tx.CategoryId.Value);
             pot.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync(ct);
+            await _activityLog.LogAsync(userId, FinanceActivityType.SpendingPotUpdated, "Assigned a transaction's category to this pot", ipAddress, userAgent);
         }
         return true;
     }

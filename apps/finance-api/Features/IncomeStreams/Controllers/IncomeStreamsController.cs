@@ -13,6 +13,10 @@ public class IncomeStreamsController(IIncomeStreamService streams) : ControllerB
 {
     private Guid UserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+    private string? GetIpAddress() => HttpContext.Connection.RemoteIpAddress?.ToString();
+
+    private string? GetUserAgent() => HttpContext.Request.Headers["User-Agent"].ToString();
+
     /// <summary>List all income streams for the authenticated user.</summary>
     [HttpGet]
     public async Task<IActionResult> GetStreams(CancellationToken ct)
@@ -25,7 +29,7 @@ public class IncomeStreamsController(IIncomeStreamService streams) : ControllerB
         if (string.IsNullOrWhiteSpace(request.Name)) return BadRequest("Name is required.");
         if (request.MonthlyAmount < 0) return BadRequest("Monthly amount cannot be negative.");
 
-        var stream = await streams.CreateStreamAsync(UserId, request, ct);
+        var stream = await streams.CreateStreamAsync(UserId, request, GetIpAddress(), GetUserAgent(), ct);
         return CreatedAtAction(nameof(GetStreams), new { id = stream.Id }, stream);
     }
 
@@ -36,7 +40,7 @@ public class IncomeStreamsController(IIncomeStreamService streams) : ControllerB
         if (request.MonthlyAmount.HasValue && request.MonthlyAmount.Value < 0)
             return BadRequest("Monthly amount cannot be negative.");
 
-        var updated = await streams.UpdateStreamAsync(UserId, id, request, ct);
+        var updated = await streams.UpdateStreamAsync(UserId, id, request, GetIpAddress(), GetUserAgent(), ct);
         return updated is null ? NotFound() : Ok(updated);
     }
 
@@ -44,7 +48,7 @@ public class IncomeStreamsController(IIncomeStreamService streams) : ControllerB
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteStream(Guid id, CancellationToken ct)
     {
-        var success = await streams.DeleteStreamAsync(UserId, id, ct);
+        var success = await streams.DeleteStreamAsync(UserId, id, GetIpAddress(), GetUserAgent(), ct);
         return success ? NoContent() : NotFound();
     }
 

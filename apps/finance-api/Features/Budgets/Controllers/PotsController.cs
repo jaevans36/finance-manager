@@ -24,6 +24,10 @@ public class PotsController : ControllerBase
         return Guid.Parse(sub);
     }
 
+    private string? GetIpAddress() => HttpContext.Connection.RemoteIpAddress?.ToString();
+
+    private string? GetUserAgent() => HttpContext.Request.Headers["User-Agent"].ToString();
+
     /// <summary>List all spending pots with live progress for the given month/year.</summary>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -48,7 +52,7 @@ public class PotsController : ControllerBase
         {
             return BadRequest("Budget amount must be greater than zero");
         }
-        var pot = await _pots.CreatePotAsync(GetUserId(), request, ct);
+        var pot = await _pots.CreatePotAsync(GetUserId(), request, GetIpAddress(), GetUserAgent(), ct);
         return Created($"/api/v1/finance/pots/{pot.Id}", pot);
     }
 
@@ -58,7 +62,7 @@ public class PotsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdatePot(Guid id, [FromBody] UpdateSpendingPotRequest request, CancellationToken ct)
     {
-        var pot = await _pots.UpdatePotAsync(GetUserId(), id, request, ct);
+        var pot = await _pots.UpdatePotAsync(GetUserId(), id, request, GetIpAddress(), GetUserAgent(), ct);
         return pot is null ? NotFound() : Ok(pot);
     }
 
@@ -68,7 +72,7 @@ public class PotsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeletePot(Guid id, CancellationToken ct)
     {
-        var deleted = await _pots.DeletePotAsync(GetUserId(), id, ct);
+        var deleted = await _pots.DeletePotAsync(GetUserId(), id, GetIpAddress(), GetUserAgent(), ct);
         return deleted ? NoContent() : NotFound();
     }
 
@@ -80,7 +84,7 @@ public class PotsController : ControllerBase
     public async Task<IActionResult> AssignTransaction(Guid id, [FromQuery] Guid transactionId, CancellationToken ct)
     {
         if (transactionId == Guid.Empty) return BadRequest("transactionId is required");
-        var result = await _pots.AssignTransactionAsync(GetUserId(), id, transactionId, ct);
+        var result = await _pots.AssignTransactionAsync(GetUserId(), id, transactionId, GetIpAddress(), GetUserAgent(), ct);
         return result ? Ok() : NotFound();
     }
 
@@ -90,7 +94,7 @@ public class PotsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Contribute(Guid id, CancellationToken ct)
     {
-        var pot = await _pots.ContributeToSinkingFundAsync(GetUserId(), id, ct);
+        var pot = await _pots.ContributeToSinkingFundAsync(GetUserId(), id, GetIpAddress(), GetUserAgent(), ct);
         return pot is null ? NotFound() : Ok(pot);
     }
 }

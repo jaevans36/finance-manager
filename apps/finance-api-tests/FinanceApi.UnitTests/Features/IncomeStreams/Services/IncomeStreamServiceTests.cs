@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using FinanceApi.Data;
 using FinanceApi.Features.Accounts.Models;
+using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.IncomeStreams.Models;
 using FinanceApi.Features.IncomeStreams.Services;
 using FinanceApi.Features.Transactions.Models;
@@ -21,7 +22,7 @@ public class IncomeStreamServiceTests : IDisposable
             .Options;
         _db = new FinanceDbContext(options, FinanceApi.UnitTests.TestHelpers.TestEncryption.Service);
         _db.Database.EnsureCreated();
-        _sut = new IncomeStreamService(_db);
+        _sut = new IncomeStreamService(_db, new ActivityLogService(_db));
     }
 
     public void Dispose() => _db.Dispose();
@@ -88,6 +89,18 @@ public class IncomeStreamServiceTests : IDisposable
         result.AccountName.Should().Be("Joint Account");
     }
 
+    [Fact]
+    public async Task CreateStreamAsync_WritesAnIncomeStreamCreatedLogEntry()
+    {
+        var request = new CreateIncomeStreamRequest("Wife's salary", 2200m);
+
+        await _sut.CreateStreamAsync(_userId, request, "203.0.113.5", "TestAgent/1.0");
+
+        var log = await _db.ActivityLogs.SingleAsync();
+        log.Action.Should().Be(FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.IncomeStreamCreated);
+        log.IpAddress.Should().Be("203.0.113.5");
+    }
+
     // ── UpdateStreamAsync ────────────────────────────────────────────────────
 
     [Fact]
@@ -144,7 +157,34 @@ public class IncomeStreamServiceTests : IDisposable
         result.Should().BeNull();
     }
 
+    [Fact]
+    public async Task UpdateStreamAsync_LogsChangedFieldNamesOnly_NeverTheEncryptedValue()
+    {
+        var stream = MakeStream(_userId, "My salary");
+        _db.IncomeStreams.Add(stream);
+        await _db.SaveChangesAsync();
+
+        await _sut.UpdateStreamAsync(_userId, stream.Id, new UpdateIncomeStreamRequest(Name: "Jay's Barclays salary", MonthlyAmount: 3200m));
+
+        var log = await _db.ActivityLogs.SingleAsync(l => l.Action == FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.IncomeStreamUpdated);
+        log.Description.Should().Contain("Name").And.Contain("MonthlyAmount");
+        log.Description.Should().NotContain("Jay's Barclays salary");
+    }
+
     // ── DeleteStreamAsync ────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task DeleteStreamAsync_WritesAnIncomeStreamDeletedLogEntry()
+    {
+        var stream = MakeStream(_userId, "My salary");
+        _db.IncomeStreams.Add(stream);
+        await _db.SaveChangesAsync();
+
+        await _sut.DeleteStreamAsync(_userId, stream.Id);
+
+        var log = await _db.ActivityLogs.SingleAsync();
+        log.Action.Should().Be(FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.IncomeStreamDeleted);
+    }
 
     [Fact]
     public async Task DeleteStreamAsync_WhenStreamExists_RemovesItFromDatabase()

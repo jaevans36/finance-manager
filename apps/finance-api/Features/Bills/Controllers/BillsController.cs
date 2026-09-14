@@ -22,6 +22,10 @@ public class BillsController : ControllerBase
 
     private Guid UserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+    private string? GetIpAddress() => HttpContext.Connection.RemoteIpAddress?.ToString();
+
+    private string? GetUserAgent() => HttpContext.Request.Headers["User-Agent"].ToString();
+
     /// <summary>List all active bills for the authenticated user. Optionally filter by linked account.</summary>
     [HttpGet]
     public async Task<IActionResult> GetBills([FromQuery] Guid? accountId, CancellationToken ct)
@@ -50,7 +54,7 @@ public class BillsController : ControllerBase
         var dueDayError = ValidateDueDay(request.DueDay, request.Frequency);
         if (dueDayError is not null) return BadRequest(dueDayError);
 
-        var bill = await _bills.CreateBillAsync(UserId, request, ct);
+        var bill = await _bills.CreateBillAsync(UserId, request, GetIpAddress(), GetUserAgent(), ct);
         return CreatedAtAction(nameof(GetBills), new { id = bill.Id }, bill);
     }
 
@@ -64,7 +68,7 @@ public class BillsController : ControllerBase
             if (dueDayError is not null) return BadRequest(dueDayError);
         }
 
-        var updated = await _bills.UpdateBillAsync(UserId, id, request, ct);
+        var updated = await _bills.UpdateBillAsync(UserId, id, request, GetIpAddress(), GetUserAgent(), ct);
         return updated is null ? NotFound() : Ok(updated);
     }
 
@@ -72,7 +76,7 @@ public class BillsController : ControllerBase
     [HttpPatch("{id:guid}/pay")]
     public async Task<IActionResult> MarkAsPaid(Guid id, CancellationToken ct)
     {
-        var success = await _bills.MarkAsPaidAsync(UserId, id, ct);
+        var success = await _bills.MarkAsPaidAsync(UserId, id, GetIpAddress(), GetUserAgent(), ct);
         return success ? NoContent() : NotFound();
     }
 
@@ -80,7 +84,7 @@ public class BillsController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteBill(Guid id, CancellationToken ct)
     {
-        var success = await _bills.DeleteBillAsync(UserId, id, ct);
+        var success = await _bills.DeleteBillAsync(UserId, id, GetIpAddress(), GetUserAgent(), ct);
         return success ? NoContent() : NotFound();
     }
 

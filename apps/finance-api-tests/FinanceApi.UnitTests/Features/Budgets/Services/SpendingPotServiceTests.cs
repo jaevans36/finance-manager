@@ -5,6 +5,7 @@ using FinanceApi.Features.Accounts.Models;
 using FinanceApi.Features.Budgets.Models;
 using FinanceApi.Features.Budgets.Services;
 using FinanceApi.Features.Categories.Models;
+using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Transactions.Models;
 
 namespace FinanceApi.UnitTests.Features.Budgets.Services;
@@ -36,7 +37,7 @@ public class SpendingPotServiceTests : IDisposable
         );
         _db.SaveChanges();
 
-        _sut = new SpendingPotService(_db);
+        _sut = new SpendingPotService(_db, new ActivityLogService(_db));
     }
 
     public void Dispose() => _db.Dispose();
@@ -173,6 +174,55 @@ public class SpendingPotServiceTests : IDisposable
             new UpdateSpendingPotRequest("X", null, null, null, null, null));
 
         result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreatePotAsync_WritesASpendingPotCreatedLogEntry()
+    {
+        var request = new CreateSpendingPotRequest(
+            "Groceries", PotType.Groceries, 250m, false, "shopping-cart", "#22C55E",
+            new[] { _groceriesCategoryId });
+
+        await _sut.CreatePotAsync(_userId, request, "203.0.113.5", "TestAgent/1.0");
+
+        var log = await _db.ActivityLogs.SingleAsync();
+        log.Action.Should().Be(FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.SpendingPotCreated);
+        log.IpAddress.Should().Be("203.0.113.5");
+    }
+
+    [Fact]
+    public async Task UpdatePotAsync_LogsChangedFieldNamesOnly_NeverTheEncryptedValue()
+    {
+        var pot = new SpendingPot
+        {
+            UserId = _userId, Name = "Old Name", Type = PotType.Custom,
+            BudgetAmount = 100m, CategoryIds = new List<Guid>()
+        };
+        _db.SpendingPots.Add(pot);
+        await _db.SaveChangesAsync();
+
+        await _sut.UpdatePotAsync(_userId, pot.Id, new UpdateSpendingPotRequest("Holiday Fund 2026", 200m, null, null, null, null));
+
+        var log = await _db.ActivityLogs.SingleAsync(l => l.Action == FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.SpendingPotUpdated);
+        log.Description.Should().Contain("Name").And.Contain("BudgetAmount");
+        log.Description.Should().NotContain("Holiday Fund 2026");
+    }
+
+    [Fact]
+    public async Task DeletePotAsync_WritesASpendingPotDeletedLogEntry()
+    {
+        var pot = new SpendingPot
+        {
+            UserId = _userId, Name = "To Delete", Type = PotType.Custom,
+            BudgetAmount = 100m, CategoryIds = new List<Guid>()
+        };
+        _db.SpendingPots.Add(pot);
+        await _db.SaveChangesAsync();
+
+        await _sut.DeletePotAsync(_userId, pot.Id);
+
+        var log = await _db.ActivityLogs.SingleAsync();
+        log.Action.Should().Be(FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.SpendingPotDeleted);
     }
 
     [Fact]

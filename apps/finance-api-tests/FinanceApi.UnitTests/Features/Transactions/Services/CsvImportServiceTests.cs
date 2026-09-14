@@ -37,7 +37,7 @@ public class CsvImportServiceTests : IDisposable
         _db.SaveChanges();
 
         var activityLog = new ActivityLogService(_db);
-        _sut = new CsvImportService(_db, new MerchantNormalisationService(), new AccountSharingService(_db, activityLog));
+        _sut = new CsvImportService(_db, new MerchantNormalisationService(), new AccountSharingService(_db, activityLog), activityLog);
     }
 
     public void Dispose() => _db.Dispose();
@@ -338,6 +338,18 @@ public class CsvImportServiceTests : IDisposable
         var result = await _sut.ImportAsync(recipientId, _accountId, stream, "barclays");
 
         result.Imported.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ImportAsync_WritesACsvImportCompletedLogEntry()
+    {
+        var csv = "Date,Memo,Amount\n01/01/2025,TESCO,-25.50\n02/01/2025,SALARY,1500.00";
+
+        await ImportCsvAsync(csv, "barclays");
+
+        var log = await _db.ActivityLogs.SingleAsync();
+        log.Action.Should().Be(FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.CsvImportCompleted);
+        log.Description.Should().Contain("2").And.Contain("barclays");
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

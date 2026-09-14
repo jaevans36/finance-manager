@@ -3,6 +3,8 @@ using CsvHelper.Configuration;
 using FinanceApi.Data;
 using FinanceApi.Features.Accounts.Services;
 using FinanceApi.Features.Bills.Models;
+using FinanceApi.Features.Common.ActivityLogs.Models;
+using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Transactions.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -18,6 +20,7 @@ public class CsvImportService : ICsvImportService
     private readonly FinanceDbContext _db;
     private readonly IMerchantNormalisationService _merchantNormaliser;
     private readonly IAccountSharingService _sharing;
+    private readonly IActivityLogService _activityLog;
 
     private static readonly HashSet<string> SupportedFormats = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -30,11 +33,12 @@ public class CsvImportService : ICsvImportService
         "generic"
     };
 
-    public CsvImportService(FinanceDbContext db, IMerchantNormalisationService merchantNormaliser, IAccountSharingService sharing)
+    public CsvImportService(FinanceDbContext db, IMerchantNormalisationService merchantNormaliser, IAccountSharingService sharing, IActivityLogService activityLog)
     {
         _db = db;
         _merchantNormaliser = merchantNormaliser;
         _sharing = sharing;
+        _activityLog = activityLog;
     }
 
     public IEnumerable<string> GetSupportedFormats() => SupportedFormats;
@@ -44,6 +48,8 @@ public class CsvImportService : ICsvImportService
         Guid accountId,
         Stream csvStream,
         string bankFormat,
+        string? ipAddress = null,
+        string? userAgent = null,
         CancellationToken ct = default)
     {
         var visibleIds = await _sharing.GetVisibleAccountIdsAsync(userId);
@@ -120,6 +126,11 @@ public class CsvImportService : ICsvImportService
         }
 
         await _db.SaveChangesAsync(ct);
+
+        if (imported > 0 || duplicates > 0)
+        {
+            await _activityLog.LogAsync(userId, FinanceActivityType.CsvImportCompleted, $"Imported {imported} transaction(s), {duplicates} duplicate(s) skipped, via {bankFormat}", ipAddress, userAgent);
+        }
 
         // ── Bill-to-transaction matching ──────────────────────────────────────
         if (importedTransactions.Count > 0)

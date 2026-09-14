@@ -5,6 +5,7 @@ using FinanceApi.Features.Accounts.Models;
 using FinanceApi.Features.Budgets.Models;
 using FinanceApi.Features.Budgets.Services;
 using FinanceApi.Features.Categories.Models;
+using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Transactions.Models;
 
 namespace FinanceApi.UnitTests.Features.Budgets.Services;
@@ -36,7 +37,7 @@ public class BudgetServiceTests : IDisposable
         });
         _db.SaveChanges();
 
-        _sut = new BudgetService(_db);
+        _sut = new BudgetService(_db, new ActivityLogService(_db));
     }
 
     public void Dispose() => _db.Dispose();
@@ -162,6 +163,46 @@ public class BudgetServiceTests : IDisposable
 
         result.Should().NotBeNull();
         result!.Amount.Should().Be(200m);
+    }
+
+    [Fact]
+    public async Task CreateBudgetAsync_WritesABudgetCreatedLogEntry()
+    {
+        var request = new CreateBudgetRequest(_categoryId, 6, 2025, 250m);
+
+        await _sut.CreateBudgetAsync(_userId, request, "203.0.113.5", "TestAgent/1.0");
+
+        var log = await _db.ActivityLogs.SingleAsync();
+        log.Action.Should().Be(FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.BudgetCreated);
+        log.IpAddress.Should().Be("203.0.113.5");
+    }
+
+    [Fact]
+    public async Task UpdateBudgetAsync_LogsChangedFieldNamesOnly_NeverTheEncryptedValue()
+    {
+        var now = DateTime.UtcNow;
+        var budget = MakeBudget(now.Month, now.Year, 100m);
+        _db.Budgets.Add(budget);
+        await _db.SaveChangesAsync();
+
+        await _sut.UpdateBudgetAsync(_userId, budget.Id, new UpdateBudgetRequest(200m, Title: "Christmas shopping fund"));
+
+        var log = await _db.ActivityLogs.SingleAsync(l => l.Action == FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.BudgetUpdated);
+        log.Description.Should().Contain("Amount").And.Contain("Title");
+        log.Description.Should().NotContain("Christmas shopping fund");
+    }
+
+    [Fact]
+    public async Task DeleteBudgetAsync_WritesABudgetDeletedLogEntry()
+    {
+        var budget = MakeBudget(1, 2025, 100m);
+        _db.Budgets.Add(budget);
+        await _db.SaveChangesAsync();
+
+        await _sut.DeleteBudgetAsync(_userId, budget.Id);
+
+        var log = await _db.ActivityLogs.SingleAsync();
+        log.Action.Should().Be(FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.BudgetDeleted);
     }
 
     [Fact]

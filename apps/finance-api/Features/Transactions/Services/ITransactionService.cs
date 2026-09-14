@@ -79,7 +79,7 @@ public interface ITransactionService
 {
     Task<PagedResult<TransactionDto>> GetTransactionsAsync(Guid userId, TransactionListRequest request, CancellationToken ct = default);
     Task<TransactionDto?> GetTransactionByIdAsync(Guid userId, Guid transactionId, CancellationToken ct = default);
-    Task<TransactionDto> CreateTransactionAsync(Guid userId, CreateTransactionRequest request, CancellationToken ct = default);
-    Task<TransactionDto?> UpdateTransactionAsync(Guid userId, Guid transactionId, UpdateTransactionRequest request, CancellationToken ct = default);
-    Task<bool> DeleteTransactionAsync(Guid userId, Guid transactionId, CancellationToken ct = default);
+    Task<TransactionDto> CreateTransactionAsync(Guid userId, CreateTransactionRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default);
+    Task<TransactionDto?> UpdateTransactionAsync(Guid userId, Guid transactionId, UpdateTransactionRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default);
+    Task<bool> DeleteTransactionAsync(Guid userId, Guid transactionId, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default);
 }
