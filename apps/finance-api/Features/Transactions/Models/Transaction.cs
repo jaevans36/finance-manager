@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using FinanceApi.Features.Accounts.Models;
 using FinanceApi.Features.Categories.Models;
 using FinanceApi.Features.IncomeStreams.Models;
+using FinanceApi.Features.Tags.Models;
 
 namespace FinanceApi.Features.Transactions.Models;
 
@@ -96,4 +97,5 @@ public class Transaction
     public Account Account { get; set; } = null!;
     public Category? Category { get; set; }
     public IncomeStream? IncomeStream { get; set; }
+    public ICollection<TransactionTag> TransactionTags { get; set; } = new List<TransactionTag>();
 }

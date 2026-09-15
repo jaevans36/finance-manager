@@ -117,6 +117,26 @@ public class TransactionsController : ControllerBase
         return deleted ? NoContent() : NotFound();
     }
 
+    /// <summary>Attach a tag to a transaction.</summary>
+    [HttpPost("{id:guid}/tags")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AddTag(Guid id, [FromBody] AddTagRequest request, CancellationToken ct)
+    {
+        var transaction = await _transactions.AddTagAsync(GetUserId(), id, request.TagId, ct);
+        return transaction is null ? NotFound() : Ok(transaction);
+    }
+
+    /// <summary>Remove a tag from a transaction.</summary>
+    [HttpDelete("{id:guid}/tags/{tagId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RemoveTag(Guid id, Guid tagId, CancellationToken ct)
+    {
+        var transaction = await _transactions.RemoveTagAsync(GetUserId(), id, tagId, ct);
+        return transaction is null ? NotFound() : Ok(transaction);
+    }
+
     /// <summary>Import transactions from a bank CSV file.</summary>
     /// <param name="accountId">Target account ID.</param>
     /// <param name="bankFormat">Bank format identifier (barclays, hsbc, lloyds, monzo, starling, natwest, generic).</param>

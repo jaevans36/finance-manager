@@ -33,6 +33,8 @@ import { importTransactionsJsonTool } from './finance/transactions/import-transa
 import { searchTransactionsTool } from './finance/transactions/search-transactions.js';
 import { categoriseTransactionTool } from './finance/transactions/categorise-transaction.js';
 import { tagIncomeStreamTool } from './finance/transactions/tag-income-stream.js';
+import { tagTransactionTool } from './finance/transactions/tag-transaction.js';
+import { untagTransactionTool } from './finance/transactions/untag-transaction.js';
 import { getBillsDueTool } from './finance/bills/get-bills-due.js';
 import { getRecurringPaymentsTool } from './finance/bills/get-recurring-payments.js';
 import { getPotBalancesTool } from './finance/pots/get-pot-balances.js';
@@ -55,6 +57,14 @@ import { createAssetTool } from './finance/assets/create-asset.js';
 import { updateAssetTool } from './finance/assets/update-asset.js';
 import { getCategoriesTool } from './finance/categories/get-categories.js';
 import { createCategoryTool } from './finance/categories/create-category.js';
+import { getCategoryRulesTool } from './finance/rules/get-category-rules.js';
+import { createCategoryRuleTool } from './finance/rules/create-category-rule.js';
+import { updateCategoryRuleTool } from './finance/rules/update-category-rule.js';
+import { deleteCategoryRuleTool } from './finance/rules/delete-category-rule.js';
+import { applyCategoryRulesTool } from './finance/rules/apply-category-rules.js';
+import { getTagsTool } from './finance/tags/get-tags.js';
+import { createTagTool } from './finance/tags/create-tag.js';
+import { deleteTagTool } from './finance/tags/delete-tag.js';
 
 const taskTools: AnyToolDef[] = [
   listTasksTool,
@@ -108,6 +118,13 @@ const labelTools: AnyToolDef[] = [listLabelsTool, createLabelTool];
  * AddIncomeStreamIdToTransaction) so individual credits can be linked to a named income
  * stream — needed because a joint account can receive multiple real income sources (e.g.
  * a partner's salary) that account-level scoping alone can't tell apart.
+ *
+ * The 2026-09-15 Firefly-III-inspired pass adds two features Firefly does well that this
+ * app didn't: an auto-categorisation rules engine (finance_*_category_rule* — the backend
+ * CategoryRules feature already existed, just unwrapped) and free-form tags
+ * (finance_*_tag* — a genuinely new feature: Tag/TransactionTag, migration AddTags) that
+ * cut across spending categories for things like "Wales holiday 2026" spanning flights,
+ * food, and fuel.
  */
 const financeTools: AnyToolDef[] = [
   getFinanceAccountsTool,
@@ -123,6 +140,8 @@ const financeTools: AnyToolDef[] = [
   searchTransactionsTool,
   categoriseTransactionTool,
   tagIncomeStreamTool,
+  tagTransactionTool,
+  untagTransactionTool,
   getBillsDueTool,
   getRecurringPaymentsTool,
   getPotBalancesTool,
@@ -145,6 +164,14 @@ const financeTools: AnyToolDef[] = [
   updateAssetTool,
   getCategoriesTool,
   createCategoryTool,
+  getCategoryRulesTool,
+  createCategoryRuleTool,
+  updateCategoryRuleTool,
+  deleteCategoryRuleTool,
+  applyCategoryRulesTool,
+  getTagsTool,
+  createTagTool,
+  deleteTagTool,
 ];
 
 /** Every tool the server exposes. Add fitness arrays here as they land. */

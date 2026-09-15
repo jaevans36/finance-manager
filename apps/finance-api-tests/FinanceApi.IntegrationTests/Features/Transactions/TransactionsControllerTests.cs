@@ -314,7 +314,65 @@ public class TransactionsControllerTests
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+    // ── POST/DELETE /transactions/{id}/tags ──────────────────────────────────
+
+    [Fact]
+    public async Task AddTag_WhenValid_ReturnsTransactionWithTheTag()
+    {
+        var accountId = await CreateAccountAsync();
+        var transactionId = await CreateTransactionAndGetIdAsync(accountId, "Flight to Cardiff");
+        var tagId = await CreateTagAsync("Wales holiday 2026");
+
+        var response = await _client.PostAsJsonAsync($"/api/v1/finance/transactions/{transactionId}/tags", new AddTagRequest(tagId));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var transaction = await response.Content.ReadFromJsonAsync<TransactionDto>();
+        transaction!.Tags.Should().ContainSingle(t => t.Id == tagId);
+    }
+
+    [Fact]
+    public async Task AddTag_WhenTransactionNotFound_Returns404()
+    {
+        var tagId = await CreateTagAsync("Untagged");
+
+        var response = await _client.PostAsJsonAsync($"/api/v1/finance/transactions/{Guid.NewGuid()}/tags", new AddTagRequest(tagId));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task RemoveTag_WhenTagged_RemovesIt()
+    {
+        var accountId = await CreateAccountAsync();
+        var transactionId = await CreateTransactionAndGetIdAsync(accountId, "Flight to Cardiff");
+        var tagId = await CreateTagAsync("Wales holiday 2026");
+        await _client.PostAsJsonAsync($"/api/v1/finance/transactions/{transactionId}/tags", new AddTagRequest(tagId));
+
+        var response = await _client.DeleteAsync($"/api/v1/finance/transactions/{transactionId}/tags/{tagId}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var transaction = await response.Content.ReadFromJsonAsync<TransactionDto>();
+        transaction!.Tags.Should().BeEmpty();
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private async Task<Guid> CreateTagAsync(string name)
+    {
+        var response = await _client.PostAsJsonAsync("/api/v1/finance/tags", new FinanceApi.Features.Tags.Models.CreateTagRequest(name));
+        var tag = await response.Content.ReadFromJsonAsync<FinanceApi.Features.Tags.Models.TagDto>();
+        return tag!.Id;
+    }
+
+    private async Task<Guid> CreateTransactionAndGetIdAsync(Guid accountId, string description)
+    {
+        var request = new CreateTransactionRequest(
+            accountId, null, TransactionType.Debit, 10m, "GBP",
+            description, null, new DateOnly(2025, 3, 1), null, null, null);
+        var response = await _client.PostAsJsonAsync("/api/v1/finance/transactions", request);
+        var transaction = await response.Content.ReadFromJsonAsync<TransactionDto>();
+        return transaction!.Id;
+    }
 
     private async Task<Guid> CreateAccountAsync(decimal initialBalance = 0m)
     {
