@@ -56,9 +56,11 @@ public class AffordabilityService(FinanceDbContext db) : IAffordabilityService
         // linked to the account (Bill.AccountId) — resolve one payment per debt,
         // same precedence as the Debt tab (current → linked bill → minimum), so a
         // debt tracked both ways isn't double-counted in both buckets.
+        // Checking is included alongside the usual debt types because an overdrawn current
+        // account is a real debt costing real interest — see DebtProjectionService.DebtTypes.
         var debtAccounts = await db.Accounts
             .Where(a => a.UserId == userId && a.IsActive
-                     && (a.Type == AccountType.Credit || a.Type == AccountType.Loan || a.Type == AccountType.Mortgage)
+                     && (a.Type == AccountType.Credit || a.Type == AccountType.Loan || a.Type == AccountType.Mortgage || a.Type == AccountType.Checking)
                      && a.Balance < 0)
             .ToListAsync(ct);
         var debtAccountIds = debtAccounts.Select(a => a.Id).ToHashSet();

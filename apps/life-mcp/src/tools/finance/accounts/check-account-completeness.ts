@@ -32,6 +32,15 @@ const REQUIRED_FIELDS_BY_TYPE: Partial<Record<AccountType, RequiredField[]>> = {
   ],
 };
 
+/**
+ * Checking only needs these when actually overdrawn — an overdrawn current account counts
+ * as debt (see finance_get_debt_overview), but a healthy one genuinely has nothing required.
+ */
+const OVERDRAFT_FIELDS: RequiredField[] = [
+  { key: 'interestRate', label: 'interest rate', why: 'needed to project overdraft interest cost' },
+  { key: 'creditLimit', label: 'overdraft limit', why: 'needed for utilisation and severity scoring' },
+];
+
 const inputSchema = {
   accountId: z.string().uuid().describe('Account to check (from finance_get_accounts).'),
 };
@@ -42,15 +51,16 @@ export const checkAccountCompletenessTool = defineTool({
   config: {
     title: 'Check a debt account for missing fields',
     description:
-      "Check whether a debt account (credit card, mortgage, loan) has the fields the Debt/Affordability " +
-      'features actually depend on. Use after creating or updating a debt account, or whenever entering one ' +
-      'conversationally, so gaps get flagged and asked about rather than silently left null — a debt ' +
-      'projection run against an account with no interest rate isn\'t a real projection.',
+      "Check whether a debt account (credit card, mortgage, loan, or an overdrawn checking account) has the " +
+      'fields the Debt/Affordability features actually depend on. Use after creating or updating a debt ' +
+      'account, or whenever entering one conversationally, so gaps get flagged and asked about rather than ' +
+      "silently left null — a debt projection run against an account with no interest rate isn't a real projection.",
     inputSchema,
   },
   async handler(args, { http }) {
     const account = await getFinanceAccount(http, args.accountId);
-    const required = REQUIRED_FIELDS_BY_TYPE[account.type];
+    const required =
+      account.type === 'Checking' ? (account.balance < 0 ? OVERDRAFT_FIELDS : undefined) : REQUIRED_FIELDS_BY_TYPE[account.type];
 
     if (!required) {
       return textResult(`"${account.name}" is a ${account.type} account — no debt fields are required for it.`, {

@@ -14,7 +14,7 @@ public class DebtSeverityService : IDebtSeverityService
     // Maximum urgency bonus for promotional expiry
     private const int PromoExpiryBonusCap = 25;
 
-    // Utilisation bonus cap (credit cards only)
+    // Utilisation bonus cap (credit cards and overdrafts)
     private const int UtilisationBonusCap = 15;
 
     public (int Score, string Label, string? Reason) Score(Account account, DateOnly today)
@@ -51,8 +51,9 @@ public class DebtSeverityService : IDebtSeverityService
             }
         }
 
-        // ── Urgency: utilisation (credit cards) ───────────────────────────────
-        if (account.Type == AccountType.Credit && account.CreditLimit is > 0 && account.Balance < 0)
+        // ── Urgency: utilisation (credit cards and overdrafts) ────────────────
+        if ((account.Type == AccountType.Credit || account.Type == AccountType.Checking)
+            && account.CreditLimit is > 0 && account.Balance < 0)
         {
             decimal owed = Math.Abs(account.Balance);
             decimal utilisation = owed / account.CreditLimit.Value;

@@ -55,6 +55,29 @@ public class DebtProjectionServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetOverviewAsync_WithOverdrawnChecking_IncludesItAsDebt()
+    {
+        _db.Accounts.Add(MakeChecking(_userId, balance: -2220.36m, interestRate: 39.9m, creditLimit: 2500m));
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetOverviewAsync(_userId);
+
+        result.Debts.Should().ContainSingle(d => d.Type == "Checking");
+        result.TotalDebt.Should().Be(2220.36m);
+    }
+
+    [Fact]
+    public async Task GetOverviewAsync_ExcludesPositiveBalanceCheckingAccounts()
+    {
+        _db.Accounts.Add(MakeChecking(_userId, balance: 200m)); // healthy current account, not overdrawn
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetOverviewAsync(_userId);
+
+        result.Debts.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task GetOverviewAsync_ExcludesPositiveBalanceAccounts()
     {
         _db.Accounts.Add(MakeCredit(_userId, balance: 50m)); // credit with positive balance (overpaid)
@@ -610,6 +633,27 @@ public class DebtProjectionServiceTests : IDisposable
             Name = name,
             Currency = "GBP",
             Balance = 5000m,
+            IsActive = true,
+        };
+    }
+
+    private Account MakeChecking(
+        Guid userId,
+        string name = "Current Account",
+        decimal balance = 0m,
+        decimal? interestRate = null,
+        decimal? creditLimit = null)
+    {
+        return new Account
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Type = AccountType.Checking,
+            Name = name,
+            Currency = "GBP",
+            Balance = balance,
+            InterestRate = interestRate,
+            CreditLimit = creditLimit,
             IsActive = true,
         };
     }
