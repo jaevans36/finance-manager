@@ -160,8 +160,23 @@ public class TransactionService : ITransactionService
             var account = await _db.Accounts.FindAsync(new object[] { transaction.AccountId }, ct);
             if (account is not null)
             {
-                account.Balance += oldType == TransactionType.Credit ? -oldAmount : oldAmount;
-                account.Balance += newType == TransactionType.Credit ? newAmount : -newAmount;
+                // A transaction's balance sign must only flip when it's genuinely switching
+                // direction (Debit <-> Credit) — relabelling to/from Transfer (e.g. marking an
+                // internal transfer that was imported as a plain Credit/Debit) must not itself
+                // move money. Transfer has no direction of its own, so it inherits whichever
+                // side of the ledger the other type is on, rather than always being treated as
+                // an outflow — the previous version silently doubled the balance impact of
+                // reclassifying an inbound Credit as a Transfer.
+                decimal oldSign = oldType == TransactionType.Credit ? 1m : -1m;
+                decimal newSign = newType switch
+                {
+                    TransactionType.Credit => 1m,
+                    TransactionType.Debit => -1m,
+                    _ => oldSign, // Transfer: preserve the direction it's moving from
+                };
+
+                account.Balance -= oldSign * oldAmount;
+                account.Balance += newSign * newAmount;
                 account.UpdatedAt = DateTime.UtcNow;
             }
 

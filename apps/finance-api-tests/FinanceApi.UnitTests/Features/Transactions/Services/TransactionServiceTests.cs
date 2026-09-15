@@ -235,6 +235,71 @@ public class TransactionServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task UpdateTransactionAsync_RelabellingCreditAsTransfer_DoesNotChangeAccountBalance()
+    {
+        // Reclassifying an internal transfer that was imported as a plain Credit must not
+        // itself move money — this was a real bug: Transfer was always treated as an
+        // outflow, so a Credit->Transfer relabel silently doubled the balance impact.
+        var transaction = MakeTransaction(_userId, _accountId, "From joint account", amount: 250m, type: TransactionType.Credit);
+        _db.Transactions.Add(transaction);
+        await _db.SaveChangesAsync();
+        var balanceBefore = (await _db.Accounts.FindAsync(_accountId))!.Balance;
+
+        var request = new UpdateTransactionRequest(null, null, null, null, null, TransactionType.Transfer);
+        await _sut.UpdateTransactionAsync(_userId, transaction.Id, request);
+
+        var balanceAfter = (await _db.Accounts.FindAsync(_accountId))!.Balance;
+        balanceAfter.Should().Be(balanceBefore);
+    }
+
+    [Fact]
+    public async Task UpdateTransactionAsync_RelabellingDebitAsTransfer_DoesNotChangeAccountBalance()
+    {
+        var transaction = MakeTransaction(_userId, _accountId, "To joint account", amount: 100m, type: TransactionType.Debit);
+        _db.Transactions.Add(transaction);
+        await _db.SaveChangesAsync();
+        var balanceBefore = (await _db.Accounts.FindAsync(_accountId))!.Balance;
+
+        var request = new UpdateTransactionRequest(null, null, null, null, null, TransactionType.Transfer);
+        await _sut.UpdateTransactionAsync(_userId, transaction.Id, request);
+
+        var balanceAfter = (await _db.Accounts.FindAsync(_accountId))!.Balance;
+        balanceAfter.Should().Be(balanceBefore);
+    }
+
+    [Fact]
+    public async Task UpdateTransactionAsync_CorrectingCreditToDebit_FlipsBalanceByTwiceTheAmount()
+    {
+        // A genuine miscategorisation fix (this was never really a Transfer) should still
+        // flip the sign correctly.
+        var transaction = MakeTransaction(_userId, _accountId, "Miscategorised", amount: 50m, type: TransactionType.Credit);
+        _db.Transactions.Add(transaction);
+        await _db.SaveChangesAsync();
+        var balanceBefore = (await _db.Accounts.FindAsync(_accountId))!.Balance;
+
+        var request = new UpdateTransactionRequest(null, null, null, null, null, TransactionType.Debit);
+        await _sut.UpdateTransactionAsync(_userId, transaction.Id, request);
+
+        var balanceAfter = (await _db.Accounts.FindAsync(_accountId))!.Balance;
+        balanceAfter.Should().Be(balanceBefore - 100m);
+    }
+
+    [Fact]
+    public async Task UpdateTransactionAsync_ChangingAmountOnly_AdjustsBalanceByTheDelta()
+    {
+        var transaction = MakeTransaction(_userId, _accountId, "Corrected amount", amount: 50m, type: TransactionType.Debit);
+        _db.Transactions.Add(transaction);
+        await _db.SaveChangesAsync();
+        var balanceBefore = (await _db.Accounts.FindAsync(_accountId))!.Balance;
+
+        var request = new UpdateTransactionRequest(null, null, null, null, null, null, 75m);
+        await _sut.UpdateTransactionAsync(_userId, transaction.Id, request);
+
+        var balanceAfter = (await _db.Accounts.FindAsync(_accountId))!.Balance;
+        balanceAfter.Should().Be(balanceBefore - 25m); // extra £25 debited
+    }
+
+    [Fact]
     public async Task UpdateTransactionAsync_LogsChangedFieldNamesOnly_NeverTheDescriptionValue()
     {
         var transaction = MakeTransaction(_userId, _accountId, "INITIAL DESC");
