@@ -44,6 +44,24 @@ export async function tagIncomeStream(
   return res.data;
 }
 
+export async function addTagToTransaction(
+  http: AxiosInstance,
+  transactionId: string,
+  tagId: string,
+): Promise<TransactionDto> {
+  const res = await http.post<TransactionDto>(`${BASE}/${transactionId}/tags`, { tagId });
+  return res.data;
+}
+
+export async function removeTagFromTransaction(
+  http: AxiosInstance,
+  transactionId: string,
+  tagId: string,
+): Promise<TransactionDto> {
+  const res = await http.delete<TransactionDto>(`${BASE}/${transactionId}/tags/${tagId}`);
+  return res.data;
+}
+
 export async function createTransaction(
   http: AxiosInstance,
   input: CreateTransactionInput,

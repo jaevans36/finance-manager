@@ -1,5 +1,7 @@
 /** Mirrors apps/finance-api/Features/Transactions/Controllers/TransactionsController.cs DTOs. */
 
+import type { TagRef } from './finance-tag.js';
+
 export const TRANSACTION_TYPES = ['Debit', 'Credit', 'Transfer'] as const;
 export type TransactionType = (typeof TRANSACTION_TYPES)[number];
 
@@ -26,6 +28,7 @@ export interface TransactionDto {
   notes: string | null;
   incomeStreamId: string | null;
   incomeStreamName: string | null;
+  tags: TagRef[];
 }
 
 export interface PagedResult<T> {

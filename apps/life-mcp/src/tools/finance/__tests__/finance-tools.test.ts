@@ -14,6 +14,8 @@ jest.mock('../../../api/finance-insights-api.js');
 jest.mock('../../../api/finance-debt-api.js');
 jest.mock('../../../api/finance-assets-api.js');
 jest.mock('../../../api/finance-categories-api.js');
+jest.mock('../../../api/finance-category-rules-api.js');
+jest.mock('../../../api/finance-tags-api.js');
 
 import * as accountsApi from '../../../api/finance-accounts-api.js';
 import * as transactionsApi from '../../../api/finance-transactions-api.js';
@@ -27,6 +29,8 @@ import * as insightsApi from '../../../api/finance-insights-api.js';
 import * as debtApi from '../../../api/finance-debt-api.js';
 import * as assetsApi from '../../../api/finance-assets-api.js';
 import * as categoriesApi from '../../../api/finance-categories-api.js';
+import * as categoryRulesApi from '../../../api/finance-category-rules-api.js';
+import * as tagsApi from '../../../api/finance-tags-api.js';
 
 import { getFinanceAccountsTool } from '../accounts/get-accounts.js';
 import { createAccountTool } from '../accounts/create-account.js';
@@ -63,6 +67,16 @@ import { createAssetTool } from '../assets/create-asset.js';
 import { updateAssetTool } from '../assets/update-asset.js';
 import { getCategoriesTool } from '../categories/get-categories.js';
 import { createCategoryTool } from '../categories/create-category.js';
+import { getCategoryRulesTool } from '../rules/get-category-rules.js';
+import { createCategoryRuleTool } from '../rules/create-category-rule.js';
+import { updateCategoryRuleTool } from '../rules/update-category-rule.js';
+import { deleteCategoryRuleTool } from '../rules/delete-category-rule.js';
+import { applyCategoryRulesTool } from '../rules/apply-category-rules.js';
+import { getTagsTool } from '../tags/get-tags.js';
+import { createTagTool } from '../tags/create-tag.js';
+import { deleteTagTool } from '../tags/delete-tag.js';
+import { tagTransactionTool } from '../transactions/tag-transaction.js';
+import { untagTransactionTool } from '../transactions/untag-transaction.js';
 import type { AnyToolDef } from '../../_register.js';
 import type { AccountSummary } from '../../../types/finance-account.js';
 import type { CsvImportResult, TransactionDto } from '../../../types/finance-transaction.js';
@@ -73,6 +87,8 @@ import type { InsightsSummaryResponse } from '../../../types/finance-insight.js'
 import type { DebtOverviewResponse, DebtProjectionResponse } from '../../../types/finance-debt.js';
 import type { AssetDto } from '../../../types/finance-asset.js';
 import type { CategoryDto } from '../../../types/finance-category.js';
+import type { CategoryRuleDto } from '../../../types/finance-category-rule.js';
+import type { TagDto } from '../../../types/finance-tag.js';
 
 const mockAccountsApi = accountsApi as jest.Mocked<typeof accountsApi>;
 const mockTransactionsApi = transactionsApi as jest.Mocked<typeof transactionsApi>;
@@ -86,6 +102,8 @@ const mockInsightsApi = insightsApi as jest.Mocked<typeof insightsApi>;
 const mockDebtApi = debtApi as jest.Mocked<typeof debtApi>;
 const mockAssetsApi = assetsApi as jest.Mocked<typeof assetsApi>;
 const mockCategoriesApi = categoriesApi as jest.Mocked<typeof categoriesApi>;
+const mockCategoryRulesApi = categoryRulesApi as jest.Mocked<typeof categoryRulesApi>;
+const mockTagsApi = tagsApi as jest.Mocked<typeof tagsApi>;
 
 const http = {} as AxiosInstance;
 const ctx = { http };
@@ -141,6 +159,7 @@ const transaction: TransactionDto = {
   notes: null,
   incomeStreamId: null,
   incomeStreamName: null,
+  tags: [],
 };
 
 describe('finance_get_accounts', () => {
@@ -706,6 +725,39 @@ describe('finance_tag_income_transaction', () => {
   });
 });
 
+describe('finance_tag_transaction', () => {
+  it('attaches the tag and reports the new tag count', async () => {
+    mockTransactionsApi.addTagToTransaction.mockResolvedValue({
+      ...transaction,
+      tags: [{ id: UUID, name: 'Wales holiday 2026', colour: null }],
+    });
+    const res = await tagTransactionTool.handler({ transactionId: 'txn-1', tagId: UUID }, ctx);
+    expect(mockTransactionsApi.addTagToTransaction).toHaveBeenCalledWith(http, 'txn-1', UUID);
+    expect(res.content[0].text).toContain('with 1 tag(s)');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockTransactionsApi.addTagToTransaction.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await tagTransactionTool.handler({ transactionId: 'txn-1', tagId: UUID }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_untag_transaction', () => {
+  it('removes the tag and reports the remaining count', async () => {
+    mockTransactionsApi.removeTagFromTransaction.mockResolvedValue({ ...transaction, tags: [] });
+    const res = await untagTransactionTool.handler({ transactionId: 'txn-1', tagId: UUID }, ctx);
+    expect(mockTransactionsApi.removeTagFromTransaction).toHaveBeenCalledWith(http, 'txn-1', UUID);
+    expect(res.content[0].text).toContain('now has 0 tag(s)');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockTransactionsApi.removeTagFromTransaction.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await untagTransactionTool.handler({ transactionId: 'txn-1', tagId: UUID }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
 describe('finance_get_recurring_payments', () => {
   const pattern: RecurringPattern = {
     merchantName: 'Netflix',
@@ -1259,6 +1311,156 @@ describe('finance_create_category', () => {
   it('maps an API error to an isError result', async () => {
     mockCategoriesApi.createCategory.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
     const res = await createCategoryTool.handler({ name: 'Side Hustle' }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+const categoryRule: CategoryRuleDto = {
+  id: UUID,
+  pattern: 'TESCO',
+  matchType: 'Contains',
+  categoryId: UUID,
+  categoryName: 'Groceries',
+  categoryColour: '#22C55E',
+  priority: 100,
+  isActive: true,
+  appliedCount: 3,
+  createdAt: '2026-01-01T00:00:00Z',
+};
+
+describe('finance_get_category_rules', () => {
+  it('renders each rule with its target category', async () => {
+    mockCategoryRulesApi.listCategoryRules.mockResolvedValue([categoryRule]);
+    const res = await getCategoryRulesTool.handler({}, ctx);
+    expect(res.content[0].text).toContain('"TESCO" (Contains) → Groceries');
+    expect(res.content[0].text).toContain('applied 3×');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockCategoryRulesApi.listCategoryRules.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await getCategoryRulesTool.handler({}, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_create_category_rule', () => {
+  it('creates the rule', async () => {
+    mockCategoryRulesApi.createCategoryRule.mockResolvedValue(categoryRule);
+    const res = await createCategoryRuleTool.handler({ pattern: 'TESCO', matchType: 'Contains', categoryId: UUID }, ctx);
+    expect(mockCategoryRulesApi.createCategoryRule).toHaveBeenCalledWith(http, {
+      pattern: 'TESCO',
+      matchType: 'Contains',
+      categoryId: UUID,
+    });
+    expect(res.content[0].text).toContain('Created rule: "TESCO"');
+  });
+
+  it('rejects an invalid matchType', () => {
+    expect(parse(createCategoryRuleTool, { pattern: 'x', matchType: 'Fuzzy', categoryId: UUID }).success).toBe(false);
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockCategoryRulesApi.createCategoryRule.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await createCategoryRuleTool.handler({ pattern: 'TESCO', matchType: 'Contains', categoryId: UUID }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_update_category_rule', () => {
+  it('forwards only the provided fields, not ruleId', async () => {
+    mockCategoryRulesApi.updateCategoryRule.mockResolvedValue({ ...categoryRule, isActive: false });
+    await updateCategoryRuleTool.handler({ ruleId: UUID, isActive: false }, ctx);
+    expect(mockCategoryRulesApi.updateCategoryRule).toHaveBeenCalledWith(http, UUID, { isActive: false });
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockCategoryRulesApi.updateCategoryRule.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await updateCategoryRuleTool.handler({ ruleId: UUID, isActive: false }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_delete_category_rule', () => {
+  it('deletes the rule', async () => {
+    mockCategoryRulesApi.deleteCategoryRule.mockResolvedValue(undefined);
+    const res = await deleteCategoryRuleTool.handler({ ruleId: UUID }, ctx);
+    expect(mockCategoryRulesApi.deleteCategoryRule).toHaveBeenCalledWith(http, UUID);
+    expect(res.content[0].text).toContain('Deleted');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockCategoryRulesApi.deleteCategoryRule.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await deleteCategoryRuleTool.handler({ ruleId: UUID }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_apply_category_rules', () => {
+  it('reports how many transactions were updated', async () => {
+    mockCategoryRulesApi.applyCategoryRules.mockResolvedValue({ updated: 12 });
+    const res = await applyCategoryRulesTool.handler({}, ctx);
+    expect(res.content[0].text).toContain('Categorised 12 transaction(s)');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockCategoryRulesApi.applyCategoryRules.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await applyCategoryRulesTool.handler({}, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+const tag: TagDto = {
+  id: UUID,
+  name: 'Wales holiday 2026',
+  colour: '#22C55E',
+  transactionCount: 4,
+  createdAt: '2026-01-01T00:00:00Z',
+};
+
+describe('finance_get_tags', () => {
+  it('renders each tag with its transaction count', async () => {
+    mockTagsApi.listTags.mockResolvedValue([tag]);
+    const res = await getTagsTool.handler({}, ctx);
+    expect(res.content[0].text).toContain('Wales holiday 2026 (4 transaction(s))');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockTagsApi.listTags.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await getTagsTool.handler({}, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_create_tag', () => {
+  it('creates the tag', async () => {
+    mockTagsApi.createTag.mockResolvedValue(tag);
+    const res = await createTagTool.handler({ name: 'Wales holiday 2026' }, ctx);
+    expect(mockTagsApi.createTag).toHaveBeenCalledWith(http, { name: 'Wales holiday 2026' });
+    expect(res.content[0].text).toContain('Created tag "Wales holiday 2026"');
+  });
+
+  it('rejects a missing name', () => {
+    expect(parse(createTagTool, {}).success).toBe(false);
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockTagsApi.createTag.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await createTagTool.handler({ name: 'Wales holiday 2026' }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_delete_tag', () => {
+  it('deletes the tag', async () => {
+    mockTagsApi.deleteTag.mockResolvedValue(undefined);
+    const res = await deleteTagTool.handler({ tagId: UUID }, ctx);
+    expect(mockTagsApi.deleteTag).toHaveBeenCalledWith(http, UUID);
+    expect(res.content[0].text).toContain('Deleted');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockTagsApi.deleteTag.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await deleteTagTool.handler({ tagId: UUID }, ctx);
     expect(res.isError).toBe(true);
   });
 });

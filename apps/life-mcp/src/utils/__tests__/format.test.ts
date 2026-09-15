@@ -202,6 +202,7 @@ function transaction(overrides: Partial<TransactionDto> = {}): TransactionDto {
     notes: null,
     incomeStreamId: null,
     incomeStreamName: null,
+    tags: [],
     ...overrides,
   };
 }
