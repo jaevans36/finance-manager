@@ -37,6 +37,11 @@ import { tagTransactionTool } from './finance/transactions/tag-transaction.js';
 import { untagTransactionTool } from './finance/transactions/untag-transaction.js';
 import { getBillsDueTool } from './finance/bills/get-bills-due.js';
 import { getRecurringPaymentsTool } from './finance/bills/get-recurring-payments.js';
+import { getBillsTool } from './finance/bills/get-bills.js';
+import { createBillTool } from './finance/bills/create-bill.js';
+import { updateBillTool } from './finance/bills/update-bill.js';
+import { payBillTool } from './finance/bills/pay-bill.js';
+import { deleteBillTool } from './finance/bills/delete-bill.js';
 import { getPotBalancesTool } from './finance/pots/get-pot-balances.js';
 import { updatePotBudgetTool } from './finance/pots/update-pot-budget.js';
 import { getMonthlyBudgetSummaryTool } from './finance/budgets/get-monthly-budget-summary.js';
@@ -144,6 +149,11 @@ const financeTools: AnyToolDef[] = [
   untagTransactionTool,
   getBillsDueTool,
   getRecurringPaymentsTool,
+  getBillsTool,
+  createBillTool,
+  updateBillTool,
+  payBillTool,
+  deleteBillTool,
   getPotBalancesTool,
   updatePotBudgetTool,
   getMonthlyBudgetSummaryTool,

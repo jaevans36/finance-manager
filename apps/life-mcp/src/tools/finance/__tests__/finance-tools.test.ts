@@ -43,6 +43,11 @@ import { importTransactionsJsonTool } from '../transactions/import-transactions-
 import { searchTransactionsTool } from '../transactions/search-transactions.js';
 import { categoriseTransactionTool } from '../transactions/categorise-transaction.js';
 import { getBillsDueTool } from '../bills/get-bills-due.js';
+import { getBillsTool } from '../bills/get-bills.js';
+import { createBillTool } from '../bills/create-bill.js';
+import { updateBillTool } from '../bills/update-bill.js';
+import { payBillTool } from '../bills/pay-bill.js';
+import { deleteBillTool } from '../bills/delete-bill.js';
 import { getRecurringPaymentsTool } from '../bills/get-recurring-payments.js';
 import { getPotBalancesTool } from '../pots/get-pot-balances.js';
 import { updatePotBudgetTool } from '../pots/update-pot-budget.js';
@@ -80,7 +85,7 @@ import { untagTransactionTool } from '../transactions/untag-transaction.js';
 import type { AnyToolDef } from '../../_register.js';
 import type { AccountSummary } from '../../../types/finance-account.js';
 import type { CsvImportResult, TransactionDto } from '../../../types/finance-transaction.js';
-import type { RecurringPattern } from '../../../types/finance-bill.js';
+import type { BillResponse, RecurringPattern } from '../../../types/finance-bill.js';
 import type { BudgetWithProgress } from '../../../types/finance-budget.js';
 import type { IncomeStream } from '../../../types/finance-income.js';
 import type { InsightsSummaryResponse } from '../../../types/finance-insight.js';
@@ -319,6 +324,133 @@ describe('finance_get_bills_due', () => {
     const res = await getBillsDueTool.handler({ days: 30 }, ctx);
     expect(mockBillsApi.getUpcomingBills).toHaveBeenCalledWith(http, 30);
     expect(res.content[0].text).toContain('Council Tax');
+  });
+});
+
+const bill: BillResponse = {
+  id: UUID,
+  userId: 'u1',
+  name: 'British Gas',
+  description: null,
+  amount: 106.07,
+  frequency: 'Monthly',
+  dueDay: 1,
+  reminderDaysBefore: 5,
+  isPaid: false,
+  lastPaidDate: null,
+  categoryId: null,
+  categoryName: null,
+  isActive: true,
+  createdAt: '2026-09-01T00:00:00Z',
+  updatedAt: '2026-09-01T00:00:00Z',
+  accountId: null,
+  accountName: null,
+  linkedAccountPayment: null,
+  hasPaymentMismatch: false,
+};
+
+describe('finance_get_bills', () => {
+  it('renders each bill, flagging a payment mismatch', async () => {
+    mockBillsApi.listBills.mockResolvedValue([{ ...bill, hasPaymentMismatch: true }]);
+    const res = await getBillsTool.handler({}, ctx);
+    expect(mockBillsApi.listBills).toHaveBeenCalledWith(http, undefined);
+    expect(res.content[0].text).toContain('British Gas');
+    expect(res.content[0].text).toContain("doesn't match");
+  });
+
+  it('forwards an accountId filter', async () => {
+    mockBillsApi.listBills.mockResolvedValue([]);
+    await getBillsTool.handler({ accountId: UUID }, ctx);
+    expect(mockBillsApi.listBills).toHaveBeenCalledWith(http, UUID);
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockBillsApi.listBills.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await getBillsTool.handler({}, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_create_bill', () => {
+  it('creates the bill', async () => {
+    mockBillsApi.createBill.mockResolvedValue(bill);
+    const res = await createBillTool.handler(
+      { name: 'British Gas', amount: 106.07, frequency: 'Monthly', dueDay: 1, reminderDaysBefore: 5 },
+      ctx,
+    );
+    expect(mockBillsApi.createBill).toHaveBeenCalledWith(http, {
+      name: 'British Gas',
+      amount: 106.07,
+      frequency: 'Monthly',
+      dueDay: 1,
+      reminderDaysBefore: 5,
+    });
+    expect(res.content[0].text).toContain('Created bill "British Gas"');
+  });
+
+  it('rejects a non-positive amount', () => {
+    expect(
+      parse(createBillTool, { name: 'x', amount: 0, frequency: 'Monthly', dueDay: 1, reminderDaysBefore: 5 }).success,
+    ).toBe(false);
+  });
+
+  it('rejects a dueDay outside 1-31', () => {
+    expect(
+      parse(createBillTool, { name: 'x', amount: 10, frequency: 'Monthly', dueDay: 32, reminderDaysBefore: 5 }).success,
+    ).toBe(false);
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockBillsApi.createBill.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await createBillTool.handler(
+      { name: 'British Gas', amount: 106.07, frequency: 'Monthly', dueDay: 1, reminderDaysBefore: 5 },
+      ctx,
+    );
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_update_bill', () => {
+  it('forwards only the provided fields, not billId', async () => {
+    mockBillsApi.updateBill.mockResolvedValue({ ...bill, amount: 110 });
+    await updateBillTool.handler({ billId: UUID, amount: 110 }, ctx);
+    expect(mockBillsApi.updateBill).toHaveBeenCalledWith(http, UUID, { amount: 110 });
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockBillsApi.updateBill.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await updateBillTool.handler({ billId: UUID, amount: 110 }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_pay_bill', () => {
+  it('marks the bill as paid', async () => {
+    mockBillsApi.markBillPaid.mockResolvedValue(undefined);
+    const res = await payBillTool.handler({ billId: UUID }, ctx);
+    expect(mockBillsApi.markBillPaid).toHaveBeenCalledWith(http, UUID);
+    expect(res.content[0].text).toContain('Marked');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockBillsApi.markBillPaid.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await payBillTool.handler({ billId: UUID }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_delete_bill', () => {
+  it('deletes the bill', async () => {
+    mockBillsApi.deleteBill.mockResolvedValue(undefined);
+    const res = await deleteBillTool.handler({ billId: UUID }, ctx);
+    expect(mockBillsApi.deleteBill).toHaveBeenCalledWith(http, UUID);
+    expect(res.content[0].text).toContain('Deleted');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockBillsApi.deleteBill.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await deleteBillTool.handler({ billId: UUID }, ctx);
+    expect(res.isError).toBe(true);
   });
 });
 
