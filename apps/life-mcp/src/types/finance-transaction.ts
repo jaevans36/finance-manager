@@ -24,6 +24,8 @@ export interface TransactionDto {
   importSource: ImportSource;
   createdAt: string;
   notes: string | null;
+  incomeStreamId: string | null;
+  incomeStreamName: string | null;
 }
 
 export interface PagedResult<T> {

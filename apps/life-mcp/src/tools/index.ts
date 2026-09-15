@@ -21,14 +21,18 @@ import { listLabelsTool } from './labels/list-labels.js';
 import { createLabelTool } from './labels/create-label.js';
 
 import { getFinanceAccountsTool } from './finance/accounts/get-accounts.js';
+import { createAccountTool } from './finance/accounts/create-account.js';
 import { updateAccountTool } from './finance/accounts/update-account.js';
 import { checkAccountCompletenessTool } from './finance/accounts/check-account-completeness.js';
+import { getNetWorthTool } from './finance/accounts/get-net-worth.js';
+import { getNetWorthHistoryTool } from './finance/accounts/get-net-worth-history.js';
 import { getFinanceTransactionsTool } from './finance/transactions/get-transactions.js';
 import { addManualTransactionTool } from './finance/transactions/add-manual-transaction.js';
 import { importTransactionsTool } from './finance/transactions/import-transactions.js';
 import { importTransactionsJsonTool } from './finance/transactions/import-transactions-json.js';
 import { searchTransactionsTool } from './finance/transactions/search-transactions.js';
 import { categoriseTransactionTool } from './finance/transactions/categorise-transaction.js';
+import { tagIncomeStreamTool } from './finance/transactions/tag-income-stream.js';
 import { getBillsDueTool } from './finance/bills/get-bills-due.js';
 import { getRecurringPaymentsTool } from './finance/bills/get-recurring-payments.js';
 import { getPotBalancesTool } from './finance/pots/get-pot-balances.js';
@@ -37,8 +41,20 @@ import { getMonthlyBudgetSummaryTool } from './finance/budgets/get-monthly-budge
 import { getSavingsGoalsTool } from './finance/goals/get-savings-goals.js';
 import { updateSavingsGoalTool } from './finance/goals/update-savings-goal.js';
 import { getDisposableIncomeTool } from './finance/affordability/get-disposable-income.js';
+import { updateIncomeAccountsTool } from './finance/affordability/update-income-accounts.js';
 import { getIncomeSummaryTool } from './finance/income/get-income-summary.js';
+import { createIncomeStreamTool } from './finance/income/create-income-stream.js';
+import { updateIncomeStreamTool } from './finance/income/update-income-stream.js';
+import { deleteIncomeStreamTool } from './finance/income/delete-income-stream.js';
+import { detectIncomeTool } from './finance/income/detect-income.js';
 import { getAiInsightsTool } from './finance/insights/get-ai-insights.js';
+import { getDebtOverviewTool } from './finance/debt/get-debt-overview.js';
+import { getDebtProjectionTool } from './finance/debt/get-debt-projection.js';
+import { getAssetsTool } from './finance/assets/get-assets.js';
+import { createAssetTool } from './finance/assets/create-asset.js';
+import { updateAssetTool } from './finance/assets/update-asset.js';
+import { getCategoriesTool } from './finance/categories/get-categories.js';
+import { createCategoryTool } from './finance/categories/create-category.js';
 
 const taskTools: AnyToolDef[] = [
   listTasksTool,
@@ -79,17 +95,34 @@ const labelTools: AnyToolDef[] = [listLabelsTool, createLabelTool];
  * finance_import_transactions_json (see docs/intent/2026-09-15-finance-json-transaction-import.md)
  * adds a structured-JSON alternative to the CSV import path, for when category/payee/notes are
  * already known and shouldn't be lost in a CSV round-trip.
+ *
+ * The 2026-09-15 conversational-data-entry gap pass adds finance_create_account (previously
+ * only update existed — no way to add a first account at all) and wraps a batch of
+ * finance-api features that already existed server-side but had never been exposed as MCP
+ * tools: Debt (overview/projection — an existing avalanche/snowball/custom payoff engine),
+ * Assets (manually-tracked property/vehicle/other, nets into net worth), Net Worth
+ * (current + history), Income Streams (full CRUD + detect, not just a read-only summary),
+ * Categories (list/create), and Affordability's income-accounts scoping (a required setup
+ * step for an accurate disposable-income figure on a shared/joint account). Also adds
+ * finance_tag_income_transaction + Transaction.IncomeStreamId (backend migration
+ * AddIncomeStreamIdToTransaction) so individual credits can be linked to a named income
+ * stream — needed because a joint account can receive multiple real income sources (e.g.
+ * a partner's salary) that account-level scoping alone can't tell apart.
  */
 const financeTools: AnyToolDef[] = [
   getFinanceAccountsTool,
+  createAccountTool,
   updateAccountTool,
   checkAccountCompletenessTool,
+  getNetWorthTool,
+  getNetWorthHistoryTool,
   getFinanceTransactionsTool,
   addManualTransactionTool,
   importTransactionsTool,
   importTransactionsJsonTool,
   searchTransactionsTool,
   categoriseTransactionTool,
+  tagIncomeStreamTool,
   getBillsDueTool,
   getRecurringPaymentsTool,
   getPotBalancesTool,
@@ -98,8 +131,20 @@ const financeTools: AnyToolDef[] = [
   getSavingsGoalsTool,
   updateSavingsGoalTool,
   getDisposableIncomeTool,
+  updateIncomeAccountsTool,
   getIncomeSummaryTool,
+  createIncomeStreamTool,
+  updateIncomeStreamTool,
+  deleteIncomeStreamTool,
+  detectIncomeTool,
   getAiInsightsTool,
+  getDebtOverviewTool,
+  getDebtProjectionTool,
+  getAssetsTool,
+  createAssetTool,
+  updateAssetTool,
+  getCategoriesTool,
+  createCategoryTool,
 ];
 
 /** Every tool the server exposes. Add fitness arrays here as they land. */

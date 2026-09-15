@@ -200,6 +200,8 @@ function transaction(overrides: Partial<TransactionDto> = {}): TransactionDto {
     importSource: 'Manual',
     createdAt: '2026-09-10T00:00:00Z',
     notes: null,
+    incomeStreamId: null,
+    incomeStreamName: null,
     ...overrides,
   };
 }

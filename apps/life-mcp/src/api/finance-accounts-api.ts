@@ -1,10 +1,21 @@
 import type { AxiosInstance } from 'axios';
-import type { AccountSummary, NetWorthResponse, UpdateAccountInput } from '../types/finance-account.js';
+import type {
+  AccountSummary,
+  CreateAccountInput,
+  NetWorthHistoryPoint,
+  NetWorthResponse,
+  UpdateAccountInput,
+} from '../types/finance-account.js';
 
 const BASE = '/api/v1/finance/accounts';
 
 export async function listFinanceAccounts(http: AxiosInstance): Promise<AccountSummary[]> {
   const res = await http.get<AccountSummary[]>(BASE);
+  return res.data;
+}
+
+export async function createFinanceAccount(http: AxiosInstance, input: CreateAccountInput): Promise<AccountSummary> {
+  const res = await http.post<AccountSummary>(BASE, input);
   return res.data;
 }
 
@@ -24,5 +35,10 @@ export async function updateFinanceAccount(
 
 export async function getNetWorth(http: AxiosInstance): Promise<NetWorthResponse> {
   const res = await http.get<NetWorthResponse>(`${BASE}/net-worth`);
+  return res.data;
+}
+
+export async function getNetWorthHistory(http: AxiosInstance, months = 12): Promise<NetWorthHistoryPoint[]> {
+  const res = await http.get<NetWorthHistoryPoint[]>(`${BASE}/net-worth-history`, { params: { months } });
   return res.data;
 }
