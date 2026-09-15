@@ -1,6 +1,9 @@
 # AI tooling — local config, not project code
 .superpowers/
 .claude/settings.local.json
+.claude-flow/
+.claude/.proven-config-version
+.claude/proven-config.json
 
 # Dependencies
 node_modules/
