@@ -35,6 +35,15 @@ export async function categoriseTransaction(
   return res.data;
 }
 
+export async function tagIncomeStream(
+  http: AxiosInstance,
+  transactionId: string,
+  incomeStreamId: string,
+): Promise<TransactionDto> {
+  const res = await http.patch<TransactionDto>(`${BASE}/${transactionId}`, { incomeStreamId });
+  return res.data;
+}
+
 export async function createTransaction(
   http: AxiosInstance,
   input: CreateTransactionInput,

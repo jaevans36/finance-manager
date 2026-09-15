@@ -11,6 +11,9 @@ jest.mock('../../../api/finance-affordability-api.js');
 jest.mock('../../../api/finance-budgets-api.js');
 jest.mock('../../../api/finance-income-api.js');
 jest.mock('../../../api/finance-insights-api.js');
+jest.mock('../../../api/finance-debt-api.js');
+jest.mock('../../../api/finance-assets-api.js');
+jest.mock('../../../api/finance-categories-api.js');
 
 import * as accountsApi from '../../../api/finance-accounts-api.js';
 import * as transactionsApi from '../../../api/finance-transactions-api.js';
@@ -21,8 +24,12 @@ import * as affordabilityApi from '../../../api/finance-affordability-api.js';
 import * as budgetsApi from '../../../api/finance-budgets-api.js';
 import * as incomeApi from '../../../api/finance-income-api.js';
 import * as insightsApi from '../../../api/finance-insights-api.js';
+import * as debtApi from '../../../api/finance-debt-api.js';
+import * as assetsApi from '../../../api/finance-assets-api.js';
+import * as categoriesApi from '../../../api/finance-categories-api.js';
 
 import { getFinanceAccountsTool } from '../accounts/get-accounts.js';
+import { createAccountTool } from '../accounts/create-account.js';
 import { updateAccountTool } from '../accounts/update-account.js';
 import { checkAccountCompletenessTool } from '../accounts/check-account-completeness.js';
 import { getFinanceTransactionsTool } from '../transactions/get-transactions.js';
@@ -39,8 +46,23 @@ import { getMonthlyBudgetSummaryTool } from '../budgets/get-monthly-budget-summa
 import { getSavingsGoalsTool } from '../goals/get-savings-goals.js';
 import { updateSavingsGoalTool } from '../goals/update-savings-goal.js';
 import { getDisposableIncomeTool } from '../affordability/get-disposable-income.js';
+import { updateIncomeAccountsTool } from '../affordability/update-income-accounts.js';
 import { getIncomeSummaryTool } from '../income/get-income-summary.js';
+import { createIncomeStreamTool } from '../income/create-income-stream.js';
+import { updateIncomeStreamTool } from '../income/update-income-stream.js';
+import { deleteIncomeStreamTool } from '../income/delete-income-stream.js';
+import { detectIncomeTool } from '../income/detect-income.js';
 import { getAiInsightsTool } from '../insights/get-ai-insights.js';
+import { getNetWorthTool } from '../accounts/get-net-worth.js';
+import { getNetWorthHistoryTool } from '../accounts/get-net-worth-history.js';
+import { tagIncomeStreamTool } from '../transactions/tag-income-stream.js';
+import { getDebtOverviewTool } from '../debt/get-debt-overview.js';
+import { getDebtProjectionTool } from '../debt/get-debt-projection.js';
+import { getAssetsTool } from '../assets/get-assets.js';
+import { createAssetTool } from '../assets/create-asset.js';
+import { updateAssetTool } from '../assets/update-asset.js';
+import { getCategoriesTool } from '../categories/get-categories.js';
+import { createCategoryTool } from '../categories/create-category.js';
 import type { AnyToolDef } from '../../_register.js';
 import type { AccountSummary } from '../../../types/finance-account.js';
 import type { CsvImportResult, TransactionDto } from '../../../types/finance-transaction.js';
@@ -48,6 +70,9 @@ import type { RecurringPattern } from '../../../types/finance-bill.js';
 import type { BudgetWithProgress } from '../../../types/finance-budget.js';
 import type { IncomeStream } from '../../../types/finance-income.js';
 import type { InsightsSummaryResponse } from '../../../types/finance-insight.js';
+import type { DebtOverviewResponse, DebtProjectionResponse } from '../../../types/finance-debt.js';
+import type { AssetDto } from '../../../types/finance-asset.js';
+import type { CategoryDto } from '../../../types/finance-category.js';
 
 const mockAccountsApi = accountsApi as jest.Mocked<typeof accountsApi>;
 const mockTransactionsApi = transactionsApi as jest.Mocked<typeof transactionsApi>;
@@ -58,6 +83,9 @@ const mockAffordabilityApi = affordabilityApi as jest.Mocked<typeof affordabilit
 const mockBudgetsApi = budgetsApi as jest.Mocked<typeof budgetsApi>;
 const mockIncomeApi = incomeApi as jest.Mocked<typeof incomeApi>;
 const mockInsightsApi = insightsApi as jest.Mocked<typeof insightsApi>;
+const mockDebtApi = debtApi as jest.Mocked<typeof debtApi>;
+const mockAssetsApi = assetsApi as jest.Mocked<typeof assetsApi>;
+const mockCategoriesApi = categoriesApi as jest.Mocked<typeof categoriesApi>;
 
 const http = {} as AxiosInstance;
 const ctx = { http };
@@ -111,6 +139,8 @@ const transaction: TransactionDto = {
   importSource: 'Manual',
   createdAt: '2026-09-10T00:00:00Z',
   notes: null,
+  incomeStreamId: null,
+  incomeStreamName: null,
 };
 
 describe('finance_get_accounts', () => {
@@ -343,6 +373,43 @@ describe('finance_get_disposable_income', () => {
   it('maps an API error to an isError result', async () => {
     mockAffordabilityApi.getAffordability.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
     const res = await getDisposableIncomeTool.handler({}, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_create_account', () => {
+  it('forwards the input to the API', async () => {
+    mockAccountsApi.createFinanceAccount.mockResolvedValue(account);
+    await createAccountTool.handler(
+      { name: 'Current Account', type: 'Checking', currency: 'GBP', initialBalance: 1234.56 },
+      ctx,
+    );
+    expect(mockAccountsApi.createFinanceAccount).toHaveBeenCalledWith(http, {
+      name: 'Current Account',
+      type: 'Checking',
+      currency: 'GBP',
+      initialBalance: 1234.56,
+    });
+  });
+
+  it('accepts debt-specific fields', () => {
+    const parsed = parse(createAccountTool, {
+      name: 'Barclaycard',
+      type: 'Credit',
+      currency: 'GBP',
+      interestRate: 21.9,
+      creditLimit: 3000,
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it('rejects a missing name', () => {
+    expect(parse(createAccountTool, { type: 'Checking', currency: 'GBP' }).success).toBe(false);
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockAccountsApi.createFinanceAccount.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await createAccountTool.handler({ name: 'x', type: 'Checking', currency: 'GBP' }, ctx);
     expect(res.isError).toBe(true);
   });
 });
@@ -615,6 +682,30 @@ describe('finance_categorise_transaction', () => {
   });
 });
 
+describe('finance_tag_income_transaction', () => {
+  it('requires transactionId and incomeStreamId as uuids', () => {
+    expect(parse(tagIncomeStreamTool, { transactionId: UUID, incomeStreamId: UUID }).success).toBe(true);
+    expect(parse(tagIncomeStreamTool, { transactionId: 'not-a-uuid', incomeStreamId: UUID }).success).toBe(false);
+  });
+
+  it('tags the transaction and reports the stream name', async () => {
+    mockTransactionsApi.tagIncomeStream.mockResolvedValue({
+      ...transaction,
+      incomeStreamId: UUID,
+      incomeStreamName: 'My salary',
+    });
+    const res = await tagIncomeStreamTool.handler({ transactionId: 'txn-1', incomeStreamId: UUID }, ctx);
+    expect(mockTransactionsApi.tagIncomeStream).toHaveBeenCalledWith(http, 'txn-1', UUID);
+    expect(res.content[0].text).toContain('Tagged "Tesco" as My salary');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockTransactionsApi.tagIncomeStream.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await tagIncomeStreamTool.handler({ transactionId: 'txn-1', incomeStreamId: UUID }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
 describe('finance_get_recurring_payments', () => {
   const pattern: RecurringPattern = {
     merchantName: 'Netflix',
@@ -850,6 +941,324 @@ describe('finance_get_ai_insights', () => {
   it('maps an API error to an isError result', async () => {
     mockInsightsApi.getInsightsSummary.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
     const res = await getAiInsightsTool.handler({}, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+const incomeStream: IncomeStream = {
+  id: UUID,
+  userId: 'u1',
+  name: 'Salary',
+  monthlyAmount: 3000,
+  accountId: null,
+  accountName: null,
+  createdAt: '2026-01-01T00:00:00Z',
+  updatedAt: '2026-01-01T00:00:00Z',
+};
+
+describe('finance_create_income_stream', () => {
+  it('creates the stream and reports the amount', async () => {
+    mockIncomeApi.createIncomeStream.mockResolvedValue(incomeStream);
+    const res = await createIncomeStreamTool.handler({ name: 'Salary', monthlyAmount: 3000 }, ctx);
+    expect(mockIncomeApi.createIncomeStream).toHaveBeenCalledWith(http, { name: 'Salary', monthlyAmount: 3000 });
+    expect(res.content[0].text).toContain('Created income stream "Salary"');
+  });
+
+  it('rejects a missing name', () => {
+    expect(parse(createIncomeStreamTool, { monthlyAmount: 3000 }).success).toBe(false);
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockIncomeApi.createIncomeStream.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await createIncomeStreamTool.handler({ name: 'Salary', monthlyAmount: 3000 }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_update_income_stream', () => {
+  it('forwards only the provided fields, not streamId', async () => {
+    mockIncomeApi.updateIncomeStream.mockResolvedValue({ ...incomeStream, monthlyAmount: 3200 });
+    await updateIncomeStreamTool.handler({ streamId: UUID, monthlyAmount: 3200 }, ctx);
+    expect(mockIncomeApi.updateIncomeStream).toHaveBeenCalledWith(http, UUID, { monthlyAmount: 3200 });
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockIncomeApi.updateIncomeStream.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await updateIncomeStreamTool.handler({ streamId: UUID, monthlyAmount: 3200 }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_delete_income_stream', () => {
+  it('deletes the stream', async () => {
+    mockIncomeApi.deleteIncomeStream.mockResolvedValue(undefined);
+    const res = await deleteIncomeStreamTool.handler({ streamId: UUID }, ctx);
+    expect(mockIncomeApi.deleteIncomeStream).toHaveBeenCalledWith(http, UUID);
+    expect(res.content[0].text).toContain('Deleted');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockIncomeApi.deleteIncomeStream.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await deleteIncomeStreamTool.handler({ streamId: UUID }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_detect_income', () => {
+  it('reports the detected amount', async () => {
+    mockIncomeApi.detectIncome.mockResolvedValue({
+      detectedMonthlyAmount: 3000,
+      transactionCount: 3,
+      matchedTransactions: [],
+    });
+    const res = await detectIncomeTool.handler({ accountId: UUID }, ctx);
+    expect(mockIncomeApi.detectIncome).toHaveBeenCalledWith(http, UUID);
+    expect(res.content[0].text).toContain('Detected ~£3000/month');
+  });
+
+  it('reports no pattern detected', async () => {
+    mockIncomeApi.detectIncome.mockResolvedValue({ detectedMonthlyAmount: null, transactionCount: 0, matchedTransactions: [] });
+    const res = await detectIncomeTool.handler({ accountId: UUID }, ctx);
+    expect(res.content[0].text).toContain('No recurring income pattern detected');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockIncomeApi.detectIncome.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await detectIncomeTool.handler({ accountId: UUID }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_update_income_accounts', () => {
+  it('forwards the account ids', async () => {
+    mockAffordabilityApi.updateIncomeAccounts.mockResolvedValue(undefined);
+    const res = await updateIncomeAccountsTool.handler({ accountIds: [UUID] }, ctx);
+    expect(mockAffordabilityApi.updateIncomeAccounts).toHaveBeenCalledWith(http, [UUID]);
+    expect(res.content[0].text).toContain('1 account(s)');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockAffordabilityApi.updateIncomeAccounts.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await updateIncomeAccountsTool.handler({ accountIds: [UUID] }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_get_net_worth', () => {
+  it('reports the net worth figure', async () => {
+    mockAccountsApi.getNetWorth.mockResolvedValue({ netWorth: 12345.67 });
+    const res = await getNetWorthTool.handler({}, ctx);
+    expect(res.content[0].text).toContain('£12345.67');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockAccountsApi.getNetWorth.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await getNetWorthTool.handler({}, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_get_net_worth_history', () => {
+  it('renders each point', async () => {
+    mockAccountsApi.getNetWorthHistory.mockResolvedValue([
+      { month: 9, year: 2026, monthLabel: 'Sep', netWorth: 1000 },
+    ]);
+    const res = await getNetWorthHistoryTool.handler({}, ctx);
+    expect(mockAccountsApi.getNetWorthHistory).toHaveBeenCalledWith(http, undefined);
+    expect(res.content[0].text).toContain('Sep 2026: £1000');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockAccountsApi.getNetWorthHistory.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await getNetWorthHistoryTool.handler({}, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_get_debt_overview', () => {
+  const overview: DebtOverviewResponse = {
+    debts: [
+      {
+        accountId: UUID,
+        name: 'Barclaycard',
+        type: 'Credit',
+        balance: -2000,
+        creditLimit: 3000,
+        interestRate: 21.9,
+        promotionalBalance: null,
+        minimumMonthlyPayment: 50,
+        currentMonthlyPayment: 100,
+        promotionalRate: null,
+        promotionalExpiry: null,
+        loanEndDate: null,
+        severityScore: 60,
+        severityLabel: 'High',
+        severityReason: 'High interest rate',
+        monthlyInterestCost: 36.5,
+        monthsToPayoffAtCurrentPayment: 22,
+        payoffDateAtCurrentPayment: '2028-07-01',
+        detectedMonthlyPayment: 100,
+        effectiveMonthlyPayment: 100,
+      },
+    ],
+    totalDebt: 2000,
+    totalMinimumPayments: 50,
+    totalCurrentPayments: 100,
+  };
+
+  it('renders totals and per-debt severity', async () => {
+    mockDebtApi.getDebtOverview.mockResolvedValue(overview);
+    const res = await getDebtOverviewTool.handler({}, ctx);
+    expect(res.content[0].text).toContain('Total debt: £2000');
+    expect(res.content[0].text).toContain('Barclaycard');
+    expect(res.content[0].text).toContain('High');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockDebtApi.getDebtOverview.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await getDebtOverviewTool.handler({}, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_get_debt_projection', () => {
+  const projection: DebtProjectionResponse = {
+    strategy: 'Avalanche',
+    monthsToFreedom: 18,
+    estimatedFreedomDate: '2028-03-01',
+    totalInterestPaid: 450.25,
+    schedule: [],
+    payoffOrder: [{ accountId: UUID, name: 'Barclaycard', monthPaidOff: 18, paidOffDate: '2028-03-01' }],
+    warnings: [],
+  };
+
+  it('requires a valid strategy', () => {
+    expect(parse(getDebtProjectionTool, { strategy: 'Avalanche' }).success).toBe(true);
+    expect(parse(getDebtProjectionTool, { strategy: 'Aggressive' }).success).toBe(false);
+  });
+
+  it('renders months-to-freedom and payoff order', async () => {
+    mockDebtApi.getDebtProjection.mockResolvedValue(projection);
+    const res = await getDebtProjectionTool.handler({ strategy: 'Avalanche' }, ctx);
+    expect(mockDebtApi.getDebtProjection).toHaveBeenCalledWith(http, { strategy: 'Avalanche' });
+    expect(res.content[0].text).toContain('18 months to debt-free');
+    expect(res.content[0].text).toContain('Barclaycard: paid off month 18');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockDebtApi.getDebtProjection.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await getDebtProjectionTool.handler({ strategy: 'Avalanche' }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+const asset: AssetDto = {
+  id: UUID,
+  name: 'Family Car',
+  type: 'Vehicle',
+  value: 8000,
+  notes: null,
+  createdAt: '2026-01-01T00:00:00Z',
+  updatedAt: '2026-01-01T00:00:00Z',
+};
+
+describe('finance_get_assets', () => {
+  it('renders the total and each asset', async () => {
+    mockAssetsApi.listAssets.mockResolvedValue([asset]);
+    const res = await getAssetsTool.handler({}, ctx);
+    expect(res.content[0].text).toContain('total £8000');
+    expect(res.content[0].text).toContain('Family Car');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockAssetsApi.listAssets.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await getAssetsTool.handler({}, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_create_asset', () => {
+  it('creates the asset and reports its value', async () => {
+    mockAssetsApi.createAsset.mockResolvedValue(asset);
+    const res = await createAssetTool.handler({ name: 'Family Car', type: 'Vehicle', value: 8000 }, ctx);
+    expect(mockAssetsApi.createAsset).toHaveBeenCalledWith(http, { name: 'Family Car', type: 'Vehicle', value: 8000 });
+    expect(res.content[0].text).toContain('Created asset "Family Car"');
+  });
+
+  it('rejects a negative value', () => {
+    expect(parse(createAssetTool, { name: 'x', type: 'Vehicle', value: -1 }).success).toBe(false);
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockAssetsApi.createAsset.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await createAssetTool.handler({ name: 'Family Car', type: 'Vehicle', value: 8000 }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_update_asset', () => {
+  it('forwards only the provided fields, not assetId', async () => {
+    mockAssetsApi.updateAsset.mockResolvedValue({ ...asset, value: 7500 });
+    await updateAssetTool.handler({ assetId: UUID, value: 7500 }, ctx);
+    expect(mockAssetsApi.updateAsset).toHaveBeenCalledWith(http, UUID, { value: 7500 });
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockAssetsApi.updateAsset.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await updateAssetTool.handler({ assetId: UUID, value: 7500 }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_get_categories', () => {
+  const category: CategoryDto = {
+    id: UUID,
+    name: 'Groceries',
+    colour: '#22C55E',
+    icon: 'shopping-cart',
+    isSystem: true,
+    parentId: null,
+    children: null,
+  };
+
+  it('renders the category tree', async () => {
+    mockCategoriesApi.listCategories.mockResolvedValue([category]);
+    const res = await getCategoriesTool.handler({}, ctx);
+    expect(res.content[0].text).toContain('Groceries');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockCategoriesApi.listCategories.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await getCategoriesTool.handler({}, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_create_category', () => {
+  const category: CategoryDto = {
+    id: UUID,
+    name: 'Side Hustle',
+    colour: null,
+    icon: null,
+    isSystem: false,
+    parentId: null,
+    children: null,
+  };
+
+  it('creates the category', async () => {
+    mockCategoriesApi.createCategory.mockResolvedValue(category);
+    const res = await createCategoryTool.handler({ name: 'Side Hustle' }, ctx);
+    expect(mockCategoriesApi.createCategory).toHaveBeenCalledWith(http, { name: 'Side Hustle' });
+    expect(res.content[0].text).toContain('Created category "Side Hustle"');
+  });
+
+  it('rejects a missing name', () => {
+    expect(parse(createCategoryTool, {}).success).toBe(false);
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockCategoriesApi.createCategory.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await createCategoryTool.handler({ name: 'Side Hustle' }, ctx);
     expect(res.isError).toBe(true);
   });
 });

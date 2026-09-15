@@ -47,6 +47,46 @@ export interface NetWorthResponse {
 }
 
 /**
+ * GET /api/v1/finance/accounts/net-worth-history point — account balances only
+ * (reconstructed from transaction history), not current asset values.
+ */
+export interface NetWorthHistoryPoint {
+  month: number;
+  year: number;
+  monthLabel: string;
+  netWorth: number;
+}
+
+/**
+ * POST /api/v1/finance/accounts body. Mirrors CreateAccountRequest in
+ * apps/finance-api/Features/Accounts/Services/IAccountService.cs exactly.
+ */
+export interface CreateAccountInput {
+  name: string;
+  type: AccountType;
+  currency: string;
+  initialBalance?: number;
+  institution?: string;
+  accountNumberSuffix?: string;
+  colour?: string;
+  icon?: string;
+  excludeFromNetWorth?: boolean;
+  notes?: string;
+  creditLimit?: number;
+  interestRate?: number;
+  promotionalBalance?: number;
+  promotionalRate?: number;
+  promotionalExpiry?: string;
+  promotionalRevertRate?: number;
+  mortgageStartDate?: string;
+  mortgageTermYears?: number;
+  isInterestOnly?: boolean;
+  minimumMonthlyPayment?: number;
+  currentMonthlyPayment?: number;
+  loanEndDate?: string;
+}
+
+/**
  * PATCH /api/v1/finance/accounts/{id} body — every field optional, omitted = unchanged.
  * Mirrors UpdateAccountRequest in apps/finance-api/Features/Accounts/Services/IAccountService.cs exactly.
  */

@@ -31,6 +31,7 @@ public class TransactionService : ITransactionService
         // the account is visible to, matching AccountsController (see AccountShare's doc comment).
         var query = _db.Transactions
             .Include(t => t.Category)
+            .Include(t => t.IncomeStream)
             .Where(t => t.AccountId == request.AccountId);
 
         if (request.From.HasValue)
@@ -71,6 +72,7 @@ public class TransactionService : ITransactionService
     {
         var t = await _db.Transactions
             .Include(t => t.Category)
+            .Include(t => t.IncomeStream)
             .FirstOrDefaultAsync(t => t.Id == transactionId, ct);
 
         if (t is null) return null;
@@ -127,6 +129,7 @@ public class TransactionService : ITransactionService
     {
         var transaction = await _db.Transactions
             .Include(t => t.Category)
+            .Include(t => t.IncomeStream)
             .FirstOrDefaultAsync(t => t.Id == transactionId, ct);
 
         if (transaction is null) return null;
@@ -136,6 +139,7 @@ public class TransactionService : ITransactionService
 
         var changedFields = new List<string>();
         if (request.CategoryId is not null) { transaction.CategoryId = request.CategoryId; changedFields.Add(nameof(Transaction.CategoryId)); }
+        if (request.IncomeStreamId is not null) { transaction.IncomeStreamId = request.IncomeStreamId; changedFields.Add(nameof(Transaction.IncomeStreamId)); }
         if (request.Description is not null) { transaction.Description = request.Description; changedFields.Add(nameof(Transaction.Description)); }
         if (request.Payee is not null) { transaction.Payee = request.Payee; changedFields.Add(nameof(Transaction.Payee)); }
         if (request.Notes is not null) { transaction.Notes = request.Notes; changedFields.Add(nameof(Transaction.Notes)); }
@@ -217,6 +221,8 @@ public class TransactionService : ITransactionService
             t.IsDuplicate,
             t.ImportSource,
             t.CreatedAt,
-            t.Notes
+            t.Notes,
+            t.IncomeStreamId,
+            t.IncomeStream?.Name
         );
 }

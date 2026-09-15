@@ -151,6 +151,13 @@ public class FinanceDbContext : DbContext
                   .WithMany()
                   .HasForeignKey(t => t.BillId)
                   .OnDelete(DeleteBehavior.SetNull);
+
+            // Nullable FK to a named income stream — set when a credit is tagged as
+            // belonging to it (see IncomeStreamId's doc comment on Transaction).
+            entity.HasOne(t => t.IncomeStream)
+                  .WithMany()
+                  .HasForeignKey(t => t.IncomeStreamId)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
 
         // ── Budget ────────────────────────────────────────────────────────────
