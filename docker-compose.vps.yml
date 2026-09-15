@@ -88,6 +88,9 @@ services:
       Jwt__Audience: ${JWT_AUDIENCE}
       # No default — fail fast if unset, same posture as the other secrets here.
       Encryption__Key: ${FINANCE_ENCRYPTION_KEY}
+      # Dedicated webhook for the daily bill digest / price-change alerts — separate
+      # channel from life-api's DISCORD_ERROR_WEBHOOK above.
+      DISCORD_FINANCE_ALERTS_WEBHOOK: ${DISCORD_FINANCE_ALERTS_WEBHOOK}
     depends_on:
       postgres:
         condition: service_healthy

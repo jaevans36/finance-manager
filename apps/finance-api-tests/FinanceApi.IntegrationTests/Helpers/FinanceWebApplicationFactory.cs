@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using FinanceApi.Data;
+using FinanceApi.Features.Alerts.BackgroundServices;
 
 namespace FinanceApi.IntegrationTests.Helpers;
 
@@ -36,6 +38,14 @@ public class FinanceWebApplicationFactory : WebApplicationFactory<Program>
 
             services.AddDbContext<FinanceDbContext>(options =>
                 options.UseInMemoryDatabase(_dbName));
+
+            // The alerts BackgroundService would otherwise fire on host startup and
+            // write into the InMemory DB every integration test class shares — tested
+            // directly via FinanceAlertsServiceTests instead, not through the host.
+            var hostedService = services.SingleOrDefault(
+                d => d.ImplementationType == typeof(FinanceAlertsBackgroundService));
+            if (hostedService != null)
+                services.Remove(hostedService);
         });
     }
 

@@ -3,7 +3,7 @@
 This document tracks all automated tests in the Life Manager project. It serves as a reference for what's tested, coverage gaps, and maintenance responsibilities.
 
 **Last Updated**: 2026-09-15  
-**Total Tests**: 1617 (630 frontend + 419 finance backend unit + 118 finance integration + 199 life-api unit + 53 life-api integration + 198 life-mcp — life-api's unit/integration counts were badly stale (previously listed as 26/5 "labels" only) and are corrected here to their actual current totals; a full reconciliation of the coverage matrix below is still backlogged. Recent additions: bill categories/weekday due-day work + pay-vs-bills summary + multiple income streams + planned savings/sinking funds/budget suggestions + monthly debt burndown table + debt payment fallback fix + per-debt balance in monthly breakdown + debt snowball momentum fix + Cash Flow tab + Spending Pots in affordability + existing debt repayments in affordability + discretionary-spend floor fix + linked-bill debt payment resolution + bill/debt payment mismatch warning + per-account recurring payment detection + income-account scoping UI + manual-income-priority fix + budget titles/notes + budget edit/delete UI + task group reassignment in edit modal + week-range test month-abbreviation fix + finance-api column encryption + finance-api activity log + finance-api account sharing + finance-mcp core tools slice 1 + finance-api transaction sharing visibility fix + finance-api audit log expansion + finance-mcp statement ingestion slice 2 + finance net-worth history and tracked assets + change password from profile + finance-mcp reporting tools slice 3 + structured JSON transaction import)
+**Total Tests**: 1635 (630 frontend + 435 finance backend unit + 120 finance integration + 199 life-api unit + 53 life-api integration + 198 life-mcp — life-api's unit/integration counts were badly stale (previously listed as 26/5 "labels" only) and are corrected here to their actual current totals; a full reconciliation of the coverage matrix below is still backlogged. Recent additions: bill categories/weekday due-day work + pay-vs-bills summary + multiple income streams + planned savings/sinking funds/budget suggestions + monthly debt burndown table + debt payment fallback fix + per-debt balance in monthly breakdown + debt snowball momentum fix + Cash Flow tab + Spending Pots in affordability + existing debt repayments in affordability + discretionary-spend floor fix + linked-bill debt payment resolution + bill/debt payment mismatch warning + per-account recurring payment detection + income-account scoping UI + manual-income-priority fix + budget titles/notes + budget edit/delete UI + task group reassignment in edit modal + week-range test month-abbreviation fix + finance-api column encryption + finance-api activity log + finance-api account sharing + finance-mcp core tools slice 1 + finance-api transaction sharing visibility fix + finance-api audit log expansion + finance-mcp statement ingestion slice 2 + finance net-worth history and tracked assets + change password from profile + finance-mcp reporting tools slice 3 + structured JSON transaction import + daily finance alerts via Discord)
 
 > ⚠️ **Note**: The feature coverage matrix below reflects Phase 13. The suite has grown significantly since then (Phases 48–58, keyboard shortcuts, labels, service worker notifications). A full reconciliation of the coverage matrix is backlogged.
 
@@ -17,10 +17,10 @@ This document tracks all automated tests in the Life Manager project. It serves 
 | Life API Backend Unit | 199 | Every PR | ~45s | `apps/life-api-tests/LifeApi.UnitTests/` |
 | Life API Integration | 53 | Every PR | ~30s | `apps/life-api-tests/LifeApi.IntegrationTests/` |
 | Life MCP (`@life-manager/mcp`) | 198 | Every PR | ~9s | `apps/life-mcp/src/**/__tests__/` — `pnpm --filter @life-manager/mcp test` |
-| Finance API Backend Unit | 419 | Every PR | ~1min | `apps/finance-api-tests/FinanceApi.UnitTests/` |
-| Finance API Integration | 118 | Every PR | ~3s | `apps/finance-api-tests/FinanceApi.IntegrationTests/` |
+| Finance API Backend Unit | 435 | Every PR | ~1min | `apps/finance-api-tests/FinanceApi.UnitTests/` |
+| Finance API Integration | 120 | Every PR | ~3s | `apps/finance-api-tests/FinanceApi.IntegrationTests/` |
 | E2E (Playwright) | ~38 (est.) | Every PR | ~6min | `apps/web/e2e/` |
-| **Total** | **1617+** | | **~12min** | |
+| **Total** | **1635+** | | **~12min** | |
 
 ---
 

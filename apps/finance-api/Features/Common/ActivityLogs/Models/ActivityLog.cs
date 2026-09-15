@@ -78,5 +78,7 @@ public enum FinanceActivityType
     CategoryRuleDeleted,
     AssetCreated,
     AssetUpdated,
-    AssetDeleted
+    AssetDeleted,
+    DailyDigestSent,
+    PriceChangeAlertSent
 }
