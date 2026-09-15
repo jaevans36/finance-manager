@@ -7,7 +7,7 @@ export const getDebtOverviewTool = defineTool({
   config: {
     title: 'Get debt overview',
     description:
-      'List every debt account (credit cards, loans, mortgages) with balance, rate, minimum payment, a ' +
+      'List every debt account (credit cards, loans, mortgages, and any overdrawn checking account) with balance, rate, minimum payment, a ' +
       'severity score/label, monthly interest cost, and months-to-payoff at the current payment — plus ' +
       'household totals. Use finance_check_account_completeness first on any account missing fields, since ' +
       'a debt with no interest rate or payment amount produces a hollow severity score. Use ' +

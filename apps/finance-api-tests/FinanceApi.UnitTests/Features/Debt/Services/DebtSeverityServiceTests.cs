@@ -126,6 +126,26 @@ public class DebtSeverityServiceTests
         score.Should().Be(0);
     }
 
+    [Fact]
+    public void Score_OverdrawnCheckingAboveUtilisation90Percent_AddsMaxUtilisationBonus()
+    {
+        var account = new Account
+        {
+            Id = Guid.NewGuid(),
+            Type = AccountType.Checking,
+            Name = "Test Current Account",
+            Currency = "GBP",
+            Balance = -2400m,
+            InterestRate = 0m,
+            CreditLimit = 2500m,
+        };
+
+        var (score, _, reason) = _sut.Score(account, _today);
+
+        score.Should().Be(15);
+        reason.Should().Contain("90%");
+    }
+
     // ── Label thresholds ──────────────────────────────────────────────────────
 
     // Rate-only scores top out at 60 (capped). Achievable range via rate alone is 0–60.

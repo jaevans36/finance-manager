@@ -8,8 +8,11 @@ namespace FinanceApi.Features.Debt.Services;
 
 public class DebtProjectionService(FinanceDbContext db, IDebtSeverityService severity) : IDebtProjectionService
 {
+    // Checking is included because an overdrawn current account is a real debt costing real
+    // interest — same economics as a credit card, just usually with no fixed repayment
+    // schedule. The Balance < 0 filter below means a healthy Checking account is unaffected.
     private static readonly AccountType[] DebtTypes =
-        [AccountType.Credit, AccountType.Loan, AccountType.Mortgage];
+        [AccountType.Credit, AccountType.Loan, AccountType.Mortgage, AccountType.Checking];
 
     public async Task<DebtOverviewResponse> GetOverviewAsync(Guid userId, CancellationToken ct = default)
     {
