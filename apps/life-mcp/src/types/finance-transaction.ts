@@ -3,7 +3,7 @@
 export const TRANSACTION_TYPES = ['Debit', 'Credit', 'Transfer'] as const;
 export type TransactionType = (typeof TRANSACTION_TYPES)[number];
 
-export const IMPORT_SOURCES = ['Manual', 'CsvImport', 'BankSync'] as const;
+export const IMPORT_SOURCES = ['Manual', 'CsvImport', 'BankSync', 'JsonImport'] as const;
 export type ImportSource = (typeof IMPORT_SOURCES)[number];
 
 export interface TransactionDto {
@@ -63,7 +63,7 @@ export interface CreateTransactionInput {
 /** Bank formats finance-api's importer understands natively — see GET /transactions/import/formats. */
 export const KNOWN_BANK_FORMATS = ['barclays', 'hsbc', 'lloyds', 'monzo', 'starling', 'natwest', 'generic'] as const;
 
-/** POST /api/v1/finance/transactions/import response. */
+/** POST /api/v1/finance/transactions/import response — also returned by import-json. */
 export interface CsvImportResult {
   imported: number;
   duplicates: number;
@@ -72,4 +72,20 @@ export interface CsvImportResult {
   batchId: string;
   skipped: number;
   skipMessages: string[] | null;
+}
+
+/**
+ * One structured transaction entry for POST /api/v1/finance/transactions/import-json — the
+ * richer alternative to a generic CSV when category/payee/notes are already known, not just
+ * date/description/amount.
+ */
+export interface JsonTransactionEntry {
+  transactionDate: string;
+  description: string;
+  amount: number;
+  type: TransactionType;
+  reference?: string;
+  categoryId?: string;
+  payee?: string;
+  notes?: string;
 }

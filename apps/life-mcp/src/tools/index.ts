@@ -26,6 +26,7 @@ import { checkAccountCompletenessTool } from './finance/accounts/check-account-c
 import { getFinanceTransactionsTool } from './finance/transactions/get-transactions.js';
 import { addManualTransactionTool } from './finance/transactions/add-manual-transaction.js';
 import { importTransactionsTool } from './finance/transactions/import-transactions.js';
+import { importTransactionsJsonTool } from './finance/transactions/import-transactions-json.js';
 import { searchTransactionsTool } from './finance/transactions/search-transactions.js';
 import { categoriseTransactionTool } from './finance/transactions/categorise-transaction.js';
 import { getBillsDueTool } from './finance/bills/get-bills-due.js';
@@ -74,6 +75,10 @@ const labelTools: AnyToolDef[] = [listLabelsTool, createLabelTool];
  * with no backend endpoint at all (transaction summary, bill history, bill-flag-for-review,
  * pot transactions, financial health score, cashflow forecast, monthly report, tax year
  * summary, compare months, export) — each needs a real finance-api design decision first.
+ *
+ * finance_import_transactions_json (see docs/intent/2026-09-15-finance-json-transaction-import.md)
+ * adds a structured-JSON alternative to the CSV import path, for when category/payee/notes are
+ * already known and shouldn't be lost in a CSV round-trip.
  */
 const financeTools: AnyToolDef[] = [
   getFinanceAccountsTool,
@@ -82,6 +87,7 @@ const financeTools: AnyToolDef[] = [
   getFinanceTransactionsTool,
   addManualTransactionTool,
   importTransactionsTool,
+  importTransactionsJsonTool,
   searchTransactionsTool,
   categoriseTransactionTool,
   getBillsDueTool,
