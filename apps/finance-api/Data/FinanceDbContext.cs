@@ -10,6 +10,7 @@ using FinanceApi.Features.Common.Users.Models;
 using FinanceApi.Features.IncomeStreams.Models;
 using FinanceApi.Features.SavingsGoals.Models;
 using FinanceApi.Features.Settings.Models;
+using FinanceApi.Features.Tags.Models;
 using FinanceApi.Features.Transactions.Models;
 using FinanceApi.Infrastructure.Encryption;
 using Microsoft.EntityFrameworkCore;
@@ -58,6 +59,8 @@ public class FinanceDbContext : DbContext
     public DbSet<Asset> Assets => Set<Asset>();
     public DbSet<RecurringPaymentBaseline> RecurringPaymentBaselines => Set<RecurringPaymentBaseline>();
     public DbSet<NotificationRun> NotificationRuns => Set<NotificationRun>();
+    public DbSet<Tag> Tags => Set<Tag>();
+    public DbSet<TransactionTag> TransactionTags => Set<TransactionTag>();
 
     /// <summary>Read-only — see LifeManagerUser's doc comment. Never written to from finance-api.</summary>
     public DbSet<LifeManagerUser> LifeManagerUsers => Set<LifeManagerUser>();
@@ -158,6 +161,33 @@ public class FinanceDbContext : DbContext
                   .WithMany()
                   .HasForeignKey(t => t.IncomeStreamId)
                   .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ── Tag / TransactionTag ─────────────────────────────────────────────────
+        modelBuilder.Entity<Tag>(entity =>
+        {
+            entity.HasKey(t => t.Id);
+            // ENCRYPTED — no HasMaxLength: widened to `text` to hold ciphertext.
+            entity.Property(t => t.Name).IsRequired().HasConversion(Encrypted);
+            entity.Property(t => t.Colour).HasMaxLength(7);
+            entity.HasIndex(t => t.UserId);
+        });
+
+        modelBuilder.Entity<TransactionTag>(entity =>
+        {
+            entity.HasKey(tt => new { tt.TransactionId, tt.TagId });
+
+            // Unlike CategoryId/IncomeStreamId (SetNull — the transaction persists meaningfully
+            // without them), a TransactionTag row is meaningless on its own: cascade both ways.
+            entity.HasOne(tt => tt.Transaction)
+                  .WithMany(t => t.TransactionTags)
+                  .HasForeignKey(tt => tt.TransactionId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(tt => tt.Tag)
+                  .WithMany(t => t.TransactionTags)
+                  .HasForeignKey(tt => tt.TagId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         // ── Budget ────────────────────────────────────────────────────────────

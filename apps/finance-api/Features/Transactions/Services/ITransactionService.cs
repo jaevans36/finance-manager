@@ -1,3 +1,4 @@
+using FinanceApi.Features.Tags.Models;
 using FinanceApi.Features.Transactions.Models;
 
 namespace FinanceApi.Features.Transactions.Services;
@@ -39,7 +40,8 @@ public record TransactionDto(
     DateTime CreatedAt,
     string? Notes,
     Guid? IncomeStreamId = null,
-    string? IncomeStreamName = null
+    string? IncomeStreamName = null,
+    IReadOnlyList<TagRef>? Tags = null
 );
 
 public record CreateTransactionRequest(
@@ -68,6 +70,8 @@ public record UpdateTransactionRequest(
     Guid? IncomeStreamId = null
 );
 
+public record AddTagRequest(Guid TagId);
+
 public record CsvImportResult(
     int Imported,
     int Duplicates,
@@ -85,4 +89,6 @@ public interface ITransactionService
     Task<TransactionDto> CreateTransactionAsync(Guid userId, CreateTransactionRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default);
     Task<TransactionDto?> UpdateTransactionAsync(Guid userId, Guid transactionId, UpdateTransactionRequest request, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default);
     Task<bool> DeleteTransactionAsync(Guid userId, Guid transactionId, string? ipAddress = null, string? userAgent = null, CancellationToken ct = default);
+    Task<TransactionDto?> AddTagAsync(Guid userId, Guid transactionId, Guid tagId, CancellationToken ct = default);
+    Task<TransactionDto?> RemoveTagAsync(Guid userId, Guid transactionId, Guid tagId, CancellationToken ct = default);
 }

@@ -4,6 +4,7 @@ using FinanceApi.Data;
 using FinanceApi.Features.Accounts.Models;
 using FinanceApi.Features.Accounts.Services;
 using FinanceApi.Features.Common.ActivityLogs.Services;
+using FinanceApi.Features.Tags.Models;
 using FinanceApi.Features.Transactions.Models;
 using FinanceApi.Features.Transactions.Services;
 
@@ -446,6 +447,93 @@ public class TransactionServiceTests : IDisposable
 
         deleted.Should().BeFalse();
         (await _db.Transactions.FindAsync(transaction.Id)).Should().NotBeNull();
+    }
+
+    // ── AddTagAsync / RemoveTagAsync ─────────────────────────────────────────
+
+    [Fact]
+    public async Task AddTagAsync_LinksTheTagAndReturnsItInTheDto()
+    {
+        var transaction = MakeTransaction(_userId, _accountId, "Flight to Cardiff");
+        var tag = new Tag { Id = Guid.NewGuid(), UserId = _userId, Name = "Wales holiday 2026" };
+        _db.Transactions.Add(transaction);
+        _db.Tags.Add(tag);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.AddTagAsync(_userId, transaction.Id, tag.Id);
+
+        result.Should().NotBeNull();
+        result!.Tags.Should().ContainSingle(t => t.Id == tag.Id && t.Name == "Wales holiday 2026");
+    }
+
+    [Fact]
+    public async Task AddTagAsync_WhenAlreadyTagged_DoesNotDuplicateTheLink()
+    {
+        var transaction = MakeTransaction(_userId, _accountId, "Flight to Cardiff");
+        var tag = new Tag { Id = Guid.NewGuid(), UserId = _userId, Name = "Wales holiday 2026" };
+        _db.Transactions.Add(transaction);
+        _db.Tags.Add(tag);
+        await _db.SaveChangesAsync();
+
+        await _sut.AddTagAsync(_userId, transaction.Id, tag.Id);
+        var result = await _sut.AddTagAsync(_userId, transaction.Id, tag.Id);
+
+        result!.Tags.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task AddTagAsync_WhenTagBelongsToAnotherUser_ReturnsNull()
+    {
+        var transaction = MakeTransaction(_userId, _accountId, "Flight to Cardiff");
+        var tag = new Tag { Id = Guid.NewGuid(), UserId = _otherUserId, Name = "Not yours" };
+        _db.Transactions.Add(transaction);
+        _db.Tags.Add(tag);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.AddTagAsync(_userId, transaction.Id, tag.Id);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task AddTagAsync_WhenTransactionNotVisibleToCaller_ReturnsNull()
+    {
+        var transaction = MakeTransaction(_userId, _accountId, "Flight to Cardiff");
+        var tag = new Tag { Id = Guid.NewGuid(), UserId = _otherUserId, Name = "Holiday" };
+        _db.Transactions.Add(transaction);
+        _db.Tags.Add(tag);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.AddTagAsync(_otherUserId, transaction.Id, tag.Id);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task RemoveTagAsync_UnlinksTheTag()
+    {
+        var transaction = MakeTransaction(_userId, _accountId, "Flight to Cardiff");
+        var tag = new Tag { Id = Guid.NewGuid(), UserId = _userId, Name = "Wales holiday 2026" };
+        _db.Transactions.Add(transaction);
+        _db.Tags.Add(tag);
+        await _db.SaveChangesAsync();
+        await _sut.AddTagAsync(_userId, transaction.Id, tag.Id);
+
+        var result = await _sut.RemoveTagAsync(_userId, transaction.Id, tag.Id);
+
+        result!.Tags.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task RemoveTagAsync_WhenNotTagged_IsANoOpAndReturnsTheTransaction()
+    {
+        var transaction = MakeTransaction(_userId, _accountId, "Flight to Cardiff");
+        _db.Transactions.Add(transaction);
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.RemoveTagAsync(_userId, transaction.Id, Guid.NewGuid());
+
+        result.Should().NotBeNull();
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

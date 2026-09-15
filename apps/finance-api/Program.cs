@@ -16,6 +16,7 @@ using FinanceApi.Features.CategoryRules.Services;
 using FinanceApi.Features.Common.ActivityLogs.Services;
 using FinanceApi.Features.Insights.Services;
 using FinanceApi.Features.SavingsGoals.Services;
+using FinanceApi.Features.Tags.Services;
 using FinanceApi.Features.Transactions.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -211,6 +212,7 @@ try
     builder.Services.AddScoped<INegotiationEngineService, NegotiationEngineService>();
     builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
     builder.Services.AddScoped<IAssetService, AssetService>();
+    builder.Services.AddScoped<ITagService, TagService>();
 
     // Clock abstraction — inject TimeProvider instead of calling DateTime.UtcNow directly
     builder.Services.AddSingleton(TimeProvider.System);

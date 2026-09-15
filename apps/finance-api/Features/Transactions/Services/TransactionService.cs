@@ -2,6 +2,7 @@ using FinanceApi.Data;
 using FinanceApi.Features.Accounts.Services;
 using FinanceApi.Features.Common.ActivityLogs.Models;
 using FinanceApi.Features.Common.ActivityLogs.Services;
+using FinanceApi.Features.Tags.Models;
 using FinanceApi.Features.Transactions.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,6 +33,7 @@ public class TransactionService : ITransactionService
         var query = _db.Transactions
             .Include(t => t.Category)
             .Include(t => t.IncomeStream)
+            .Include(t => t.TransactionTags).ThenInclude(tt => tt.Tag)
             .Where(t => t.AccountId == request.AccountId);
 
         if (request.From.HasValue)
@@ -73,6 +75,7 @@ public class TransactionService : ITransactionService
         var t = await _db.Transactions
             .Include(t => t.Category)
             .Include(t => t.IncomeStream)
+            .Include(t => t.TransactionTags).ThenInclude(tt => tt.Tag)
             .FirstOrDefaultAsync(t => t.Id == transactionId, ct);
 
         if (t is null) return null;
@@ -130,6 +133,7 @@ public class TransactionService : ITransactionService
         var transaction = await _db.Transactions
             .Include(t => t.Category)
             .Include(t => t.IncomeStream)
+            .Include(t => t.TransactionTags).ThenInclude(tt => tt.Tag)
             .FirstOrDefaultAsync(t => t.Id == transactionId, ct);
 
         if (transaction is null) return null;
@@ -203,6 +207,54 @@ public class TransactionService : ITransactionService
         return true;
     }
 
+    public async Task<TransactionDto?> AddTagAsync(Guid userId, Guid transactionId, Guid tagId, CancellationToken ct = default)
+    {
+        var transaction = await _db.Transactions
+            .Include(t => t.Category)
+            .Include(t => t.IncomeStream)
+            .Include(t => t.TransactionTags).ThenInclude(tt => tt.Tag)
+            .FirstOrDefaultAsync(t => t.Id == transactionId, ct);
+
+        if (transaction is null) return null;
+
+        var visibleIds = await _sharing.GetVisibleAccountIdsAsync(userId);
+        if (!visibleIds.Contains(transaction.AccountId)) return null;
+
+        if (transaction.TransactionTags.All(tt => tt.TagId != tagId))
+        {
+            var tag = await _db.Tags.FirstOrDefaultAsync(tg => tg.Id == tagId && tg.UserId == userId, ct);
+            if (tag is null) return null;
+
+            transaction.TransactionTags.Add(new TransactionTag { TransactionId = transactionId, TagId = tagId, Tag = tag });
+            await _db.SaveChangesAsync(ct);
+        }
+
+        return ToDto(transaction);
+    }
+
+    public async Task<TransactionDto?> RemoveTagAsync(Guid userId, Guid transactionId, Guid tagId, CancellationToken ct = default)
+    {
+        var transaction = await _db.Transactions
+            .Include(t => t.Category)
+            .Include(t => t.IncomeStream)
+            .Include(t => t.TransactionTags).ThenInclude(tt => tt.Tag)
+            .FirstOrDefaultAsync(t => t.Id == transactionId, ct);
+
+        if (transaction is null) return null;
+
+        var visibleIds = await _sharing.GetVisibleAccountIdsAsync(userId);
+        if (!visibleIds.Contains(transaction.AccountId)) return null;
+
+        var link = transaction.TransactionTags.FirstOrDefault(tt => tt.TagId == tagId);
+        if (link is not null)
+        {
+            transaction.TransactionTags.Remove(link);
+            await _db.SaveChangesAsync(ct);
+        }
+
+        return ToDto(transaction);
+    }
+
     private static TransactionDto ToDto(Transaction t) =>
         new(
             t.Id,
@@ -223,6 +275,7 @@ public class TransactionService : ITransactionService
             t.CreatedAt,
             t.Notes,
             t.IncomeStreamId,
-            t.IncomeStream?.Name
+            t.IncomeStream?.Name,
+            t.TransactionTags.Select(tt => new TagRef(tt.Tag.Id, tt.Tag.Name, tt.Tag.Colour)).ToList()
         );
 }
