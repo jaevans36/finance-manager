@@ -30,12 +30,18 @@ CMD ["pnpm", "dev", "--", "--host"]
 # pull in the build step it doesn't need. ────────────────────────────────────
 FROM builder AS build-prod
 
-# VITE_API_URL is baked in at build time.
-# Default: http://localhost:5000 (same-machine access).
+# VITE_API_URL and VITE_FINANCE_API_URL are baked in at build time.
+# Default: http://localhost:5000 / http://localhost:5002 (same-machine access).
 # For LAN access from other devices, set to your machine's hostname or IP:
 #   VITE_API_URL: http://192.168.1.100:5000
+# docker-compose.vps.yml already passes VITE_FINANCE_API_URL as a build arg, but
+# Docker silently drops any build arg the Dockerfile doesn't declare with ARG —
+# it never reached Vite, so the deployed app was always falling back to the
+# finance-api-client.ts default of http://localhost:5002.
 ARG VITE_API_URL=http://localhost:5000
 ENV VITE_API_URL=$VITE_API_URL
+ARG VITE_FINANCE_API_URL=http://localhost:5002
+ENV VITE_FINANCE_API_URL=$VITE_FINANCE_API_URL
 
 WORKDIR /app/apps/web
 RUN pnpm build
