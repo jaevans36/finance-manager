@@ -33,6 +33,32 @@ export interface UpcomingBillResponse {
   isReminderDue: boolean;
 }
 
+/** POST /api/v1/finance/bills body. */
+export interface CreateBillInput {
+  name: string;
+  amount: number;
+  frequency: BillFrequency;
+  /** ISO day-of-week (1=Mon..7=Sun) when frequency is Weekly; day-of-month (1-31) otherwise. */
+  dueDay: number;
+  reminderDaysBefore: number;
+  categoryId?: string;
+  description?: string;
+  accountId?: string;
+}
+
+/** PUT /api/v1/finance/bills/{id} body — every field optional, omitted = unchanged. */
+export interface UpdateBillInput {
+  name?: string;
+  amount?: number;
+  frequency?: BillFrequency;
+  dueDay?: number;
+  reminderDaysBefore?: number;
+  categoryId?: string;
+  isActive?: boolean;
+  description?: string;
+  accountId?: string;
+}
+
 /** Mirrors apps/finance-api/Features/Bills/Models/RecurringPattern.cs. */
 export const RECURRING_FREQUENCIES = ['Weekly', 'Monthly', 'Quarterly', 'Annual', 'Unknown'] as const;
 export type RecurringFrequency = (typeof RECURRING_FREQUENCIES)[number];
