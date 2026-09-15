@@ -4,9 +4,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>0.15.0</Version> <!-- x-release-please-version -->
-    <AssemblyVersion>0.15.0</AssemblyVersion> <!-- x-release-please-version -->
-    <FileVersion>0.15.0</FileVersion> <!-- x-release-please-version -->
+    <Version>0.16.0</Version> <!-- x-release-please-version -->
+    <AssemblyVersion>0.16.0</AssemblyVersion> <!-- x-release-please-version -->
+    <FileVersion>0.16.0</FileVersion> <!-- x-release-please-version -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn><!-- Suppress XML comment warnings -->
   </PropertyGroup>
