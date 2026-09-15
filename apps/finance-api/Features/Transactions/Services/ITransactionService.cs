@@ -37,7 +37,9 @@ public record TransactionDto(
     bool IsDuplicate,
     ImportSource ImportSource,
     DateTime CreatedAt,
-    string? Notes
+    string? Notes,
+    Guid? IncomeStreamId = null,
+    string? IncomeStreamName = null
 );
 
 public record CreateTransactionRequest(
@@ -62,7 +64,8 @@ public record UpdateTransactionRequest(
     bool? IsReviewed,
     TransactionType? Type = null,
     decimal? Amount = null,
-    DateOnly? TransactionDate = null
+    DateOnly? TransactionDate = null,
+    Guid? IncomeStreamId = null
 );
 
 public record CsvImportResult(

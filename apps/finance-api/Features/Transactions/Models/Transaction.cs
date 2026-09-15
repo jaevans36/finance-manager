@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using FinanceApi.Features.Accounts.Models;
 using FinanceApi.Features.Categories.Models;
+using FinanceApi.Features.IncomeStreams.Models;
 
 namespace FinanceApi.Features.Transactions.Models;
 
@@ -81,10 +82,18 @@ public class Transaction
     /// <summary>Set when this transaction was matched to a linked bill during CSV import.</summary>
     public Guid? BillId { get; set; }
 
+    /// <summary>
+    /// Set when this transaction is tagged as belonging to a named income stream (e.g. "my
+    /// salary", "Jade's salary") — distinct from IncomeStream.AccountId's coarser detection,
+    /// which can't tell two income sources apart when both land in the same shared account.
+    /// </summary>
+    public Guid? IncomeStreamId { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation
     public Account Account { get; set; } = null!;
     public Category? Category { get; set; }
+    public IncomeStream? IncomeStream { get; set; }
 }
