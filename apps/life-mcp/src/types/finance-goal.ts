@@ -24,3 +24,11 @@ export interface SavingsGoalWithProjection {
   projectedCompletionDate: string | null;
   isOnTrack: boolean;
 }
+
+/** PUT /api/v1/finance/goals/{id} body — all fields optional, only what's passed changes. */
+export interface UpdateSavingsGoalInput {
+  name?: string;
+  targetAmount?: number;
+  targetDate?: string;
+  monthlyContribution?: number;
+}

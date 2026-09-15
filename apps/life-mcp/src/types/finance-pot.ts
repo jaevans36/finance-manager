@@ -38,3 +38,15 @@ export interface SpendingPotWithProgress {
   monthsRemaining: number | null;
   isReady: boolean;
 }
+
+/** PUT /api/v1/finance/pots/{id} body — all fields optional, only what's passed changes. */
+export interface UpdatePotInput {
+  name?: string;
+  budgetAmount?: number;
+  rolloverEnabled?: boolean;
+  icon?: string;
+  colour?: string;
+  categoryIds?: string[];
+  annualAmount?: number;
+  nextPaymentDate?: string;
+}
