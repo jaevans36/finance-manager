@@ -19,7 +19,8 @@ public enum ImportSource
 {
     Manual,
     CsvImport,
-    BankSync
+    BankSync,
+    JsonImport
 }
 
 /// <summary>

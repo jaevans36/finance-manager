@@ -56,12 +56,6 @@ public class CsvImportService : ICsvImportService
         if (!visibleIds.Contains(accountId))
             throw new UnauthorizedAccessException("You do not have access to this account.");
 
-        var batchId = Guid.NewGuid();
-        var errors = new List<string>();
-        var imported = 0;
-        var duplicates = 0;
-        var importedTransactions = new List<Transaction>();
-
         List<ParsedCsvRow> rows;
         List<string> skipMessages;
         try
@@ -70,8 +64,96 @@ public class CsvImportService : ICsvImportService
         }
         catch (Exception ex)
         {
-            return new CsvImportResult(0, 0, 1, new[] { $"CSV parse error: {ex.Message}" }, batchId);
+            return new CsvImportResult(0, 0, 1, new[] { $"CSV parse error: {ex.Message}" }, Guid.NewGuid());
         }
+
+        var importableRows = rows
+            .Select(r => new ImportableRow(r.TransactionDate, r.Description, r.Amount, r.Type, r.Reference))
+            .ToList();
+
+        var result = await ImportRowsAsync(userId, accountId, ImportSource.CsvImport, importableRows, skipMessages, ct);
+
+        if (result.Imported > 0 || result.Duplicates > 0)
+        {
+            await _activityLog.LogAsync(userId, FinanceActivityType.CsvImportCompleted,
+                $"Imported {result.Imported} transaction(s), {result.Duplicates} duplicate(s) skipped, via {bankFormat}", ipAddress, userAgent);
+        }
+
+        return result;
+    }
+
+    public async Task<CsvImportResult> ImportJsonAsync(
+        Guid userId,
+        Guid accountId,
+        List<JsonTransactionEntry> entries,
+        string? ipAddress = null,
+        string? userAgent = null,
+        CancellationToken ct = default)
+    {
+        var visibleIds = await _sharing.GetVisibleAccountIdsAsync(userId);
+        if (!visibleIds.Contains(accountId))
+            throw new UnauthorizedAccessException("You do not have access to this account.");
+
+        var rows = new List<ImportableRow>();
+        var skipMessages = new List<string>();
+
+        for (var i = 0; i < entries.Count; i++)
+        {
+            var entry = entries[i];
+            if (string.IsNullOrWhiteSpace(entry.Description))
+            {
+                skipMessages.Add($"Entry {i + 1}: description is required");
+                continue;
+            }
+            if (entry.Amount <= 0)
+            {
+                skipMessages.Add($"Entry {i + 1}: amount must be positive (direction is set by type)");
+                continue;
+            }
+
+            rows.Add(new ImportableRow(
+                entry.TransactionDate, entry.Description, entry.Amount, entry.Type, entry.Reference,
+                entry.CategoryId, entry.Payee, entry.Notes));
+        }
+
+        var result = await ImportRowsAsync(userId, accountId, ImportSource.JsonImport, rows, skipMessages, ct);
+
+        if (result.Imported > 0 || result.Duplicates > 0)
+        {
+            await _activityLog.LogAsync(userId, FinanceActivityType.CsvImportCompleted,
+                $"Imported {result.Imported} transaction(s), {result.Duplicates} duplicate(s) skipped, via structured entry", ipAddress, userAgent);
+        }
+
+        return result;
+    }
+
+    /// <summary>A row ready to insert — either mapped from a parsed CSV row, or a JSON entry as-is.</summary>
+    private record ImportableRow(
+        DateOnly TransactionDate,
+        string Description,
+        decimal Amount,
+        TransactionType Type,
+        string? Reference,
+        Guid? CategoryId = null,
+        string? PayeeOverride = null,
+        string? Notes = null);
+
+    /// <summary>
+    /// Shared dedup/insert/balance-update/bill-matching pipeline for both import paths.
+    /// Duplicate detection: exact match on AccountId + TransactionDate + Amount + Description.
+    /// </summary>
+    private async Task<CsvImportResult> ImportRowsAsync(
+        Guid userId,
+        Guid accountId,
+        ImportSource source,
+        List<ImportableRow> rows,
+        List<string> skipMessages,
+        CancellationToken ct)
+    {
+        var batchId = Guid.NewGuid();
+        var imported = 0;
+        var duplicates = 0;
+        var importedTransactions = new List<Transaction>();
 
         foreach (var row in rows)
         {
@@ -83,13 +165,14 @@ public class CsvImportService : ICsvImportService
                 ct);
 
             var stripped = NormaliseDescription(row.Description);
-            var payee = _merchantNormaliser.Normalise(stripped);
+            var payee = row.PayeeOverride ?? _merchantNormaliser.Normalise(stripped);
 
             var transaction = new Transaction
             {
                 UserId = userId,
                 AccountId = accountId,
                 ImportBatchId = batchId,
+                CategoryId = row.CategoryId,
                 Type = row.Type,
                 Amount = Math.Abs(row.Amount),
                 BaseCurrencyAmount = Math.Abs(row.Amount),
@@ -98,9 +181,10 @@ public class CsvImportService : ICsvImportService
                 Payee = payee != stripped ? payee : null,
                 OriginalDescription = row.Description,
                 Reference = row.Reference,
+                Notes = row.Notes,
                 TransactionDate = row.TransactionDate,
                 IsDuplicate = isDuplicate,
-                ImportSource = ImportSource.CsvImport
+                ImportSource = source
             };
 
             _db.Transactions.Add(transaction);
@@ -127,11 +211,6 @@ public class CsvImportService : ICsvImportService
 
         await _db.SaveChangesAsync(ct);
 
-        if (imported > 0 || duplicates > 0)
-        {
-            await _activityLog.LogAsync(userId, FinanceActivityType.CsvImportCompleted, $"Imported {imported} transaction(s), {duplicates} duplicate(s) skipped, via {bankFormat}", ipAddress, userAgent);
-        }
-
         // ── Bill-to-transaction matching ──────────────────────────────────────
         if (importedTransactions.Count > 0)
         {
@@ -151,7 +230,7 @@ public class CsvImportService : ICsvImportService
                 .ToList()
             : skipMessages;
 
-        return new CsvImportResult(imported, duplicates, errors.Count, errors, batchId,
+        return new CsvImportResult(imported, duplicates, 0, Array.Empty<string>(), batchId,
             Skipped: skipMessages.Count, SkipMessages: cappedSkips);
     }
 

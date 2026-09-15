@@ -28,6 +28,7 @@ import { checkAccountCompletenessTool } from '../accounts/check-account-complete
 import { getFinanceTransactionsTool } from '../transactions/get-transactions.js';
 import { addManualTransactionTool } from '../transactions/add-manual-transaction.js';
 import { importTransactionsTool } from '../transactions/import-transactions.js';
+import { importTransactionsJsonTool } from '../transactions/import-transactions-json.js';
 import { searchTransactionsTool } from '../transactions/search-transactions.js';
 import { categoriseTransactionTool } from '../transactions/categorise-transaction.js';
 import { getBillsDueTool } from '../bills/get-bills-due.js';
@@ -471,6 +472,95 @@ describe('finance_import_transactions', () => {
     mockTransactionsApi.importTransactionsCsv.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
     const res = await importTransactionsTool.handler(
       { accountId: UUID, csv: 'Date,Description,Amount\n01/01/2025,TESCO,-10', bankFormat: 'generic' },
+      ctx,
+    );
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_import_transactions_json', () => {
+  const importResult: CsvImportResult = {
+    imported: 2,
+    duplicates: 1,
+    errors: 0,
+    errorMessages: [],
+    batchId: 'batch-1',
+    skipped: 0,
+    skipMessages: null,
+  };
+
+  it('requires at least one entry', () => {
+    expect(parse(importTransactionsJsonTool, { accountId: UUID, entries: [] }).success).toBe(false);
+    expect(
+      parse(importTransactionsJsonTool, {
+        accountId: UUID,
+        entries: [{ transactionDate: '2026-09-10', description: 'Tesco', amount: 10, type: 'Debit' }],
+      }).success,
+    ).toBe(true);
+  });
+
+  it('rejects a non-positive amount', () => {
+    expect(
+      parse(importTransactionsJsonTool, {
+        accountId: UUID,
+        entries: [{ transactionDate: '2026-09-10', description: 'Tesco', amount: -10, type: 'Debit' }],
+      }).success,
+    ).toBe(false);
+  });
+
+  it('accepts category, payee, and notes on an entry', () => {
+    const parsed = parse(importTransactionsJsonTool, {
+      accountId: UUID,
+      entries: [
+        {
+          transactionDate: '2026-09-10',
+          description: 'AMZN MKTP UK',
+          amount: 42.99,
+          type: 'Debit',
+          categoryId: UUID,
+          payee: 'Amazon',
+          notes: 'Birthday present',
+        },
+      ],
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it('forwards accountId and entries', async () => {
+    mockTransactionsApi.importTransactionsJson.mockResolvedValue(importResult);
+    const entries = [{ transactionDate: '2026-09-10', description: 'Tesco', amount: 10, type: 'Debit' as const }];
+    await importTransactionsJsonTool.handler({ accountId: UUID, entries }, ctx);
+    expect(mockTransactionsApi.importTransactionsJson).toHaveBeenCalledWith(http, UUID, entries);
+  });
+
+  it('reports imported, duplicate, and error counts', async () => {
+    mockTransactionsApi.importTransactionsJson.mockResolvedValue(importResult);
+    const res = await importTransactionsJsonTool.handler(
+      { accountId: UUID, entries: [{ transactionDate: '2026-09-10', description: 'Tesco', amount: 10, type: 'Debit' }] },
+      ctx,
+    );
+    expect(res.content[0].text).toContain('Imported:** 2');
+    expect(res.content[0].text).toContain('Duplicates skipped:** 1');
+  });
+
+  it('surfaces entry-level skip messages', async () => {
+    mockTransactionsApi.importTransactionsJson.mockResolvedValue({
+      ...importResult,
+      imported: 0,
+      skipped: 1,
+      skipMessages: ['Entry 1: description is required'],
+    });
+    const res = await importTransactionsJsonTool.handler(
+      { accountId: UUID, entries: [{ transactionDate: '2026-09-10', description: 'x', amount: 10, type: 'Debit' }] },
+      ctx,
+    );
+    expect(res.content[0].text).toContain('description is required');
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockTransactionsApi.importTransactionsJson.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await importTransactionsJsonTool.handler(
+      { accountId: UUID, entries: [{ transactionDate: '2026-09-10', description: 'Tesco', amount: 10, type: 'Debit' }] },
       ctx,
     );
     expect(res.isError).toBe(true);

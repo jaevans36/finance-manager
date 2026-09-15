@@ -8,6 +8,7 @@ using FinanceApi.Data;
 using FinanceApi.Features.Accounts.Models;
 using FinanceApi.Features.Accounts.Services;
 using FinanceApi.Features.Common.Users.Models;
+using FinanceApi.Features.Transactions.Controllers;
 using FinanceApi.Features.Transactions.Models;
 using FinanceApi.Features.Transactions.Services;
 using FinanceApi.IntegrationTests.Helpers;
@@ -230,6 +231,85 @@ public class TransactionsControllerTests
         var response = await _strangerClient.PostAsync(
             $"/api/v1/finance/transactions/import?accountId={accountId}&bankFormat=barclays",
             form);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    // ── POST /transactions/import-json ────────────────────────────────────────
+
+    [Fact]
+    public async Task ImportJson_WhenValidEntries_Returns200WithImportSummary()
+    {
+        var accountId = await CreateAccountAsync();
+        var request = new ImportJsonTransactionsRequest(accountId, new List<JsonTransactionEntry>
+        {
+            new(new DateOnly(2025, 1, 1), "Tesco", 25.50m, TransactionType.Debit),
+            new(new DateOnly(2025, 1, 2), "Salary", 1500.00m, TransactionType.Credit),
+        });
+
+        var response = await _client.PostAsJsonAsync("/api/v1/finance/transactions/import-json", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<CsvImportResult>();
+        result.Should().NotBeNull();
+        result!.Imported.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task ImportJson_PreservesCategoryPayeeAndNotes()
+    {
+        var accountId = await CreateAccountAsync();
+        var categoryId = Guid.NewGuid();
+        var request = new ImportJsonTransactionsRequest(accountId, new List<JsonTransactionEntry>
+        {
+            new(new DateOnly(2025, 1, 1), "AMZN MKTP UK", 42.99m, TransactionType.Debit,
+                Reference: "ORD-123", CategoryId: categoryId, Payee: "Amazon", Notes: "Birthday present"),
+        });
+
+        await _client.PostAsJsonAsync("/api/v1/finance/transactions/import-json", request);
+
+        var page = await _client.GetFromJsonAsync<PagedResult<TransactionDto>>(
+            $"/api/v1/finance/transactions?accountId={accountId}");
+        var tx = page!.Items.Should().ContainSingle().Subject;
+        tx.Payee.Should().Be("Amazon");
+        tx.Notes.Should().Be("Birthday present");
+    }
+
+    [Fact]
+    public async Task ImportJson_WhenNoEntriesProvided_Returns400()
+    {
+        var accountId = await CreateAccountAsync();
+        var request = new ImportJsonTransactionsRequest(accountId, new List<JsonTransactionEntry>());
+
+        var response = await _client.PostAsJsonAsync("/api/v1/finance/transactions/import-json", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task ImportJson_WhenUnauthenticated_Returns401()
+    {
+        var unauthClient = _factory.CreateClient();
+        var request = new ImportJsonTransactionsRequest(Guid.NewGuid(), new List<JsonTransactionEntry>
+        {
+            new(new DateOnly(2025, 1, 1), "Tesco", 25.50m, TransactionType.Debit),
+        });
+
+        var response = await unauthClient.PostAsJsonAsync("/api/v1/finance/transactions/import-json", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task ImportJson_WhenCallerHasNoAccessToTheAccount_Returns404()
+    {
+        var accountId = await CreateAccountAsync();
+        var request = new ImportJsonTransactionsRequest(accountId, new List<JsonTransactionEntry>
+        {
+            new(new DateOnly(2025, 1, 1), "Tesco", 25.50m, TransactionType.Debit),
+        });
+
+        var response = await _strangerClient.PostAsJsonAsync("/api/v1/finance/transactions/import-json", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }

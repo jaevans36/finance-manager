@@ -2,6 +2,7 @@ import type { AxiosInstance } from 'axios';
 import type {
   CreateTransactionInput,
   CsvImportResult,
+  JsonTransactionEntry,
   ListTransactionsParams,
   PagedResult,
   TransactionDto,
@@ -59,5 +60,20 @@ export async function importTransactionsCsv(
   const res = await http.post<CsvImportResult>(`${BASE}/import`, form, {
     params: { accountId, bankFormat },
   });
+  return res.data;
+}
+
+/**
+ * Import a batch of transactions as structured JSON entries — the richer alternative to
+ * {@link importTransactionsCsv} when category/payee/notes are already known, not just a
+ * date/description/amount, so that detail survives rather than being flattened into CSV text
+ * and re-guessed. Uses the same server-side dedup as the CSV path.
+ */
+export async function importTransactionsJson(
+  http: AxiosInstance,
+  accountId: string,
+  entries: JsonTransactionEntry[],
+): Promise<CsvImportResult> {
+  const res = await http.post<CsvImportResult>(`${BASE}/import-json`, { accountId, entries });
   return res.data;
 }

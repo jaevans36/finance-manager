@@ -157,6 +157,34 @@ public class TransactionsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Import a batch of transactions as structured JSON entries — the richer alternative to
+    /// <see cref="ImportCsv"/> when the caller already has category/payee/notes, not just a
+    /// date/description/amount. Uses the same dedup/bill-matching pipeline as the CSV import.
+    /// </summary>
+    /// <param name="request">The account to import into and the structured entries.</param>
+    /// <param name="ct">Cancellation token.</param>
+    [HttpPost("import-json")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ImportJson([FromBody] ImportJsonTransactionsRequest request, CancellationToken ct)
+    {
+        if (request.AccountId == Guid.Empty) return BadRequest("accountId is required");
+        if (request.Entries is null || request.Entries.Count == 0) return BadRequest("At least one entry is required");
+        if (request.Entries.Count > 500) return BadRequest("A single import is limited to 500 entries");
+
+        try
+        {
+            var result = await _csvImport.ImportJsonAsync(GetUserId(), request.AccountId, request.Entries, GetIpAddress(), GetUserAgent(), ct);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return NotFound(new { error = new { message = ex.Message } });
+        }
+    }
+
     /// <summary>List supported bank CSV formats.</summary>
     [HttpGet("import/formats")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -165,3 +193,5 @@ public class TransactionsController : ControllerBase
         return Ok(_csvImport.GetSupportedFormats());
     }
 }
+
+public record ImportJsonTransactionsRequest(Guid AccountId, List<JsonTransactionEntry> Entries);

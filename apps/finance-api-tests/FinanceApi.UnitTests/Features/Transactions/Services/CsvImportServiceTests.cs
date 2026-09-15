@@ -352,6 +352,149 @@ public class CsvImportServiceTests : IDisposable
         log.Description.Should().Contain("2").And.Contain("barclays");
     }
 
+    // ── JSON import ───────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task ImportJsonAsync_WithValidEntries_ImportsThem()
+    {
+        var entries = new List<JsonTransactionEntry>
+        {
+            new(new DateOnly(2025, 1, 1), "Tesco", 25.50m, TransactionType.Debit),
+            new(new DateOnly(2025, 1, 2), "Salary", 1500.00m, TransactionType.Credit),
+        };
+
+        var result = await _sut.ImportJsonAsync(_userId, _accountId, entries);
+
+        result.Imported.Should().Be(2);
+        (await _db.Transactions.Where(t => t.AccountId == _accountId).CountAsync()).Should().Be(2);
+    }
+
+    [Fact]
+    public async Task ImportJsonAsync_PreservesCategoryPayeeAndNotes()
+    {
+        var categoryId = Guid.NewGuid();
+        var entries = new List<JsonTransactionEntry>
+        {
+            new(new DateOnly(2025, 1, 1), "AMZN MKTP UK", 42.99m, TransactionType.Debit,
+                Reference: "ORD-123", CategoryId: categoryId, Payee: "Amazon", Notes: "Birthday present"),
+        };
+
+        await _sut.ImportJsonAsync(_userId, _accountId, entries);
+
+        var tx = await _db.Transactions.SingleAsync(t => t.AccountId == _accountId);
+        tx.CategoryId.Should().Be(categoryId);
+        tx.Payee.Should().Be("Amazon");
+        tx.Notes.Should().Be("Birthday present");
+        tx.Reference.Should().Be("ORD-123");
+    }
+
+    [Fact]
+    public async Task ImportJsonAsync_SetsImportSourceToJsonImport()
+    {
+        var entries = new List<JsonTransactionEntry> { new(new DateOnly(2025, 1, 1), "Tesco", 25.50m, TransactionType.Debit) };
+
+        await _sut.ImportJsonAsync(_userId, _accountId, entries);
+
+        var tx = await _db.Transactions.SingleAsync(t => t.AccountId == _accountId);
+        tx.ImportSource.Should().Be(ImportSource.JsonImport);
+    }
+
+    [Fact]
+    public async Task ImportJsonAsync_ReusesTheSameDedupLogicAsCsvImport()
+    {
+        var csv = "Date,Memo,Amount\n01/01/2025,Tesco,-25.50";
+        await ImportCsvAsync(csv, "barclays");
+
+        var entries = new List<JsonTransactionEntry> { new(new DateOnly(2025, 1, 1), "Tesco", 25.50m, TransactionType.Debit) };
+        var result = await _sut.ImportJsonAsync(_userId, _accountId, entries);
+
+        result.Imported.Should().Be(0);
+        result.Duplicates.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ImportJsonAsync_WhenDescriptionMissing_SkipsThatEntryWithAMessage()
+    {
+        var entries = new List<JsonTransactionEntry>
+        {
+            new(new DateOnly(2025, 1, 1), "", 25.50m, TransactionType.Debit),
+            new(new DateOnly(2025, 1, 2), "Salary", 1500.00m, TransactionType.Credit),
+        };
+
+        var result = await _sut.ImportJsonAsync(_userId, _accountId, entries);
+
+        result.Imported.Should().Be(1);
+        result.Skipped.Should().Be(1);
+        result.SkipMessages.Should().Contain(m => m.Contains("Entry 1") && m.Contains("description"));
+    }
+
+    [Fact]
+    public async Task ImportJsonAsync_WhenAmountIsNotPositive_SkipsThatEntryWithAMessage()
+    {
+        var entries = new List<JsonTransactionEntry> { new(new DateOnly(2025, 1, 1), "Tesco", -5m, TransactionType.Debit) };
+
+        var result = await _sut.ImportJsonAsync(_userId, _accountId, entries);
+
+        result.Imported.Should().Be(0);
+        result.Skipped.Should().Be(1);
+        result.SkipMessages.Should().Contain(m => m.Contains("Entry 1") && m.Contains("positive"));
+    }
+
+    [Fact]
+    public async Task ImportJsonAsync_UpdatesAccountBalance()
+    {
+        var entries = new List<JsonTransactionEntry> { new(new DateOnly(2025, 1, 1), "Tesco", 100.00m, TransactionType.Debit) };
+
+        await _sut.ImportJsonAsync(_userId, _accountId, entries);
+
+        var account = await _db.Accounts.FindAsync(_accountId);
+        account!.Balance.Should().Be(400m); // 500 - 100
+    }
+
+    [Fact]
+    public async Task ImportJsonAsync_AssignsSharedBatchIdToAllEntries()
+    {
+        var entries = new List<JsonTransactionEntry>
+        {
+            new(new DateOnly(2025, 1, 1), "Tesco", 25.00m, TransactionType.Debit),
+            new(new DateOnly(2025, 1, 2), "Sainsbury", 30.00m, TransactionType.Debit),
+        };
+
+        var result = await _sut.ImportJsonAsync(_userId, _accountId, entries);
+
+        var transactions = await _db.Transactions.Where(t => t.AccountId == _accountId).ToListAsync();
+        transactions.Select(t => t.ImportBatchId).Distinct().Should().HaveCount(1);
+        transactions[0].ImportBatchId.Should().Be(result.BatchId);
+    }
+
+    [Fact]
+    public async Task ImportJsonAsync_WhenCallerHasNoVisibilityIntoTheAccount_ThrowsAndImportsNothing()
+    {
+        var otherUserId = Guid.NewGuid();
+        var entries = new List<JsonTransactionEntry> { new(new DateOnly(2025, 1, 1), "Tesco", 12.50m, TransactionType.Debit) };
+
+        var act = () => _sut.ImportJsonAsync(otherUserId, _accountId, entries);
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>();
+        (await _db.Transactions.CountAsync()).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ImportJsonAsync_WritesACsvImportCompletedLogEntry()
+    {
+        var entries = new List<JsonTransactionEntry>
+        {
+            new(new DateOnly(2025, 1, 1), "Tesco", 25.50m, TransactionType.Debit),
+            new(new DateOnly(2025, 1, 2), "Salary", 1500.00m, TransactionType.Credit),
+        };
+
+        await _sut.ImportJsonAsync(_userId, _accountId, entries);
+
+        var log = await _db.ActivityLogs.SingleAsync();
+        log.Action.Should().Be(FinanceApi.Features.Common.ActivityLogs.Models.FinanceActivityType.CsvImportCompleted);
+        log.Description.Should().Contain("2").And.Contain("structured entry");
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private async Task<CsvImportResult> ImportCsvAsync(string csvContent, string bankFormat)
