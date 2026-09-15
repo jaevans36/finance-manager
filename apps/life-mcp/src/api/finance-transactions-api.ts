@@ -6,6 +6,7 @@ import type {
   ListTransactionsParams,
   PagedResult,
   TransactionDto,
+  TransactionType,
 } from '../types/finance-transaction.js';
 
 const BASE = '/api/v1/finance/transactions';
@@ -32,6 +33,15 @@ export async function categoriseTransaction(
   categoryId: string,
 ): Promise<TransactionDto> {
   const res = await http.patch<TransactionDto>(`${BASE}/${transactionId}`, { categoryId });
+  return res.data;
+}
+
+export async function setTransactionType(
+  http: AxiosInstance,
+  transactionId: string,
+  type: TransactionType,
+): Promise<TransactionDto> {
+  const res = await http.patch<TransactionDto>(`${BASE}/${transactionId}`, { type });
   return res.data;
 }
 

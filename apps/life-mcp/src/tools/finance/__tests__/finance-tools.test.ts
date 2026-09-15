@@ -60,6 +60,7 @@ import { getAiInsightsTool } from '../insights/get-ai-insights.js';
 import { getNetWorthTool } from '../accounts/get-net-worth.js';
 import { getNetWorthHistoryTool } from '../accounts/get-net-worth-history.js';
 import { tagIncomeStreamTool } from '../transactions/tag-income-stream.js';
+import { setTransactionTypeTool } from '../transactions/set-transaction-type.js';
 import { getDebtOverviewTool } from '../debt/get-debt-overview.js';
 import { getDebtProjectionTool } from '../debt/get-debt-projection.js';
 import { getAssetsTool } from '../assets/get-assets.js';
@@ -721,6 +722,25 @@ describe('finance_tag_income_transaction', () => {
   it('maps an API error to an isError result', async () => {
     mockTransactionsApi.tagIncomeStream.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
     const res = await tagIncomeStreamTool.handler({ transactionId: 'txn-1', incomeStreamId: UUID }, ctx);
+    expect(res.isError).toBe(true);
+  });
+});
+
+describe('finance_set_transaction_type', () => {
+  it('sets the type and confirms it', async () => {
+    mockTransactionsApi.setTransactionType.mockResolvedValue({ ...transaction, type: 'Transfer' });
+    const res = await setTransactionTypeTool.handler({ transactionId: 'txn-1', type: 'Transfer' }, ctx);
+    expect(mockTransactionsApi.setTransactionType).toHaveBeenCalledWith(http, 'txn-1', 'Transfer');
+    expect(res.content[0].text).toContain('Set "Tesco" to Transfer');
+  });
+
+  it('rejects an invalid type', () => {
+    expect(parse(setTransactionTypeTool, { transactionId: UUID, type: 'Refund' }).success).toBe(false);
+  });
+
+  it('maps an API error to an isError result', async () => {
+    mockTransactionsApi.setTransactionType.mockRejectedValue(new AxiosError('nope', 'ECONNREFUSED'));
+    const res = await setTransactionTypeTool.handler({ transactionId: 'txn-1', type: 'Transfer' }, ctx);
     expect(res.isError).toBe(true);
   });
 });

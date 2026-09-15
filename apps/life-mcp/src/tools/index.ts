@@ -33,6 +33,7 @@ import { importTransactionsJsonTool } from './finance/transactions/import-transa
 import { searchTransactionsTool } from './finance/transactions/search-transactions.js';
 import { categoriseTransactionTool } from './finance/transactions/categorise-transaction.js';
 import { tagIncomeStreamTool } from './finance/transactions/tag-income-stream.js';
+import { setTransactionTypeTool } from './finance/transactions/set-transaction-type.js';
 import { tagTransactionTool } from './finance/transactions/tag-transaction.js';
 import { untagTransactionTool } from './finance/transactions/untag-transaction.js';
 import { getBillsDueTool } from './finance/bills/get-bills-due.js';
@@ -140,6 +141,7 @@ const financeTools: AnyToolDef[] = [
   searchTransactionsTool,
   categoriseTransactionTool,
   tagIncomeStreamTool,
+  setTransactionTypeTool,
   tagTransactionTool,
   untagTransactionTool,
   getBillsDueTool,
