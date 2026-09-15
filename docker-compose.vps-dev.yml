@@ -14,7 +14,8 @@
 #
 # FIRST TIME SETUP (see the VPS Setup Runbook, second brain vault):
 #   1. .env.dev-remote with DB_USER/DB_NAME/DB_PASSWORD/JWT_SECRET/JWT_ISSUER/JWT_AUDIENCE/
-#      VITE_API_URL/FRONTEND_ORIGIN/DISCORD_ERROR_WEBHOOK/FINANCE_ENCRYPTION_KEY (gitignored,
+#      VITE_API_URL/FRONTEND_ORIGIN/DISCORD_ERROR_WEBHOOK/DISCORD_FINANCE_ALERTS_WEBHOOK/
+#      FINANCE_ENCRYPTION_KEY (gitignored,
 #      never commit) — use throwaway values, this database is not backed up and not meant to
 #      hold real data
 #
@@ -83,6 +84,7 @@ services:
       Jwt__Issuer: ${JWT_ISSUER}
       Jwt__Audience: ${JWT_AUDIENCE}
       Encryption__Key: ${FINANCE_ENCRYPTION_KEY}
+      DISCORD_FINANCE_ALERTS_WEBHOOK: ${DISCORD_FINANCE_ALERTS_WEBHOOK}
     depends_on:
       postgres:
         condition: service_healthy

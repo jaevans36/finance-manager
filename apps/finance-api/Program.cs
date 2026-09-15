@@ -4,6 +4,8 @@ using FinanceApi.Data;
 using FinanceApi.Infrastructure.Encryption;
 using FinanceApi.Features.Accounts.Services;
 using FinanceApi.Features.Affordability.Services;
+using FinanceApi.Features.Alerts.BackgroundServices;
+using FinanceApi.Features.Alerts.Services;
 using FinanceApi.Features.Assets.Services;
 using FinanceApi.Features.IncomeStreams.Services;
 using FinanceApi.Features.Debt.Services;
@@ -209,6 +211,15 @@ try
     builder.Services.AddScoped<INegotiationEngineService, NegotiationEngineService>();
     builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
     builder.Services.AddScoped<IAssetService, AssetService>();
+
+    // Clock abstraction — inject TimeProvider instead of calling DateTime.UtcNow directly
+    builder.Services.AddSingleton(TimeProvider.System);
+    builder.Services.AddScoped<IFinanceAlertsService, FinanceAlertsService>();
+    builder.Services.AddHttpClient<IFinanceDiscordNotifier, FinanceDiscordAlertClient>(client =>
+    {
+        client.Timeout = TimeSpan.FromSeconds(10);
+    });
+    builder.Services.AddHostedService<FinanceAlertsBackgroundService>();
 
     // ── Build + Middleware Pipeline ───────────────────────────────────────────
     var app = builder.Build();

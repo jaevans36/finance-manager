@@ -1,4 +1,5 @@
 using FinanceApi.Features.Accounts.Models;
+using FinanceApi.Features.Alerts.Models;
 using FinanceApi.Features.Assets.Models;
 using FinanceApi.Features.Bills.Models;
 using FinanceApi.Features.Budgets.Models;
@@ -55,6 +56,8 @@ public class FinanceDbContext : DbContext
     public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
     public DbSet<AccountShare> AccountShares => Set<AccountShare>();
     public DbSet<Asset> Assets => Set<Asset>();
+    public DbSet<RecurringPaymentBaseline> RecurringPaymentBaselines => Set<RecurringPaymentBaseline>();
+    public DbSet<NotificationRun> NotificationRuns => Set<NotificationRun>();
 
     /// <summary>Read-only — see LifeManagerUser's doc comment. Never written to from finance-api.</summary>
     public DbSet<LifeManagerUser> LifeManagerUsers => Set<LifeManagerUser>();
@@ -307,6 +310,20 @@ public class FinanceDbContext : DbContext
                   .HasConversion<string>()
                   .HasMaxLength(50);
             entity.HasIndex(a => a.UserId);
+        });
+
+        modelBuilder.Entity<RecurringPaymentBaseline>(entity =>
+        {
+            entity.HasKey(b => b.Id);
+            entity.Property(b => b.MerchantName).IsRequired().HasMaxLength(500);
+            entity.Property(b => b.LastAlertedAmount).HasPrecision(18, 4);
+            entity.HasIndex(b => new { b.UserId, b.MerchantName, b.AccountId }).IsUnique();
+        });
+
+        modelBuilder.Entity<NotificationRun>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+            entity.HasIndex(r => r.RunDate).IsUnique();
         });
 
         // ── LifeManagerUser — read-only, owned by life-api's "public" schema ────
