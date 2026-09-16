@@ -304,6 +304,26 @@ public class AffordabilityServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetAffordabilityAsync_ChecklingAccountOverdraft_BillsAttachedToItStayCommittedCostsNotDebtPayments()
+    {
+        // A Checking account counts as a debt account once overdrawn (see
+        // DebtProjectionService.DebtTypes), but unlike a card/loan it has no single
+        // Bill standing in for "the payment" — bills attached to it are ordinary
+        // day-to-day bills (subscriptions, utilities) paid from that account. They
+        // must stay in CommittedCosts, not get vacuumed into ExistingDebtPayments.
+        var overdrawn = MakeDebtAccount(AccountType.Checking, balance: -500m);
+        _db.Accounts.Add(overdrawn);
+        _db.Bills.Add(MakeBill(20m, BillFrequency.Monthly, accountId: overdrawn.Id));
+        _db.Bills.Add(MakeBill(30m, BillFrequency.Monthly, accountId: overdrawn.Id));
+        await _db.SaveChangesAsync();
+
+        var result = await _sut.GetAffordabilityAsync(_userId);
+
+        result.CommittedCosts.Should().Be(50m);
+        result.ExistingDebtPayments.Should().Be(0m);
+    }
+
+    [Fact]
     public async Task GetAffordabilityAsync_DebtWithBothCurrentPaymentAndLinkedBill_UsesCurrentPaymentOnlyNoDoubleCount()
     {
         // Some debts are tracked both ways at once (an Account payment field AND a

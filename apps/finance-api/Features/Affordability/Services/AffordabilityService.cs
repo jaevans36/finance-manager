@@ -65,7 +65,18 @@ public class AffordabilityService(FinanceDbContext db) : IAffordabilityService
             .ToListAsync(ct);
         var debtAccountIds = debtAccounts.Select(a => a.Id).ToHashSet();
 
-        var debtLinkedBills = activeBills.Where(b => b.AccountId.HasValue && debtAccountIds.Contains(b.AccountId.Value)).ToList();
+        // Only Credit/Loan/Mortgage debts fall back to a linked Bill as their
+        // "payment" — that models a single bill standing in for a card/loan's
+        // minimum payment. A Checking overdraft has no such thing: bills attached
+        // to a current account are ordinary spending (subscriptions, utilities),
+        // not a proxy for the overdraft's repayment, so summing them here would
+        // both overstate debt payments and wrongly exclude them from committed costs.
+        var linkedBillEligibleAccountIds = debtAccounts
+            .Where(a => a.Type != AccountType.Checking)
+            .Select(a => a.Id)
+            .ToHashSet();
+
+        var debtLinkedBills = activeBills.Where(b => b.AccountId.HasValue && linkedBillEligibleAccountIds.Contains(b.AccountId.Value)).ToList();
         var debtLinkedBillIds = debtLinkedBills.Select(b => b.Id).ToHashSet();
         var linkedBillTotalByAccount = debtLinkedBills
             .GroupBy(b => b.AccountId!.Value)
